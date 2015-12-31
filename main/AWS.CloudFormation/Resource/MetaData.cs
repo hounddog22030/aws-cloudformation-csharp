@@ -1,11 +1,12 @@
 ﻿using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Instance.MetaData;
 
-namespace AWS.CloudFormation.Instance.MetaData
+namespace AWS.CloudFormation.Resource
 {
-    public class MetaData : CloudFormationDictionary
+    public class Metadata : CloudFormationDictionary
     {
 
-        public MetaData(Instance instance) : base(instance)
+        public Metadata(Instance.Instance instance) : base(instance)
         {
         }
 
