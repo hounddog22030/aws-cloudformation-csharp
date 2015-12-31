@@ -13,8 +13,7 @@ using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OperatingSystem = AWS.CloudFormation.Instance.OperatingSystem;
 
-// test commit on branch
-// 2nd test commit on branch
+// created Stack5c99f4cf-873f-4ebb-bed7-079c91169ae2	
 
 namespace AWS.CloudFormation.Test
 {
