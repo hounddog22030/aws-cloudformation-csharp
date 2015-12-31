@@ -32,10 +32,11 @@ namespace AWS.CloudFormation.Test
         const string DomainController2PrivateIpAddress = "10.0.8.20";
         const string VpcCidrBlock = "10.0.0.0/16";
         const string DomainDNSName = "corp.getthebuybox.com";
-        const string DomainNetBIOSName = "corp";
         const string DomainAdminUser = "johnny";
         const string DomainAdminPassword = "kasdfiajs!!9";
-        
+        const string DomainNetBIOSName = "prime";
+
+
 
         private static Template GetTemplate()
         {
@@ -43,7 +44,7 @@ namespace AWS.CloudFormation.Test
             var template = new Template();
 
             // ReSharper disable once InconsistentNaming
-            var DomainDNSName = new ParameterBase(DomainController.DomainDnsNameParameterName, "String", "corp.getthebuybox.com");
+            var DomainDNSName = new ParameterBase(DomainController.DomainDnsNameParameterName, "String", StackTest.DomainDNSName);
             template.AddParameter(DomainDNSName);
 
             // ReSharper disable once InconsistentNaming
@@ -71,7 +72,6 @@ namespace AWS.CloudFormation.Test
             var nat1 = AddNat1(template, vpc, az1Subnet, az2Subnet, sqlServer1Subnet, tfsServer1Subnet, buildServer1Subnet, workstationSubnet, EncryptionKeyName, DMZSubnet);
             nat1PrivateRoute.Instance = nat1;
 
-
             SubnetRouteTableAssociation az1PrivateSubnetRouteTableAssociation = new SubnetRouteTableAssociation(template,"AZ1PrivateSubnetRouteTableAssociation", az1Subnet, az1PrivateRouteTable);
             template.Resources.Add("AZ1PrivateSubnetRouteTableAssociation", az1PrivateSubnetRouteTableAssociation);
 
@@ -94,10 +94,9 @@ namespace AWS.CloudFormation.Test
             template.AddInstance(DC1);
 
             // ReSharper disable once InconsistentNaming
-            var RDGateway = new RemoteDesktopGateway(template, "RDGateway", InstanceTypes.T2Micro, "ami-e4034a8e", EncryptionKeyName, DMZSubnet, StackTest.DomainDNSName);
-            DC1.AddToDomainMemberSecurityGroup(RDGateway);
-            //RDGateway.AddDependsOn(DC1, new TimeSpan(0,20,0));
+            var RDGateway = new RemoteDesktopGateway(template, "RDGateway", InstanceTypes.T2Micro, "ami-e4034a8e", EncryptionKeyName, DMZSubnet);
             template.AddInstance(RDGateway);
+            DC1.AddToDomain(RDGateway);
 
             //SecurityGroup domainMemberSg = domainController1.DomainMemberSecurityGroup;
             //instanceRdgw1.SecurityGroups.Add(domainMemberSg);
@@ -134,11 +133,6 @@ namespace AWS.CloudFormation.Test
             //joinDomain.Command.AddCommandLine("dir");
             //joinDomain.WaitAfterCompletion = 0.ToString();
 
-
-
-
-
-            RDGateway.AddDependsOn(DC1, new TimeSpan(0,40,0));
 
             // the below is a remote desktop gateway server that can
             // be uncommented to debug domain setup problems

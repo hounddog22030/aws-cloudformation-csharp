@@ -16,14 +16,13 @@ namespace AWS.CloudFormation.Instance
 
         private const string InstallRds = "installRDS";
 
-        public RemoteDesktopGateway(    Template template, 
-                                        string name, 
-                                        InstanceTypes instanceType, 
-                                        string imageId, 
-                                        string keyName,
-                                        Subnet subnet,
-                                        string domainToJoin) : 
-            base(template, name, instanceType, imageId, keyName, subnet, domainToJoin )
+        public RemoteDesktopGateway(Template template,
+            string name,
+            InstanceTypes instanceType,
+            string imageId,
+            string keyName,
+            Subnet subnet) : 
+            base(template, name, instanceType, imageId, keyName, subnet )
         {
             this.Subnet = subnet;
             this.AddSecurityGroup();
