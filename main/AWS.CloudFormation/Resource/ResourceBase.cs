@@ -34,6 +34,8 @@ namespace AWS.CloudFormation.Resource
         protected ResourceBase(string type, string name, bool supportsTags) : this(type)
         {
             Name = name;
+            Metadata = new Resource.Metadata(this);
+
             if (supportsTags)
             {
                 this.Tags = new List<KeyValuePair<string, string>>();
@@ -54,6 +56,7 @@ namespace AWS.CloudFormation.Resource
         protected Template Template { get; private set; }
         public string Type { get; private set; }
 
+        public Resource.Metadata Metadata { get; }
 
         public KeyValuePair<string, string> AddTag(string key, string value)
         {

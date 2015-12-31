@@ -22,7 +22,7 @@ namespace AWS.CloudFormation.Instance.Metadata
             }
             else
             {
-                return this.Add(configName, new Config.Config(this.Instance)) as Config.Config;
+                return this.Add(configName, new Config.Config(this.Instance as Instance)) as Config.Config;
             }
         }
 

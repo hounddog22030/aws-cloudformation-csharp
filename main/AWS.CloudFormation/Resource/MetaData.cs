@@ -6,7 +6,7 @@ namespace AWS.CloudFormation.Resource
     public class Metadata : CloudFormationDictionary
     {
 
-        public Metadata(Instance.Instance instance) : base(instance)
+        public Metadata(ResourceBase resource) : base(resource)
         {
         }
 
@@ -20,7 +20,7 @@ namespace AWS.CloudFormation.Resource
                 }
                 else
                 {
-                    return this.Add("AWS::CloudFormation::Init", new Init(this.Instance)) as Init;
+                    return this.Add("AWS::CloudFormation::Init", new Init((Instance.Instance)this.Instance)) as Init;
                 }
             }
 

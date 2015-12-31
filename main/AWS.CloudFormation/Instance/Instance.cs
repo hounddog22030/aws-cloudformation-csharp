@@ -41,7 +41,6 @@ namespace AWS.CloudFormation.Instance
             NetworkInterfaces = new List<NetworkInterface>();
             KeyName = keyName;
             UserData = new CloudFormationDictionary(this);
-            Metadata = new Resource.Metadata(this);
             SourceDestCheck = true;
             ShouldEnableHup = enableHup;
             this.EnableHup();
@@ -144,7 +143,6 @@ namespace AWS.CloudFormation.Instance
         [CloudFormationProperties]
         public string PrivateIpAddress { get; set; }
 
-        public Resource.Metadata Metadata { get; }
 
         public ElasticIP AddElasticIp(string name)
         {
