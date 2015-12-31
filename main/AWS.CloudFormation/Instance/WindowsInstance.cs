@@ -35,6 +35,12 @@ namespace AWS.CloudFormation.Instance
             this.Rename();
         }
 
+        [JsonIgnore]
+        public ParameterBase DomainDnsName { get; protected internal set; }
+        [JsonIgnore]
+        public ParameterBase DomainNetBiosName { get; protected internal set; }
+
+
         private void Rename()
         {
             if (OperatingSystem == OperatingSystem.Windows)
@@ -46,6 +52,10 @@ namespace AWS.CloudFormation.Instance
                                                             " -Restart\"");
                 renameCommandConfig.WaitAfterCompletion = "forever";
             }
+        }
+
+        protected internal virtual void OnAddedToDomain()
+        {
         }
     }
 }

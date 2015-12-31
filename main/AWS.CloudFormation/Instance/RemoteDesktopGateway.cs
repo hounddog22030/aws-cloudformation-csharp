@@ -27,7 +27,6 @@ namespace AWS.CloudFormation.Instance
             this.Subnet = subnet;
             this.AddSecurityGroup();
             this.AddElasticIp(name + "EIP");
-            this.InstallRemoteDesktopGateway();
         }
 
         private void InstallRemoteDesktopGateway()
@@ -48,8 +47,9 @@ namespace AWS.CloudFormation.Instance
             installRdsCommand.Command.AddCommandLine(
                                             "-ExecutionPolicy RemoteSigned",
                                             " C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN " + this.Name + ".",
-                                            "corp.getthebuybox.com",
-                                            " -DomainNetBiosName corp",
+                                            this.DomainDnsName,
+                                            " -DomainNetBiosName ",
+                                            this.DomainNetBiosName,
                                             " -GroupName 'domain admins'" );
         }
 
@@ -66,5 +66,10 @@ namespace AWS.CloudFormation.Instance
         }
 
 
+        protected internal override void OnAddedToDomain()
+        {
+            base.OnAddedToDomain();
+            this.InstallRemoteDesktopGateway();
+        }
     }
 }

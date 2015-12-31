@@ -15,23 +15,23 @@ namespace AWS.CloudFormation.Instance
 {
     public class DomainController : WindowsInstance
     {
-        public const string DomainAdminPasswordParameterName = "DomainAdminPassword";
-        public const string DomainDnsNameParameterName = "DomainDNSName";
+        public const string ParameterNameDomainAdminPassword = "DomainAdminPassword";
+        public const string ParameterNameDomainDnsName = "DomainDNSName";
+        public const string ParameterNameDomainNetBiosName = "DomainNetBIOSName";
 
 
         public DomainController(Template template, string name, InstanceTypes instanceType, string imageId,
-            string keyName, Subnet subnet, string domainController1PrivateIpAddress, ParameterBase domainDnsName)
+            string keyName, Subnet subnet, string domainController1PrivateIpAddress, ParameterBase domainDnsNameDnsName, ParameterBase domainNetBiosName)
             : base(template, name, instanceType, imageId, keyName, subnet)
         {
-            Domain = domainDnsName;
+            this.DomainDnsName = domainDnsNameDnsName;
+            this.DomainNetBiosName = domainNetBiosName;
             DomainMemberSecurityGroup = this.CreateDomainMemberSecurityGroup();
             this.CreateDomainControllerSecurityGroup();
             this.PrivateIpAddress = domainController1PrivateIpAddress;
-            this.MakeDomainController(domainDnsName);
+            this.MakeDomainController(domainDnsNameDnsName);
         }
 
-        [JsonIgnore]
-        public ParameterBase Domain { get; }
 
         private void MakeDomainController(ParameterBase domainDnsName)
         {
@@ -86,7 +86,9 @@ namespace AWS.CloudFormation.Instance
             currentCommand.Command.AddCommandLine(
                 "-Command \"Install-ADDSForest -DomainName ",
                 domainDnsName,
-                " -SafeModeAdministratorPassword (convertto-securestring jhkjhsdf338! -asplaintext -force) -DomainMode Win2012 -DomainNetbiosName corp -ForestMode Win2012 -Confirm:$false -Force\"");
+                " -SafeModeAdministratorPassword (convertto-securestring jhkjhsdf338! -asplaintext -force) -DomainMode Win2012 -DomainNetbiosName ",
+                this.DomainNetBiosName,
+                " -ForestMode Win2012 -Confirm:$false -Force\"");
 
 
             currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("3-restart-service");
@@ -106,23 +108,12 @@ namespace AWS.CloudFormation.Instance
                     "-Command \"",
                     "New-ADUser ",
                     "-Name johnny",
-                    //{
-                    //    "Ref" : "DomainAdminUser"
-                    //},
                     " -UserPrincipalName ",
                     " johnny",
-                    //{
-                    //    "Ref" : "DomainAdminUser"
-                    //},
-                    "@corp.getthebuybox.com",
-                    //{
-                    //    "Ref" : "DomainDNSName"
-                    //},
+                    "@",
+                    this.DomainDnsName,
                     " ",
                     "-AccountPassword (ConvertTo-SecureString kasdfiajs!!9",
-                    //{
-                    //    "Ref" : "DomainAdminPassword"
-                    //},
                     " -AsPlainText -Force) ",
                     "-Enabled $true ",
                     "-PasswordNeverExpires $true\""
@@ -313,10 +304,12 @@ namespace AWS.CloudFormation.Instance
                 joinCommandConfig.Commands.AddCommand<PowerShellCommand>(DefaultConfigSetRenameConfigJoinDomain);
             joinCommand.Command.AddCommandLine("-Command \"",
                 " Add-Computer -DomainName ",
-                this.Domain,
+                this.DomainDnsName,
                 " -Credential ",
                 "(New-Object System.Management.Automation.PSCredential('",
-                "gtbb\\johnny",
+                this.DomainNetBiosName,
+                "\\",
+                "johnny",
                 "',",
                 "(ConvertTo-SecureString ",
                 "kasdfiajs!!9",
@@ -327,6 +320,11 @@ namespace AWS.CloudFormation.Instance
             instanceToAddToDomain.AddDependsOn(this, new TimeSpan(0, 40, 0));
             this.SetDnsServers(instanceToAddToDomain);
             this.AddToDomainMemberSecurityGroup(instanceToAddToDomain);
+            instanceToAddToDomain.DomainNetBiosName = this.DomainNetBiosName;
+            instanceToAddToDomain.DomainDnsName = this.DomainDnsName;
+
+
+            instanceToAddToDomain.OnAddedToDomain();
         }
 
         private void SetDnsServers(WindowsInstance instanceToAddToDomain)

@@ -31,7 +31,7 @@ namespace AWS.CloudFormation.Test
         const string DomainController1PrivateIpAddress = "10.0.4.20";
         const string DomainController2PrivateIpAddress = "10.0.8.20";
         const string VpcCidrBlock = "10.0.0.0/16";
-        const string DomainDNSName = "corp.getthebuybox.com";
+        const string DomainDNSName = "prime.getthebuybox.com";
         const string DomainAdminUser = "johnny";
         const string DomainAdminPassword = "kasdfiajs!!9";
         const string DomainNetBIOSName = "prime";
@@ -44,12 +44,16 @@ namespace AWS.CloudFormation.Test
             var template = new Template();
 
             // ReSharper disable once InconsistentNaming
-            var DomainDNSName = new ParameterBase(DomainController.DomainDnsNameParameterName, "String", StackTest.DomainDNSName);
+            var DomainDNSName = new ParameterBase(DomainController.ParameterNameDomainDnsName, "String", StackTest.DomainDNSName);
             template.AddParameter(DomainDNSName);
 
             // ReSharper disable once InconsistentNaming
-            var DomainAdminPassword = new ParameterBase(DomainController.DomainAdminPasswordParameterName, "String", "jhkjhsdf338!");
+            var DomainAdminPassword = new ParameterBase(DomainController.ParameterNameDomainAdminPassword, "String", "jhkjhsdf338!");
             template.AddParameter(DomainAdminPassword);
+
+            // ReSharper disable once InconsistentNaming
+            var DomainNetBIOSName = new ParameterBase(DomainController.ParameterNameDomainNetBiosName, "String", "prime");
+            template.AddParameter(DomainNetBIOSName);
 
             var vpc = new Vpc(template, "VPC", VpcCidrBlock);
             template.AddVpc(template, "VPC", VpcCidrBlock);
@@ -82,7 +86,8 @@ namespace AWS.CloudFormation.Test
                 StackTest.EncryptionKeyName,
                 az1Subnet,
                 DomainController1PrivateIpAddress,
-                DomainDNSName);
+                DomainDNSName,
+                DomainNetBIOSName);
 
 
             //domainController1.SecurityGroups.Add(domainControllerSg1);
