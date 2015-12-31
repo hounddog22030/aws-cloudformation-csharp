@@ -38,10 +38,6 @@ namespace AWS.CloudFormation.Test
         const string DomainAdminPassword = "kasdfiajs!!9";
         const string DomainNetBIOSName = "prime";
 
-
-
-
-
         private static Template GetTemplate()
         {
 
