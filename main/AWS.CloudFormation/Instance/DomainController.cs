@@ -34,6 +34,8 @@ namespace AWS.CloudFormation.Instance
         public const string ParameterNameDomainAdminPassword = "DomainAdminPassword";
         public const string ParameterNameDomainDnsName = "DomainDNSName";
         public const string ParameterNameDomainNetBiosName = "DomainNetBIOSName";
+        public const string ParameterNameDomainAdminUser = "DomainAdminUser";
+        
 
 
         public DomainController(Template template, string name, InstanceTypes instanceType, string imageId,
@@ -43,17 +45,22 @@ namespace AWS.CloudFormation.Instance
             this.DomainDnsName = new ParameterBase(DomainController.ParameterNameDomainDnsName, "String", domainInfo.DomainDnsName); ;
             Template.AddParameter(this.DomainDnsName);
 
-            this.DomainAdminPassword = new ParameterBase(DomainController.ParameterNameDomainAdminPassword, "String", "jhkjhsdf338!");
+            this.DomainAdminPassword = new ParameterBase(DomainController.ParameterNameDomainAdminPassword, "String", domainInfo.AdminPassword);
             Template.AddParameter(DomainAdminPassword);
 
-            this.DomainNetBiosName = new ParameterBase(DomainController.ParameterNameDomainNetBiosName, "String", "prime");
+            this.DomainNetBiosName = new ParameterBase(DomainController.ParameterNameDomainNetBiosName, "String", domainInfo.DomainNetBiosName);
             template.AddParameter(this.DomainNetBiosName);
+
+            this.DomainAdminUser = new ParameterBase(DomainController.ParameterNameDomainAdminUser, "String", domainInfo.AdminUserName); 
+            template.AddParameter(this.DomainAdminUser);
 
             DomainMemberSecurityGroup = this.CreateDomainMemberSecurityGroup();
             this.CreateDomainControllerSecurityGroup();
             this.PrivateIpAddress = domainController1PrivateIpAddress;
             this.MakeDomainController();
         }
+
+        public ParameterBase DomainAdminUser { get; }
 
         public ParameterBase DomainAdminPassword { get; set; }
 
@@ -132,13 +139,15 @@ namespace AWS.CloudFormation.Instance
                 {
                     "-Command \"",
                     "New-ADUser ",
-                    "-Name johnny",
+                    "-Name ",
+                    this.DomainAdminUser,
                     " -UserPrincipalName ",
-                    " johnny",
+                    this.DomainAdminUser,
                     "@",
                     this.DomainDnsName,
                     " ",
-                    "-AccountPassword (ConvertTo-SecureString kasdfiajs!!9",
+                    "-AccountPassword (ConvertTo-SecureString ",
+                    this.DomainAdminPassword,
                     " -AsPlainText -Force) ",
                     "-Enabled $true ",
                     "-PasswordNeverExpires $true\""
@@ -149,7 +158,9 @@ namespace AWS.CloudFormation.Instance
             currentCommand.Command.AddCommandLine(
                 new object[]
                 {
-                    "-ExecutionPolicy RemoteSigned -Command \"c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1 -Members johnny\""
+                    "-ExecutionPolicy RemoteSigned -Command \"c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1 -Members ",
+                    this.DomainAdminUser,
+                    "\""
                 });
 
 
@@ -300,7 +311,7 @@ namespace AWS.CloudFormation.Instance
             return domainMemberSg;
         }
 
-        private void AddToDomainMemberSecurityGroup(Instance domainMember)
+        public void AddToDomainMemberSecurityGroup(Instance domainMember)
         {
             //az1Subnet
             DomainMemberSecurityGroup.AddIngressEgress<SecurityGroupIngress>(domainMember.Subnet,
@@ -334,15 +345,15 @@ namespace AWS.CloudFormation.Instance
                 "(New-Object System.Management.Automation.PSCredential('",
                 this.DomainNetBiosName,
                 "\\",
-                "johnny",
+                this.DomainAdminUser,
                 "',",
                 "(ConvertTo-SecureString ",
-                "kasdfiajs!!9",
+                this.DomainAdminPassword,
                 " -AsPlainText -Force))) ",
                 "-Restart\"");
             joinCommand.WaitAfterCompletion = "forever";
 
-            instanceToAddToDomain.AddDependsOn(this, new TimeSpan(0, 40, 0));
+            instanceToAddToDomain.AddDependsOn(this, new TimeSpan(0, 90, 0));
             this.SetDnsServers(instanceToAddToDomain);
             this.AddToDomainMemberSecurityGroup(instanceToAddToDomain);
             instanceToAddToDomain.DomainNetBiosName = this.DomainNetBiosName;

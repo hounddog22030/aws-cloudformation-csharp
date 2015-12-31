@@ -14,6 +14,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OperatingSystem = AWS.CloudFormation.Instance.OperatingSystem;
 
 // test commit on branch
+// 2nd test commit on branch
 
 namespace AWS.CloudFormation.Test
 {
@@ -86,7 +87,6 @@ namespace AWS.CloudFormation.Test
             DC1.CreateAdReplicationSubnet(DMZ2Subnet);
             //DC1.CreateAdReplicationSubnet(az1Subnet);
             //DC1.CreateAdReplicationSubnet(az2Subnet);
-            AddDomainControllerInitAndFinalize(DC1);
             template.AddInstance(DC1);
 
             // ReSharper disable once InconsistentNaming
@@ -132,7 +132,7 @@ namespace AWS.CloudFormation.Test
 
             // the below is a remote desktop gateway server that can
             // be uncommented to debug domain setup problems
-            //var RDGateway2 = new RemoteDesktopGateway(template, "RDGateway2", InstanceTypes.T2Micro, "ami-e4034a8e", EncryptionKeyName, DMZSubnet, StackTest.DomainDNSName);
+            //var RDGateway2 = new RemoteDesktopGateway(template, "RDGateway2", InstanceTypes.T2Micro, "ami-e4034a8e", EncryptionKeyName, DMZSubnet);
             //DC1.AddToDomainMemberSecurityGroup(RDGateway2);
             //template.AddInstance(RDGateway2);
 

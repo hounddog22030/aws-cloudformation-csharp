@@ -27,16 +27,18 @@ namespace AWS.CloudFormation.Instance.MetaData.Config.Command
         //    return this.Add(key, new ConfigCommand(this.Instance)) as ConfigCommand;
         //}
 
-        public CloudFormationDictionary AddCommand(string key, CommandType commandType)
+        public ConfigCommand AddCommand<T>(string key, CommandType commandType) where T : Command, new()
         {
             switch (commandType)
             {
                 case CommandType.Custom:
-                    return this.Add(key).Add("command");
+                    return this.AddCommand<Command>(key); 
                 case CommandType.CompleteWaitHandle:
-                    var command = this.Add(key).Add("command");
-                    command.SetFnJoin( "cfn-signal.exe -e 0 \"", new ReferenceProperty() { Ref = this.Instance.WaitConditionHandleName }, "\"");
-                    return command;
+                    var returnValue = this.AddCommand<Command>(key);
+                    returnValue.Command.AddCommandLine( "cfn-signal.exe -e 0 \"", 
+                                                        new ReferenceProperty() { Ref = this.Instance.WaitConditionHandleName }, 
+                                                        "\"");
+                    return returnValue;
                 default:
                     throw new InvalidEnumArgumentException();
             }
