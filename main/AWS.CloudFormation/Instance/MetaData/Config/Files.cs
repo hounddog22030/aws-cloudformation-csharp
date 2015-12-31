@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
 
-namespace AWS.CloudFormation.Instance.MetaData.Config
+namespace AWS.CloudFormation.Instance.Metadata.Config
 {
     public class Files : CloudFormationDictionary
     {
@@ -22,7 +22,7 @@ namespace AWS.CloudFormation.Instance.MetaData.Config
             }
             else
             {
-                return this.Add(filename, new ConfigFile(this.Instance)) as ConfigFile;
+                return this.Add(filename, new ConfigFile((Instance)this.Instance)) as ConfigFile;
             }
         }
     }

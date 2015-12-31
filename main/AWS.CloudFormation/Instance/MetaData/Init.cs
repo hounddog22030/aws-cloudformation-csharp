@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
 using AWS.CloudFormation.Common;
-using AWS.CloudFormation.Instance.MetaData.Config;
+using AWS.CloudFormation.Instance.Metadata.Config;
 using Newtonsoft.Json;
 
-namespace AWS.CloudFormation.Instance.MetaData
+namespace AWS.CloudFormation.Instance.Metadata
 {
 
 
@@ -29,7 +29,7 @@ namespace AWS.CloudFormation.Instance.MetaData
                 }
                 else
                 {
-                    return this.Add("configSets", new ConfigSets(this.Instance)) as ConfigSets;
+                    return this.Add("configSets", new ConfigSets((Instance)this.Instance)) as ConfigSets;
                 }
             }
         }

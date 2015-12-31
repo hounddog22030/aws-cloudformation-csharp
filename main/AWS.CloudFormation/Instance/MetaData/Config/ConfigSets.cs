@@ -1,6 +1,6 @@
 ﻿using AWS.CloudFormation.Common;
 
-namespace AWS.CloudFormation.Instance.MetaData.Config
+namespace AWS.CloudFormation.Instance.Metadata.Config
 {
     public class ConfigSets : CloudFormationDictionary
     {
@@ -16,9 +16,10 @@ namespace AWS.CloudFormation.Instance.MetaData.Config
             }
             else
             {
-                ConfigSet returnValue = this.Add(configSetName, new ConfigSet(this.Instance)) as ConfigSet;
-                this.Instance.SetUserData();
-                this.Instance.EnableHup();
+                Instance resourceAsInstance = (Instance)this.Instance;
+                ConfigSet returnValue = this.Add(configSetName, new ConfigSet((Instance)this.Instance)) as ConfigSet;
+                resourceAsInstance.SetUserData();
+                resourceAsInstance.EnableHup();
                 return returnValue;
             }
         }

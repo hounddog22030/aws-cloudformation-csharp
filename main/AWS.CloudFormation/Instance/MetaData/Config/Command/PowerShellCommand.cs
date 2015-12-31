@@ -8,7 +8,7 @@ using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Stack;
 
-namespace AWS.CloudFormation.Instance.MetaData.Config.Command
+namespace AWS.CloudFormation.Instance.Metadata.Config.Command
 {
     public class PowerShellCommand : Command
     {

@@ -4,8 +4,8 @@ using System.IO;
 using System.Linq;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Instance;
-using AWS.CloudFormation.Instance.MetaData.Config;
-using AWS.CloudFormation.Instance.MetaData.Config.Command;
+using AWS.CloudFormation.Instance.Metadata.Config;
+using AWS.CloudFormation.Instance.Metadata.Config.Command;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.Networking;
@@ -30,7 +30,7 @@ namespace AWS.CloudFormation.Test
         const string BuildServer1SubnetCidr = "10.0.3.0/24";
         const string WorkstationSubnetCidr = "10.0.1.0/24";
         const string DmzAz2Cidr = "10.0.8.0/24";
-        const string EncryptionKeyName = "corp.getthebuybox.com";
+        const string DefaultEncryptionKeyName = "corp.getthebuybox.com";
         const string DomainController1PrivateIpAddress = "10.0.4.20";
         const string DomainController2PrivateIpAddress = "10.0.8.20";
         const string VpcCidrBlock = "10.0.0.0/16";
@@ -47,6 +47,12 @@ namespace AWS.CloudFormation.Test
         {
 
             var template = new Template();
+
+            // parameters
+            // ReSharper disable once InconsistentNaming
+            var ParameterNameDefaultEncryptionKey = new ParameterBase(Instance.Instance.ParameterNameDefaultKeyPairKeyName, "AWS::EC2::KeyPair::KeyName", DefaultEncryptionKeyName);
+            template.AddParameter(ParameterNameDefaultEncryptionKey);
+
             var vpc = new Vpc(template, "VPC", VpcCidrBlock);
             template.AddVpc(template, "VPC", VpcCidrBlock);
 
@@ -65,7 +71,8 @@ namespace AWS.CloudFormation.Test
             RouteTable az1PrivateRouteTable = template.AddRouteTable("az1PrivateRouteTable", vpc);
             Route nat1PrivateRoute = template.AddRoute("NAT1PrivateRoute", Template.CIDR_IP_THE_WORLD, az1PrivateRouteTable);
 
-            var nat1 = AddNat1(template, vpc, az1Subnet, az2Subnet, sqlServer1Subnet, tfsServer1Subnet, buildServer1Subnet, workstationSubnet, EncryptionKeyName, DMZSubnet);
+
+            var nat1 = AddNat1(template, vpc, az1Subnet, az2Subnet, sqlServer1Subnet, tfsServer1Subnet, buildServer1Subnet, workstationSubnet, DefaultEncryptionKeyName, DMZSubnet);
             nat1PrivateRoute.Instance = nat1;
 
             SubnetRouteTableAssociation az1PrivateSubnetRouteTableAssociation = new SubnetRouteTableAssociation(template,"AZ1PrivateSubnetRouteTableAssociation", az1Subnet, az1PrivateRouteTable);
@@ -75,7 +82,7 @@ namespace AWS.CloudFormation.Test
                 "DC1",
                 InstanceTypes.T2Micro,
                 "ami-e4034a8e",
-                StackTest.EncryptionKeyName,
+                StackTest.DefaultEncryptionKeyName,
                 az1Subnet,
                 DomainController1PrivateIpAddress,
                 new DomainController.DomainInfo(StackTest.DomainDNSName, StackTest.DomainNetBIOSName,
@@ -90,7 +97,8 @@ namespace AWS.CloudFormation.Test
             template.AddInstance(DC1);
 
             // ReSharper disable once InconsistentNaming
-            var RDGateway = new RemoteDesktopGateway(template, "RDGateway", InstanceTypes.T2Micro, "ami-e4034a8e", EncryptionKeyName, DMZSubnet);
+            var RDGateway = new RemoteDesktopGateway(template, "RDGateway", InstanceTypes.T2Micro, "ami-e4034a8e", DefaultEncryptionKeyName, DMZSubnet);
+            RDGateway.AddFinalizer(new TimeSpan(0,60,0));
             template.AddInstance(RDGateway);
             DC1.AddToDomain(RDGateway);
 
@@ -253,7 +261,7 @@ namespace AWS.CloudFormation.Test
             //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("2-install-adds");
             //currentCommand.WaitAfterCompletion = "forever";
             //currentCommand.Command.AddCommandLine(
-            //    "-Command \"Install-ADDSForest -DomainName corp.getthebuybox.com -SafeModeAdministratorPassword (convertto-securestring jhkjhsdf338! -asplaintext -force) -DomainMode Win2012 -DomainNetbiosName corp -ForestMode Win2012 -Confirm:$false -Force\"");
+            //    "-Command \"Install-ADDSForest -DomainName XXXXXXXXXXXXXXXXXXXXXXX -SafeModeAdministratorPassword (convertto-securestring jhkjhsdf338! -asplaintext -force) -DomainMode Win2012 -DomainNetbiosName XXXXXXXXXXXXXXXXXXXXXX -ForestMode Win2012 -Confirm:$false -Force\"");
 
 
             //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("3-restart-service");
@@ -272,21 +280,21 @@ namespace AWS.CloudFormation.Test
             //    {
             //    "-Command \"",
             //    "New-ADUser ",
-            //    "-Name johnny",
+            //    "-Name domainadminXXXXXXXXXXXXXXXX",
             //    //{
             //    //    "Ref" : "DomainAdminUser"
             //    //},
             //    " -UserPrincipalName ",
-            //    " johnny",
+            //    " domainadminXXXXXXXXXXXXXXXX",
             //    //{
             //    //    "Ref" : "DomainAdminUser"
             //    //},
-            //    "@corp.getthebuybox.com",
+            //    "@XXXX.XXXXX.com",
             //    //{
             //    //    "Ref" : "DomainDNSName"
             //    //},
             //    " ",
-            //    "-AccountPassword (ConvertTo-SecureString kasdfiajs!!9",
+            //    "-AccountPassword (ConvertTo-SecureString oldpassword123",
             //    //{
             //    //    "Ref" : "DomainAdminPassword"
             //    //},
@@ -299,7 +307,7 @@ namespace AWS.CloudFormation.Test
             //currentCommand.Command.AddCommandLine(
             //    new object[]
             //    {
-            //        "-ExecutionPolicy RemoteSigned -Command \"c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1 -Members johnny\""
+            //        "-ExecutionPolicy RemoteSigned -Command \"c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1 -Members domainadminXXXXXXXXXXX\""
             //    });
 
 
@@ -431,7 +439,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateStackTest()
         {
-            var stackName = "Stackcb17a126-f947-4c2b-8870-31c93c60907d";
+            var stackName = "Stack8c949017-cf24-48ff-b973-790d05cba9be";
             var t = new Stack.Stack();
             t.UpdateStack(stackName, GetTemplate());
         }

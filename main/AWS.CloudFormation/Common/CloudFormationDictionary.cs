@@ -5,9 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AWS.CloudFormation.Instance.MetaData.Config;
-using AWS.CloudFormation.Instance.MetaData.Config.Command;
+using AWS.CloudFormation.Instance.Metadata.Config;
+using AWS.CloudFormation.Instance.Metadata.Config.Command;
 using AWS.CloudFormation.Property;
+using AWS.CloudFormation.Resource;
 using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Common
@@ -18,12 +19,12 @@ namespace AWS.CloudFormation.Common
         {
             
         }
-        public CloudFormationDictionary(Instance.Instance instance)
+        public CloudFormationDictionary(ResourceBase instance)
         {
             this.Instance = instance;
         }
 
-        public Instance.Instance Instance { get; internal set; }
+        public ResourceBase Instance { get; internal set; }
 
         public CloudFormationDictionary Add(string key)
         {

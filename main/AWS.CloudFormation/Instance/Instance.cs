@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using AWS.CloudFormation.Common;
-using AWS.CloudFormation.Instance.MetaData.Config.Command;
+using AWS.CloudFormation.Instance.Metadata;
+using AWS.CloudFormation.Instance.Metadata.Config.Command;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.Networking;
+using AWS.CloudFormation.Resource.Wait;
 using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
@@ -14,6 +17,9 @@ namespace AWS.CloudFormation.Instance
 
     public class Instance : ResourceBase
     {
+        public const string ParameterNameDefaultKeyPairKeyName = "DefaultKeyPairKeyName";
+
+
         internal const string T2Nano = "t2.nano";
         internal const string T2Small = "t2.small";
         internal const string T2Micro = "t2.micro";
@@ -38,7 +44,6 @@ namespace AWS.CloudFormation.Instance
             NetworkInterfaces = new List<NetworkInterface>();
             KeyName = keyName;
             UserData = new CloudFormationDictionary(this);
-            Metadata = new MetaData.MetaData(this);
             SourceDestCheck = true;
             ShouldEnableHup = enableHup;
             this.EnableHup();
@@ -141,7 +146,6 @@ namespace AWS.CloudFormation.Instance
         [CloudFormationProperties]
         public string PrivateIpAddress { get; set; }
 
-        public MetaData.MetaData Metadata { get; }
 
         public ElasticIP AddElasticIp(string name)
         {
@@ -153,5 +157,35 @@ namespace AWS.CloudFormation.Instance
 
         [CloudFormationProperties]
         public CloudFormationDictionary UserData { get; }
+
+        public void AddDependsOn(CloudFormation.Instance.Instance dependsOn, TimeSpan timeout)
+        {
+            if (dependsOn.OperatingSystem != OperatingSystem.Windows)
+            {
+                throw new NotSupportedException($"Cannot depend on instance of OperatingSystem:{dependsOn.OperatingSystem}");
+            }
+
+            if (!string.IsNullOrEmpty(this.DependsOn))
+            {
+                throw new NotSupportedException($"Already DependsOn:{this.DependsOn}");
+            }
+
+            dependsOn.AddFinalizer(timeout);
+
+            this.DependsOn = dependsOn.WaitConditionName;
+        }
+
+        public void AddFinalizer(TimeSpan timeout)
+        {
+            var finalizeConfig =
+                this.Metadata.Init.ConfigSets.GetConfigSet(Init.FinalizeConfigSetName).GetConfig(Init.FinalizeConfigName);
+            var command = finalizeConfig.Commands.AddCommand<Command>("a-signal-success",
+                Commands.CommandType.CompleteWaitHandle);
+            command.WaitAfterCompletion = 0.ToString();
+
+            WaitCondition wait = new WaitCondition(Template, this.WaitConditionName, timeout);
+
+            Template.Resources.Add(wait.Name, wait);
+        }
     }
 }

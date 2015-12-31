@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Instance.Metadata.Config;
 
-namespace AWS.CloudFormation.Instance.MetaData
+namespace AWS.CloudFormation.Instance.Metadata
 {
     public class ConfigSet : CloudFormationDictionary
     {
@@ -21,7 +22,7 @@ namespace AWS.CloudFormation.Instance.MetaData
             }
             else
             {
-                return this.Add(configName, new Config.Config(this.Instance)) as Config.Config;
+                return this.Add(configName, new Config.Config(this.Instance as Instance)) as Config.Config;
             }
         }
 

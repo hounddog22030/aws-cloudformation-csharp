@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
 
-namespace AWS.CloudFormation.Instance.MetaData.Config.Command
+namespace AWS.CloudFormation.Instance.Metadata.Config.Command
 {
     public class Commands : CloudFormationDictionary
     {
@@ -36,7 +36,7 @@ namespace AWS.CloudFormation.Instance.MetaData.Config.Command
                 case CommandType.CompleteWaitHandle:
                     var returnValue = this.AddCommand<Command>(key);
                     returnValue.Command.AddCommandLine( "cfn-signal.exe -e 0 \"", 
-                                                        new ReferenceProperty() { Ref = this.Instance.WaitConditionHandleName }, 
+                                                        new ReferenceProperty() { Ref = (this.Instance as Instance).WaitConditionHandleName }, 
                                                         "\"");
                     return returnValue;
                 default:
@@ -46,7 +46,7 @@ namespace AWS.CloudFormation.Instance.MetaData.Config.Command
 
         public ConfigCommand AddCommand<T>(string key) where T : Command,new()
         {
-            ConfigCommand newConfigCommand = new ConfigCommand(this.Instance,key);
+            ConfigCommand newConfigCommand = new ConfigCommand((Instance)this.Instance, key);
             this.Add(key, newConfigCommand);
             newConfigCommand.Command = new T() {Parent = newConfigCommand };
             return newConfigCommand;

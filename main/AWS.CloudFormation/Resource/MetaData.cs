@@ -1,11 +1,12 @@
 ﻿using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Instance.Metadata;
 
-namespace AWS.CloudFormation.Instance.MetaData
+namespace AWS.CloudFormation.Resource
 {
-    public class MetaData : CloudFormationDictionary
+    public class Metadata : CloudFormationDictionary
     {
 
-        public MetaData(Instance instance) : base(instance)
+        public Metadata(ResourceBase resource) : base(resource)
         {
         }
 
@@ -19,7 +20,7 @@ namespace AWS.CloudFormation.Instance.MetaData
                 }
                 else
                 {
-                    return this.Add("AWS::CloudFormation::Init", new Init(this.Instance)) as Init;
+                    return this.Add("AWS::CloudFormation::Init", new Init((Instance.Instance)this.Instance)) as Init;
                 }
             }
 
