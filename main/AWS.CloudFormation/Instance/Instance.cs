@@ -179,13 +179,20 @@ namespace AWS.CloudFormation.Instance
         {
             var finalizeConfig =
                 this.Metadata.Init.ConfigSets.GetConfigSet(Init.FinalizeConfigSetName).GetConfig(Init.FinalizeConfigName);
-            var command = finalizeConfig.Commands.AddCommand<Command>("a-signal-success",
-                Commands.CommandType.CompleteWaitHandle);
-            command.WaitAfterCompletion = 0.ToString();
 
-            WaitCondition wait = new WaitCondition(Template, this.WaitConditionName, timeout);
+            const string finalizeKey = "a-signal-success";
 
-            Template.Resources.Add(wait.Name, wait);
+            if (!finalizeConfig.Commands.ContainsKey(finalizeKey))
+            {
+                var command = finalizeConfig.Commands.AddCommand<Command>("a-signal-success",
+                    Commands.CommandType.CompleteWaitHandle);
+                command.WaitAfterCompletion = 0.ToString();
+
+                WaitCondition wait = new WaitCondition(Template, this.WaitConditionName, timeout);
+                Template.Resources.Add(wait.Name, wait);
+            }
+
+
         }
     }
 }

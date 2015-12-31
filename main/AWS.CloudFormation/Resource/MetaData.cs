@@ -26,6 +26,23 @@ namespace AWS.CloudFormation.Resource
 
         }
 
+        public CloudFormationDictionary Authentication
+        {
+            get
+            {
+                if (this.ContainsKey("AWS::CloudFormation::Authentication"))
+                {
+                    return this["AWS::CloudFormation::Authentication"] as CloudFormationDictionary;
+                }
+                else
+                {
+                    return this.Add("AWS::CloudFormation::Authentication", new CloudFormationDictionary()) as CloudFormationDictionary;
+                }
+            }
+        }
+
+
+
 
 
     }

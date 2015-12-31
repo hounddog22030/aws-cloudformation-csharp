@@ -56,6 +56,7 @@
     <Compile Include="Common\CloudFormationDictionary.cs" />
     <Compile Include="Common\CollectionAsIdsConverter.cs" />
     <Compile Include="Instance\DomainController.cs" />
+    <Compile Include="Instance\Metadata\Authentication.cs" />
     <Compile Include="Instance\Metadata\ConfigSet.cs" />
     <Compile Include="Instance\Metadata\Config\Command\Command.cs" />
     <Compile Include="Instance\Metadata\Config\Command\Commands.cs" />
@@ -108,9 +109,7 @@
     <None Include="packages.config" />
     <None Include="users.csv" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Instance\Templates\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
