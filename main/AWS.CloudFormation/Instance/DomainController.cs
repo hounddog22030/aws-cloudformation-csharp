@@ -38,8 +38,7 @@ namespace AWS.CloudFormation.Instance
         
 
 
-        public DomainController(Template template, string name, InstanceTypes instanceType, string imageId,
-            string keyName, Subnet subnet, string domainController1PrivateIpAddress, DomainInfo domainInfo)
+        public DomainController(Template template, string name, InstanceTypes instanceType, string imageId, Subnet subnet, string domainController1PrivateIpAddress, DomainInfo domainInfo)
             : base(template, name, instanceType, imageId, subnet)
         {
             this.DomainDnsName = new ParameterBase(DomainController.ParameterNameDomainDnsName, "String", domainInfo.DomainDnsName); ;

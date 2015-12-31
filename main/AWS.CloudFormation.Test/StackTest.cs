@@ -77,11 +77,11 @@ namespace AWS.CloudFormation.Test
             SubnetRouteTableAssociation az1PrivateSubnetRouteTableAssociation = new SubnetRouteTableAssociation(template,"AZ1PrivateSubnetRouteTableAssociation", az1Subnet, az1PrivateRouteTable);
             template.Resources.Add("AZ1PrivateSubnetRouteTableAssociation", az1PrivateSubnetRouteTableAssociation);
 
+            // ReSharper disable once InconsistentNaming
             var DC1 = new Instance.DomainController(template,
                 "DC1",
                 InstanceTypes.T2Micro,
                 "ami-e4034a8e",
-                StackTest.DefaultEncryptionKeyName,
                 az1Subnet,
                 DomainController1PrivateIpAddress,
                 new DomainController.DomainInfo(StackTest.DomainDNSName, StackTest.DomainNetBIOSName,
@@ -97,7 +97,7 @@ namespace AWS.CloudFormation.Test
 
             // ReSharper disable once InconsistentNaming
             var RDGateway = new RemoteDesktopGateway(template, "RDGateway", InstanceTypes.T2Micro, "ami-e4034a8e", DMZSubnet);
-            RDGateway.AddFinalizer(new TimeSpan(0,60,0));
+            RDGateway.AddFinalizer(new TimeSpan(0,120,0));
             template.AddInstance(RDGateway);
             DC1.AddToDomain(RDGateway);
 
