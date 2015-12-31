@@ -14,6 +14,9 @@ namespace AWS.CloudFormation.Instance
 
     public class Instance : ResourceBase
     {
+        public const string ParameterNameDefaultKeyPairKeyName = "DefaultKeyPairKeyName";
+
+
         internal const string T2Nano = "t2.nano";
         internal const string T2Small = "t2.small";
         internal const string T2Micro = "t2.micro";
@@ -153,5 +156,7 @@ namespace AWS.CloudFormation.Instance
 
         [CloudFormationProperties]
         public CloudFormationDictionary UserData { get; }
+
+        
     }
 }
