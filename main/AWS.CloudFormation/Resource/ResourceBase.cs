@@ -77,12 +77,11 @@ namespace AWS.CloudFormation.Resource
                 throw new NotSupportedException($"Already DependsOn:{this.DependsOn}");
             }
 
-            dependsOn.Metadata.Init.ConfigSets
-                .GetConfigSet(Init.FinalizeConfigSetName)
-                .GetConfig(Init.FinalizeConfigName)
-                .Commands.AddCommand("a-signal-success", Commands.CommandType.CompleteWaitHandle);
+            var finalizeConfig = dependsOn.Metadata.Init.ConfigSets.GetConfigSet(Init.FinalizeConfigSetName).GetConfig(Init.FinalizeConfigName);
 
-            
+            var command = finalizeConfig.Commands.AddCommand<Command>("a-signal-success", Commands.CommandType.CompleteWaitHandle);
+            command.WaitAfterCompletion = 0.ToString();
+
             WaitCondition wait = new WaitCondition(Template, dependsOn.WaitConditionName, timeout);
             Template.Resources.Add(wait.Name, wait);
             this.DependsOn = dependsOn.WaitConditionName;

@@ -34,6 +34,8 @@ namespace AWS.CloudFormation.Instance
         public const string ParameterNameDomainAdminPassword = "DomainAdminPassword";
         public const string ParameterNameDomainDnsName = "DomainDNSName";
         public const string ParameterNameDomainNetBiosName = "DomainNetBIOSName";
+        public const string ParameterNameDomainAdminUser = "DomainAdminUser";
+        
 
 
         public DomainController(Template template, string name, InstanceTypes instanceType, string imageId,
@@ -43,13 +45,14 @@ namespace AWS.CloudFormation.Instance
             this.DomainDnsName = new ParameterBase(DomainController.ParameterNameDomainDnsName, "String", domainInfo.DomainDnsName); ;
             Template.AddParameter(this.DomainDnsName);
 
-            this.DomainAdminPassword = new ParameterBase(DomainController.ParameterNameDomainAdminPassword, "String", "jhkjhsdf338!");
+            this.DomainAdminPassword = new ParameterBase(DomainController.ParameterNameDomainAdminPassword, "String", domainInfo.AdminPassword);
             Template.AddParameter(DomainAdminPassword);
 
-            this.DomainNetBiosName = new ParameterBase(DomainController.ParameterNameDomainNetBiosName, "String", "prime");
+            this.DomainNetBiosName = new ParameterBase(DomainController.ParameterNameDomainNetBiosName, "String", domainInfo.DomainNetBiosName);
             template.AddParameter(this.DomainNetBiosName);
 
-            this.DomainAdminUser = domainInfo.AdminUserName;
+            this.DomainAdminUser = new ParameterBase(DomainController.ParameterNameDomainAdminUser, "String", domainInfo.AdminUserName); 
+            template.AddParameter(this.DomainAdminUser);
 
             DomainMemberSecurityGroup = this.CreateDomainMemberSecurityGroup();
             this.CreateDomainControllerSecurityGroup();
@@ -57,7 +60,7 @@ namespace AWS.CloudFormation.Instance
             this.MakeDomainController();
         }
 
-        public string DomainAdminUser { get; }
+        public ParameterBase DomainAdminUser { get; }
 
         public ParameterBase DomainAdminPassword { get; set; }
 
@@ -308,7 +311,7 @@ namespace AWS.CloudFormation.Instance
             return domainMemberSg;
         }
 
-        private void AddToDomainMemberSecurityGroup(Instance domainMember)
+        public void AddToDomainMemberSecurityGroup(Instance domainMember)
         {
             //az1Subnet
             DomainMemberSecurityGroup.AddIngressEgress<SecurityGroupIngress>(domainMember.Subnet,
@@ -350,7 +353,7 @@ namespace AWS.CloudFormation.Instance
                 "-Restart\"");
             joinCommand.WaitAfterCompletion = "forever";
 
-            instanceToAddToDomain.AddDependsOn(this, new TimeSpan(0, 40, 0));
+            instanceToAddToDomain.AddDependsOn(this, new TimeSpan(0, 90, 0));
             this.SetDnsServers(instanceToAddToDomain);
             this.AddToDomainMemberSecurityGroup(instanceToAddToDomain);
             instanceToAddToDomain.DomainNetBiosName = this.DomainNetBiosName;
