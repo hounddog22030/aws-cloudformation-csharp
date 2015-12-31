@@ -14,6 +14,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OperatingSystem = AWS.CloudFormation.Instance.OperatingSystem;
 
 // test commit on branch
+// 2nd test commit on branch
 
 namespace AWS.CloudFormation.Test
 {
