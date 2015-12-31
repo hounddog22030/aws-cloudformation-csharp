@@ -49,11 +49,15 @@ namespace AWS.CloudFormation.Instance
             this.DomainNetBiosName = new ParameterBase(DomainController.ParameterNameDomainNetBiosName, "String", "prime");
             template.AddParameter(this.DomainNetBiosName);
 
+            this.DomainAdminUser = domainInfo.AdminUserName;
+
             DomainMemberSecurityGroup = this.CreateDomainMemberSecurityGroup();
             this.CreateDomainControllerSecurityGroup();
             this.PrivateIpAddress = domainController1PrivateIpAddress;
             this.MakeDomainController();
         }
+
+        public string DomainAdminUser { get; }
 
         public ParameterBase DomainAdminPassword { get; set; }
 
@@ -132,13 +136,15 @@ namespace AWS.CloudFormation.Instance
                 {
                     "-Command \"",
                     "New-ADUser ",
-                    "-Name johnny",
+                    "-Name ",
+                    this.DomainAdminUser,
                     " -UserPrincipalName ",
-                    " johnny",
+                    this.DomainAdminUser,
                     "@",
                     this.DomainDnsName,
                     " ",
-                    "-AccountPassword (ConvertTo-SecureString kasdfiajs!!9",
+                    "-AccountPassword (ConvertTo-SecureString ",
+                    this.DomainAdminPassword,
                     " -AsPlainText -Force) ",
                     "-Enabled $true ",
                     "-PasswordNeverExpires $true\""
@@ -149,7 +155,9 @@ namespace AWS.CloudFormation.Instance
             currentCommand.Command.AddCommandLine(
                 new object[]
                 {
-                    "-ExecutionPolicy RemoteSigned -Command \"c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1 -Members johnny\""
+                    "-ExecutionPolicy RemoteSigned -Command \"c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1 -Members ",
+                    this.DomainAdminUser,
+                    "\""
                 });
 
 
@@ -334,10 +342,10 @@ namespace AWS.CloudFormation.Instance
                 "(New-Object System.Management.Automation.PSCredential('",
                 this.DomainNetBiosName,
                 "\\",
-                "johnny",
+                this.DomainAdminUser,
                 "',",
                 "(ConvertTo-SecureString ",
-                "kasdfiajs!!9",
+                this.DomainAdminPassword,
                 " -AsPlainText -Force))) ",
                 "-Restart\"");
             joinCommand.WaitAfterCompletion = "forever";

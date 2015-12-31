@@ -87,7 +87,6 @@ namespace AWS.CloudFormation.Test
             DC1.CreateAdReplicationSubnet(DMZ2Subnet);
             //DC1.CreateAdReplicationSubnet(az1Subnet);
             //DC1.CreateAdReplicationSubnet(az2Subnet);
-            AddDomainControllerInitAndFinalize(DC1);
             template.AddInstance(DC1);
 
             // ReSharper disable once InconsistentNaming
