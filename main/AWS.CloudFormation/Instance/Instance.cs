@@ -32,7 +32,6 @@ namespace AWS.CloudFormation.Instance
                             string name, 
                             InstanceTypes instanceType, 
                             string imageId, 
-                            string keyName, 
                             OperatingSystem operatingSystem, 
                             bool enableHup)
             : base(template,"AWS::EC2::Instance", name, true)
@@ -42,6 +41,7 @@ namespace AWS.CloudFormation.Instance
             this.InstanceType = instanceType;
             this.ImageId = imageId;
             NetworkInterfaces = new List<NetworkInterface>();
+            var keyName = this.Template.Parameters[Instance.ParameterNameDefaultKeyPairKeyName];
             KeyName = keyName;
             UserData = new CloudFormationDictionary(this);
             SourceDestCheck = true;
@@ -124,7 +124,7 @@ namespace AWS.CloudFormation.Instance
         public string ImageId { get; set; }
 
         [CloudFormationProperties]
-        public string KeyName { get; }
+        public ParameterBase KeyName { get; }
 
         [CloudFormationProperties]
         [JsonProperty(PropertyName = "SubnetId")]

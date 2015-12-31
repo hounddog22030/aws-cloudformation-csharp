@@ -20,9 +20,8 @@ namespace AWS.CloudFormation.Instance
             string name,
             InstanceTypes instanceType,
             string imageId,
-            string keyName,
             Subnet subnet) : 
-            base(template, name, instanceType, imageId, keyName, subnet )
+            base(template, name, instanceType, imageId, subnet )
         {
             this.Subnet = subnet;
             this.AddSecurityGroup();

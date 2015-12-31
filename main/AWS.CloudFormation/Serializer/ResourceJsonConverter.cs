@@ -81,12 +81,11 @@ namespace AWS.CloudFormation.Serializer
                     }
                     else
                     {
-                        if (typeof(ResourceBase).IsAssignableFrom(propertyValue.GetType()))
+                        if (propertyValue is IName)
                         {
                             writer.WriteStartObject();
                             writer.WritePropertyName("Ref");
-                            var resource = propertyValue as ResourceBase;
-                            writer.WriteValue(resource.Name);
+                            writer.WriteValue(((IName)propertyValue).Name);
                             writer.WriteEndObject();
                         }
                         else

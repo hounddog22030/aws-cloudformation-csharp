@@ -26,9 +26,8 @@ namespace AWS.CloudFormation.Instance
                                 string name, 
                                 InstanceTypes instanceType, 
                                 string imageId, 
-                                string keyName, 
                                 Subnet subnet) 
-            : base(template, name, instanceType, imageId, keyName, OperatingSystem.Windows, true)
+            : base(template, name, instanceType, imageId, OperatingSystem.Windows, true)
         {
             this.Vpc = subnet.Vpc;
             this.Subnet = subnet;
