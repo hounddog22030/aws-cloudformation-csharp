@@ -68,30 +68,6 @@ namespace AWS.CloudFormation.Resource
         [JsonIgnore]
         public string Name { get ; private set; }
 
-        public void AddDependsOn(Instance.Instance dependsOn, TimeSpan timeout)
-        {
-            if (dependsOn.OperatingSystem != OperatingSystem.Windows)
-            {
-                throw new NotSupportedException($"Cannot depend on instance of OperatingSystem:{dependsOn.OperatingSystem}");
-            }
-
-            if (!string.IsNullOrEmpty(this.DependsOn))
-            {
-                throw new NotSupportedException($"Already DependsOn:{this.DependsOn}");
-            }
-
-            var finalizeConfig = dependsOn.Metadata.Init.ConfigSets.GetConfigSet(Init.FinalizeConfigSetName).GetConfig(Init.FinalizeConfigName);
-
-            var command = finalizeConfig.Commands.AddCommand<Command>("a-signal-success", Commands.CommandType.CompleteWaitHandle);
-            command.WaitAfterCompletion = 0.ToString();
-
-            WaitCondition wait = new WaitCondition(Template, dependsOn.WaitConditionName, timeout);
-            Template.Resources.Add(wait.Name, wait);
-            this.DependsOn = dependsOn.WaitConditionName;
-        }
-
-        public string DependsOn { get; private set; }
-
-
+        public string DependsOn { get; protected set; }
     }
 }

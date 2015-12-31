@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Instance.Metadata;
 using AWS.CloudFormation.Instance.Metadata.Config.Command;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.Networking;
+using AWS.CloudFormation.Resource.Wait;
 using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
@@ -155,6 +158,27 @@ namespace AWS.CloudFormation.Instance
         [CloudFormationProperties]
         public CloudFormationDictionary UserData { get; }
 
-        
+        public void AddDependsOn(CloudFormation.Instance.Instance dependsOn, TimeSpan timeout)
+        {
+            if (dependsOn.OperatingSystem != OperatingSystem.Windows)
+            {
+                throw new NotSupportedException($"Cannot depend on instance of OperatingSystem:{dependsOn.OperatingSystem}");
+            }
+
+            if (!string.IsNullOrEmpty(this.DependsOn))
+            {
+                throw new NotSupportedException($"Already DependsOn:{this.DependsOn}");
+            }
+
+            var finalizeConfig = dependsOn.Metadata.Init.ConfigSets.GetConfigSet(Init.FinalizeConfigSetName).GetConfig(Init.FinalizeConfigName);
+
+            var command = finalizeConfig.Commands.AddCommand<Command>("a-signal-success", Commands.CommandType.CompleteWaitHandle);
+            command.WaitAfterCompletion = 0.ToString();
+
+            WaitCondition wait = new WaitCondition(Template, dependsOn.WaitConditionName, timeout);
+            Template.Resources.Add(wait.Name, wait);
+            this.DependsOn = dependsOn.WaitConditionName;
+        }
+
     }
 }
