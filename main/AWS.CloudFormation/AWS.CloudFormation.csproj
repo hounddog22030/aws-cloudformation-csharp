@@ -1,0 +1,122 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{640A43A9-F1D7-4D13-8AB3-819797155F3D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>AWS.CloudFormation</RootNamespace>
+    <AssemblyName>AWS.CloudFormation</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AWSSDK.CloudFormation">
+      <HintPath>..\packages\AWSSDK.CloudFormation.3.1.1.2\lib\net45\AWSSDK.CloudFormation.dll</HintPath>
+    </Reference>
+    <Reference Include="AWSSDK.Core">
+      <HintPath>..\packages\AWSSDK.Core.3.1.4.0\lib\net45\AWSSDK.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Common\CloudFormationDictionary.cs" />
+    <Compile Include="Common\CollectionAsIdsConverter.cs" />
+    <Compile Include="Instance\DomainController.cs" />
+    <Compile Include="Instance\MetaData\Config\Command\Commands.cs" />
+    <Compile Include="Instance\MetaData\Config\Command\PowerShellCommand.cs" />
+    <Compile Include="Instance\MetaData\Config\Config.cs" />
+    <Compile Include="Instance\MetaData\Config\ConfigSets.cs" />
+    <Compile Include="Instance\InstanceTypes.cs" />
+    <Compile Include="Instance\MetaData\Config\Command\Command.cs" />
+    <Compile Include="Instance\MetaData\Config\Command\ConfigCommand.cs" />
+    <Compile Include="Instance\MetaData\ConfigSet.cs" />
+    <Compile Include="Instance\MetaData\Config\File.cs" />
+    <Compile Include="Instance\MetaData\Config\Files.cs" />
+    <Compile Include="Instance\MetaData\Init.cs" />
+    <Compile Include="Instance\MetaData\MetaData.cs" />
+    <Compile Include="Instance\NetworkInterface.cs" />
+    <Compile Include="Instance\OperatingSystem.cs" />
+    <Compile Include="Instance\RemoteDesktopGateway.cs" />
+    <Compile Include="Instance\WindowsInstance.cs" />
+    <Compile Include="Resource\Networking\ICidrBlock.cs" />
+    <Compile Include="Resource\Networking\SubnetRouteTableAssociation.cs" />
+    <Compile Include="Common\Tag.cs" />
+    <Compile Include="Property\PropertyBase.cs" />
+    <Compile Include="Property\ReferenceProperty.cs" />
+    <Compile Include="Instance\Instance.cs" />
+    <Compile Include="Resource\Networking\ElasticIP.cs" />
+    <Compile Include="Resource\Networking\Route.cs" />
+    <Compile Include="Resource\Networking\RouteTable.cs" />
+    <Compile Include="Resource\Networking\SecurityGroup.cs" />
+    <Compile Include="Resource\Networking\SecurityGroupEgress.cs" />
+    <Compile Include="Resource\Networking\SecurityGroupIngress.cs" />
+    <Compile Include="Resource\Networking\SecurityGroupIngressEgressBase.cs" />
+    <Compile Include="Resource\Networking\VPCGatewayAttachment.cs" />
+    <Compile Include="Resource\Networking\VPCInternetGateway.cs" />
+    <Compile Include="Resource\ResourceBase.cs" />
+    <Compile Include="Resource\SecurityGroup.cs" />
+    <Compile Include="Resource\Subnet.cs" />
+    <Compile Include="Resource\VPC.cs" />
+    <Compile Include="Resource\Wait\WaitCondition.cs" />
+    <Compile Include="Resource\Wait\WaitConditionHandle.cs" />
+    <Compile Include="Serializer\CloudFormationPropertiesAttribute.cs" />
+    <Compile Include="Serializer\ResourceAsPropertyConverter.cs" />
+    <Compile Include="Serializer\ResourceJsonConverter.cs" />
+    <Compile Include="Stack\Stack.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Stack\Template.cs" />
+    <Compile Include="TemplateEngine.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Configure-RDGW.ps1" />
+    <None Include="ConvertTo-EnterpriseAdmin.ps1" />
+    <None Include="New-LabADUser.ps1" />
+    <None Include="packages.config" />
+    <None Include="users.csv" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Instance\Templates\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,1299 @@
+﻿{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "VPC": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "10.0.0.0/16",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "VPC"
+          }
+        ]
+      }
+    },
+    "DMZSubnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "CidrBlock": "10.0.0.0/24",
+        "AvailabilityZone": "us-east-1a",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "DMZSubnet"
+          }
+        ]
+      }
+    },
+    "dmzaz2Subnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "CidrBlock": "10.0.8.0/24",
+        "AvailabilityZone": "us-east-1a",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "dmzaz2Subnet"
+          }
+        ]
+      }
+    },
+    "az1Subnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "CidrBlock": "10.0.4.0/24",
+        "AvailabilityZone": "us-east-1a",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "az1Subnet"
+          }
+        ]
+      }
+    },
+    "az2Subnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "CidrBlock": "10.0.12.0/24",
+        "AvailabilityZone": "us-east-1a",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "az2Subnet"
+          }
+        ]
+      }
+    },
+    "sqlServer1Subnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "CidrBlock": "10.0.5.0/24",
+        "AvailabilityZone": "us-east-1a",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "sqlServer1Subnet"
+          }
+        ]
+      }
+    },
+    "tfsServer1Subnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "CidrBlock": "10.0.6.0/24",
+        "AvailabilityZone": "us-east-1a",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "tfsServer1Subnet"
+          }
+        ]
+      }
+    },
+    "buildServer1Subnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "CidrBlock": "10.0.3.0/24",
+        "AvailabilityZone": "us-east-1a",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "buildServer1Subnet"
+          }
+        ]
+      }
+    },
+    "workstationSubnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "CidrBlock": "10.0.1.0/24",
+        "AvailabilityZone": "us-east-1a",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "workstationSubnet"
+          }
+        ]
+      }
+    },
+    "VpcInternetGateway": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "VpcInternetGateway"
+          }
+        ]
+      }
+    },
+    "VpcInternetGatewayAttachment": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "InternetGatewayId": {
+          "Ref": "VpcInternetGateway"
+        },
+        "VpcId": {
+          "Ref": "VPC"
+        }
+      }
+    },
+    "DMZRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "DMZRouteTable"
+          }
+        ]
+      }
+    },
+    "DMZRoute": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "DMZRouteTable"
+        },
+        "GatewayId": {
+          "Ref": "VpcInternetGateway"
+        }
+      }
+    },
+    "DMZSubnetRouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "DMZSubnet"
+        },
+        "RouteTableId": {
+          "Ref": "DMZRouteTable"
+        }
+      }
+    },
+    "az1PrivateRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "az1PrivateRouteTable"
+          }
+        ]
+      }
+    },
+    "NAT1PrivateRoute": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "az1PrivateRouteTable"
+        },
+        "InstanceId": {
+          "Ref": "NAT1"
+        }
+      }
+    },
+    "natSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Enables Ssh access to NAT1 in AZ1 via port 22 and outbound internet access via private subnets",
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 22,
+            "IpProtocol": "tcp",
+            "ToPort": 22
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": -1,
+            "IpProtocol": "icmp",
+            "ToPort": -1
+          },
+          {
+            "CidrIp": "10.0.4.0/24",
+            "FromPort": 1,
+            "IpProtocol": "-1",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.4.0/24",
+            "FromPort": -1,
+            "IpProtocol": "icmp",
+            "ToPort": -1
+          },
+          {
+            "CidrIp": "10.0.12.0/24",
+            "FromPort": 1,
+            "IpProtocol": "-1",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.12.0/24",
+            "FromPort": -1,
+            "IpProtocol": "icmp",
+            "ToPort": -1
+          },
+          {
+            "CidrIp": "10.0.5.0/24",
+            "FromPort": 1,
+            "IpProtocol": "-1",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.5.0/24",
+            "FromPort": -1,
+            "IpProtocol": "icmp",
+            "ToPort": -1
+          },
+          {
+            "CidrIp": "10.0.6.0/24",
+            "FromPort": 1,
+            "IpProtocol": "-1",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.6.0/24",
+            "FromPort": -1,
+            "IpProtocol": "icmp",
+            "ToPort": -1
+          },
+          {
+            "CidrIp": "10.0.3.0/24",
+            "FromPort": 1,
+            "IpProtocol": "-1",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.3.0/24",
+            "FromPort": -1,
+            "IpProtocol": "icmp",
+            "ToPort": -1
+          },
+          {
+            "CidrIp": "10.0.1.0/24",
+            "FromPort": 1,
+            "IpProtocol": "-1",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.1.0/24",
+            "FromPort": -1,
+            "IpProtocol": "icmp",
+            "ToPort": -1
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "natSecurityGroup"
+          }
+        ]
+      }
+    },
+    "NAT1": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": "ami-4c9e4b24",
+        "KeyName": "corp.getthebuybox.com",
+        "InstanceType": "t2.micro",
+        "SourceDestCheck": false,
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": true,
+            "DeviceIndex": 0,
+            "DeleteOnTermination": true,
+            "SubnetId": {
+              "Ref": "DMZSubnet"
+            },
+            "GroupSet": [
+              {
+                "Ref": "natSecurityGroup"
+              }
+            ]
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "NAT1"
+          }
+        ]
+      }
+    },
+    "DomainMemberSG": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Domain Member Security Group",
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "10.0.0.0/24",
+            "FromPort": 53,
+            "IpProtocol": "tcp",
+            "ToPort": 53
+          },
+          {
+            "CidrIp": "10.0.0.0/24",
+            "FromPort": 53,
+            "IpProtocol": "udp",
+            "ToPort": 53
+          },
+          {
+            "CidrIp": "10.0.0.0/24",
+            "FromPort": 49152,
+            "IpProtocol": "tcp",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.0.0/24",
+            "FromPort": 49152,
+            "IpProtocol": "udp",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.0.0/24",
+            "FromPort": 3389,
+            "IpProtocol": "tcp",
+            "ToPort": 3389
+          },
+          {
+            "CidrIp": "10.0.0.0/24",
+            "FromPort": 3389,
+            "IpProtocol": "tcp",
+            "ToPort": 3389
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "DomainMemberSG"
+          }
+        ]
+      }
+    },
+    "DomainControllerSG1": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Domain Controller",
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 5985,
+            "IpProtocol": "tcp",
+            "ToPort": 5985
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 80,
+            "IpProtocol": "tcp",
+            "ToPort": 80
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 123,
+            "IpProtocol": "udp",
+            "ToPort": 123
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 135,
+            "IpProtocol": "tcp",
+            "ToPort": 135
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 9389,
+            "IpProtocol": "tcp",
+            "ToPort": 9389
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 138,
+            "IpProtocol": "udp",
+            "ToPort": 138
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 445,
+            "IpProtocol": "tcp",
+            "ToPort": 445
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 445,
+            "IpProtocol": "udp",
+            "ToPort": 445
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 464,
+            "IpProtocol": "tcp",
+            "ToPort": 464
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 464,
+            "IpProtocol": "udp",
+            "ToPort": 464
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 49152,
+            "IpProtocol": "tcp",
+            "ToPort": 65535
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 49152,
+            "IpProtocol": "udp",
+            "ToPort": 65535
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 389,
+            "IpProtocol": "tcp",
+            "ToPort": 389
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 389,
+            "IpProtocol": "udp",
+            "ToPort": 389
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 636,
+            "IpProtocol": "tcp",
+            "ToPort": 636
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 3268,
+            "IpProtocol": "tcp",
+            "ToPort": 3269
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 53,
+            "IpProtocol": "tcp",
+            "ToPort": 53
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 53,
+            "IpProtocol": "udp",
+            "ToPort": 53
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 88,
+            "IpProtocol": "tcp",
+            "ToPort": 88
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 88,
+            "IpProtocol": "udp",
+            "ToPort": 88
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "DomainControllerSG1"
+          }
+        ]
+      }
+    },
+    "DC1": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": "ami-e4034a8e",
+        "KeyName": "corp.getthebuybox.com",
+        "SubnetId": {
+          "Ref": "az1Subnet"
+        },
+        "InstanceType": "t2.micro",
+        "SecurityGroupIds": [
+          {
+            "Ref": "DomainControllerSG1"
+          }
+        ],
+        "SourceDestCheck": true,
+        "PrivateIpAddress": "10.0.4.20",
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "<script>cfn-init.exe -v -c ",
+                "config,join",
+                " -s ",
+                {
+                  "Ref": "AWS::StackId"
+                },
+                " -r DC1 --region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "</script>"
+              ]
+            ]
+          }
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "DC1"
+          }
+        ]
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Init": {
+          "configSets": {
+            "config": [
+              "setup",
+              "rename",
+              "join",
+              "installADDS",
+              "configureSites"
+            ],
+            "join": [
+              "join"
+            ]
+          },
+          "setup": {
+            "commands": {
+              "a-disable-win-fw": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\"",
+                      " > \"c:\\cfn\\log\\a-disable-win-fw.log\""
+                    ]
+                  ]
+                },
+                "waitAfterCompletion": "0",
+                "test": "IF EXIST \"c:\\cfn\\log\\a-disable-win-fw.log\" EXIT 1"
+              }
+            },
+            "files": {
+              "c:\\cfn\\cfn-hup.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[main]\nstack=",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      "\nregion=",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\ninterval=1\nverbose=true"
+                    ]
+                  ]
+                }
+              },
+              "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[cfn-auto-reloader-hook]\n",
+                      "triggers=post.update\n",
+                      "path=Resources.DC1.Metadata.AWS::CloudFormation::Init\n",
+                      "action=cfn-init.exe -v -c ",
+                      "config,join",
+                      " -s ",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      " -r ",
+                      "DC1",
+                      " --region ",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\n"
+                    ]
+                  ]
+                }
+              },
+              "c:\\cfn\\scripts\\Set-StaticIP.ps1": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "$netip = Get-NetIPConfiguration;",
+                      "$ipconfig = Get-NetIPAddress | ?{$_.IpAddress -eq $netip.IPv4Address.IpAddress};",
+                      "Get-NetAdapter | Set-NetIPInterface -DHCP Disabled;",
+                      "Get-NetAdapter | New-NetIPAddress -AddressFamily IPv4 -IPAddress $netip.IPv4Address.IpAddress -PrefixLength $ipconfig.PrefixLength -DefaultGateway $netip.IPv4DefaultGateway.NextHop;",
+                      "Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses $netip.DNSServer.ServerAddresses;",
+                      "\n"
+                    ]
+                  ]
+                }
+              },
+              "c:\\cfn\\scripts\\New-LabADUser.ps1": {
+                "content": {},
+                "source": "https://s3.amazonaws.com/CFN_WS2012_Scripts/AD/New-LabADUser.ps1"
+              },
+              "c:\\cfn\\scripts\\users.csv": {
+                "content": {},
+                "source": "https://s3.amazonaws.com/CFN_WS2012_Scripts/AD/users.csv"
+              },
+              "c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1": {
+                "content": {},
+                "source": "https://s3.amazonaws.com/quickstart-reference/microsoft/activedirectory/latest/scripts/ConvertTo-EnterpriseAdmin.ps1"
+              }
+            },
+            "services": {
+              "windows": {
+                "cfn-hup": {
+                  "enabled": true,
+                  "ensureRunning": true,
+                  "files": [
+                    "c:\\cfn\\cfn-hup.conf",
+                    "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf"
+                  ]
+                }
+              }
+            }
+          },
+          "rename": {
+            "commands": {
+              "1-execute-powershell-script-RenameComputer": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "\"Rename-Computer -NewName ",
+                      "DC1",
+                      " -Restart\"",
+                      " > \"c:\\cfn\\log\\1-execute-powershell-script-RenameComputer.log\""
+                    ]
+                  ]
+                },
+                "test": "IF EXIST \"c:\\cfn\\log\\1-execute-powershell-script-RenameComputer.log\" EXIT 1",
+                "waitAfterCompletion": "forever"
+              },
+              "a-set-static-ip": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-ExecutionPolicy RemoteSigned -Command \"c:\\cfn\\scripts\\Set-StaticIP.ps1\"",
+                      " > \"c:\\cfn\\log\\a-set-static-ip.log\""
+                    ]
+                  ]
+                },
+                "waitAfterCompletion": "45",
+                "test": "IF EXIST \"c:\\cfn\\log\\a-set-static-ip.log\" EXIT 1"
+              }
+            },
+            "files": {},
+            "services": {}
+          },
+          "join": {
+            "commands": {
+              "a-set-dns-servers": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses ",
+                      "10.0.4.20",
+                      ",",
+                      "10.0.8.20",
+                      "\"",
+                      " > \"c:\\cfn\\log\\a-set-dns-servers.log\""
+                    ]
+                  ]
+                },
+                "test": "IF EXIST \"c:\\cfn\\log\\a-set-dns-servers.log\" EXIT 1",
+                "waitAfterCompletion": "30"
+              }
+            },
+            "files": {},
+            "services": {}
+          },
+          "installADDS": {
+            "commands": {
+              "1-install-prereqsz": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Install-WindowsFeature AD-Domain-Services, rsat-adds -IncludeAllSubFeature\"",
+                      " > \"c:\\cfn\\log\\1-install-prereqsz.log\""
+                    ]
+                  ]
+                },
+                "waitAfterCompletion": "0",
+                "test": "IF EXIST \"c:\\cfn\\log\\1-install-prereqsz.log\" EXIT 1"
+              },
+              "2-install-adds": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Install-ADDSForest -DomainName corp.getthebuybox.com -SafeModeAdministratorPassword (convertto-securestring jhkjhsdf338! -asplaintext -force) -DomainMode Win2012 -DomainNetbiosName corp -ForestMode Win2012 -Confirm:$false -Force\"",
+                      " > \"c:\\cfn\\log\\2-install-adds.log\""
+                    ]
+                  ]
+                },
+                "waitAfterCompletion": "forever",
+                "test": "IF EXIST \"c:\\cfn\\log\\2-install-adds.log\" EXIT 1"
+              },
+              "3-restart-service": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Restart-Service NetLogon -EA 0\"",
+                      " > \"c:\\cfn\\log\\3-restart-service.log\""
+                    ]
+                  ]
+                },
+                "waitAfterCompletion": "180",
+                "test": "IF EXIST \"c:\\cfn\\log\\3-restart-service.log\" EXIT 1"
+              },
+              "4 - create - adminuser": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"",
+                      "New-ADUser ",
+                      "-Name johnny",
+                      " -UserPrincipalName ",
+                      " johnny",
+                      "@corp.getthebuybox.com",
+                      " ",
+                      "-AccountPassword (ConvertTo-SecureString kasdfiajs!!9",
+                      " -AsPlainText -Force) ",
+                      "-Enabled $true ",
+                      "-PasswordNeverExpires $true\"",
+                      " > \"c:\\cfn\\log\\4 - create - adminuser.log\""
+                    ]
+                  ]
+                },
+                "waitAfterCompletion": "0",
+                "test": "IF EXIST \"c:\\cfn\\log\\4 - create - adminuser.log\" EXIT 1"
+              },
+              "5 - update - adminuser": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-ExecutionPolicy RemoteSigned -Command \"c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1 -Members johnny\"",
+                      " > \"c:\\cfn\\log\\5 - update - adminuser.log\""
+                    ]
+                  ]
+                },
+                "waitAfterCompletion": "0",
+                "test": "IF EXIST \"c:\\cfn\\log\\5 - update - adminuser.log\" EXIT 1"
+              }
+            },
+            "files": {},
+            "services": {}
+          },
+          "configureSites": {
+            "commands": {
+              "a-rename-default-site": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      " ",
+                      "\"",
+                      "Get-ADObject -SearchBase (Get-ADRootDSE).ConfigurationNamingContext -filter {Name -eq 'Default-First-Site-Name'} | Rename-ADObject -NewName AZ1",
+                      "\"",
+                      " > \"c:\\cfn\\log\\a-rename-default-site.log\""
+                    ]
+                  ]
+                },
+                "waitAfterCompletion": "0",
+                "test": "IF EXIST \"c:\\cfn\\log\\a-rename-default-site.log\" EXIT 1"
+              },
+              "b-create-site-2": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "\"",
+                      "New-ADReplicationSite AZ2",
+                      "\"",
+                      " > \"c:\\cfn\\log\\b-create-site-2.log\""
+                    ]
+                  ]
+                },
+                "waitAfterCompletion": "0",
+                "test": "IF EXIST \"c:\\cfn\\log\\b-create-site-2.log\" EXIT 1"
+              },
+              "c-create-DMZSubnet-1": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command New-ADReplicationSubnet -Name ",
+                      "10.0.0.0/24",
+                      " -Site AZ1",
+                      " > \"c:\\cfn\\log\\c-create-DMZSubnet-1.log\""
+                    ]
+                  ]
+                },
+                "waitAfterCompletion": "0",
+                "test": "IF EXIST \"c:\\cfn\\log\\c-create-DMZSubnet-1.log\" EXIT 1"
+              },
+              "d-create-DMZSubnet-2": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command New-ADReplicationSubnet -Name ",
+                      "10.0.8.0/24",
+                      " -Site AZ2",
+                      " > \"c:\\cfn\\log\\d-create-DMZSubnet-2.log\""
+                    ]
+                  ]
+                },
+                "waitAfterCompletion": "0",
+                "test": "IF EXIST \"c:\\cfn\\log\\d-create-DMZSubnet-2.log\" EXIT 1"
+              },
+              "e-create-subnet-1": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command New-ADReplicationSubnet -Name ",
+                      "10.0.4.0/24",
+                      " -Site AZ1",
+                      " > \"c:\\cfn\\log\\e-create-subnet-1.log\""
+                    ]
+                  ]
+                },
+                "waitAfterCompletion": "0",
+                "test": "IF EXIST \"c:\\cfn\\log\\e-create-subnet-1.log\" EXIT 1"
+              },
+              "f-create-subnet-2": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command New-ADReplicationSubnet -Name ",
+                      "10.0.12.0/24",
+                      " -Site AZ2",
+                      " > \"c:\\cfn\\log\\f-create-subnet-2.log\""
+                    ]
+                  ]
+                },
+                "waitAfterCompletion": "0",
+                "test": "IF EXIST \"c:\\cfn\\log\\f-create-subnet-2.log\" EXIT 1"
+              },
+              "m-set-site-link": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"",
+                      "Get-ADReplicationSiteLink -Filter * | Set-ADReplicationSiteLink -SitesIncluded @{add='AZ2'} -ReplicationFrequencyInMinutes 15\"",
+                      " > \"c:\\cfn\\log\\m-set-site-link.log\""
+                    ]
+                  ]
+                },
+                "waitAfterCompletion": "0",
+                "test": "IF EXIST \"c:\\cfn\\log\\m-set-site-link.log\" EXIT 1"
+              }
+            },
+            "files": {},
+            "services": {}
+          },
+          "join": {
+            "commands": {
+              "b-join-domain": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"",
+                      " Add-Computer -DomainName ",
+                      "corp.getthebuybox.com",
+                      " -Credential ",
+                      "(New-Object System.Management.Automation.PSCredential('",
+                      "gtbb\\johnny",
+                      "',",
+                      "(ConvertTo-SecureString ",
+                      "kasdfiajs!!9,",
+                      " -AsPlainText -Force))) ",
+                      "-Restart\"",
+                      " > \"c:\\cfn\\log\\b-join-domain.log\""
+                    ]
+                  ]
+                },
+                "test": "IF EXIST \"c:\\cfn\\log\\b-join-domain.log\" EXIT 1",
+                "waitAfterCompletion": "forever"
+              }
+            },
+            "files": {},
+            "services": {}
+          }
+        }
+      }
+    },
+    "RDGWSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Remote Desktop Security Group",
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 3389,
+            "IpProtocol": "tcp",
+            "ToPort": 3389
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 443,
+            "IpProtocol": "tcp",
+            "ToPort": 443
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 3391,
+            "IpProtocol": "udp",
+            "ToPort": 3391
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": -1,
+            "IpProtocol": "icmp",
+            "ToPort": -1
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "RDGWSecurityGroup"
+          }
+        ]
+      }
+    },
+    "RDGatewayEIP": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "InstanceId": {
+          "Ref": "RDGateway"
+        },
+        "Domain": "vpc"
+      }
+    },
+    "RDGateway": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": "ami-e4034a8e",
+        "KeyName": "corp.getthebuybox.com",
+        "SubnetId": {
+          "Ref": "DMZSubnet"
+        },
+        "InstanceType": "t2.micro",
+        "SecurityGroupIds": [
+          {
+            "Ref": "RDGWSecurityGroup"
+          },
+          {
+            "Ref": "DomainMemberSG"
+          }
+        ],
+        "SourceDestCheck": true,
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "<script>cfn-init.exe -v -c ",
+                "config,join",
+                " -s ",
+                {
+                  "Ref": "AWS::StackId"
+                },
+                " -r RDGateway --region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "</script>"
+              ]
+            ]
+          }
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "RDGateway"
+          }
+        ]
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Init": {
+          "configSets": {
+            "config": [
+              "setup",
+              "rename",
+              "join"
+            ],
+            "join": [
+              "join"
+            ]
+          },
+          "setup": {
+            "commands": {},
+            "files": {
+              "c:\\cfn\\cfn-hup.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[main]\nstack=",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      "\nregion=",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\ninterval=1\nverbose=true"
+                    ]
+                  ]
+                }
+              },
+              "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[cfn-auto-reloader-hook]\n",
+                      "triggers=post.update\n",
+                      "path=Resources.RDGateway.Metadata.AWS::CloudFormation::Init\n",
+                      "action=cfn-init.exe -v -c ",
+                      "config,join",
+                      " -s ",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      " -r ",
+                      "RDGateway",
+                      " --region ",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\n"
+                    ]
+                  ]
+                }
+              }
+            },
+            "services": {
+              "windows": {
+                "cfn-hup": {
+                  "enabled": true,
+                  "ensureRunning": true,
+                  "files": [
+                    "c:\\cfn\\cfn-hup.conf",
+                    "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf"
+                  ]
+                }
+              }
+            }
+          },
+          "rename": {
+            "commands": {
+              "1-execute-powershell-script-RenameComputer": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "\"Rename-Computer -NewName ",
+                      "RDGateway",
+                      " -Restart\"",
+                      " > \"c:\\cfn\\log\\1-execute-powershell-script-RenameComputer.log\""
+                    ]
+                  ]
+                },
+                "test": "IF EXIST \"c:\\cfn\\log\\1-execute-powershell-script-RenameComputer.log\" EXIT 1",
+                "waitAfterCompletion": "forever"
+              }
+            },
+            "files": {},
+            "services": {}
+          },
+          "join": {
+            "commands": {
+              "a-set-dns-servers": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses ",
+                      "10.0.4.20",
+                      ",",
+                      "10.0.8.20",
+                      "\"",
+                      " > \"c:\\cfn\\log\\a-set-dns-servers.log\""
+                    ]
+                  ]
+                },
+                "test": "IF EXIST \"c:\\cfn\\log\\a-set-dns-servers.log\" EXIT 1",
+                "waitAfterCompletion": "30"
+              }
+            },
+            "files": {},
+            "services": {}
+          },
+          "join": {
+            "commands": {
+              "b-join-domain": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"",
+                      " Add-Computer -DomainName ",
+                      "corp.getthebuybox.com",
+                      " -Credential ",
+                      "(New-Object System.Management.Automation.PSCredential('",
+                      "gtbb\\johnny",
+                      "',",
+                      "(ConvertTo-SecureString ",
+                      "kasdfiajs!!9,",
+                      " -AsPlainText -Force))) ",
+                      "-Restart\"",
+                      " > \"c:\\cfn\\log\\b-join-domain.log\""
+                    ]
+                  ]
+                },
+                "test": "IF EXIST \"c:\\cfn\\log\\b-join-domain.log\" EXIT 1",
+                "waitAfterCompletion": "forever"
+              }
+            },
+            "files": {},
+            "services": {}
+          }
+        }
+      }
+    }
+  },
+  "Parameters": {
+    "DomainDNSName": {
+      "Type": "String",
+      "Default": "corp.getthebuybox.com"
+    },
+    "DomainAdminPassword": {
+      "Type": "String",
+      "Default": "jhkjhsdf338!"
+    }
+  }
+}
