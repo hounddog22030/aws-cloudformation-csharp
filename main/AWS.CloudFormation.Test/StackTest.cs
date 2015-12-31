@@ -38,23 +38,12 @@ namespace AWS.CloudFormation.Test
 
 
 
+
+
         private static Template GetTemplate()
         {
 
             var template = new Template();
-
-            // ReSharper disable once InconsistentNaming
-            var DomainDNSName = new ParameterBase(DomainController.ParameterNameDomainDnsName, "String", StackTest.DomainDNSName);
-            template.AddParameter(DomainDNSName);
-
-            // ReSharper disable once InconsistentNaming
-            var DomainAdminPassword = new ParameterBase(DomainController.ParameterNameDomainAdminPassword, "String", "jhkjhsdf338!");
-            template.AddParameter(DomainAdminPassword);
-
-            // ReSharper disable once InconsistentNaming
-            var DomainNetBIOSName = new ParameterBase(DomainController.ParameterNameDomainNetBiosName, "String", "prime");
-            template.AddParameter(DomainNetBIOSName);
-
             var vpc = new Vpc(template, "VPC", VpcCidrBlock);
             template.AddVpc(template, "VPC", VpcCidrBlock);
 
@@ -86,8 +75,8 @@ namespace AWS.CloudFormation.Test
                 StackTest.EncryptionKeyName,
                 az1Subnet,
                 DomainController1PrivateIpAddress,
-                DomainDNSName,
-                DomainNetBIOSName);
+                new DomainController.DomainInfo(StackTest.DomainDNSName, StackTest.DomainNetBIOSName,
+                    StackTest.DomainAdminUser, StackTest.DomainAdminPassword));
 
 
             //domainController1.SecurityGroups.Add(domainControllerSg1);

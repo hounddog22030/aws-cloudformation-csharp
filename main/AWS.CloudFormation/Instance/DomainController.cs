@@ -15,25 +15,50 @@ namespace AWS.CloudFormation.Instance
 {
     public class DomainController : WindowsInstance
     {
+
+        public class DomainInfo
+        {
+            public DomainInfo(string domainDnsName, string domainNetBiosName, string adminUserName, string adminPassword)
+            {
+                DomainDnsName = domainDnsName;
+                DomainNetBiosName = domainNetBiosName;
+                AdminUserName = adminUserName;
+                AdminPassword = adminPassword;
+            }
+
+            public string DomainDnsName { get; }
+            public string DomainNetBiosName { get; }
+            public string AdminUserName { get; }
+            public string AdminPassword { get; }
+        }
         public const string ParameterNameDomainAdminPassword = "DomainAdminPassword";
         public const string ParameterNameDomainDnsName = "DomainDNSName";
         public const string ParameterNameDomainNetBiosName = "DomainNetBIOSName";
 
 
         public DomainController(Template template, string name, InstanceTypes instanceType, string imageId,
-            string keyName, Subnet subnet, string domainController1PrivateIpAddress, ParameterBase domainDnsNameDnsName, ParameterBase domainNetBiosName)
+            string keyName, Subnet subnet, string domainController1PrivateIpAddress, DomainInfo domainInfo)
             : base(template, name, instanceType, imageId, keyName, subnet)
         {
-            this.DomainDnsName = domainDnsNameDnsName;
-            this.DomainNetBiosName = domainNetBiosName;
+            this.DomainDnsName = new ParameterBase(DomainController.ParameterNameDomainDnsName, "String", domainInfo.DomainDnsName); ;
+            Template.AddParameter(this.DomainDnsName);
+
+            this.DomainAdminPassword = new ParameterBase(DomainController.ParameterNameDomainAdminPassword, "String", "jhkjhsdf338!");
+            Template.AddParameter(DomainAdminPassword);
+
+            this.DomainNetBiosName = new ParameterBase(DomainController.ParameterNameDomainNetBiosName, "String", "prime");
+            template.AddParameter(this.DomainNetBiosName);
+
             DomainMemberSecurityGroup = this.CreateDomainMemberSecurityGroup();
             this.CreateDomainControllerSecurityGroup();
             this.PrivateIpAddress = domainController1PrivateIpAddress;
-            this.MakeDomainController(domainDnsNameDnsName);
+            this.MakeDomainController();
         }
 
+        public ParameterBase DomainAdminPassword { get; set; }
 
-        private void MakeDomainController(ParameterBase domainDnsName)
+
+        private void MakeDomainController()
         {
             var setup = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("setup");
 
@@ -85,7 +110,7 @@ namespace AWS.CloudFormation.Instance
 
             currentCommand.Command.AddCommandLine(
                 "-Command \"Install-ADDSForest -DomainName ",
-                domainDnsName,
+                this.DomainDnsName,
                 " -SafeModeAdministratorPassword (convertto-securestring jhkjhsdf338! -asplaintext -force) -DomainMode Win2012 -DomainNetbiosName ",
                 this.DomainNetBiosName,
                 " -ForestMode Win2012 -Confirm:$false -Force\"");
