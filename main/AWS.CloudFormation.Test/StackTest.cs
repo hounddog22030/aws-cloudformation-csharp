@@ -98,6 +98,7 @@ namespace AWS.CloudFormation.Test
 
             // ReSharper disable once InconsistentNaming
             var RDGateway = new RemoteDesktopGateway(template, "RDGateway", InstanceTypes.T2Micro, "ami-e4034a8e", DefaultEncryptionKeyName, DMZSubnet);
+            RDGateway.AddFinalizer(new TimeSpan(0,60,0));
             template.AddInstance(RDGateway);
             DC1.AddToDomain(RDGateway);
 
