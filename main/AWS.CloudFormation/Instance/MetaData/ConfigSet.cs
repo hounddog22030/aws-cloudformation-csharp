@@ -10,8 +10,9 @@ namespace AWS.CloudFormation.Instance.Metadata
 {
     public class ConfigSet : CloudFormationDictionary
     {
-        public ConfigSet(Instance instance) : base(instance)
+        public ConfigSet(Instance resource) : base(resource)
         {
+            Instance = resource;
         }
 
         public Config.Config GetConfig(string configName)
@@ -22,11 +23,11 @@ namespace AWS.CloudFormation.Instance.Metadata
             }
             else
             {
-                return this.Add(configName, new Config.Config(this.Instance as Instance)) as Config.Config;
+                return this.Add(configName, new Config.Config(this.Instance)) as Config.Config;
             }
         }
 
-
+        public Instance Instance { get; }
     }
 
 }

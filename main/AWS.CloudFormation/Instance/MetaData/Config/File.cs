@@ -9,9 +9,9 @@ namespace AWS.CloudFormation.Instance.Metadata.Config
 {
     public class ConfigFile : CloudFormationDictionary
     {
-        public ConfigFile(Instance instance) : base(instance)
+        public ConfigFile(Instance resource) : base(resource)
         {
-            Content = this.Add("content", new CloudFormationDictionary(instance));
+            Content = this.Add("content", new CloudFormationDictionary(resource));
         }
 
         public CloudFormationDictionary Content { get; }

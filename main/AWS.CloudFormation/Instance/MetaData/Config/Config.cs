@@ -11,11 +11,11 @@ namespace AWS.CloudFormation.Instance.Metadata.Config
 {
     public class Config : CloudFormationDictionary
     {
-        public Config(Instance instance) : base(instance)
+        public Config(Instance resource) : base(resource)
         {
-            Commands = this.Add("commands", new Commands(instance)) as Commands;
-            Files = this.Add("files", new Files(instance)) as Files;
-            Services = this.Add("services", new CloudFormationDictionary(instance));
+            Commands = this.Add("commands", new Commands(resource)) as Commands;
+            Files = this.Add("files", new Files(resource)) as Files;
+            Services = this.Add("services", new CloudFormationDictionary(resource));
         }
 
         [JsonIgnore]

@@ -5,11 +5,10 @@ namespace AWS.CloudFormation.Instance.Metadata.Config.Command
 {
     public class ConfigCommand : CloudFormationDictionary
     {
-        public ConfigCommand(Instance instance, string key) : base(instance)
+        public ConfigCommand(Instance resource, string key) : base(resource)
         {
             this.Name = key;
             this.WaitAfterCompletion = 0.ToString();
-            //Command = this.Add("command", new Instance.Metadata.Config.Command.Command() {Parent = this}) as Instance.Metadata.Config.Command.Command;
         }
 
         [JsonIgnore]

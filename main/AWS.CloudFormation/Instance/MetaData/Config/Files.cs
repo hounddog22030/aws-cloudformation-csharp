@@ -9,9 +9,9 @@ namespace AWS.CloudFormation.Instance.Metadata.Config
 {
     public class Files : CloudFormationDictionary
     {
-        public Files(Instance instance) : base(instance)
+        public Files(Instance resource) : base(resource)
         {
-
+            Instance = resource;
         }
 
         public ConfigFile GetFile(string filename)
@@ -22,8 +22,10 @@ namespace AWS.CloudFormation.Instance.Metadata.Config
             }
             else
             {
-                return this.Add(filename, new ConfigFile((Instance)this.Instance)) as ConfigFile;
+                return this.Add(filename, new ConfigFile(this.Instance)) as ConfigFile;
             }
         }
+
+        public Instance Instance { get; }
     }
 }

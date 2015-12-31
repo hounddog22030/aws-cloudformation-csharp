@@ -19,16 +19,16 @@ namespace AWS.CloudFormation.Common
         {
             
         }
-        public CloudFormationDictionary(ResourceBase instance)
+        public CloudFormationDictionary(ResourceBase resource)
         {
-            this.Instance = instance;
+            this.Resource = resource;
         }
 
-        public ResourceBase Instance { get; internal set; }
+        public ResourceBase Resource { get; internal set; }
 
         public CloudFormationDictionary Add(string key)
         {
-            return Add(key, new CloudFormationDictionary(this.Instance));
+            return Add(key, new CloudFormationDictionary(this.Resource));
         }
 
 

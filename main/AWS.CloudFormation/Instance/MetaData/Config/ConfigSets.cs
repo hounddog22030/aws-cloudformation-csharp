@@ -4,8 +4,9 @@ namespace AWS.CloudFormation.Instance.Metadata.Config
 {
     public class ConfigSets : CloudFormationDictionary
     {
-        public ConfigSets(Instance instance) : base(instance)
+        public ConfigSets(Instance resource) : base(resource)
         {
+            Instance = resource;
         }
 
         public ConfigSet GetConfigSet(string configSetName)
@@ -16,12 +17,13 @@ namespace AWS.CloudFormation.Instance.Metadata.Config
             }
             else
             {
-                Instance resourceAsInstance = (Instance)this.Instance;
-                ConfigSet returnValue = this.Add(configSetName, new ConfigSet((Instance)this.Instance)) as ConfigSet;
-                resourceAsInstance.SetUserData();
-                resourceAsInstance.EnableHup();
+                ConfigSet returnValue = this.Add(configSetName, new ConfigSet(this.Instance)) as ConfigSet;
+                this.Instance.SetUserData();
+                this.Instance.EnableHup();
                 return returnValue;
             }
         }
+
+        public Instance Instance { get; }
     }
 }
