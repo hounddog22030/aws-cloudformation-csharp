@@ -1,7 +1,7 @@
 ﻿using AWS.CloudFormation.Common;
 using Newtonsoft.Json;
 
-namespace AWS.CloudFormation.Instance.MetaData.Config.Command
+namespace AWS.CloudFormation.Instance.Metadata.Config.Command
 {
     public class ConfigCommand : CloudFormationDictionary
     {
@@ -9,7 +9,7 @@ namespace AWS.CloudFormation.Instance.MetaData.Config.Command
         {
             this.Name = key;
             this.WaitAfterCompletion = 0.ToString();
-            //Command = this.Add("command", new Instance.MetaData.Config.Command.Command() {Parent = this}) as Instance.MetaData.Config.Command.Command;
+            //Command = this.Add("command", new Instance.Metadata.Config.Command.Command() {Parent = this}) as Instance.Metadata.Config.Command.Command;
         }
 
         [JsonIgnore]

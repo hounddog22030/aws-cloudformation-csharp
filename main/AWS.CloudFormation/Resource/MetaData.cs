@@ -1,5 +1,5 @@
 ﻿using AWS.CloudFormation.Common;
-using AWS.CloudFormation.Instance.MetaData;
+using AWS.CloudFormation.Instance.Metadata;
 
 namespace AWS.CloudFormation.Resource
 {

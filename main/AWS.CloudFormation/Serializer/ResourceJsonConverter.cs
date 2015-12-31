@@ -19,7 +19,7 @@ namespace AWS.CloudFormation.Serializer
             ResourceBase valueAsResourceBase = value as ResourceBase;
 
             List<PropertyInfo> propertiesToSerializeAsAwsProperties = new List<PropertyInfo>();
-            PropertyInfo metaDataPropertyInfo = null;
+            PropertyInfo MetadataPropertyInfo = null;
 
 
             foreach (var propertyInfo in value.GetType().GetProperties())
@@ -32,7 +32,7 @@ namespace AWS.CloudFormation.Serializer
                     }
                     else if (propertyInfo.Name == "Metadata")
                     {
-                        metaDataPropertyInfo = propertyInfo;
+                        MetadataPropertyInfo = propertyInfo;
                     }
                 }
             }
@@ -99,15 +99,15 @@ namespace AWS.CloudFormation.Serializer
             // properties
             writer.WriteEndObject();
 
-            if (metaDataPropertyInfo != null)
+            if (MetadataPropertyInfo != null)
             {
-                var propertyValue = metaDataPropertyInfo.GetValue(value);
-                Dictionary<string, object> metadata = propertyValue as Dictionary<string, object>;
+                var propertyValue = MetadataPropertyInfo.GetValue(value);
+                Dictionary<string, object> Metadata = propertyValue as Dictionary<string, object>;
 
-                if (metadata != null && metadata.Any())
+                if (Metadata != null && Metadata.Any())
                 {
                     writer.WritePropertyName("Metadata");
-                    serializer.Serialize(writer, metadata);
+                    serializer.Serialize(writer, Metadata);
                 }
             }
 

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
 using AWS.CloudFormation.Common;
-using AWS.CloudFormation.Instance.MetaData.Config;
+using AWS.CloudFormation.Instance.Metadata.Config;
 using Newtonsoft.Json;
 
-namespace AWS.CloudFormation.Instance.MetaData
+namespace AWS.CloudFormation.Instance.Metadata
 {
 
 

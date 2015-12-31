@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Instance.Metadata.Config;
 
-namespace AWS.CloudFormation.Instance.MetaData
+namespace AWS.CloudFormation.Instance.Metadata
 {
     public class ConfigSet : CloudFormationDictionary
     {

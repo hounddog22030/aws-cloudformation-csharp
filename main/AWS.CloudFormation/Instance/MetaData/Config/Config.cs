@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
-using AWS.CloudFormation.Instance.MetaData.Config.Command;
+using AWS.CloudFormation.Instance.Metadata.Config.Command;
 using Newtonsoft.Json;
 
-namespace AWS.CloudFormation.Instance.MetaData.Config
+namespace AWS.CloudFormation.Instance.Metadata.Config
 {
     public class Config : CloudFormationDictionary
     {

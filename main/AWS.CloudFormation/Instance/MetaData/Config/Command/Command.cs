@@ -7,7 +7,7 @@ using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
-namespace AWS.CloudFormation.Instance.MetaData.Config.Command
+namespace AWS.CloudFormation.Instance.Metadata.Config.Command
 {
 
 

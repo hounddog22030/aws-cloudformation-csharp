@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
 
-namespace AWS.CloudFormation.Instance.MetaData.Config
+namespace AWS.CloudFormation.Instance.Metadata.Config
 {
     public class Files : CloudFormationDictionary
     {

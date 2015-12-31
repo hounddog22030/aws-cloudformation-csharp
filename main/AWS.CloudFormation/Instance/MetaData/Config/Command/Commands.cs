@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
 
-namespace AWS.CloudFormation.Instance.MetaData.Config.Command
+namespace AWS.CloudFormation.Instance.Metadata.Config.Command
 {
     public class Commands : CloudFormationDictionary
     {
