@@ -17,7 +17,7 @@ namespace AWS.CloudFormation
             {
                 throw new NullReferenceException();
             }
-            return JsonConvert.SerializeObject(template, Formatting.Indented, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
+            return JsonConvert.SerializeObject(template, Formatting.None, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
         }
 
         public FileInfo CreateTemplateFile(Template template)

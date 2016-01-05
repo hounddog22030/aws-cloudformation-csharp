@@ -90,15 +90,36 @@ namespace AWS.CloudFormation.Stack
 
         public RouteTable AddRouteTable(string key, Vpc vpc)
         {
-            var routeTable = new RouteTable(this, key, vpc);
-            this.AddResource(routeTable);
-            return routeTable;
+            RouteTable returnValue = null;
+
+            if (this.Resources.ContainsKey(key))
+            {
+                returnValue = (RouteTable)this.Resources[key];
+            }
+            else
+            {
+                returnValue = new RouteTable(this, key, vpc);
+                this.AddResource(returnValue);
+                return returnValue;
+
+            }
+            return returnValue;
+
         }
 
         public Route AddRoute(string routeName, InternetGateway gateway, string destinationCidrBlock, RouteTable routeTable)
         {
-            Route route = new Route(this, routeName, gateway, destinationCidrBlock, routeTable);
-            this.AddResource(route);
+
+            Route route = null;
+            if (this.Resources.ContainsKey(routeName))
+            {
+                route = (Route) this.Resources[routeName];
+            }
+            else
+            {
+                route = new Route(this, routeName, gateway, destinationCidrBlock, routeTable);
+                this.AddResource(route);
+            }
             return route;
         }
 

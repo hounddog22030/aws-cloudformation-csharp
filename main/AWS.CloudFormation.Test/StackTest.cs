@@ -68,7 +68,9 @@ namespace AWS.CloudFormation.Test
             var workstationSubnet = template.AddSubnet("workstationSubnet", vpc, WorkstationSubnetCidr, Template.AvailabilityZone.UsEast1A);
 
             InternetGateway gateway = template.AddInternetGateway("VpcInternetGateway", vpc);
-            AddRouteTables(template, vpc, gateway, DMZSubnet);
+            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
+            AddInternetGatewayRouteTable(template, vpc, gateway, SQL4TFSSubnet);
+            
 
             RouteTable az1PrivateRouteTable = template.AddRouteTable("az1PrivateRouteTable", vpc);
             Route nat1PrivateRoute = template.AddRoute("NAT1PrivateRoute", Template.CIDR_IP_THE_WORLD, az1PrivateRouteTable);
@@ -150,12 +152,17 @@ namespace AWS.CloudFormation.Test
             var appSettingsReader = new AppSettingsReader();
             string accessKeyString = (string)appSettingsReader.GetValue("AWSAccessKey", typeof(string));
             string secretKeyString = (string)appSettingsReader.GetValue("AWSSecretKey", typeof(string));
-            //var accessKeyParameter = new ParameterBase("AWSAccessKey", "String", accessKeyString);
-            //var secretKeyParameter = new ParameterBase("AWSSecretKey", "String", secretKeyString);
-            //template.Parameters.Add(accessKeyParameter.Name, accessKeyParameter);
-            //template.Parameters.Add(secretKeyParameter.Name, secretKeyParameter);
 
-            tfsSqlServer.Metadata.Authentication.Add("S3AccessCreds",new S3Authentication(accessKeyString, secretKeyString));
+            tfsSqlServer.Metadata.Authentication.Add("S3AccessCreds",new S3Authentication(accessKeyString, secretKeyString, new string[] {"gtbb"} ));
+            tfsSqlServer.Metadata.Init.ConfigSets.GetConfigSet("InstallSql")
+                .GetConfig("InstallSql")
+                .Sources.Add("c:\\cfn\\scripts\\", "https://s3.amazonaws.com/gtbb/software/cookbooks-1428375204.tar.gz");
+
+            DC1.Metadata.Authentication.Add("S3AccessCreds", new S3Authentication(accessKeyString, secretKeyString, new string[] { "gtbb" }));
+            DC1.Metadata.Init.ConfigSets.GetConfigSet("InstallSql")
+                .GetConfig("InstallSql")
+                .Sources.Add("c:\\cfn\\scripts\\", "https://s3.amazonaws.com/gtbb/software/cookbooks-1428375204.tar.gz");
+
 
             DC1.AddToDomain(tfsSqlServer);
             tfsSqlServer.AddFinalizer(new TimeSpan(0,120,0));
@@ -164,7 +171,7 @@ namespace AWS.CloudFormation.Test
             return template;
         }
 
-        private static void AddRouteTables(Template template, Vpc vpc, InternetGateway gateway, Subnet subnet)
+        private static void AddInternetGatewayRouteTable(Template template, Vpc vpc, InternetGateway gateway, Subnet subnet)
         {
             RouteTable dmzRouteTable = template.AddRouteTable("DMZRouteTable", vpc);
             template.AddRoute("DMZRoute", gateway, "0.0.0.0/0", dmzRouteTable);
