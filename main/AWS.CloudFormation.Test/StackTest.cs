@@ -76,7 +76,32 @@ namespace AWS.CloudFormation.Test
             Route nat1PrivateRoute = template.AddRoute("NAT1PrivateRoute", Template.CIDR_IP_THE_WORLD, az1PrivateRouteTable);
 
 
-            var nat1 = AddNat1(template, vpc, az1Subnet, az2Subnet, SQL4TFSSubnet, tfsServer1Subnet, buildServer1Subnet, workstationSubnet, DefaultEncryptionKeyName, DMZSubnet);
+            SecurityGroup natSecurityGroup = template.GetSecurityGroup("natSecurityGroup", vpc,
+                "Enables Ssh access to NAT1 in AZ1 via port 22 and outbound internet access via private subnets");
+
+            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Ssh);
+            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
+
+            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az1Subnet, Protocol.All, Ports.Min, Ports.Max);
+            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az1Subnet, Protocol.Icmp, Ports.All);
+
+            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.All, Ports.Min, Ports.Max);
+            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Icmp, Ports.All);
+
+            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(SQL4TFSSubnet, Protocol.All, Ports.Min, Ports.Max);
+            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(SQL4TFSSubnet, Protocol.Icmp, Ports.All);
+
+            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(tfsServer1Subnet, Protocol.All, Ports.Min, Ports.Max);
+            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(tfsServer1Subnet, Protocol.Icmp, Ports.All);
+
+            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(buildServer1Subnet, Protocol.All, Ports.Min, Ports.Max);
+            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(buildServer1Subnet, Protocol.Icmp, Ports.All);
+
+            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(workstationSubnet, Protocol.All, Ports.Min, Ports.Max);
+            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(workstationSubnet, Protocol.Icmp, Ports.All);
+
+
+            var nat1 = AddNat1(template, DMZSubnet, natSecurityGroup);
             nat1PrivateRoute.Instance = nat1;
 
             SubnetRouteTableAssociation az1PrivateSubnetRouteTableAssociation = new SubnetRouteTableAssociation(template,"AZ1PrivateSubnetRouteTableAssociation", az1Subnet, az1PrivateRouteTable);
@@ -165,8 +190,14 @@ namespace AWS.CloudFormation.Test
 
 
             DC1.AddToDomain(tfsSqlServer);
-            tfsSqlServer.AddFinalizer(new TimeSpan(0,120,0));
+            //tfsSqlServer.AddFinalizer(new TimeSpan(0,120,0));
             template.AddInstance(tfsSqlServer);
+
+            // the below is a remote desktop gateway server that can
+            // be uncommented to debug domain setup problems
+            var RDGateway2 = new RemoteDesktopGateway(template, "RDGateway2", InstanceTypes.T2Micro, "ami-e4034a8e", DMZSubnet);
+            DC1.AddToDomainMemberSecurityGroup(RDGateway2);
+            template.AddInstance(RDGateway2);
 
             return template;
         }
@@ -176,18 +207,37 @@ namespace AWS.CloudFormation.Test
             RouteTable dmzRouteTable = template.AddRouteTable("DMZRouteTable", vpc);
             template.AddRoute("DMZRoute", gateway, "0.0.0.0/0", dmzRouteTable);
             SubnetRouteTableAssociation DMZSubnetRouteTableAssociation = new SubnetRouteTableAssociation(template,
-                "DMZSubnetRouteTableAssociation", subnet, dmzRouteTable);
+                "DMZSubnetRouteTableAssociation" + subnet.Name, subnet, dmzRouteTable);
             template.AddResource(DMZSubnetRouteTableAssociation);
         }
 
-        private static Instance.Instance AddNat1(Template template, Vpc vpc, Subnet az1Subnet, Subnet az2Subnet, Subnet SQL4TFSSubnet,
-            Subnet tfsServer1Subnet, Subnet buildServer1Subnet, Subnet workstationSubnet, string encryptionKeyName,
-            Subnet DMZSubnet)
+        private static Instance.Instance AddNat1(   Template template, 
+                                                    Subnet DMZSubnet,
+                                                    SecurityGroup natSecurityGroup)
         {
-            SecurityGroup natSecurityGroup = template.GetSecurityGroup("natSecurityGroup", vpc,
-                "Enables Ssh access to NAT1 in AZ1 via port 22 and outbound internet access via private subnets");
-            AddNatSecurityGroupIngressRules(natSecurityGroup, az1Subnet, az2Subnet, SQL4TFSSubnet, tfsServer1Subnet,
-                buildServer1Subnet, workstationSubnet);
+            //SecurityGroup natSecurityGroup = template.GetSecurityGroup("natSecurityGroup", vpc,
+            //    "Enables Ssh access to NAT1 in AZ1 via port 22 and outbound internet access via private subnets");
+
+            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Ssh);
+            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
+
+            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az1Subnet, Protocol.All, Ports.Min, Ports.Max);
+            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az1Subnet, Protocol.Icmp, Ports.All);
+
+            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.All, Ports.Min, Ports.Max);
+            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Icmp, Ports.All);
+
+            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(SQL4TFSSubnet, Protocol.All, Ports.Min, Ports.Max);
+            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(SQL4TFSSubnet, Protocol.Icmp, Ports.All);
+
+            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(tfsServer1Subnet, Protocol.All, Ports.Min, Ports.Max);
+            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(tfsServer1Subnet, Protocol.Icmp, Ports.All);
+
+            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(buildServer1Subnet, Protocol.All, Ports.Min, Ports.Max);
+            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(buildServer1Subnet, Protocol.Icmp, Ports.All);
+
+            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(workstationSubnet, Protocol.All, Ports.Min, Ports.Max);
+            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(workstationSubnet, Protocol.Icmp, Ports.All);
 
             var nat1 = new Instance.Instance(template,
                 "NAT1",
@@ -430,28 +480,31 @@ namespace AWS.CloudFormation.Test
             domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(dmzaz2Subnet, Protocol.Icmp, Ports.All);
         }
 
-        private static void AddNatSecurityGroupIngressRules(SecurityGroup natSecurityGroup, Subnet az1Subnet, Subnet az2Subnet,
-            Subnet SQL4TFSSubnet, Subnet tfsServer1Subnet, Subnet buildServer1Subnet, Subnet workstationSubnet)
-        {
+        //private static void AddNatSecurityGroupIngressRules(SecurityGroup natSecurityGroup, Subnet az1Subnet, Subnet az2Subnet,
+        //    Subnet SQL4TFSSubnet, Subnet tfsServer1Subnet, Subnet buildServer1Subnet, Subnet workstationSubnet)
+        //{
 
-            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld,Protocol.Tcp, Ports.Ssh);
+        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld,Protocol.Tcp, Ports.Ssh);
+        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
 
-            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
+        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az1Subnet, Protocol.All, Ports.Min,Ports.Max);
+        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az1Subnet, Protocol.Icmp, Ports.All);
 
-            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az1Subnet, Protocol.All, Ports.Min,Ports.Max);
+        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az2Subnet,Protocol.All, Ports.Min, Ports.Max);
+        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Icmp, Ports.All);
 
-            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az1Subnet, Protocol.Icmp, Ports.All);
-            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az2Subnet,Protocol.All, Ports.Min, Ports.Max);
-            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Icmp, Ports.All);
-            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(SQL4TFSSubnet, Protocol.All, Ports.Min,Ports.Max);
-            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(SQL4TFSSubnet,Protocol.Icmp, Ports.All);
-            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(tfsServer1Subnet, Protocol.All, Ports.Min,Ports.Max);
-            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(tfsServer1Subnet, Protocol.Icmp, Ports.All);
-            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(buildServer1Subnet, Protocol.All, Ports.Min,Ports.Max);
-            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(buildServer1Subnet,Protocol.Icmp, Ports.All);
-            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(workstationSubnet, Protocol.All, Ports.Min,Ports.Max);
-            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(workstationSubnet, Protocol.Icmp, Ports.All);
-        }
+        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(SQL4TFSSubnet, Protocol.All, Ports.Min,Ports.Max);
+        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(SQL4TFSSubnet,Protocol.Icmp, Ports.All);
+
+        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(tfsServer1Subnet, Protocol.All, Ports.Min,Ports.Max);
+        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(tfsServer1Subnet, Protocol.Icmp, Ports.All);
+
+        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(buildServer1Subnet, Protocol.All, Ports.Min,Ports.Max);
+        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(buildServer1Subnet,Protocol.Icmp, Ports.All);
+
+        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(workstationSubnet, Protocol.All, Ports.Min,Ports.Max);
+        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(workstationSubnet, Protocol.Icmp, Ports.All);
+        //}
 
         [TestMethod]
         public void CreateStackTest()
