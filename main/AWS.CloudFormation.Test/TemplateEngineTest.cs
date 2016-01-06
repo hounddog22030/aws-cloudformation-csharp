@@ -87,11 +87,28 @@ namespace AWS.CloudFormation.Test
             Assert.IsTrue(file.Exists);
         }
 
+        [TestMethod]
+        public void NoDefaultKeyName()
+        {
+            InvalidOperationException o = null;
+            try
+            {
+                var template = new Template(Guid.NewGuid().ToString());
+                template.Parameters.Clear();
+                var i1 = new Instance.Instance(template, Guid.NewGuid().ToString(), InstanceTypes.T2Nano, "ami-b17f35db", OperatingSystem.Windows, false);
+            }
+            catch (InvalidOperationException e)
+            {
+                o = e;
+            }
+            Assert.IsNotNull(o);
+        }
+
         private static Template GetTemplate()
         {
-            var template = new Template();
-
-            var i1 = new Instance.Instance(template,Guid.NewGuid().ToString(), InstanceTypes.T2Nano,  "ami-b17f35db", OperatingSystem.Windows, false);
+            string defaultKeyName = "InvalidKeyName";
+            var template = new Template(defaultKeyName);
+            var i1 = new Instance.Instance(template,Guid.NewGuid().ToString(), InstanceTypes.T2Nano, "ami-b17f35db", OperatingSystem.Windows, false);
             template.Resources.Add("instance1", i1);
             var vpc = new Vpc(template,"Vpc","0.0.0.0/0");
             template.Resources.Add("VPC", vpc);
