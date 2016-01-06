@@ -101,14 +101,14 @@ namespace AWS.CloudFormation.Test
 
             template.Resources.Add("PrivateSubnetRouteTableAssociation1", PrivateSubnetRouteTableAssociation1);
 
-            RouteTable Sql4TfsPrivateRouteTable = template.AddRouteTable("Sql4TfsPrivateRouteTable", vpc);
-            Route Sql4TfsToNat1PrivateRoute = template.AddRoute("NAT1PrivateRouteSql4Tfs", Template.CIDR_IP_THE_WORLD, Sql4TfsPrivateRouteTable);
-            SubnetRouteTableAssociation Sql4TfsPrivateSubnetRouteTableAssociation = new SubnetRouteTableAssociation(
-                template,
-                "Sql4TfsPrivateSubnetRouteTableAssociation",
-                PrivateSubnet1,
-                Sql4TfsPrivateRouteTable);
-            template.Resources.Add("Sql4TfsPrivateSubnetRouteTableAssociation", Sql4TfsPrivateSubnetRouteTableAssociation);
+            //RouteTable Sql4TfsPrivateRouteTable = template.AddRouteTable("Sql4TfsPrivateRouteTable", vpc);
+            //Route Sql4TfsToNat1PrivateRoute = template.AddRoute("NAT1PrivateRouteSql4Tfs", Template.CIDR_IP_THE_WORLD, Sql4TfsPrivateRouteTable);
+            //SubnetRouteTableAssociation Sql4TfsPrivateSubnetRouteTableAssociation = new SubnetRouteTableAssociation(
+            //    template,
+            //    "Sql4TfsPrivateSubnetRouteTableAssociation",
+            //    PrivateSubnet1,
+            //    Sql4TfsPrivateRouteTable);
+            //template.Resources.Add("Sql4TfsPrivateSubnetRouteTableAssociation", Sql4TfsPrivateSubnetRouteTableAssociation);
 
 
             SecurityGroup natSecurityGroup = template.GetSecurityGroup("natSecurityGroup", vpc,
@@ -129,7 +129,7 @@ namespace AWS.CloudFormation.Test
 
             var nat1 = AddNat1(template, DMZSubnet, natSecurityGroup);
             PrivateRoute.Instance = nat1;
-            Sql4TfsToNat1PrivateRoute.Instance = nat1;
+            //Sql4TfsToNat1PrivateRoute.Instance = nat1;
 
 
 
@@ -201,18 +201,22 @@ namespace AWS.CloudFormation.Test
 
             var tfsSqlServer = new Instance.WindowsInstance(template,"SQL4TFS",InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
             var appSettingsReader = new AppSettingsReader();
-            string accessKeyString = (string)appSettingsReader.GetValue("AWSAccessKey", typeof(string));
-            string secretKeyString = (string)appSettingsReader.GetValue("AWSSecretKey", typeof(string));
+            string accessKeyString = (string)appSettingsReader.GetValue("GTBBAccessKey", typeof(string));
+            string secretKeyString = (string)appSettingsReader.GetValue("GTBBSecretKey", typeof(string));
 
             tfsSqlServer.Metadata.Authentication.Add("S3AccessCreds",new S3Authentication(accessKeyString, secretKeyString, new string[] {"gtbb"} ));
-            tfsSqlServer.Metadata.Init.ConfigSets.GetConfigSet("InstallSql")
+            var chefTarFile = tfsSqlServer.Metadata.Init.ConfigSets.GetConfigSet("InstallSql")
                 .GetConfig("InstallSql")
-                .Sources.Add("c:\\cfn\\scripts\\", "https://s3.amazonaws.com/gtbb/software/cookbooks-1428375204.tar.gz");
+                .Files.GetFile("c:\\cfn\\scripts\\cookbooks-1428375204.tar.gz");
+            chefTarFile.Source = "https://s3.amazonaws.com/gtbb/software/cookbooks-1428375204.tar.gz";
+            chefTarFile.Authentication = "S3AccessCreds";
 
             DC1.Metadata.Authentication.Add("S3AccessCreds", new S3Authentication(accessKeyString, secretKeyString, new string[] { "gtbb" }));
-            DC1.Metadata.Init.ConfigSets.GetConfigSet("InstallSql")
+            chefTarFile = DC1.Metadata.Init.ConfigSets.GetConfigSet("InstallSql")
                 .GetConfig("InstallSql")
-                .Sources.Add("c:\\cfn\\scripts\\", "https://s3.amazonaws.com/gtbb/software/cookbooks-1428375204.tar.gz");
+                .Files.GetFile("c:\\cfn\\scripts\\cookbooks-1428375204.tar.gz");
+            chefTarFile.Source = "https://s3.amazonaws.com/gtbb/software/cookbooks-1428375204.tar.gz";
+            chefTarFile.Authentication = "S3AccessCreds";
 
 
             DC1.AddToDomain(tfsSqlServer);
@@ -541,7 +545,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateStackTest()
         {
-            var stackName = "Stack583b9873-00fd-4fab-92f7-e9353818fc07";
+            var stackName = "Stack08576106-487c-4a2c-96be-3106c5f8b71b";
             var t = new Stack.Stack();
             t.UpdateStack(stackName, GetTemplate());
         }

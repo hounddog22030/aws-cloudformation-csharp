@@ -38,5 +38,28 @@ namespace AWS.CloudFormation.Instance.Metadata.Config
                 }
             }
         }
+
+        public string Authentication
+        {
+            get
+            {
+                if (this.ContainsKey("authentication"))
+                {
+                    return this["authentication"] as string;
+                }
+                return null;
+            }
+            set
+            {
+                if (this.ContainsKey("authentication"))
+                {
+                    this["authentication"] = value;
+                }
+                else
+                {
+                    this.Add("authentication", value);
+                }
+            }
+        }
     }
 }
