@@ -207,13 +207,11 @@ namespace AWS.CloudFormation.Test
             var auth = tfsSqlServer.Metadata.Authentication.Add("S3AccessCreds",new S3Authentication(accessKeyString, secretKeyString, new string[] {"gtbb"} ));
             auth.Type = "S3";
             tfsSqlServer.Metadata.Init.ConfigSets.GetConfigSet("InstallSql")
-                .GetConfig("InstallSql")
-                .Files.Add("c:\\cfn\\scripts\\cookbooks-1428375204.tar.gz", "https://s3.amazonaws.com/gtbb/software/cookbooks-1428375204.tar.gz");
+                .GetConfig("InstallSql").Sources.Add("c:\\cfn\\scripts\\cookbooks", "https://gtbb.s3.amazonaws.com/cookbooks-1428375204.tar.gz");
 
             DC1.Metadata.Authentication.Add("S3AccessCreds", new S3Authentication(accessKeyString, secretKeyString, new string[] { "gtbb" }));
             DC1.Metadata.Init.ConfigSets.GetConfigSet("InstallSql")
-                .GetConfig("InstallSql")
-                .Files.Add("c:\\cfn\\scripts\\cookbooks-1428375204.tar.gz", "https://s3.amazonaws.com/gtbb/software/cookbooks-1428375204.tar.gz");
+                .GetConfig("InstallSql").Sources.Add("c:\\cfn\\scripts\\cookbooks-1428375204.tar.gz", "https://gtbb.s3.amazonaws.com/cookbooks-1428375204.tar.gz");
 
 
             DC1.AddToDomain(tfsSqlServer);

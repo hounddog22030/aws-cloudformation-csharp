@@ -370,7 +370,7 @@ namespace AWS.CloudFormation.Instance
             renameCommandConfig.Command.AddCommandLine("-Command \"Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses ",
                                                         this.PrivateIpAddress,
                                                         "\"");
-            renameCommandConfig.WaitAfterCompletion = 30.ToString();
+            renameCommandConfig.WaitAfterCompletion = 0.ToString();
         }
     }
 }
