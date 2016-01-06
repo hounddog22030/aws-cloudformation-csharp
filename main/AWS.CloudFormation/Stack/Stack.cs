@@ -11,13 +11,15 @@ namespace AWS.CloudFormation.Stack
     {
         public void CreateStack(Template template)
         {
+            var templateUri = TemplateEngine.UploadTemplate(template, "gtbb/software/cf");
+
             Amazon.CloudFormation.AmazonCloudFormationClient client = new AmazonCloudFormationClient(RegionEndpoint.USEast1);
 
             CreateStackRequest request = new CreateStackRequest
             {
                 DisableRollback = true,
                 StackName = "Stack" + Guid.NewGuid(),
-                TemplateBody = new TemplateEngine().CreateTemplateString(template)
+                TemplateURL = templateUri.AbsoluteUri
             };
 
             try
@@ -43,7 +45,7 @@ namespace AWS.CloudFormation.Stack
             UpdateStackRequest request = new UpdateStackRequest
             {
                 StackName = stackName,
-                TemplateBody = new TemplateEngine().CreateTemplateString(template)
+                TemplateBody = TemplateEngine.CreateTemplateString(template)
             };
             
             try

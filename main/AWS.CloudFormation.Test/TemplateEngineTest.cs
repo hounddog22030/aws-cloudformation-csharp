@@ -2,6 +2,7 @@
 using System.Text;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using AWS.CloudFormation.Instance;
 using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Stack;
@@ -68,8 +69,7 @@ namespace AWS.CloudFormation.Test
         {
             var template = GetTemplate();
 
-            var t = new TemplateEngine();
-            var result = t.CreateTemplateString(template);
+            var result = TemplateEngine.CreateTemplateString(template);
 
 
             Assert.IsNotNull(result);
@@ -81,10 +81,21 @@ namespace AWS.CloudFormation.Test
         {
             var template = GetTemplate();
 
-            var t = new TemplateEngine();
-            FileInfo file = t.CreateTemplateFile(template);
+            FileInfo file = TemplateEngine.CreateTemplateFile(template);
             Assert.IsNotNull(file);
             Assert.IsTrue(file.Exists);
+        }
+
+        [TestMethod]
+        public void UpdateTemplateTest()
+        {
+            var template = GetTemplate();
+            Uri uri = TemplateEngine.UploadTemplate(template, "gtbb/software/cf");
+            Assert.IsNotNull(uri);
+            Assert.AreEqual("https", uri.Scheme);
+            Assert.AreEqual("s3.amazonaws.com", uri.DnsSafeHost);
+            StringAssert.StartsWith(uri.AbsolutePath, "/gtbb/software/cf/");
+            StringAssert.StartsWith(uri.AbsoluteUri, "https://s3.amazonaws.com");
         }
 
         [TestMethod]

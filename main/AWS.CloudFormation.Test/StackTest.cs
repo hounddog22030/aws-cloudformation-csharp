@@ -48,8 +48,8 @@ namespace AWS.CloudFormation.Test
 
             // parameters
             // ReSharper disable once InconsistentNaming
-            var ParameterNameDefaultEncryptionKey = new ParameterBase(Instance.Instance.ParameterNameDefaultKeyPairKeyName, "AWS::EC2::KeyPair::KeyName", DefaultEncryptionKeyName);
-            template.AddParameter(ParameterNameDefaultEncryptionKey);
+            //var ParameterNameDefaultEncryptionKey = new ParameterBase(Instance.Instance.ParameterNameDefaultKeyPairKeyName, "AWS::EC2::KeyPair::KeyName", DefaultEncryptionKeyName);
+            //template.AddParameter(ParameterNameDefaultEncryptionKey);
 
             var vpc = new Vpc(template, "VPC", VpcCidrBlock);
             template.AddVpc(template, "VPC", VpcCidrBlock);
