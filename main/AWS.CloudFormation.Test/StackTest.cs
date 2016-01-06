@@ -45,8 +45,6 @@ namespace AWS.CloudFormation.Test
         // ReSharper disable once InconsistentNaming
         const string AD2PrivateIp = "10.0.64.10";
         // ReSharper disable once InconsistentNaming
-        const string DOMAINCONTROLLER2PRIVATEIPADDRESS = "10.0.8.20";
-        // ReSharper disable once InconsistentNaming
         const string VPCCIDR = "10.0.0.0/16";
         // ReSharper disable once InconsistentNaming
         const string DomainDNSName = "prime.getthebuybox.com";
@@ -80,10 +78,10 @@ namespace AWS.CloudFormation.Test
             var PrivateSubnet2 = template.AddSubnet("PrivateSubnet2", vpc, PrivSub2CIDR, Template.AvailabilityZone.UsEast1A);
 
             // ReSharper disable once InconsistentNaming
-            var SQL4TFSSubnet = template.AddSubnet("SQL4TFSSubnet", vpc, SQL4TFSSUBNETCIDR, Template.AvailabilityZone.UsEast1A);
-            var tfsServerSubnet = template.AddSubnet("tfsServerSubnet", vpc, TFSSERVER1SUBNETCIDR, Template.AvailabilityZone.UsEast1A);
-            var buildServerSubnet = template.AddSubnet("buildServerSubnet", vpc, BUILDSERVER1SUBNETCIDR, Template.AvailabilityZone.UsEast1A);
-            var workstationSubnet = template.AddSubnet("workstationSubnet", vpc, WORKSTATIONSUBNETCIDR, Template.AvailabilityZone.UsEast1A);
+            //var SQL4TFSSubnet = template.AddSubnet("SQL4TFSSubnet", vpc, SQL4TFSSUBNETCIDR, Template.AvailabilityZone.UsEast1A);
+            //var tfsServerSubnet = template.AddSubnet("tfsServerSubnet", vpc, TFSSERVER1SUBNETCIDR, Template.AvailabilityZone.UsEast1A);
+            //var buildServerSubnet = template.AddSubnet("buildServerSubnet", vpc, BUILDSERVER1SUBNETCIDR, Template.AvailabilityZone.UsEast1A);
+            //var workstationSubnet = template.AddSubnet("workstationSubnet", vpc, WORKSTATIONSUBNETCIDR, Template.AvailabilityZone.UsEast1A);
 
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
@@ -95,20 +93,20 @@ namespace AWS.CloudFormation.Test
             // ReSharper disable once InconsistentNaming
             Route PrivateRoute = template.AddRoute("PrivateRoute", Template.CIDR_IP_THE_WORLD, PrivateRouteTable);
 
-            SubnetRouteTableAssociation az1PrivateSubnetRouteTableAssociation = new SubnetRouteTableAssociation(    
+            SubnetRouteTableAssociation PrivateSubnetRouteTableAssociation1 = new SubnetRouteTableAssociation(    
                 template,
                 "PrivateSubnetRouteTableAssociation1", 
                 PrivateSubnet1, 
                 PrivateRouteTable);
 
-            template.Resources.Add("PrivateSubnetRouteTableAssociation1", az1PrivateSubnetRouteTableAssociation);
+            template.Resources.Add("PrivateSubnetRouteTableAssociation1", PrivateSubnetRouteTableAssociation1);
 
             RouteTable Sql4TfsPrivateRouteTable = template.AddRouteTable("Sql4TfsPrivateRouteTable", vpc);
             Route Sql4TfsToNat1PrivateRoute = template.AddRoute("NAT1PrivateRouteSql4Tfs", Template.CIDR_IP_THE_WORLD, Sql4TfsPrivateRouteTable);
             SubnetRouteTableAssociation Sql4TfsPrivateSubnetRouteTableAssociation = new SubnetRouteTableAssociation(
                 template,
                 "Sql4TfsPrivateSubnetRouteTableAssociation",
-                SQL4TFSSubnet,
+                PrivateSubnet1,
                 Sql4TfsPrivateRouteTable);
             template.Resources.Add("Sql4TfsPrivateSubnetRouteTableAssociation", Sql4TfsPrivateSubnetRouteTableAssociation);
 
@@ -120,7 +118,8 @@ namespace AWS.CloudFormation.Test
             natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
 
             Subnet[] subnetsToAddToNatSecurityGroup = new Subnet[]
-            {PrivateSubnet1, PrivateSubnet2, SQL4TFSSubnet, tfsServerSubnet, buildServerSubnet, workstationSubnet};
+            {PrivateSubnet1, PrivateSubnet2};
+            //{ PrivateSubnet1, PrivateSubnet2, SQL4TFSSubnet, tfsServerSubnet, buildServerSubnet, workstationSubnet};
 
             foreach (var subnet in subnetsToAddToNatSecurityGroup)
             {
@@ -200,7 +199,7 @@ namespace AWS.CloudFormation.Test
             //DC1.AddToDomainMemberSecurityGroup(RDGateway2);
             //template.AddInstance(RDGateway2);
 
-            var tfsSqlServer = new Instance.WindowsInstance(template,"SQL4TFS",InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, SQL4TFSSubnet);
+            var tfsSqlServer = new Instance.WindowsInstance(template,"SQL4TFS",InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
             var appSettingsReader = new AppSettingsReader();
             string accessKeyString = (string)appSettingsReader.GetValue("AWSAccessKey", typeof(string));
             string secretKeyString = (string)appSettingsReader.GetValue("AWSSecretKey", typeof(string));
