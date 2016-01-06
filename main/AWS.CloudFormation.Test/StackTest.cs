@@ -208,9 +208,9 @@ namespace AWS.CloudFormation.Test
 
             // the below is a remote desktop gateway server that can
             // be uncommented to debug domain setup problems
-            var RDGateway2 = new RemoteDesktopGateway(template, "RDGateway2", InstanceTypes.T2Micro, "ami-e4034a8e", DMZSubnet);
-            DC1.AddToDomainMemberSecurityGroup(RDGateway2);
-            template.AddInstance(RDGateway2);
+            //var RDGateway2 = new RemoteDesktopGateway(template, "RDGateway2", InstanceTypes.T2Micro, "ami-e4034a8e", DMZSubnet);
+            //DC1.AddToDomainMemberSecurityGroup(RDGateway2);
+            //template.AddInstance(RDGateway2);
 
             return template;
         }
