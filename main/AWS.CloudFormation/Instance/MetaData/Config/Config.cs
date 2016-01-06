@@ -60,9 +60,18 @@ namespace AWS.CloudFormation.Instance.Metadata.Config
         {
         }
 
-        public void AddPackage(string name, string source)
+        public Package AddPackage(string type, string name, string source)
         {
-            this.Add(name, source);
+            Package newPackage = new Package(this.Resource) {{ name, source}};
+            this.Add(type, newPackage);
+            return newPackage;
+        }
+    }
+
+    public class Package : CloudFormationDictionary
+    {
+        public Package(ResourceBase resource) : base(resource)
+        {
         }
     }
 }

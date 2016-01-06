@@ -49,8 +49,7 @@ namespace AWS.CloudFormation.Test
         // ReSharper disable once InconsistentNaming
         const string DomainDNSName = "prime.getthebuybox.com";
         // ReSharper disable once InconsistentNaming
-        // ReSharper disable once UnusedMember.Local
-        const string DomainAdminUser = "johnny";
+        private const string DomainAdminUser = "johnny";
         // ReSharper disable once InconsistentNaming
         const string DomainAdminPassword = "kasdfiajs!!9";
         // ReSharper disable once InconsistentNaming
@@ -199,7 +198,7 @@ namespace AWS.CloudFormation.Test
             //DC1.AddToDomainMemberSecurityGroup(RDGateway2);
             //template.AddInstance(RDGateway2);
 
-            var tfsSqlServer = new Instance.WindowsInstance(template,"SQL4TFS4",InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
+            var tfsSqlServer = new Instance.WindowsInstance(template,"SQL4TFS",InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
             var appSettingsReader = new AppSettingsReader();
             string accessKeyString = (string)appSettingsReader.GetValue("GTBBAccessKey", typeof(string));
             string secretKeyString = (string)appSettingsReader.GetValue("GTBBSecretKey", typeof(string));
@@ -208,8 +207,7 @@ namespace AWS.CloudFormation.Test
             auth.Type = "S3";
             var installSqlConfig = tfsSqlServer.Metadata.Init.ConfigSets.GetConfigSet("InstallSql").GetConfig("InstallSql");
             installSqlConfig.Sources.Add("c:\\chef\\", "https://gtbb.s3.amazonaws.com/cookbooks-1428375204.tar.gz");
-            installSqlConfig.Packages.AddPackage("chef",
-                "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2008r2/x86_64/chefdk-0.4.0-1.msi");
+            installSqlConfig.Packages.AddPackage("msi","chef","https://opscode-omnibus-packages.s3.amazonaws.com/windows/2008r2/x86_64/chefdk-0.4.0-1.msi");
 
 
 
