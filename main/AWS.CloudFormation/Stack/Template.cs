@@ -17,11 +17,12 @@ namespace AWS.CloudFormation.Stack
             UsEast1A
         }
 
-        public Template()
+        public Template(string defaultKeyName)
         {
             AwsTemplateFormatVersion = AwsTemplateFormatVersion20100909;
             this.Resources = new Dictionary<string, ResourceBase>();
             this.Parameters = new Dictionary<string, ParameterBase>();
+            this.Parameters.Add(Instance.Instance.ParameterNameDefaultKeyPairKeyName, new ParameterBase(Instance.Instance.ParameterNameDefaultKeyPairKeyName, "AWS::EC2::KeyPair::KeyName", defaultKeyName));
         }
 
         [JsonProperty(PropertyName = "AWSTemplateFormatVersion")]

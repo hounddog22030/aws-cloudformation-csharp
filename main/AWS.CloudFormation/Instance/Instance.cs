@@ -41,6 +41,10 @@ namespace AWS.CloudFormation.Instance
             this.InstanceType = instanceType;
             this.ImageId = imageId;
             NetworkInterfaces = new List<NetworkInterface>();
+            if (!this.Template.Parameters.ContainsKey(Instance.ParameterNameDefaultKeyPairKeyName))
+            {
+                throw new InvalidOperationException($"Template must contain a Parameter named {Instance.ParameterNameDefaultKeyPairKeyName} which contains the default encryption key name for the instance.");
+            }
             var keyName = this.Template.Parameters[Instance.ParameterNameDefaultKeyPairKeyName];
             KeyName = keyName;
             UserData = new CloudFormationDictionary(this);

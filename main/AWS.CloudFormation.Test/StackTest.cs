@@ -44,7 +44,7 @@ namespace AWS.CloudFormation.Test
         private static Template GetTemplate()
         {
 
-            var template = new Template();
+            var template = new Template(DefaultEncryptionKeyName);
 
             // parameters
             // ReSharper disable once InconsistentNaming
@@ -539,7 +539,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void AddingSameResourceTwiceFails()
         {
-            var t = new Template();
+            var t = new Template(Guid.NewGuid().ToString());
             var v = new Vpc(t,"X","10.0.0.0/16");
             var s = t.AddSubnet("Vpc1",v,null,Template.AvailabilityZone.UsEast1A);
 
