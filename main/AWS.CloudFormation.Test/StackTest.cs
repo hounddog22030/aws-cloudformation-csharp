@@ -199,15 +199,20 @@ namespace AWS.CloudFormation.Test
             //DC1.AddToDomainMemberSecurityGroup(RDGateway2);
             //template.AddInstance(RDGateway2);
 
-            var tfsSqlServer = new Instance.WindowsInstance(template,"SQL4TFS2",InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
+            var tfsSqlServer = new Instance.WindowsInstance(template,"SQL4TFS4",InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
             var appSettingsReader = new AppSettingsReader();
             string accessKeyString = (string)appSettingsReader.GetValue("GTBBAccessKey", typeof(string));
             string secretKeyString = (string)appSettingsReader.GetValue("GTBBSecretKey", typeof(string));
 
             var auth = tfsSqlServer.Metadata.Authentication.Add("S3AccessCreds",new S3Authentication(accessKeyString, secretKeyString, new string[] {"gtbb"} ));
             auth.Type = "S3";
-            tfsSqlServer.Metadata.Init.ConfigSets.GetConfigSet("InstallSql")
-                .GetConfig("InstallSql").Sources.Add("c:\\cfn\\scripts\\cookbooks", "https://gtbb.s3.amazonaws.com/cookbooks-1428375204.tar.gz");
+            var installSqlConfig = tfsSqlServer.Metadata.Init.ConfigSets.GetConfigSet("InstallSql").GetConfig("InstallSql");
+            installSqlConfig.Sources.Add("c:\\chef\\", "https://gtbb.s3.amazonaws.com/cookbooks-1428375204.tar.gz");
+            installSqlConfig.Packages.AddPackage("chef",
+                "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2008r2/x86_64/chefdk-0.4.0-1.msi");
+
+
+
 
             DC1.Metadata.Authentication.Add("S3AccessCreds", new S3Authentication(accessKeyString, secretKeyString, new string[] { "gtbb" }));
             DC1.Metadata.Init.ConfigSets.GetConfigSet("InstallSql")

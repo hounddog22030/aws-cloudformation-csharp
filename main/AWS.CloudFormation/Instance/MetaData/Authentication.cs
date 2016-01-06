@@ -29,7 +29,7 @@ namespace AWS.CloudFormation.Instance.Metadata
             this.SecretKey = secretKey;
             this.Buckets = buckets;
             this.Add("accessKeyId", this.AccessKeyId);
-            this.Add("secretKeyId", this.SecretKey);
+            this.Add("secretKey", this.SecretKey);
             this.Add("buckets", this.Buckets);
         }
 

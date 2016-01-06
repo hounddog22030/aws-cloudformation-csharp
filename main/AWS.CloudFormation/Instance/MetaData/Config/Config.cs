@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Instance.Metadata.Config.Command;
+using AWS.CloudFormation.Resource;
 using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Instance.Metadata.Config
@@ -39,6 +40,7 @@ namespace AWS.CloudFormation.Instance.Metadata.Config
             Files = this.Add("files", new Files(resource)) as Files;
             Services = this.Add("services", new CloudFormationDictionary(resource));
             Sources = this.Add("sources", new Sources(resource)) as Sources;
+            Packages = this.Add("packages", new Packages(resource)) as Packages;
         }
 
         [JsonIgnore]
@@ -49,7 +51,18 @@ namespace AWS.CloudFormation.Instance.Metadata.Config
 
         public CloudFormationDictionary Services { get; }
         public Sources Sources { get;  }
+        public Packages Packages { get; set; }
+    }
 
+    public class Packages : CloudFormationDictionary
+    {
+        public Packages(Instance resource) : base(resource)
+        {
+        }
 
+        public void AddPackage(string name, string source)
+        {
+            this.Add(name, source);
+        }
     }
 }
