@@ -199,24 +199,21 @@ namespace AWS.CloudFormation.Test
             //DC1.AddToDomainMemberSecurityGroup(RDGateway2);
             //template.AddInstance(RDGateway2);
 
-            var tfsSqlServer = new Instance.WindowsInstance(template,"SQL4TFS",InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
+            var tfsSqlServer = new Instance.WindowsInstance(template,"SQL4TFS2",InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
             var appSettingsReader = new AppSettingsReader();
             string accessKeyString = (string)appSettingsReader.GetValue("GTBBAccessKey", typeof(string));
             string secretKeyString = (string)appSettingsReader.GetValue("GTBBSecretKey", typeof(string));
 
-            tfsSqlServer.Metadata.Authentication.Add("S3AccessCreds",new S3Authentication(accessKeyString, secretKeyString, new string[] {"gtbb"} ));
-            var chefTarFile = tfsSqlServer.Metadata.Init.ConfigSets.GetConfigSet("InstallSql")
+            var auth = tfsSqlServer.Metadata.Authentication.Add("S3AccessCreds",new S3Authentication(accessKeyString, secretKeyString, new string[] {"gtbb"} ));
+            auth.Type = "S3";
+            tfsSqlServer.Metadata.Init.ConfigSets.GetConfigSet("InstallSql")
                 .GetConfig("InstallSql")
-                .Files.GetFile("c:\\cfn\\scripts\\cookbooks-1428375204.tar.gz");
-            chefTarFile.Source = "https://s3.amazonaws.com/gtbb/software/cookbooks-1428375204.tar.gz";
-            chefTarFile.Authentication = "S3AccessCreds";
+                .Files.Add("c:\\cfn\\scripts\\cookbooks-1428375204.tar.gz", "https://s3.amazonaws.com/gtbb/software/cookbooks-1428375204.tar.gz");
 
             DC1.Metadata.Authentication.Add("S3AccessCreds", new S3Authentication(accessKeyString, secretKeyString, new string[] { "gtbb" }));
-            chefTarFile = DC1.Metadata.Init.ConfigSets.GetConfigSet("InstallSql")
+            DC1.Metadata.Init.ConfigSets.GetConfigSet("InstallSql")
                 .GetConfig("InstallSql")
-                .Files.GetFile("c:\\cfn\\scripts\\cookbooks-1428375204.tar.gz");
-            chefTarFile.Source = "https://s3.amazonaws.com/gtbb/software/cookbooks-1428375204.tar.gz";
-            chefTarFile.Authentication = "S3AccessCreds";
+                .Files.Add("c:\\cfn\\scripts\\cookbooks-1428375204.tar.gz", "https://s3.amazonaws.com/gtbb/software/cookbooks-1428375204.tar.gz");
 
 
             DC1.AddToDomain(tfsSqlServer);

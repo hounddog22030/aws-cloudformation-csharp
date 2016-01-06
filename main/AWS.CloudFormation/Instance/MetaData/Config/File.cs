@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
+using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Instance.Metadata.Config
 {

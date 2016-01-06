@@ -26,6 +26,30 @@ namespace AWS.CloudFormation.Common
 
         public ResourceBase Resource { get; internal set; }
 
+
+        public string Type
+        {
+            get
+            {
+                if (this.ContainsKey("type"))
+                {
+                    return this["type"] as string;
+                }
+                return null;
+            }
+            set
+            {
+                if (this.ContainsKey("type"))
+                {
+                    this["type"] = value;
+                }
+                else
+                {
+                    this.Add("type", value);
+                }
+            }
+        }
+
         public CloudFormationDictionary Add(string key)
         {
             return Add(key, new CloudFormationDictionary(this.Resource));
