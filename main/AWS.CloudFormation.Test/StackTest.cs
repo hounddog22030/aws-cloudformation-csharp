@@ -23,61 +23,85 @@ namespace AWS.CloudFormation.Test
     public class StackTest
     {
         // ReSharper disable once InconsistentNaming
-        const string DMZ1CIDR = "10.0.0.0/24";
-        const string AZ1SUBNETCIDR = "10.0.4.0/24";
-        const string AZ2SUBNETCIDR = "10.0.12.0/24";
+        const string DMZ1CIDR = "10.0.32.0/20";
+        // ReSharper disable once InconsistentNaming
+        const string DMZ2CIDR = "10.0.96.0/20";
+        // ReSharper disable once InconsistentNaming
+        const string PrivSub1CIDR = "10.0.0.0/19";
+        // ReSharper disable once InconsistentNaming
+        const string PrivSub2CIDR = "10.0.64.0/19";
+        // ReSharper disable once InconsistentNaming
         const string SQL4TFSSUBNETCIDR = "10.0.5.0/24";
+        // ReSharper disable once InconsistentNaming
         const string TFSSERVER1SUBNETCIDR = "10.0.6.0/24";
+        // ReSharper disable once InconsistentNaming
         const string BUILDSERVER1SUBNETCIDR = "10.0.3.0/24";
+        // ReSharper disable once InconsistentNaming
         const string WORKSTATIONSUBNETCIDR = "10.0.1.0/24";
-        const string DMZAZ2CIDR = "10.0.8.0/24";
-        const string DEFAULTENCRYPTIONKEYNAME = "corp.getthebuybox.com";
-        const string DOMAINCONTROLLER1PRIVATEIPADDRESS = "10.0.4.20";
+        // ReSharper disable once InconsistentNaming
+        const string KeyPairName = "corp.getthebuybox.com";
+        // ReSharper disable once InconsistentNaming
+        const string AD1PrivateIp = "10.0.0.10";
+        // ReSharper disable once InconsistentNaming
+        const string AD2PrivateIp = "10.0.64.10";
+        // ReSharper disable once InconsistentNaming
         const string DOMAINCONTROLLER2PRIVATEIPADDRESS = "10.0.8.20";
-        const string VPCCIDRBLOCK = "10.0.0.0/16";
-        const string DOMAINDNSNAME = "prime.getthebuybox.com";
-        const string DOMAINADMINUSER = "johnny";
-        const string DOMAINADMINPASSWORD = "kasdfiajs!!9";
-        const string DOMAINNETBIOSNAME = "prime";
+        // ReSharper disable once InconsistentNaming
+        const string VPCCIDR = "10.0.0.0/16";
+        // ReSharper disable once InconsistentNaming
+        const string DomainDNSName = "prime.getthebuybox.com";
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once UnusedMember.Local
+        const string DomainAdminUser = "johnny";
+        // ReSharper disable once InconsistentNaming
+        const string DomainAdminPassword = "kasdfiajs!!9";
+        // ReSharper disable once InconsistentNaming
+        const string DomainNetBIOSName = "prime";
+        // ReSharper disable once InconsistentNaming
         const string USEAST1AWINDOWS2012R2AMI = "ami-e4034a8e";
+        // ReSharper disable once InconsistentNaming
+        const string ADServerNetBIOSName1 = "DC1";
 
         private static Template GetTemplate()
         {
 
-            var template = new Template(DEFAULTENCRYPTIONKEYNAME);
+            var template = new Template(KeyPairName);
 
-            // parameters
-            // ReSharper disable once InconsistentNaming
-            //var ParameterNameDefaultEncryptionKey = new ParameterBase(Instance.Instance.ParameterNameDefaultKeyPairKeyName, "AWS::EC2::KeyPair::KeyName", DefaultEncryptionKeyName);
-            //template.AddParameter(ParameterNameDefaultEncryptionKey);
-
-            var vpc = new Vpc(template, "VPC", VPCCIDRBLOCK);
-            template.AddVpc(template, "VPC", VPCCIDRBLOCK);
+            var vpc = new Vpc(template, "VPC", VPCCIDR);
+            template.AddVpc(template, "VPC", VPCCIDR);
 
             // ReSharper disable once InconsistentNaming
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
             // ReSharper disable once InconsistentNaming
-            var DMZ2Subnet = template.AddSubnet("DMZ2Subnet", vpc, DMZAZ2CIDR, Template.AvailabilityZone.UsEast1A);
-            var az1Subnet = template.AddSubnet("az1Subnet", vpc, AZ1SUBNETCIDR, Template.AvailabilityZone.UsEast1A);
-            var az2Subnet = template.AddSubnet("az2Subnet", vpc, AZ2SUBNETCIDR, Template.AvailabilityZone.UsEast1A);
+            var DMZ2Subnet = template.AddSubnet("DMZ2Subnet", vpc, DMZ2CIDR, Template.AvailabilityZone.UsEast1A);
+            // ReSharper disable once InconsistentNaming
+            var PrivateSubnet1 = template.AddSubnet("PrivateSubnet1", vpc, PrivSub1CIDR, Template.AvailabilityZone.UsEast1A);
+            // ReSharper disable once InconsistentNaming
+            var PrivateSubnet2 = template.AddSubnet("PrivateSubnet2", vpc, PrivSub2CIDR, Template.AvailabilityZone.UsEast1A);
 
             // ReSharper disable once InconsistentNaming
             var SQL4TFSSubnet = template.AddSubnet("SQL4TFSSubnet", vpc, SQL4TFSSUBNETCIDR, Template.AvailabilityZone.UsEast1A);
-            var tfsServer1Subnet = template.AddSubnet("tfsServer1Subnet", vpc, TFSSERVER1SUBNETCIDR, Template.AvailabilityZone.UsEast1A);
-            var buildServer1Subnet = template.AddSubnet("buildServer1Subnet", vpc, BUILDSERVER1SUBNETCIDR, Template.AvailabilityZone.UsEast1A);
+            var tfsServerSubnet = template.AddSubnet("tfsServerSubnet", vpc, TFSSERVER1SUBNETCIDR, Template.AvailabilityZone.UsEast1A);
+            var buildServerSubnet = template.AddSubnet("buildServerSubnet", vpc, BUILDSERVER1SUBNETCIDR, Template.AvailabilityZone.UsEast1A);
             var workstationSubnet = template.AddSubnet("workstationSubnet", vpc, WORKSTATIONSUBNETCIDR, Template.AvailabilityZone.UsEast1A);
 
-            InternetGateway gateway = template.AddInternetGateway("VpcInternetGateway", vpc);
+            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
 
-            RouteTable az1PrivateRouteTable = template.AddRouteTable("az1PrivateRouteTable", vpc);
-            Route nat1Toaz1PrivateRoute = template.AddRoute("NAT1PrivateRoute", Template.CIDR_IP_THE_WORLD, az1PrivateRouteTable);
+            // ReSharper disable once InconsistentNaming
+            RouteTable PrivateRouteTable = template.AddRouteTable("PrivateRouteTable", vpc);
+            PrivateRouteTable.AddTag("Network", "AZ1 Private");
+
+            // ReSharper disable once InconsistentNaming
+            Route PrivateRoute = template.AddRoute("PrivateRoute", Template.CIDR_IP_THE_WORLD, PrivateRouteTable);
+
             SubnetRouteTableAssociation az1PrivateSubnetRouteTableAssociation = new SubnetRouteTableAssociation(    
-                template, 
-                "AZ1PrivateSubnetRouteTableAssociation", 
-                az1Subnet, 
-                az1PrivateRouteTable);
-            template.Resources.Add("AZ1PrivateSubnetRouteTableAssociation", az1PrivateSubnetRouteTableAssociation);
+                template,
+                "PrivateSubnetRouteTableAssociation1", 
+                PrivateSubnet1, 
+                PrivateRouteTable);
+
+            template.Resources.Add("PrivateSubnetRouteTableAssociation1", az1PrivateSubnetRouteTableAssociation);
 
             RouteTable Sql4TfsPrivateRouteTable = template.AddRouteTable("Sql4TfsPrivateRouteTable", vpc);
             Route Sql4TfsToNat1PrivateRoute = template.AddRoute("NAT1PrivateRouteSql4Tfs", Template.CIDR_IP_THE_WORLD, Sql4TfsPrivateRouteTable);
@@ -96,7 +120,7 @@ namespace AWS.CloudFormation.Test
             natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
 
             Subnet[] subnetsToAddToNatSecurityGroup = new Subnet[]
-            {az1Subnet, az2Subnet, SQL4TFSSubnet, tfsServer1Subnet, buildServer1Subnet, workstationSubnet};
+            {PrivateSubnet1, PrivateSubnet2, SQL4TFSSubnet, tfsServerSubnet, buildServerSubnet, workstationSubnet};
 
             foreach (var subnet in subnetsToAddToNatSecurityGroup)
             {
@@ -105,20 +129,20 @@ namespace AWS.CloudFormation.Test
             }
 
             var nat1 = AddNat1(template, DMZSubnet, natSecurityGroup);
-            nat1Toaz1PrivateRoute.Instance = nat1;
+            PrivateRoute.Instance = nat1;
             Sql4TfsToNat1PrivateRoute.Instance = nat1;
 
 
 
             // ReSharper disable once InconsistentNaming
             var DC1 = new Instance.DomainController(template,
-                "DC1",
+                ADServerNetBIOSName1,
                 InstanceTypes.T2Micro,
                 StackTest.USEAST1AWINDOWS2012R2AMI,
-                az1Subnet,
-                DOMAINCONTROLLER1PRIVATEIPADDRESS,
-                new DomainController.DomainInfo(StackTest.DOMAINDNSNAME, StackTest.DOMAINNETBIOSNAME,
-                    StackTest.DOMAINADMINUSER, StackTest.DOMAINADMINPASSWORD));
+                PrivateSubnet1,
+                AD1PrivateIp,
+                new DomainController.DomainInfo(StackTest.DomainDNSName, StackTest.DomainNetBIOSName,
+                    StackTest.DomainAdminUser, StackTest.DomainAdminPassword));
 
 
             //domainController1.SecurityGroups.Add(domainControllerSg1);
