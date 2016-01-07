@@ -47,13 +47,13 @@ namespace AWS.CloudFormation.Test
         // ReSharper disable once InconsistentNaming
         const string VPCCIDR = "10.0.0.0/16";
         // ReSharper disable once InconsistentNaming
-        const string DomainDNSName = "prime.getthebuybox.com";
+        const string DomainDNSName = "gtbb.getthebuybox.com";
         // ReSharper disable once InconsistentNaming
         private const string DomainAdminUser = "johnny";
         // ReSharper disable once InconsistentNaming
         const string DomainAdminPassword = "kasdfiajs!!9";
         // ReSharper disable once InconsistentNaming
-        const string DomainNetBIOSName = "prime";
+        const string DomainNetBIOSName = "gtbb";
         // ReSharper disable once InconsistentNaming
         const string USEAST1AWINDOWS2012R2AMI = "ami-e4034a8e";
         // ReSharper disable once InconsistentNaming
