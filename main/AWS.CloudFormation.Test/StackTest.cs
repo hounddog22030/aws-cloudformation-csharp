@@ -15,7 +15,7 @@ using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OperatingSystem = AWS.CloudFormation.Instance.OperatingSystem;
 
-// created Stackfe0c756c-8972-4c36-930f-262a8002b2bb
+// created Stackd87ef590-0220-42e8-8e2d-880c9678d181
 
 namespace AWS.CloudFormation.Test
 {
