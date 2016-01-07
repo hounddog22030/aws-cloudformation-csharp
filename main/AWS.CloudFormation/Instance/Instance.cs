@@ -198,5 +198,9 @@ namespace AWS.CloudFormation.Instance
 
 
         }
+
+        [CloudFormationProperties]
+        public CloudFormationDictionary[] BlockDeviceMappings { get; set; }
+
     }
 }

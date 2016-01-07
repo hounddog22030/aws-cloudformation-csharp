@@ -198,7 +198,56 @@ namespace AWS.CloudFormation.Test
             //DC1.AddToDomainMemberSecurityGroup(RDGateway2);
             //template.AddInstance(RDGateway2);
 
-            var tfsSqlServer = new Instance.WindowsInstance(template,"SQL4TFS",InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
+            var tfsSqlServer = new Instance.WindowsInstance(template,"SQL4TFS3",InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
+            List<CloudFormationDictionary> blockDeviceMappings = new List<CloudFormationDictionary>();
+            CloudFormationDictionary c ;
+            CloudFormationDictionary ebs ;
+            c = new CloudFormationDictionary();
+            c.Add("DeviceName", "/dev/sda1");
+            ebs = c.Add("Ebs");
+            ebs.Add("VolumeSize", "70");
+            ebs.Add("VolumeType", "gp2");
+            blockDeviceMappings.Add(c);
+
+            c = new CloudFormationDictionary();
+            c.Add("DeviceName", "/dev/sdf");
+            ebs = c.Add("Ebs");
+            ebs.Add("VolumeSize", "50");
+            ebs.Add("VolumeType", "gp2");
+            blockDeviceMappings.Add(c);
+
+            c = new CloudFormationDictionary();
+            c.Add("DeviceName", "/dev/sdg");
+            ebs = c.Add("Ebs");
+            ebs.Add("VolumeSize", "10");
+            ebs.Add("VolumeType", "gp2");
+            blockDeviceMappings.Add(c);
+            tfsSqlServer.BlockDeviceMappings = blockDeviceMappings.ToArray();
+
+            //tfsSqlServer.BlockDeviceMappings
+            //            "BlockDeviceMappings" : [
+            //                    {
+            //                        "DeviceName" : "/dev/sda1",
+            //                        "Ebs"        : {
+            //                            "VolumeSize" : "70",
+            //                            "VolumeType" : "gp2"
+            //                        }
+            //},
+            //                    {
+            //                        "DeviceName" : "/dev/sdf",
+            //                        "Ebs"        : {
+            //                            "VolumeSize" : "50",
+            //                            "VolumeType" : "gp2"
+            //                        }
+            //                    },
+            //                    {
+            //                        "DeviceName" : "/dev/sdg",
+            //                        "Ebs"        : {
+            //                            "VolumeSize" : "10",
+            //                            "VolumeType" : "gp2"
+            //                        }
+            //                    }
+            //                ],
             var appSettingsReader = new AppSettingsReader();
             string accessKeyString = (string)appSettingsReader.GetValue("GTBBAccessKey", typeof(string));
             string secretKeyString = (string)appSettingsReader.GetValue("GTBBSecretKey", typeof(string));
@@ -208,7 +257,18 @@ namespace AWS.CloudFormation.Test
             var installSqlConfig = tfsSqlServer.Metadata.Init.ConfigSets.GetConfigSet("InstallSql").GetConfig("InstallSql");
             installSqlConfig.Sources.Add("c:\\chef\\", "https://gtbb.s3.amazonaws.com/cookbooks-1428375204.tar.gz");
             installSqlConfig.Packages.AddPackage("msi","chef","https://opscode-omnibus-packages.s3.amazonaws.com/windows/2008r2/x86_64/chefdk-0.4.0-1.msi");
+            //installSqlConfig.Files.GetFile("c:\\chef\\client.rb").Content.SetFnJoin("cache_path 'c:/chef'\ncookbook_path 'c:/chef/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
+            installSqlConfig.Files.GetFile("c:\\chef\\client.rb").Content.SetFnJoin("cache_path 'c:/chef'\ncookbook_path 'c:/chef/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
+            installSqlConfig.Commands.AddCommand<Command>("run-chef").Command.SetFnJoin("C:\\opscode\\chefdk\\bin\\chef-client.bat --runlist 'recipe[SQL2014::express]'");
 
+            var nodeJson = installSqlConfig.Files.GetFile("c:\\chef\\node.json");
+            var s3FileNode = nodeJson.Content.Add("s3_file");
+            s3FileNode.Add("key", accessKeyString);
+            s3FileNode.Add("secret", secretKeyString);
+            //  "s3_file" : {
+            //      "key" : { "Ref" : "S3AccessKeyId" },
+            //"secret" : { "Ref" : "S3AccessSecret" }
+            //  }
 
 
 

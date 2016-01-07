@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Resource;
 using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Instance.Metadata.Config
@@ -12,10 +13,10 @@ namespace AWS.CloudFormation.Instance.Metadata.Config
     {
         public ConfigFile(Instance resource) : base(resource)
         {
-            Content = this.Add("content", new CloudFormationDictionary(resource));
+            Content = (ConfigFileContent)this.Add("content", new ConfigFileContent(resource));
         }
 
-        public CloudFormationDictionary Content { get; }
+        public ConfigFileContent Content { get; }
 
         public string Source
         {
@@ -61,6 +62,21 @@ namespace AWS.CloudFormation.Instance.Metadata.Config
                     this.Add("authentication", value);
                 }
             }
+        }
+    }
+
+    public class ConfigFileContent : CloudFormationDictionary
+    {
+        public ConfigFileContent(ResourceBase resource) : base(resource)
+        {
+        }
+
+        public CloudFormationDictionary AddNode(string name)
+        {
+            var returnValue = new CloudFormationDictionary(this.Resource);
+            this.Add(name, returnValue);
+            return returnValue;
+
         }
     }
 }
