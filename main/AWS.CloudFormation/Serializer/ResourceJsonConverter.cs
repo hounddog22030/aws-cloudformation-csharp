@@ -43,12 +43,45 @@ namespace AWS.CloudFormation.Serializer
             writer.WritePropertyName("Type");
             writer.WriteValue(valueAsResourceBase.Type);
 
-            if (!string.IsNullOrEmpty(valueAsResourceBase.DependsOn))
+            //if (valueAsResourceBase.DependsOn!=null && valueAsResourceBase.DependsOn.Length>0)
+            //{
+            //    writer.WritePropertyName("DependsOn");
+            //    writer.WriteStartArray();
+            //    var sb = new StringBuilder();
+            //    sb.Append("\"");
+            //    foreach (var s in valueAsResourceBase.DependsOn)
+            //    {
+            //        if (sb.Length > 1)
+            //        {
+            //            sb.Append("\",\"");
+            //        }
+            //        sb.Append(s);
+            //    }
+            //    sb.Append("\"");
+            //    writer.WriteValue(sb.ToString());
+            //    writer.WriteEndArray();
+
+            //}
+            if (valueAsResourceBase.DependsOn != null && valueAsResourceBase.DependsOn.Length > 0)
             {
                 writer.WritePropertyName("DependsOn");
-                writer.WriteValue(valueAsResourceBase.DependsOn);
+                writer.WriteStartArray();
+                var sb = new StringBuilder();
+                sb.Append("\"");
+                foreach (var s in valueAsResourceBase.DependsOn)
+                {
+                    if (sb.Length > 1)
+                    {
+                        sb.Append("\",\"");
+                    }
+                    sb.Append(s);
+                }
+                sb.Append("\"");
+                writer.WriteRaw(sb.ToString());
+                writer.WriteEndArray();
 
             }
+
 
 
             writer.WritePropertyName("Properties");

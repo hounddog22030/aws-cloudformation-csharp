@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AWS.CloudFormation", "AWS.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AWS.CloudFormation.Test", "AWS.CloudFormation.Test\AWS.CloudFormation.Test.csproj", "{DF1A49E6-C587-4139-A232-B40F1257A5DF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chef", "Chef\Chef.csproj", "{57EFE8EF-75EB-4824-9285-ED7EECC3BC6D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{DF1A49E6-C587-4139-A232-B40F1257A5DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF1A49E6-C587-4139-A232-B40F1257A5DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF1A49E6-C587-4139-A232-B40F1257A5DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57EFE8EF-75EB-4824-9285-ED7EECC3BC6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57EFE8EF-75EB-4824-9285-ED7EECC3BC6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57EFE8EF-75EB-4824-9285-ED7EECC3BC6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57EFE8EF-75EB-4824-9285-ED7EECC3BC6D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

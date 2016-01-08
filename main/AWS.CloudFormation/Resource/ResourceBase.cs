@@ -68,6 +68,6 @@ namespace AWS.CloudFormation.Resource
         [JsonIgnore]
         public string Name { get ; private set; }
 
-        public string DependsOn { get; protected set; }
+        public string[] DependsOn { get; protected set; }
     }
 }

@@ -1,0 +1,313 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{57EFE8EF-75EB-4824-9285-ED7EECC3BC6D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Chef</RootNamespace>
+    <AssemblyName>Chef</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Cookbooks\ActiveDirectory\.kitchen.yml" />
+    <None Include="Cookbooks\ActiveDirectory\attributes\default.rb" />
+    <None Include="Cookbooks\ActiveDirectory\Berksfile" />
+    <None Include="Cookbooks\ActiveDirectory\chefignore" />
+    <None Include="Cookbooks\ActiveDirectory\metadata.json" />
+    <None Include="Cookbooks\ActiveDirectory\metadata.rb" />
+    <None Include="Cookbooks\ActiveDirectory\README.md" />
+    <None Include="Cookbooks\ActiveDirectory\recipes\AddToDomain.rb" />
+    <None Include="Cookbooks\ActiveDirectory\recipes\default.rb" />
+    <None Include="Cookbooks\ActiveDirectory\recipes\Rename.rb" />
+    <None Include="Cookbooks\ActiveDirectory\spec\spec_helper.rb" />
+    <None Include="Cookbooks\ActiveDirectory\spec\unit\recipes\default_spec.rb" />
+    <None Include="Cookbooks\ActiveDirectory\spec\unit\recipes\Rename_spec.rb" />
+    <None Include="Cookbooks\ActiveDirectory\test\integration\default\serverspec\default_spec.rb" />
+    <None Include="Cookbooks\ActiveDirectory\test\integration\default\serverspec\spec_helper.rb" />
+    <None Include="Cookbooks\All\.kitchen.yml" />
+    <None Include="Cookbooks\All\chefignore" />
+    <None Include="Cookbooks\All\metadata.json" />
+    <None Include="Cookbooks\All\README.md" />
+    <None Include="Cookbooks\All\recipes\default.rb" />
+    <None Include="Cookbooks\All\spec\spec_helper.rb" />
+    <None Include="Cookbooks\All\spec\unit\recipes\default_spec.rb" />
+    <None Include="Cookbooks\All\test\integration\default\serverspec\default_spec.rb" />
+    <None Include="Cookbooks\All\test\integration\default\serverspec\spec_helper.rb" />
+    <None Include="Cookbooks\AWS4VisualStudio\.kitchen.yml" />
+    <None Include="Cookbooks\AWS4VisualStudio\chefignore" />
+    <None Include="Cookbooks\AWS4VisualStudio\metadata.json" />
+    <None Include="Cookbooks\AWS4VisualStudio\README.md" />
+    <None Include="Cookbooks\AWS4VisualStudio\recipes\default.rb" />
+    <None Include="Cookbooks\AWS4VisualStudio\spec\spec_helper.rb" />
+    <None Include="Cookbooks\AWS4VisualStudio\spec\unit\recipes\default_spec.rb" />
+    <None Include="Cookbooks\AWS4VisualStudio\test\integration\default\serverspec\default_spec.rb" />
+    <None Include="Cookbooks\AWS4VisualStudio\test\integration\default\serverspec\spec_helper.rb" />
+    <None Include="Cookbooks\chef_handler\attributes\default.rb" />
+    <None Include="Cookbooks\chef_handler\CHANGELOG.md" />
+    <None Include="Cookbooks\chef_handler\files\default\handlers\README" />
+    <None Include="Cookbooks\chef_handler\libraries\matchers.rb" />
+    <None Include="Cookbooks\chef_handler\metadata.json" />
+    <None Include="Cookbooks\chef_handler\providers\default.rb" />
+    <None Include="Cookbooks\chef_handler\README.md" />
+    <None Include="Cookbooks\chef_handler\recipes\default.rb" />
+    <None Include="Cookbooks\chef_handler\recipes\json_file.rb" />
+    <None Include="Cookbooks\chef_handler\resources\default.rb" />
+    <None Include="Cookbooks\DotNet35\.gitignore" />
+    <None Include="Cookbooks\DotNet35\.git\config" />
+    <None Include="Cookbooks\DotNet35\.git\description" />
+    <None Include="Cookbooks\DotNet35\.git\HEAD" />
+    <None Include="Cookbooks\DotNet35\.git\hooks\applypatch-msg.sample" />
+    <None Include="Cookbooks\DotNet35\.git\hooks\commit-msg.sample" />
+    <None Include="Cookbooks\DotNet35\.git\hooks\post-update.sample" />
+    <None Include="Cookbooks\DotNet35\.git\hooks\pre-applypatch.sample" />
+    <None Include="Cookbooks\DotNet35\.git\hooks\pre-commit.sample" />
+    <None Include="Cookbooks\DotNet35\.git\hooks\pre-push.sample" />
+    <None Include="Cookbooks\DotNet35\.git\hooks\pre-rebase.sample" />
+    <None Include="Cookbooks\DotNet35\.git\hooks\prepare-commit-msg.sample" />
+    <None Include="Cookbooks\DotNet35\.git\hooks\update.sample" />
+    <None Include="Cookbooks\DotNet35\.git\info\exclude" />
+    <None Include="Cookbooks\DotNet35\.kitchen.yml" />
+    <None Include="Cookbooks\DotNet35\Berksfile" />
+    <None Include="Cookbooks\DotNet35\Berksfile.lock" />
+    <None Include="Cookbooks\DotNet35\chefignore" />
+    <None Include="Cookbooks\DotNet35\Gemfile" />
+    <None Include="Cookbooks\DotNet35\metadata.json" />
+    <None Include="Cookbooks\DotNet35\metadata.rb" />
+    <None Include="Cookbooks\DotNet35\README.md" />
+    <None Include="Cookbooks\DotNet35\recipes\default.rb" />
+    <None Include="Cookbooks\DotNet35\spec\spec_helper.rb" />
+    <None Include="Cookbooks\DotNet35\spec\unit\recipes\default_spec.rb" />
+    <None Include="Cookbooks\DotNet35\test\integration\default\serverspec\default_spec.rb" />
+    <None Include="Cookbooks\DotNet35\test\integration\default\serverspec\spec_helper.rb" />
+    <None Include="Cookbooks\DotNet35\Thorfile" />
+    <None Include="Cookbooks\DotNet35\Vagrantfile" />
+    <None Include="Cookbooks\dotnetframework\.gitignore" />
+    <None Include="Cookbooks\dotnetframework\.rspec" />
+    <None Include="Cookbooks\dotnetframework\.rubocop.yml" />
+    <None Include="Cookbooks\dotnetframework\attributes\default.rb" />
+    <None Include="Cookbooks\dotnetframework\Berksfile" />
+    <None Include="Cookbooks\dotnetframework\CHANGELOG.md" />
+    <None Include="Cookbooks\dotnetframework\chefignore" />
+    <None Include="Cookbooks\dotnetframework\files\default\tests\minitest\default_test.rb" />
+    <None Include="Cookbooks\dotnetframework\Gemfile" />
+    <None Include="Cookbooks\dotnetframework\Gemfile.lock" />
+    <None Include="Cookbooks\dotnetframework\libraries\matchers.rb" />
+    <None Include="Cookbooks\dotnetframework\LICENSE" />
+    <None Include="Cookbooks\dotnetframework\metadata.rb" />
+    <None Include="Cookbooks\dotnetframework\providers\version.rb" />
+    <None Include="Cookbooks\dotnetframework\rakefile.rb" />
+    <None Include="Cookbooks\dotnetframework\README.md" />
+    <None Include="Cookbooks\dotnetframework\recipes\default.rb" />
+    <None Include="Cookbooks\dotnetframework\recipes\regiis.rb" />
+    <None Include="Cookbooks\dotnetframework\resources\version.rb" />
+    <None Include="Cookbooks\dotnetframework\spec\default_spec.rb" />
+    <None Include="Cookbooks\dotnetframework\spec\spec_helper.rb" />
+    <None Include="Cookbooks\dotnetframework\Vagrantfile" />
+    <None Include="Cookbooks\iis\attributes\default.rb" />
+    <None Include="Cookbooks\iis\CHANGELOG.md" />
+    <None Include="Cookbooks\iis\libraries\helper.rb" />
+    <None Include="Cookbooks\iis\libraries\matcher.rb" />
+    <None Include="Cookbooks\iis\metadata.json" />
+    <None Include="Cookbooks\iis\providers\app.rb" />
+    <None Include="Cookbooks\iis\providers\config.rb" />
+    <None Include="Cookbooks\iis\providers\module.rb" />
+    <None Include="Cookbooks\iis\providers\pool.rb" />
+    <None Include="Cookbooks\iis\providers\section.rb" />
+    <None Include="Cookbooks\iis\providers\site.rb" />
+    <None Include="Cookbooks\iis\providers\vdir.rb" />
+    <None Include="Cookbooks\iis\README.md" />
+    <None Include="Cookbooks\iis\recipes\default.rb" />
+    <None Include="Cookbooks\iis\recipes\mod_application_initialization.rb" />
+    <None Include="Cookbooks\iis\recipes\mod_aspnet.rb" />
+    <None Include="Cookbooks\iis\recipes\mod_aspnet45.rb" />
+    <None Include="Cookbooks\iis\recipes\mod_auth_anonymous.rb" />
+    <None Include="Cookbooks\iis\recipes\mod_auth_basic.rb" />
+    <None Include="Cookbooks\iis\recipes\mod_auth_digest.rb" />
+    <None Include="Cookbooks\iis\recipes\mod_auth_windows.rb" />
+    <None Include="Cookbooks\iis\recipes\mod_cgi.rb" />
+    <None Include="Cookbooks\iis\recipes\mod_compress_dynamic.rb" />
+    <None Include="Cookbooks\iis\recipes\mod_compress_static.rb" />
+    <None Include="Cookbooks\iis\recipes\mod_ftp.rb" />
+    <None Include="Cookbooks\iis\recipes\mod_iis6_metabase_compat.rb" />
+    <None Include="Cookbooks\iis\recipes\mod_isapi.rb" />
+    <None Include="Cookbooks\iis\recipes\mod_logging.rb" />
+    <None Include="Cookbooks\iis\recipes\mod_management.rb" />
+    <None Include="Cookbooks\iis\recipes\mod_security.rb" />
+    <None Include="Cookbooks\iis\recipes\mod_tracing.rb" />
+    <None Include="Cookbooks\iis\recipes\remove_default_site.rb" />
+    <None Include="Cookbooks\iis\resources\app.rb" />
+    <None Include="Cookbooks\iis\resources\config.rb" />
+    <None Include="Cookbooks\iis\resources\module.rb" />
+    <None Include="Cookbooks\iis\resources\pool.rb" />
+    <None Include="Cookbooks\iis\resources\section.rb" />
+    <None Include="Cookbooks\iis\resources\site.rb" />
+    <None Include="Cookbooks\iis\resources\vdir.rb" />
+    <None Include="Cookbooks\PsTools\.kitchen.yml" />
+    <None Include="Cookbooks\PsTools\Berksfile" />
+    <None Include="Cookbooks\PsTools\chefignore" />
+    <None Include="Cookbooks\PsTools\metadata.rb" />
+    <None Include="Cookbooks\PsTools\README.md" />
+    <None Include="Cookbooks\PsTools\recipes\default.rb" />
+    <None Include="Cookbooks\PsTools\spec\spec_helper.rb" />
+    <None Include="Cookbooks\PsTools\spec\unit\recipes\default_spec.rb" />
+    <None Include="Cookbooks\PsTools\test\integration\default\serverspec\default_spec.rb" />
+    <None Include="Cookbooks\PsTools\test\integration\default\serverspec\spec_helper.rb" />
+    <None Include="Cookbooks\Resharper\.kitchen.yml" />
+    <None Include="Cookbooks\Resharper\chefignore" />
+    <None Include="Cookbooks\Resharper\metadata.json" />
+    <None Include="Cookbooks\Resharper\README.md" />
+    <None Include="Cookbooks\Resharper\recipes\default.rb" />
+    <None Include="Cookbooks\Resharper\spec\spec_helper.rb" />
+    <None Include="Cookbooks\Resharper\spec\unit\recipes\default_spec.rb" />
+    <None Include="Cookbooks\Resharper\test\integration\default\serverspec\default_spec.rb" />
+    <None Include="Cookbooks\Resharper\test\integration\default\serverspec\spec_helper.rb" />
+    <None Include="Cookbooks\s3_file\.gitignore" />
+    <None Include="Cookbooks\s3_file\CHANGELOG.md" />
+    <None Include="Cookbooks\s3_file\libraries\matchers.rb" />
+    <None Include="Cookbooks\s3_file\libraries\s3_file.rb" />
+    <None Include="Cookbooks\s3_file\metadata.json" />
+    <None Include="Cookbooks\s3_file\providers\default.rb" />
+    <None Include="Cookbooks\s3_file\README.rdoc" />
+    <None Include="Cookbooks\s3_file\recipes\default.rb" />
+    <None Include="Cookbooks\s3_file\recipes\dependencies.rb" />
+    <None Include="Cookbooks\s3_file\resources\default.rb" />
+    <None Include="Cookbooks\SQL2014\.kitchen.yml" />
+    <None Include="Cookbooks\SQL2014\attributes\default.rb" />
+    <None Include="Cookbooks\SQL2014\Berksfile" />
+    <None Include="Cookbooks\SQL2014\chefignore" />
+    <None Include="Cookbooks\SQL2014\metadata.json" />
+    <None Include="Cookbooks\SQL2014\metadata.rb" />
+    <None Include="Cookbooks\SQL2014\README.md" />
+    <None Include="Cookbooks\SQL2014\recipes\default.rb" />
+    <None Include="Cookbooks\SQL2014\recipes\express.rb" />
+    <None Include="Cookbooks\SQL2014\spec\spec_helper.rb" />
+    <None Include="Cookbooks\SQL2014\spec\unit\recipes\default_spec.rb" />
+    <None Include="Cookbooks\SQL2014\test\integration\default\serverspec\default_spec.rb" />
+    <None Include="Cookbooks\SQL2014\test\integration\default\serverspec\spec_helper.rb" />
+    <None Include="Cookbooks\TFS\.kitchen.yml" />
+    <None Include="Cookbooks\TFS\.kitchen\logs\kitchen.log" />
+    <None Include="Cookbooks\TFS\Berksfile" />
+    <None Include="Cookbooks\TFS\chefignore" />
+    <None Include="Cookbooks\TFS\files\build.ini" />
+    <None Include="Cookbooks\TFS\files\configbasic.ini" />
+    <None Include="Cookbooks\TFS\metadata.json" />
+    <None Include="Cookbooks\TFS\metadata.rb" />
+    <None Include="Cookbooks\TFS\README.md" />
+    <None Include="Cookbooks\TFS\recipes\applicationtier.rb" />
+    <None Include="Cookbooks\TFS\recipes\build.rb" />
+    <None Include="Cookbooks\TFS\recipes\default.rb" />
+    <None Include="Cookbooks\TFS\recipes\iso.rb" />
+    <None Include="Cookbooks\TFS\spec\spec_helper.rb" />
+    <None Include="Cookbooks\TFS\spec\unit\recipes\default_spec.rb" />
+    <None Include="Cookbooks\TFS\test\integration\default\serverspec\default_spec.rb" />
+    <None Include="Cookbooks\TFS\test\integration\default\serverspec\spec_helper.rb" />
+    <None Include="Cookbooks\VisualStudio\.kitchen.yml" />
+    <None Include="Cookbooks\VisualStudio\attributes\default.rb" />
+    <None Include="Cookbooks\VisualStudio\chefignore" />
+    <None Include="Cookbooks\VisualStudio\metadata.json" />
+    <None Include="Cookbooks\VisualStudio\nodes\Lenovo-PC.json" />
+    <None Include="Cookbooks\VisualStudio\README.md" />
+    <None Include="Cookbooks\VisualStudio\recipes\default.rb" />
+    <None Include="Cookbooks\VisualStudio\spec\spec_helper.rb" />
+    <None Include="Cookbooks\VisualStudio\spec\unit\recipes\default_spec.rb" />
+    <None Include="Cookbooks\VisualStudio\test\integration\default\serverspec\default_spec.rb" />
+    <None Include="Cookbooks\VisualStudio\test\integration\default\serverspec\spec_helper.rb" />
+    <None Include="Cookbooks\windows\attributes\default.rb" />
+    <None Include="Cookbooks\windows\CHANGELOG.md" />
+    <None Include="Cookbooks\windows\files\default\handlers\windows_reboot_handler.rb" />
+    <None Include="Cookbooks\windows\libraries\feature_base.rb" />
+    <None Include="Cookbooks\windows\libraries\matchers.rb" />
+    <None Include="Cookbooks\windows\libraries\powershell_helper.rb" />
+    <None Include="Cookbooks\windows\libraries\powershell_out.rb" />
+    <None Include="Cookbooks\windows\libraries\registry_helper.rb" />
+    <None Include="Cookbooks\windows\libraries\version.rb" />
+    <None Include="Cookbooks\windows\libraries\windows_architecture_helper.rb" />
+    <None Include="Cookbooks\windows\libraries\windows_helper.rb" />
+    <None Include="Cookbooks\windows\libraries\windows_package.rb" />
+    <None Include="Cookbooks\windows\libraries\windows_privileged.rb" />
+    <None Include="Cookbooks\windows\libraries\wmi_helper.rb" />
+    <None Include="Cookbooks\windows\metadata.json" />
+    <None Include="Cookbooks\windows\providers\auto_run.rb" />
+    <None Include="Cookbooks\windows\providers\batch.rb" />
+    <None Include="Cookbooks\windows\providers\feature_dism.rb" />
+    <None Include="Cookbooks\windows\providers\feature_powershell.rb" />
+    <None Include="Cookbooks\windows\providers\feature_servermanagercmd.rb" />
+    <None Include="Cookbooks\windows\providers\font.rb" />
+    <None Include="Cookbooks\windows\providers\pagefile.rb" />
+    <None Include="Cookbooks\windows\providers\path.rb" />
+    <None Include="Cookbooks\windows\providers\printer.rb" />
+    <None Include="Cookbooks\windows\providers\printer_port.rb" />
+    <None Include="Cookbooks\windows\providers\reboot.rb" />
+    <None Include="Cookbooks\windows\providers\registry.rb" />
+    <None Include="Cookbooks\windows\providers\shortcut.rb" />
+    <None Include="Cookbooks\windows\providers\task.rb" />
+    <None Include="Cookbooks\windows\providers\zipfile.rb" />
+    <None Include="Cookbooks\windows\README.md" />
+    <None Include="Cookbooks\windows\recipes\default.rb" />
+    <None Include="Cookbooks\windows\recipes\reboot_handler.rb" />
+    <None Include="Cookbooks\windows\resources\auto_run.rb" />
+    <None Include="Cookbooks\windows\resources\batch.rb" />
+    <None Include="Cookbooks\windows\resources\feature.rb" />
+    <None Include="Cookbooks\windows\resources\font.rb" />
+    <None Include="Cookbooks\windows\resources\pagefile.rb" />
+    <None Include="Cookbooks\windows\resources\path.rb" />
+    <None Include="Cookbooks\windows\resources\printer.rb" />
+    <None Include="Cookbooks\windows\resources\printer_port.rb" />
+    <None Include="Cookbooks\windows\resources\reboot.rb" />
+    <None Include="Cookbooks\windows\resources\registry.rb" />
+    <None Include="Cookbooks\windows\resources\shortcut.rb" />
+    <None Include="Cookbooks\windows\resources\task.rb" />
+    <None Include="Cookbooks\windows\resources\zipfile.rb" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Cookbooks\s3_file\MIT-LICENSE.txt" />
+    <Content Include="Cookbooks\VisualStudio\files\AdminDeployment.xml" />
+    <Content Include="s3forstack.txt" />
+    <Content Include="stack.template" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

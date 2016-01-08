@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Instance.Metadata;
+using AWS.CloudFormation.Instance.Metadata.Config;
 using AWS.CloudFormation.Instance.Metadata.Config.Command;
 using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Stack;
@@ -74,8 +75,8 @@ namespace AWS.CloudFormation.Instance
                 chefConfig.Packages.AddPackage("msi", "chef", "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2008r2/x86_64/chefdk-0.4.0-1.msi");
                 chefConfig.Files.GetFile("c:\\chef\\client.rb").Content.SetFnJoin("cache_path 'c:/chef'\ncookbook_path 'c:/chef/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
 
-                var nodeJson = chefConfig.Files.GetFile("c:\\chef\\node.json");
-                var s3FileNode = nodeJson.Content.Add("s3_file");
+                var chefConfigContent = GetChefNodeJsonContent(s3bucketName, cookbookFileName);
+                var s3FileNode = chefConfigContent.Add("s3_file");
                 s3FileNode.Add("key", accessKeyString);
                 s3FileNode.Add("secret", secretKeyString);
 
@@ -87,6 +88,13 @@ namespace AWS.CloudFormation.Instance
         {
             var chefConfig = this.GetChefConfig(s3bucketName, cookbookFileName);
             chefConfig.Commands.AddCommand<Command>(recipeList.Replace(':','-')).Command.SetFnJoin($"C:\\opscode\\chefdk\\bin\\chef-client.bat --runlist 'recipe[{recipeList}]'");
+        }
+
+        public ConfigFileContent GetChefNodeJsonContent(string s3bucketName, string cookbookFileName)
+        {
+            var chefConfig = this.GetChefConfig(s3bucketName, cookbookFileName);
+            var nodeJson = chefConfig.Files.GetFile("c:\\chef\\node.json");
+            return nodeJson.Content;
         }
     }
 }

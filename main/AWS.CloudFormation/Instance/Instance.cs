@@ -169,14 +169,18 @@ namespace AWS.CloudFormation.Instance
                 throw new NotSupportedException($"Cannot depend on instance of OperatingSystem:{dependsOn.OperatingSystem}");
             }
 
-            if (!string.IsNullOrEmpty(this.DependsOn))
-            {
-                throw new NotSupportedException($"Already DependsOn:{this.DependsOn}");
-            }
-
             dependsOn.AddFinalizer(timeout);
 
-            this.DependsOn = dependsOn.WaitConditionName;
+            var tempDependsOn = new List<string>();
+
+            if (this.DependsOn != null)
+            {
+                tempDependsOn.AddRange(this.DependsOn);
+            }
+
+            tempDependsOn.Add(dependsOn.WaitConditionName);
+
+            this.DependsOn = tempDependsOn.ToArray();
         }
 
         public void AddFinalizer(TimeSpan timeout)
