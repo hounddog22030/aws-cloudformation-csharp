@@ -59,6 +59,8 @@ namespace AWS.CloudFormation.Test
         // ReSharper disable once InconsistentNaming
         const string ADServerNetBIOSName1 = "DC1";
 
+        const string softwareS3BucketName = "gtbb";
+
         private static Template GetTemplate()
         {
 
@@ -75,12 +77,6 @@ namespace AWS.CloudFormation.Test
             var PrivateSubnet1 = template.AddSubnet("PrivateSubnet1", vpc, PrivSub1CIDR, Template.AvailabilityZone.UsEast1A);
             // ReSharper disable once InconsistentNaming
             var PrivateSubnet2 = template.AddSubnet("PrivateSubnet2", vpc, PrivSub2CIDR, Template.AvailabilityZone.UsEast1A);
-
-            // ReSharper disable once InconsistentNaming
-            //var SQL4TFSSubnet = template.AddSubnet("SQL4TFSSubnet", vpc, SQL4TFSSUBNETCIDR, Template.AvailabilityZone.UsEast1A);
-            //var tfsServerSubnet = template.AddSubnet("tfsServerSubnet", vpc, TFSSERVER1SUBNETCIDR, Template.AvailabilityZone.UsEast1A);
-            //var buildServerSubnet = template.AddSubnet("buildServerSubnet", vpc, BUILDSERVER1SUBNETCIDR, Template.AvailabilityZone.UsEast1A);
-            //var workstationSubnet = template.AddSubnet("workstationSubnet", vpc, WORKSTATIONSUBNETCIDR, Template.AvailabilityZone.UsEast1A);
 
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
@@ -118,7 +114,7 @@ namespace AWS.CloudFormation.Test
             PrivateRoute.Instance = nat1;
 
             // ReSharper disable once InconsistentNaming
-            var DC1 = new Instance.DomainController(template,
+            var DC1 = new DomainController(template,
                 ADServerNetBIOSName1,
                 InstanceTypes.T2Micro,
                 StackTest.USEAST1AWINDOWS2012R2AMI,
@@ -133,38 +129,24 @@ namespace AWS.CloudFormation.Test
 
             // ReSharper disable once InconsistentNaming
             var RDGateway = new RemoteDesktopGateway(template, "RDGateway", InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, DMZSubnet);
-            RDGateway.AddFinalizer(new TimeSpan(0,120,0));
+            RDGateway.AddFinalizer(new TimeSpan(2,0,0));
             template.AddInstance(RDGateway);
             DC1.AddToDomain(RDGateway);
 
-            var tfsSqlServer = new Instance.WindowsInstance(template,"SQL4TFS2",InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
+            var tfsSqlServer = new WindowsInstance(template,"SQL4TFS",InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
             tfsSqlServer.AddBlockDeviceMapping("/dev/sda1", 70, "gp2");
             tfsSqlServer.AddBlockDeviceMapping("/dev/sdf", 50, "gp2");
             tfsSqlServer.AddBlockDeviceMapping("/dev/sdg", 20, "gp2");
-            var appSettingsReader = new AppSettingsReader();
-            string accessKeyString = (string)appSettingsReader.GetValue("GTBBAccessKey", typeof(string));
-            string secretKeyString = (string)appSettingsReader.GetValue("GTBBSecretKey", typeof(string));
-
-            var auth = tfsSqlServer.Metadata.Authentication.Add("S3AccessCreds",new S3Authentication(accessKeyString, secretKeyString, new string[] {"gtbb"} ));
-            auth.Type = "S3";
-            var installSqlConfig = tfsSqlServer.Metadata.Init.ConfigSets.GetConfigSet("InstallSql").GetConfig("InstallSql");
-            installSqlConfig.Sources.Add("c:\\chef\\", "https://gtbb.s3.amazonaws.com/cookbooks-1452205868.tar.gz");
-            installSqlConfig.Packages.AddPackage("msi","chef","https://opscode-omnibus-packages.s3.amazonaws.com/windows/2008r2/x86_64/chefdk-0.4.0-1.msi");
-            installSqlConfig.Files.GetFile("c:\\chef\\client.rb").Content.SetFnJoin("cache_path 'c:/chef'\ncookbook_path 'c:/chef/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
-            installSqlConfig.Commands.AddCommand<Command>("run-chef").Command.SetFnJoin("C:\\opscode\\chefdk\\bin\\chef-client.bat --runlist 'recipe[SQL2014::express]'");
-
-            var nodeJson = installSqlConfig.Files.GetFile("c:\\chef\\node.json");
-            var s3FileNode = nodeJson.Content.Add("s3_file");
-            s3FileNode.Add("key", accessKeyString);
-            s3FileNode.Add("secret", secretKeyString);
-
-            DC1.Metadata.Authentication.Add("S3AccessCreds", new S3Authentication(accessKeyString, secretKeyString, new string[] { "gtbb" }));
-            DC1.Metadata.Init.ConfigSets.GetConfigSet("InstallSql")
-                .GetConfig("InstallSql").Sources.Add("c:\\cfn\\scripts\\cookbooks-1428375204.tar.gz", "https://gtbb.s3.amazonaws.com/cookbooks-1428375204.tar.gz");
-
+            tfsSqlServer.AddChefExec( softwareS3BucketName, "cookbooks-1452205868.tar.gz","SQL2014::express");
 
             DC1.AddToDomain(tfsSqlServer);
             template.AddInstance(tfsSqlServer);
+
+
+            var tfsServer = new WindowsInstance(template, "TFS", InstanceTypes.T2Nano, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
+            tfsServer.AddDependsOn(tfsSqlServer, new TimeSpan(2,0,0));
+            template.AddInstance(tfsServer);
+
 
 
 
