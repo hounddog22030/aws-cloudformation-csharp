@@ -145,11 +145,10 @@ namespace AWS.CloudFormation.Test
 
             var tfsServer = new WindowsInstance(template, "TFS", InstanceTypes.T2Nano, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
             tfsServer.AddDependsOn(tfsSqlServer, new TimeSpan(2,0,0));
-            var chefNode = tfsServer.GetChefNodeJsonContent(softwareS3BucketName, "cookbooks-1452205868.tar.gz");
+            var chefNode = tfsServer.GetChefNodeJsonContent(softwareS3BucketName, "tfs-cookbooks-1452231429.tar");
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
             domainAdminUserInfoNode.Add("name",DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
-
             template.AddInstance(tfsServer);
             DC1.AddToDomain(tfsServer);
 
@@ -478,7 +477,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateStackTest()
         {
-            var stackName = "Stack5d2c532b-2bb5-4800-9fc7-afd44384c065";
+            var stackName = "Stackb3280dd4-fff2-4551-98ff-5a7eda96f7c0";
             var t = new Stack.Stack();
             t.UpdateStack(stackName, GetTemplate());
         }

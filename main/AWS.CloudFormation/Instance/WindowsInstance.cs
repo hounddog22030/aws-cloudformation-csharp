@@ -81,6 +81,11 @@ namespace AWS.CloudFormation.Instance
                 s3FileNode.Add("secret", secretKeyString);
 
             }
+            if (!chefConfig.Sources.ContainsKey("c:\\tools\\pstools\\"))
+            {
+                chefConfig.Sources.Add("c:\\tools\\pstools\\", "https://download.sysinternals.com/files/PSTools.zip");
+
+            }
             return chefConfig;
         }
 

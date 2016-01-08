@@ -8,7 +8,7 @@
   "platforms": {
   },
   "dependencies": {
-    "DotNet35": ">= 0.0.0"
+    "dotnetframework": ">= 0.0.0"
   },
   "recommendations": {
   },

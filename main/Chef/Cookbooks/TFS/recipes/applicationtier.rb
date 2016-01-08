@@ -12,6 +12,9 @@ TFS_svc_pass      = ""
 TFS_sysadmins     = "gtbb\\Domain Admins"
 TFS_agent_svc_act = "NT Service\\TFSSERVERAGENT"
 volume_name = "VS2013_4_TFS_EXP_ENU"
+TFS_DomainAdminUserName = "#{node[:domainAdmin][:name]}"
+TFS_DomainAdminPassword = "#{node[:domainAdmin][:password]}"
+
 
 tfsconfigure_exe_file = "C:\\Program Files\\Microsoft Team Foundation Server 12.0\\Tools\\TFSConfig.exe"
 
@@ -24,7 +27,7 @@ end
 
 # Installing Team Foundation Server Standard.
 execute 'Configure Team Foundation Server STD' do
-	command "#{psexec_path} -accepteula -h -u gtbb\\johnny -p 3ORMSkQCxbNo \"C:\\Program Files\\Microsoft Team Foundation Server 12.0\\Tools\\TFSConfig.exe\" unattend /configure /unattendfile:#{Chef::Config['file_cache_path']}\\configbasic.ini"
+	command "#{psexec_path} -accepteula -h -u #{TFS_DomainAdminUserName} -p #{TFS_DomainAdminPassword} \"C:\\Program Files\\Microsoft Team Foundation Server 12.0\\Tools\\TFSConfig.exe\" unattend /configure /unattendfile:#{Chef::Config['file_cache_path']}\\configbasic.ini"
 	guard_interpreter :powershell_script
 end
 

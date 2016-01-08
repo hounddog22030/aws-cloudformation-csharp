@@ -223,6 +223,7 @@
     <None Include="Cookbooks\SQL2014\test\integration\default\serverspec\spec_helper.rb" />
     <None Include="Cookbooks\TFS\.kitchen.yml" />
     <None Include="Cookbooks\TFS\.kitchen\logs\kitchen.log" />
+    <None Include="Cookbooks\TFS\attributes\default.rb" />
     <None Include="Cookbooks\TFS\Berksfile" />
     <None Include="Cookbooks\TFS\chefignore" />
     <None Include="Cookbooks\TFS\files\build.ini" />
