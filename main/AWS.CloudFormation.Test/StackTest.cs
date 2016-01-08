@@ -47,13 +47,13 @@ namespace AWS.CloudFormation.Test
         // ReSharper disable once InconsistentNaming
         const string VPCCIDR = "10.0.0.0/16";
         // ReSharper disable once InconsistentNaming
-        const string DomainDNSName = "gtbb.getthebuybox.com";
+        const string DomainDNSName = "prime.getthebuybox.com";
         // ReSharper disable once InconsistentNaming
         private const string DomainAdminUser = "johnny";
         // ReSharper disable once InconsistentNaming
         const string DomainAdminPassword = "kasdfiajs!!9";
         // ReSharper disable once InconsistentNaming
-        const string DomainNetBIOSName = "gtbb";
+        const string DomainNetBIOSName = "prime";
         // ReSharper disable once InconsistentNaming
         const string USEAST1AWINDOWS2012R2AMI = "ami-e4034a8e";
         // ReSharper disable once InconsistentNaming
@@ -100,25 +100,13 @@ namespace AWS.CloudFormation.Test
 
             template.Resources.Add("PrivateSubnetRouteTableAssociation1", PrivateSubnetRouteTableAssociation1);
 
-            //RouteTable Sql4TfsPrivateRouteTable = template.AddRouteTable("Sql4TfsPrivateRouteTable", vpc);
-            //Route Sql4TfsToNat1PrivateRoute = template.AddRoute("NAT1PrivateRouteSql4Tfs", Template.CIDR_IP_THE_WORLD, Sql4TfsPrivateRouteTable);
-            //SubnetRouteTableAssociation Sql4TfsPrivateSubnetRouteTableAssociation = new SubnetRouteTableAssociation(
-            //    template,
-            //    "Sql4TfsPrivateSubnetRouteTableAssociation",
-            //    PrivateSubnet1,
-            //    Sql4TfsPrivateRouteTable);
-            //template.Resources.Add("Sql4TfsPrivateSubnetRouteTableAssociation", Sql4TfsPrivateSubnetRouteTableAssociation);
-
-
             SecurityGroup natSecurityGroup = template.GetSecurityGroup("natSecurityGroup", vpc,
                 "Enables Ssh access to NAT1 in AZ1 via port 22 and outbound internet access via private subnets");
 
             natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Ssh);
             natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
 
-            Subnet[] subnetsToAddToNatSecurityGroup = new Subnet[]
-            {PrivateSubnet1, PrivateSubnet2};
-            //{ PrivateSubnet1, PrivateSubnet2, SQL4TFSSubnet, tfsServerSubnet, buildServerSubnet, workstationSubnet};
+            Subnet[] subnetsToAddToNatSecurityGroup = new Subnet[] {PrivateSubnet1, PrivateSubnet2};
 
             foreach (var subnet in subnetsToAddToNatSecurityGroup)
             {
@@ -128,9 +116,6 @@ namespace AWS.CloudFormation.Test
 
             var nat1 = AddNat1(template, DMZSubnet, natSecurityGroup);
             PrivateRoute.Instance = nat1;
-            //Sql4TfsToNat1PrivateRoute.Instance = nat1;
-
-
 
             // ReSharper disable once InconsistentNaming
             var DC1 = new Instance.DomainController(template,
@@ -139,15 +124,11 @@ namespace AWS.CloudFormation.Test
                 StackTest.USEAST1AWINDOWS2012R2AMI,
                 PrivateSubnet1,
                 AD1PrivateIp,
-                new DomainController.DomainInfo(StackTest.DomainDNSName, StackTest.DomainNetBIOSName,
-                    StackTest.DomainAdminUser, StackTest.DomainAdminPassword));
+                new DomainController.DomainInfo(StackTest.DomainDNSName, StackTest.DomainNetBIOSName, StackTest.DomainAdminUser, StackTest.DomainAdminPassword));
 
 
-            //domainController1.SecurityGroups.Add(domainControllerSg1);
             DC1.CreateAdReplicationSubnet(DMZSubnet);
             DC1.CreateAdReplicationSubnet(DMZ2Subnet);
-            //DC1.CreateAdReplicationSubnet(az1Subnet);
-            //DC1.CreateAdReplicationSubnet(az2Subnet);
             template.AddInstance(DC1);
 
             // ReSharper disable once InconsistentNaming
@@ -156,98 +137,10 @@ namespace AWS.CloudFormation.Test
             template.AddInstance(RDGateway);
             DC1.AddToDomain(RDGateway);
 
-            //SecurityGroup domainMemberSg = domainController1.DomainMemberSecurityGroup;
-            //instanceRdgw1.SecurityGroups.Add(domainMemberSg);
-            //domainController1.AddToDomainMemberSecurityGroup(instanceRdgw1);
-
-
-            //var rdgq1Config = instanceRdgw1.Metadata.Init.ConfigSets.GetConfigSet("config");
-            //var rdgq1ConfigJoin = rdgq1Config.GetConfig("join");
-            //var setDnsServers = rdgq1ConfigJoin.Commands.AddCommand<PowerShellCommand>("a-set-dns-servers");
-            //setDnsServers.Command.AddCommandLine("-Command \"Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses ",
-            //    DomainController1PrivateIpAddress,
-            //    ",",
-            //    DomainController2PrivateIpAddress,
-            //    "\"");
-            //setDnsServers.WaitAfterCompletion = 30.ToString();
-
-            //var joinDomain = rdgq1ConfigJoin.Commands.AddCommand<PowerShellCommand>("b-join-domain");
-            //joinDomain.Command.AddCommandLine("-Command \"",
-            //                        "Add-Computer -DomainName ",
-            //                        DomainDNSName,
-            //                        " -Credential ",
-            //                        "(New-Object System.Management.Automation.PSCredential('",
-            //                        DomainNetBIOSName,
-            //                        "\\",
-            //                        DomainAdminUser,
-            //                        "',",
-            //                        "(ConvertTo-SecureString ",
-            //                        DomainAdminPassword,
-            //                        " -AsPlainText -Force))) ",
-            //                        "-Restart\"");
-            //joinDomain.WaitAfterCompletion = "forever";
-
-            //joinDomain = rdgq1ConfigJoin.Commands.AddCommand<PowerShellCommand>("b-join-domainX");
-            //joinDomain.Command.AddCommandLine("dir");
-            //joinDomain.WaitAfterCompletion = 0.ToString();
-
-
-            // the below is a remote desktop gateway server that can
-            // be uncommented to debug domain setup problems
-            //var RDGateway2 = new RemoteDesktopGateway(template, "RDGateway2", InstanceTypes.T2Micro, "ami-e4034a8e", EncryptionKeyName, DMZSubnet);
-            //DC1.AddToDomainMemberSecurityGroup(RDGateway2);
-            //template.AddInstance(RDGateway2);
-
-            var tfsSqlServer = new Instance.WindowsInstance(template,"SQL4TFS3",InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
-            List<CloudFormationDictionary> blockDeviceMappings = new List<CloudFormationDictionary>();
-            CloudFormationDictionary c ;
-            CloudFormationDictionary ebs ;
-            c = new CloudFormationDictionary();
-            c.Add("DeviceName", "/dev/sda1");
-            ebs = c.Add("Ebs");
-            ebs.Add("VolumeSize", "70");
-            ebs.Add("VolumeType", "gp2");
-            blockDeviceMappings.Add(c);
-
-            c = new CloudFormationDictionary();
-            c.Add("DeviceName", "/dev/sdf");
-            ebs = c.Add("Ebs");
-            ebs.Add("VolumeSize", "50");
-            ebs.Add("VolumeType", "gp2");
-            blockDeviceMappings.Add(c);
-
-            c = new CloudFormationDictionary();
-            c.Add("DeviceName", "/dev/sdg");
-            ebs = c.Add("Ebs");
-            ebs.Add("VolumeSize", "10");
-            ebs.Add("VolumeType", "gp2");
-            blockDeviceMappings.Add(c);
-            tfsSqlServer.BlockDeviceMappings = blockDeviceMappings.ToArray();
-
-            //tfsSqlServer.BlockDeviceMappings
-            //            "BlockDeviceMappings" : [
-            //                    {
-            //                        "DeviceName" : "/dev/sda1",
-            //                        "Ebs"        : {
-            //                            "VolumeSize" : "70",
-            //                            "VolumeType" : "gp2"
-            //                        }
-            //},
-            //                    {
-            //                        "DeviceName" : "/dev/sdf",
-            //                        "Ebs"        : {
-            //                            "VolumeSize" : "50",
-            //                            "VolumeType" : "gp2"
-            //                        }
-            //                    },
-            //                    {
-            //                        "DeviceName" : "/dev/sdg",
-            //                        "Ebs"        : {
-            //                            "VolumeSize" : "10",
-            //                            "VolumeType" : "gp2"
-            //                        }
-            //                    }
-            //                ],
+            var tfsSqlServer = new Instance.WindowsInstance(template,"SQL4TFS2",InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
+            tfsSqlServer.AddBlockDeviceMapping("/dev/sda1", 70, "gp2");
+            tfsSqlServer.AddBlockDeviceMapping("/dev/sdf", 50, "gp2");
+            tfsSqlServer.AddBlockDeviceMapping("/dev/sdg", 20, "gp2");
             var appSettingsReader = new AppSettingsReader();
             string accessKeyString = (string)appSettingsReader.GetValue("GTBBAccessKey", typeof(string));
             string secretKeyString = (string)appSettingsReader.GetValue("GTBBSecretKey", typeof(string));
@@ -255,9 +148,8 @@ namespace AWS.CloudFormation.Test
             var auth = tfsSqlServer.Metadata.Authentication.Add("S3AccessCreds",new S3Authentication(accessKeyString, secretKeyString, new string[] {"gtbb"} ));
             auth.Type = "S3";
             var installSqlConfig = tfsSqlServer.Metadata.Init.ConfigSets.GetConfigSet("InstallSql").GetConfig("InstallSql");
-            installSqlConfig.Sources.Add("c:\\chef\\", "https://gtbb.s3.amazonaws.com/cookbooks-1428375204.tar.gz");
+            installSqlConfig.Sources.Add("c:\\chef\\", "https://gtbb.s3.amazonaws.com/cookbooks-1452205868.tar.gz");
             installSqlConfig.Packages.AddPackage("msi","chef","https://opscode-omnibus-packages.s3.amazonaws.com/windows/2008r2/x86_64/chefdk-0.4.0-1.msi");
-            //installSqlConfig.Files.GetFile("c:\\chef\\client.rb").Content.SetFnJoin("cache_path 'c:/chef'\ncookbook_path 'c:/chef/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
             installSqlConfig.Files.GetFile("c:\\chef\\client.rb").Content.SetFnJoin("cache_path 'c:/chef'\ncookbook_path 'c:/chef/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
             installSqlConfig.Commands.AddCommand<Command>("run-chef").Command.SetFnJoin("C:\\opscode\\chefdk\\bin\\chef-client.bat --runlist 'recipe[SQL2014::express]'");
 
@@ -265,12 +157,6 @@ namespace AWS.CloudFormation.Test
             var s3FileNode = nodeJson.Content.Add("s3_file");
             s3FileNode.Add("key", accessKeyString);
             s3FileNode.Add("secret", secretKeyString);
-            //  "s3_file" : {
-            //      "key" : { "Ref" : "S3AccessKeyId" },
-            //"secret" : { "Ref" : "S3AccessSecret" }
-            //  }
-
-
 
             DC1.Metadata.Authentication.Add("S3AccessCreds", new S3Authentication(accessKeyString, secretKeyString, new string[] { "gtbb" }));
             DC1.Metadata.Init.ConfigSets.GetConfigSet("InstallSql")
@@ -278,8 +164,9 @@ namespace AWS.CloudFormation.Test
 
 
             DC1.AddToDomain(tfsSqlServer);
-            //tfsSqlServer.AddFinalizer(new TimeSpan(0,120,0));
             template.AddInstance(tfsSqlServer);
+
+
 
             // the below is a remote desktop gateway server that can
             // be uncommented to debug domain setup problems
@@ -603,7 +490,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateStackTest()
         {
-            var stackName = "Stack08576106-487c-4a2c-96be-3106c5f8b71b";
+            var stackName = "Stack9b7391f3-b5b8-44ff-a9a5-3826ffcf62d5";
             var t = new Stack.Stack();
             t.UpdateStack(stackName, GetTemplate());
         }

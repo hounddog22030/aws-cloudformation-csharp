@@ -200,7 +200,22 @@ namespace AWS.CloudFormation.Instance
         }
 
         [CloudFormationProperties]
-        public CloudFormationDictionary[] BlockDeviceMappings { get; set; }
+        public CloudFormationDictionary[] BlockDeviceMappings { get; private set; }
 
+        public void AddBlockDeviceMapping(string deviceName, uint volumeSize, string volumeType)
+        {
+            var tempBlockDeviceMapping = new List<CloudFormationDictionary>();
+            if (this.BlockDeviceMappings != null)
+            {
+                tempBlockDeviceMapping.AddRange(this.BlockDeviceMappings);
+            }
+            var c = new CloudFormationDictionary();
+            c.Add("DeviceName", deviceName);
+            var ebs = c.Add("Ebs");
+            ebs.Add("VolumeSize", volumeSize.ToString());
+            ebs.Add("VolumeType", volumeType);
+            tempBlockDeviceMapping.Add(c);
+            this.BlockDeviceMappings = tempBlockDeviceMapping.ToArray();
+        }
     }
 }
