@@ -58,8 +58,8 @@ namespace AWS.CloudFormation.Test
         const string USEAST1AWINDOWS2012R2AMI = "ami-e4034a8e";
         // ReSharper disable once InconsistentNaming
         const string ADServerNetBIOSName1 = "DC1";
-
-        const string softwareS3BucketName = "gtbb";
+        const string SoftwareS3BucketName = "gtbb";
+        const string CookbookFileName = "cookbooks-1452292398.tar.gz";
 
         private static Template GetTemplate()
         {
@@ -137,21 +137,21 @@ namespace AWS.CloudFormation.Test
             tfsSqlServer.AddBlockDeviceMapping("/dev/sda1", 70, "gp2");
             tfsSqlServer.AddBlockDeviceMapping("/dev/sdf", 50, "gp2");
             tfsSqlServer.AddBlockDeviceMapping("/dev/sdg", 20, "gp2");
-            tfsSqlServer.AddChefExec( softwareS3BucketName, "cookbooks-1452302261.tar.gz", "SQL2014::express");
+            tfsSqlServer.AddChefExec( SoftwareS3BucketName, CookbookFileName, "SQL2014::express");
             template.AddInstance(tfsSqlServer);
-
             DC1.AddToDomain(tfsSqlServer);
 
 
             var tfsServer = new WindowsInstance(template, "tfsserver1", InstanceTypes.T2Nano, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
             tfsServer.AddDependsOn(tfsSqlServer, new TimeSpan(2, 0, 0));
-            var chefNode = tfsServer.GetChefNodeJsonContent(softwareS3BucketName, "tfs-cookbooks-1452231429.tar.gz");
+
+            var chefNode = tfsServer.GetChefNodeJsonContent(SoftwareS3BucketName, CookbookFileName);
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
             domainAdminUserInfoNode.Add("name", DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             template.AddInstance(tfsServer);
+            tfsSqlServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
             DC1.AddToDomain(tfsServer);
-            tfsSqlServer.AddChefExec(softwareS3BucketName, "cookbooks-1452292398.tar.gz", "TFS::applicationtier");
 
 
 
