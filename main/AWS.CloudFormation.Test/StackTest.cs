@@ -137,12 +137,20 @@ namespace AWS.CloudFormation.Test
             tfsSqlServer.AddBlockDeviceMapping("/dev/sda1", 70, "gp2");
             tfsSqlServer.AddBlockDeviceMapping("/dev/sdf", 50, "gp2");
             tfsSqlServer.AddBlockDeviceMapping("/dev/sdg", 20, "gp2");
-            tfsSqlServer.AddChefExec( SoftwareS3BucketName, CookbookFileName, "SQL2014::express");
+            tfsSqlServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "SQL2014::express");
+            SecurityGroup sqlServerSecurityGroup = template.GetSecurityGroup("SqlServer4TfsSecurityGroup", vpc,
+                "Allows communication to the SQLServer application");
+            foreach (var subnet in subnetsToAddToNatSecurityGroup)
+            {
+                sqlServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(subnet, Protocol.All, Ports.MsSqlServer);
+            }
+            tfsSqlServer.SecurityGroups.Add(sqlServerSecurityGroup);
+
             template.AddInstance(tfsSqlServer);
             DC1.AddToDomain(tfsSqlServer);
 
 
-            var tfsServer = new WindowsInstance(template, "tfsserver1", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
+            var tfsServer = new WindowsInstance(template, "tfsserver2", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
             tfsServer.AddDependsOn(tfsSqlServer, new TimeSpan(2, 0, 0));
 
             var chefNode = tfsServer.GetChefNodeJsonContent(SoftwareS3BucketName, CookbookFileName);

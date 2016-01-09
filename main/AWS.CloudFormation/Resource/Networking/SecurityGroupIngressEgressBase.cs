@@ -35,7 +35,8 @@ namespace AWS.CloudFormation.Resource.Networking
         NetBt = 137,
         NetBiosNameServices = 139,
         ActiveDirectoryFileReplication = 5722,
-        Http = 80
+        Http = 80,
+        MsSqlServer = 1433
     }
 
     [Flags]
