@@ -41,6 +41,7 @@ namespace AWS.CloudFormation.Instance.Metadata.Config
             Services = this.Add("services", new CloudFormationDictionary(resource));
             Sources = this.Add("sources", new Sources(resource)) as Sources;
             Packages = this.Add("packages", new Packages(resource)) as Packages;
+            this.Add("ignoreErrors", true);
         }
 
         [JsonIgnore]
@@ -52,6 +53,14 @@ namespace AWS.CloudFormation.Instance.Metadata.Config
         public CloudFormationDictionary Services { get; }
         public Sources Sources { get;  }
         public Packages Packages { get; set; }
+
+        public bool IgnoreErrors {
+            get
+            {
+                return (bool)this["ignoreErrors"];
+            }
+            set { this["ignoreErrors"] = value; }
+        }
     }
 
     public class Packages : CloudFormationDictionary

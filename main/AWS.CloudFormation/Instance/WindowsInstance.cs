@@ -92,7 +92,9 @@ namespace AWS.CloudFormation.Instance
         public void AddChefExec(string s3bucketName, string cookbookFileName,string recipeList)
         {
             var chefConfig = this.GetChefConfig(s3bucketName, cookbookFileName);
-            chefConfig.Commands.AddCommand<Command>(recipeList.Replace(':','-')).Command.SetFnJoin($"C:\\opscode\\chefdk\\bin\\chef-client.bat --runlist 'recipe[{recipeList}]'");
+            var chefCommandConfig = chefConfig.Commands.AddCommand<Command>(recipeList.Replace(':','-'));
+            chefCommandConfig.Test = "IF EXIST \"C:\\Program Files\\Microsoft SQL Server\\MSSQL12.MSSQLSERVER\\MSSQL\\Binn\\sqlservr.exe\" EXIT 1";
+            chefCommandConfig.Command.SetFnJoin($"C:\\opscode\\chefdk\\bin\\chef-client.bat --runlist 'recipe[{recipeList}]'");
         }
 
         public ConfigFileContent GetChefNodeJsonContent(string s3bucketName, string cookbookFileName)

@@ -59,7 +59,7 @@ namespace AWS.CloudFormation.Test
         // ReSharper disable once InconsistentNaming
         const string ADServerNetBIOSName1 = "DC1";
         const string SoftwareS3BucketName = "gtbb";
-        const string CookbookFileName = "cookbooks-1452292398.tar.gz";
+        const string CookbookFileName = "cookbooks-1452305837.tar.gz";
 
         private static Template GetTemplate()
         {
@@ -142,15 +142,15 @@ namespace AWS.CloudFormation.Test
             DC1.AddToDomain(tfsSqlServer);
 
 
-            var tfsServer = new WindowsInstance(template, "tfsserver1", InstanceTypes.T2Nano, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
+            var tfsServer = new WindowsInstance(template, "tfsserver1", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
             tfsServer.AddDependsOn(tfsSqlServer, new TimeSpan(2, 0, 0));
 
             var chefNode = tfsServer.GetChefNodeJsonContent(SoftwareS3BucketName, CookbookFileName);
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
-            domainAdminUserInfoNode.Add("name", DomainAdminUser);
+            domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             template.AddInstance(tfsServer);
-            tfsSqlServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
+            tfsServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
             DC1.AddToDomain(tfsServer);
 
 
@@ -479,7 +479,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateStackTest()
         {
-            var stackName = "Stack03b59290-8d8f-4f17-a87b-fc9783c480f2";
+            var stackName = "Stackb672df30-0952-4d0f-8fd7-54809d646e27";
             var t = new Stack.Stack();
             t.UpdateStack(stackName, GetTemplate());
         }
