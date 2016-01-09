@@ -133,24 +133,26 @@ namespace AWS.CloudFormation.Test
             template.AddInstance(RDGateway);
             DC1.AddToDomain(RDGateway);
 
-            var tfsSqlServer = new WindowsInstance(template,"SQL4TFS",InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
+            var tfsSqlServer = new WindowsInstance(template, "sql1", InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
             tfsSqlServer.AddBlockDeviceMapping("/dev/sda1", 70, "gp2");
             tfsSqlServer.AddBlockDeviceMapping("/dev/sdf", 50, "gp2");
             tfsSqlServer.AddBlockDeviceMapping("/dev/sdg", 20, "gp2");
-            tfsSqlServer.AddChefExec( softwareS3BucketName, "cookbooks-1452205868.tar.gz","SQL2014::express");
+            tfsSqlServer.AddChefExec( softwareS3BucketName, "cookbooks-1452302261.tar.gz", "SQL2014::express");
             template.AddInstance(tfsSqlServer);
 
             DC1.AddToDomain(tfsSqlServer);
 
 
-            var tfsServer = new WindowsInstance(template, "TFS", InstanceTypes.T2Nano, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
-            tfsServer.AddDependsOn(tfsSqlServer, new TimeSpan(2,0,0));
-            var chefNode = tfsServer.GetChefNodeJsonContent(softwareS3BucketName, "tfs-cookbooks-1452231429.tar");
+            var tfsServer = new WindowsInstance(template, "tfsserver1", InstanceTypes.T2Nano, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
+            tfsServer.AddDependsOn(tfsSqlServer, new TimeSpan(2, 0, 0));
+            var chefNode = tfsServer.GetChefNodeJsonContent(softwareS3BucketName, "tfs-cookbooks-1452231429.tar.gz");
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
-            domainAdminUserInfoNode.Add("name",DomainAdminUser);
+            domainAdminUserInfoNode.Add("name", DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             template.AddInstance(tfsServer);
             DC1.AddToDomain(tfsServer);
+            tfsSqlServer.AddChefExec(softwareS3BucketName, "cookbooks-1452292398.tar.gz", "TFS::applicationtier");
+
 
 
 
@@ -477,7 +479,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateStackTest()
         {
-            var stackName = "Stackb3280dd4-fff2-4551-98ff-5a7eda96f7c0";
+            var stackName = "Stack03b59290-8d8f-4f17-a87b-fc9783c480f2";
             var t = new Stack.Stack();
             t.UpdateStack(stackName, GetTemplate());
         }

@@ -69,8 +69,6 @@ Procfile
 
 # Berkshelf #
 #############
-Berksfile
-Berksfile.lock
 cookbooks/*
 tmp
 
@@ -94,8 +92,3 @@ Vagrantfile
 # Travis #
 ##########
 .travis.yml
-
-# daptiv #
-##########
-vagrant.yaml
-.tailor

@@ -14,15 +14,13 @@ sql_svc_pass      = ""
 sql_sysadmins     = "#{ENV['USERDOMAIN']}\\Domain Admins"
 sql_agent_svc_act = "NT Service\\SQLSERVERAGENT"
 
-Chef::Log.fatal("sql_sysadmins:#{sql_sysadmins}")
-
-
 s3_file iso_path do
 	remote_path "/software/#{exe_name}"
 	bucket "gtbb"
 	aws_access_key_id "#{node[:s3_file][:key]}"
 	aws_secret_access_key "#{node[:s3_file][:secret]}"
 	s3_url "https://s3.amazonaws.com/gtbb"
+	decrypted_file_checksum "4a1bc986df5ccff84fd65416a52846dc-14"
 	action :create
 end
 
@@ -30,7 +28,7 @@ end
 execute "Installing SQL Server Express" do
 	timeout 7200
 	command "#{iso_path} /q /ACTION=Install /FEATURES=SQLEngine,SSMS /INSTANCENAME=MSSQLSERVER /SQLSVCACCOUNT=\"#{sql_svc_act}\" /SQLSYSADMINACCOUNTS=\"#{sql_sysadmins}\" \"BUILTIN\\USERS\" /AGTSVCACCOUNT=\"#{sql_agent_svc_act}\" /IACCEPTSQLSERVERLICENSETERMS /INDICATEPROGRESS /UpdateEnabled=False /SECURITYMODE=SQL /SAPWD=JUhsd82.!# /TCPENABLED=1 /ADDCURRENTUSERASSQLADMIN=true /SQLUSERDBDIR=\"d:\\sqldata\" /SQLUSERDBLOGDIR=\"e:\\sqllog\" /INSTALLSQLDATADIR=\"d:\\sqldata\""
-	not_if '((gwmi -class win32_service | Where-Object {$_.Name -eq "MSSQLSERVER"}).Name -eq "MSSQLSERVER")'
+	not_if { File.exist?("C:\\Program Files\\Microsoft SQL Server\\MSSQL12.MSSQLSERVER\\MSSQL\\Binn\\sqlserv.exe") }
 end
 
 # Open Firewall To Domain

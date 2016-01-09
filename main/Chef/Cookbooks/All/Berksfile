@@ -1,0 +1,10 @@
+source "https://supermarket.chef.io"
+
+
+
+metadata
+
+cookbook 'TFS', path: '../TFS'
+cookbook 'ActiveDirectory', path: '../ActiveDirectory'
+cookbook 'SQL2014', path: '../SQL2014'
+cookbook 'DotNet35', path: '../DotNet35'
