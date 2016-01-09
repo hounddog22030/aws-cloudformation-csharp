@@ -33,8 +33,9 @@ namespace AWS.CloudFormation.Instance.Metadata.Config.Command
     {
         public ConfigCommand Parent { get; internal set; }
 
-        public virtual void AddCommandLine(params object[] commandLine)
+        public virtual void AddCommandLine(bool doNotAddTest, params object[] commandLine)
         {
+
             List<object> stringCommandLine = new List<object>();
 
             FileInfo outFile = null;
@@ -62,9 +63,17 @@ namespace AWS.CloudFormation.Instance.Metadata.Config.Command
                 stringCommandLine.Add($" > \"{outFile.FullName}\"");
             }
 
-            this.Parent.Test = $"IF EXIST \"{outFile.FullName}\" EXIT 1";
+            if (!doNotAddTest)
+            {
+                this.Parent.Test = $"IF EXIST \"{outFile.FullName}\" EXIT 1";
+            }
+
 
             this.SetFnJoin(stringCommandLine.ToArray());
+        }
+        public virtual void AddCommandLine(params object[] commandLine)
+        {
+            AddCommandLine(false,commandLine);
         }
     }
 }

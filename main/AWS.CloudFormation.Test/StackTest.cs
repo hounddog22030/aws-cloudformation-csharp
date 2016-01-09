@@ -59,7 +59,7 @@ namespace AWS.CloudFormation.Test
         // ReSharper disable once InconsistentNaming
         const string ADServerNetBIOSName1 = "DC1";
         const string SoftwareS3BucketName = "gtbb";
-        const string CookbookFileName = "cookbooks-1452305837.tar.gz";
+        const string CookbookFileName = "cookbooks-1452368370.tar.gz";
 
         private static Template GetTemplate()
         {
@@ -150,19 +150,11 @@ namespace AWS.CloudFormation.Test
             DC1.AddToDomain(tfsSqlServer);
 
 
-            var tfsServer = new WindowsInstance(template, "tfsserver2", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
-            tfsServer.AddDependsOn(tfsSqlServer, new TimeSpan(2, 0, 0));
+            //ConfigFileContent chefNode;
+            //CloudFormationDictionary domainAdminUserInfoNode;
+            var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, vpc, subnetsToAddToNatSecurityGroup, DC1);
 
-            var chefNode = tfsServer.GetChefNodeJsonContent(SoftwareS3BucketName, CookbookFileName);
-            var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
-            domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
-            domainAdminUserInfoNode.Add("password", DomainAdminPassword);
-            template.AddInstance(tfsServer);
-            tfsServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
-            DC1.AddToDomain(tfsServer);
-
-
-
+            AddBuildServer(template, PrivateSubnet1, tfsServer, vpc, subnetsToAddToNatSecurityGroup, DC1);
 
 
             // the below is a remote desktop gateway server that can
@@ -172,6 +164,59 @@ namespace AWS.CloudFormation.Test
             //template.AddInstance(RDGateway2);
 
             return template;
+        }
+
+        private static void AddBuildServer(Template template, Subnet PrivateSubnet1, WindowsInstance tfsServer, Vpc vpc,
+            Subnet[] subnetsToAddToNatSecurityGroup, DomainController DC1)
+        {
+            ConfigFileContent chefNode;
+            CloudFormationDictionary domainAdminUserInfoNode;
+            var buildServer = new WindowsInstance(template, "BUILD1", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI,
+                PrivateSubnet1);
+            buildServer.AddBlockDeviceMapping("/dev/sda1", 214, "gp2");
+
+            buildServer.AddDependsOn(tfsServer, new TimeSpan(2, 0, 0));
+
+            chefNode = buildServer.GetChefNodeJsonContent(SoftwareS3BucketName, CookbookFileName);
+            domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
+            domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
+            domainAdminUserInfoNode.Add("password", DomainAdminPassword);
+            template.AddInstance(buildServer);
+            //Build controller to build agent
+            SecurityGroup buildServerSecurityGroup = template.GetSecurityGroup("BuildServerSecurityGroup", vpc,
+                "Allows build controller to build agent communication");
+            foreach (var subnet in subnetsToAddToNatSecurityGroup)
+            {
+                buildServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(subnet, Protocol.All, Ports.BuildController);
+            }
+            buildServer.SecurityGroups.Add(buildServerSecurityGroup);
+            buildServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::build");
+            DC1.AddToDomain(buildServer);
+        }
+
+        private static WindowsInstance AddTfsServer(Template template, Subnet PrivateSubnet1, WindowsInstance tfsSqlServer,
+            Vpc vpc, Subnet[] subnetsToAddToNatSecurityGroup, DomainController DC1)
+        {
+            var tfsServer = new WindowsInstance(template, "tfsserver1", InstanceTypes.T2Small,
+                StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
+            tfsServer.AddDependsOn(tfsSqlServer, new TimeSpan(2, 0, 0));
+
+            var chefNode = tfsServer.GetChefNodeJsonContent(SoftwareS3BucketName, CookbookFileName);
+            var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
+            domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
+            domainAdminUserInfoNode.Add("password", DomainAdminPassword);
+            template.AddInstance(tfsServer);
+            tfsServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
+            //Build controller to build agent
+            SecurityGroup tfsServerSecurityGroup = template.GetSecurityGroup("TFSServerSecurityGroup", vpc,
+                "Allows various TFS communication");
+            foreach (var subnet in subnetsToAddToNatSecurityGroup)
+            {
+                tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(subnet, Protocol.All, Ports.All);
+            }
+            tfsServer.SecurityGroups.Add(tfsServerSecurityGroup);
+            DC1.AddToDomain(tfsServer);
+            return tfsServer;
         }
 
         private static void AddInternetGatewayRouteTable(Template template, Vpc vpc, InternetGateway gateway, Subnet subnet)
