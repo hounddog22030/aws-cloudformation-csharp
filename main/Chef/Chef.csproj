@@ -178,16 +178,6 @@
     <None Include="Cookbooks\Resharper\spec\unit\recipes\default_spec.rb" />
     <None Include="Cookbooks\Resharper\test\integration\default\serverspec\default_spec.rb" />
     <None Include="Cookbooks\Resharper\test\integration\default\serverspec\spec_helper.rb" />
-    <None Include="Cookbooks\s3_file\.gitignore" />
-    <None Include="Cookbooks\s3_file\CHANGELOG.md" />
-    <None Include="Cookbooks\s3_file\libraries\matchers.rb" />
-    <None Include="Cookbooks\s3_file\libraries\s3_file.rb" />
-    <None Include="Cookbooks\s3_file\metadata.json" />
-    <None Include="Cookbooks\s3_file\providers\default.rb" />
-    <None Include="Cookbooks\s3_file\README.rdoc" />
-    <None Include="Cookbooks\s3_file\recipes\default.rb" />
-    <None Include="Cookbooks\s3_file\recipes\dependencies.rb" />
-    <None Include="Cookbooks\s3_file\resources\default.rb" />
     <None Include="Cookbooks\SQL2014\.kitchen.yml" />
     <None Include="Cookbooks\SQL2014\attributes\default.rb" />
     <None Include="Cookbooks\SQL2014\Berksfile" />
@@ -232,9 +222,7 @@
     <None Include="Cookbooks\VisualStudio\test\integration\default\serverspec\spec_helper.rb" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Cookbooks\s3_file\MIT-LICENSE.txt" />
     <Content Include="Cookbooks\VisualStudio\files\AdminDeployment.xml" />
-    <Content Include="s3forstack.txt" />
     <Content Include="stack.template" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
