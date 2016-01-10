@@ -48,20 +48,17 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
     {
         public LoadBalancer(Template template, string name) : base(template, "AWS::ElasticLoadBalancing::LoadBalancer", name, false)
         {
-            Instances = new ListThatSerializesAsRef();
-            //Listeners = new ListThatSerializesAsRef<Listener>();
         }
 
         public void AddInstance(Instance.Instance instance)
         {
-            //List<Instance.Instance> tempInstances = new List<Instance.Instance>();
-            //if (this.Instances.Length > 0)
-            //{
-            //    tempInstances.AddRange(this.Instances);
-            //}
-            //tempInstances.Add(new ReferenceProperty(instance));
-            //this.Instances = tempInstances.ToArray();
-            this.Instances.Add(instance);
+            List<ReferenceProperty> tempInstances = new List<ReferenceProperty>();
+            if (this.Instances !=null && this.Instances.Length > 0)
+            {
+                tempInstances.AddRange(this.Instances);
+            }
+            tempInstances.Add(new ReferenceProperty() {Ref  = instance.Name});
+            this.Instances = tempInstances.ToArray();
         }
         public void AddListener(string loadBalancePort,string instancePort, string protocol)
         {
@@ -79,9 +76,9 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
         public Listener[] Listeners { get; private set; }
 
         [CloudFormationProperties]
-        public ListThatSerializesAsRef Instances { get; private set; }
+        public ReferenceProperty[] Instances { get; private set; }
 
-        public class Listener : CloudFormationDictionary
+        public class Listener
         {
             public Listener(string loadBalancerPort, string instancePort, string protocol)
             {

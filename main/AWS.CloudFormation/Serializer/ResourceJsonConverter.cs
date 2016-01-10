@@ -95,7 +95,7 @@ namespace AWS.CloudFormation.Serializer
             {
                 var propertyValue = propertyInfo.GetValue(value);
 
-                if (propertyValue is ListThatSerializesAsRef)
+                if (propertyValue is Array)
                 {
                     System.Diagnostics.Debugger.Break();
                 }

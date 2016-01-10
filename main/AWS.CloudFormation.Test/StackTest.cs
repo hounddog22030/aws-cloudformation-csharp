@@ -65,7 +65,7 @@ namespace AWS.CloudFormation.Test
         static readonly TimeSpan ThreeHoursSpan = new TimeSpan(3, 0, 0);
         static readonly TimeSpan TwoHoursSpan = new TimeSpan(2, 0, 0);
 
-        private static Template GetTemplate()
+        public static Template GetTemplate()
         {
 
             var template = new Template(KeyPairName);
