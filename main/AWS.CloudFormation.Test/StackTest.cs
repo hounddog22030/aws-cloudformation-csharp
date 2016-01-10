@@ -156,8 +156,7 @@ namespace AWS.CloudFormation.Test
 
             var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, vpc, subnetsToAddToNatSecurityGroup, DC1);
             var workstation = AddWorkstation(template, PrivateSubnet1, buildServer, vpc, subnetsToAddToNatSecurityGroup, DC1);
-
-
+            workstation.AddFinalizer(new TimeSpan(2,0,0));
 
 
             // the below is a remote desktop gateway server that can
@@ -203,30 +202,23 @@ namespace AWS.CloudFormation.Test
         {
             ConfigFileContent chefNode;
             CloudFormationDictionary domainAdminUserInfoNode;
-            var buildServer = new WindowsInstance(template, "workstation", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI,
+            var workstation = new WindowsInstance(template, "workstation", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI,
                 PrivateSubnet1);
-            buildServer.AddBlockDeviceMapping("/dev/sda1", 40, "gp2");
-            buildServer.AddBlockDeviceMapping("/dev/sdf", 20, "gp2");
-            buildServer.AddBlockDeviceMapping("/dev/sdg", 10, "gp2");
+            workstation.AddBlockDeviceMapping("/dev/sda1", 40, "gp2");
+            workstation.AddBlockDeviceMapping("/dev/sdf", 20, "gp2");
+            workstation.AddBlockDeviceMapping("/dev/sdg", 10, "gp2");
 
-            buildServer.AddDependsOn(dependsOn, new TimeSpan(2, 0, 0));
+            workstation.AddDependsOn(dependsOn, new TimeSpan(2, 0, 0));
 
-            chefNode = buildServer.GetChefNodeJsonContent(SoftwareS3BucketName, CookbookFileName);
+            chefNode = workstation.GetChefNodeJsonContent(SoftwareS3BucketName, CookbookFileName);
             domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
             domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
-            template.AddInstance(buildServer);
-            //Build controller to build agent
-            //SecurityGroup buildServerSecurityGroup = template.GetSecurityGroup("BuildServerSecurityGroup", vpc,
-            //    "Allows build controller to build agent communication");
-            //foreach (var subnet in subnetsToAddToNatSecurityGroup)
-            //{
-            //    buildServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(subnet, Protocol.All, Ports.BuildController);
-            //}
-            //buildServer.SecurityGroups.Add(buildServerSecurityGroup);
-            buildServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "VisualStudio");
-            DC1.AddToDomain(buildServer);
-            return buildServer;
+            template.AddInstance(workstation);
+            workstation.AddChefExec(SoftwareS3BucketName, CookbookFileName, "VisualStudio");
+
+            DC1.AddToDomain(workstation);
+            return workstation;
         }
 
         private static WindowsInstance AddTfsServer(Template template, Subnet PrivateSubnet1, WindowsInstance tfsSqlServer,
