@@ -37,7 +37,9 @@ namespace AWS.CloudFormation.Resource.Networking
         ActiveDirectoryFileReplication = 5722,
         Http = 80,
         MsSqlServer = 1433,
-        BuildController = 9191
+        BuildController = 9191,
+        TeamFoundationServerGeneral = 8080,
+        TeamFoundationServerBuild = 9191
     }
 
     [Flags]
