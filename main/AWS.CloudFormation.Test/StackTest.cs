@@ -135,7 +135,7 @@ namespace AWS.CloudFormation.Test
             PrivateRoute.Instance = nat1;
 
             // ReSharper disable once InconsistentNaming
-            var DC1 = new DomainController(template,
+            var DomainController = new DomainController(template,
                 ADServerNetBIOSName1,
                 InstanceTypes.T2Micro,
                 StackTest.USEAST1AWINDOWS2012R2AMI,
@@ -144,15 +144,15 @@ namespace AWS.CloudFormation.Test
                 new DomainController.DomainInfo(StackTest.DomainDNSName, StackTest.DomainNetBIOSName, StackTest.DomainAdminUser, StackTest.DomainAdminPassword));
 
 
-            DC1.CreateAdReplicationSubnet(DMZSubnet);
-            DC1.CreateAdReplicationSubnet(DMZ2Subnet);
-            template.AddInstance(DC1);
+            DomainController.CreateAdReplicationSubnet(DMZSubnet);
+            DomainController.CreateAdReplicationSubnet(DMZ2Subnet);
+            template.AddInstance(DomainController);
 
             // ReSharper disable once InconsistentNaming
             var RDGateway = new RemoteDesktopGateway(template, "RDGateway", InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, DMZSubnet);
             RDGateway.AddFinalizer(TwoHoursSpan);
             template.AddInstance(RDGateway);
-            DC1.AddToDomain(RDGateway, ThreeHoursSpan);
+            DomainController.AddToDomain(RDGateway, ThreeHoursSpan);
 
             var tfsSqlServer = new WindowsInstance(template, "sql1", InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
             tfsSqlServer.AddBlockDeviceMapping("/dev/sda1", 70, "gp2");
@@ -162,15 +162,15 @@ namespace AWS.CloudFormation.Test
             tfsSqlServer.SecurityGroups.Add(sqlServerSecurityGroup);
 
             template.AddInstance(tfsSqlServer);
-            DC1.AddToDomain(tfsSqlServer, ThreeHoursSpan);
+            DomainController.AddToDomain(tfsSqlServer, ThreeHoursSpan);
 
-            var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DC1, tfsServerSecurityGroup);
+            var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
             tfsServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
 
-            var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DC1, buildServerSecurityGroup);
+            var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup);
             buildServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::build");
 
-            var workstation = AddWorkstation(template, PrivateSubnet1, buildServer, DC1, workstationSecurityGroup);
+            var workstation = AddWorkstation(template, PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup);
             workstation.AddChefExec(SoftwareS3BucketName, CookbookFileName, "VisualStudio");
             workstation.AddFinalizer(ThreeHoursSpan);
 
@@ -184,7 +184,7 @@ namespace AWS.CloudFormation.Test
             return template;
         }
 
-        private static WindowsInstance AddBuildServer(Template template, Subnet privateSubnet1, WindowsInstance tfsServer, DomainController DC1, SecurityGroup buildServerSecurityGroup)
+        private static WindowsInstance AddBuildServer(Template template, Subnet privateSubnet1, WindowsInstance tfsServer, DomainController DomainController, SecurityGroup buildServerSecurityGroup)
         {
             var buildServer = new WindowsInstance(template, "build", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, privateSubnet1);
             buildServer.AddBlockDeviceMapping("/dev/sda1", 30, "gp2");
@@ -197,7 +197,7 @@ namespace AWS.CloudFormation.Test
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             template.AddInstance(buildServer);
             buildServer.SecurityGroups.Add(buildServerSecurityGroup);
-            DC1.AddToDomain(buildServer, ThreeHoursSpan);
+            DomainController.AddToDomain(buildServer, ThreeHoursSpan);
             return buildServer;
         }
 
