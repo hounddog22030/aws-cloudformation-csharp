@@ -11,7 +11,7 @@ namespace AWS.CloudFormation.Resource.Networking
     {
         ActiveDirectoryManagement = 9389,
         ActiveDirectoryManagement2 = 464,
-        Rdp = 3389,
+        RemoteDesktopProtocol = 3389,
         Ssh = 22,
         Ssl = 443,
         RdpAdmin = 3391,

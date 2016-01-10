@@ -276,7 +276,7 @@ namespace AWS.CloudFormation.Instance
             DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.KerberosKeyDistribution);
             DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(DomainMemberSecurityGroup,
-                Protocol.Tcp | Protocol.Udp, Ports.Rdp);
+                Protocol.Tcp | Protocol.Udp, Ports.RemoteDesktopProtocol);
 
             //DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(DMZSubnet, Protocol.Tcp | Protocol.Udp, Ports.Rdp);
 
@@ -320,9 +320,9 @@ namespace AWS.CloudFormation.Instance
             //DMZSubnet
             // this is questionable overkill
             DomainMemberSecurityGroup.AddIngressEgress<SecurityGroupIngress>(domainMember.Subnet, Protocol.Tcp,
-                Ports.Rdp);
+                Ports.RemoteDesktopProtocol);
             DomainMemberSecurityGroup.AddIngressEgress<SecurityGroupIngress>(domainMember.Subnet, Protocol.Tcp,
-                Ports.Rdp);
+                Ports.RemoteDesktopProtocol);
 
             domainMember.SecurityGroups.Add(DomainMemberSecurityGroup);
         }

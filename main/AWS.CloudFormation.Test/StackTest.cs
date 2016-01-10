@@ -60,6 +60,8 @@ namespace AWS.CloudFormation.Test
         const string ADServerNetBIOSName1 = "DC1";
         const string SoftwareS3BucketName = "gtbb";
         const string CookbookFileName = "cookbooks-1452429282.tar.gz";
+        static readonly TimeSpan ThreeHoursSpan = new TimeSpan(0, 3, 0);
+        static readonly TimeSpan TwoHoursSpan = new TimeSpan(0, 2, 0);
 
         private static Template GetTemplate()
         {
@@ -77,6 +79,9 @@ namespace AWS.CloudFormation.Test
             var PrivateSubnet1 = template.AddSubnet("PrivateSubnet1", vpc, PrivSub1CIDR, Template.AvailabilityZone.UsEast1A);
             // ReSharper disable once InconsistentNaming
             var PrivateSubnet2 = template.AddSubnet("PrivateSubnet2", vpc, PrivSub2CIDR, Template.AvailabilityZone.UsEast1A);
+
+            SecurityGroup tfsServerSecurityGroup = template.GetSecurityGroup("TFSServerSecurityGroup", vpc, "Allows various TFS communication");
+
 
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
@@ -129,7 +134,7 @@ namespace AWS.CloudFormation.Test
 
             // ReSharper disable once InconsistentNaming
             var RDGateway = new RemoteDesktopGateway(template, "RDGateway", InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, DMZSubnet);
-            RDGateway.AddFinalizer(new TimeSpan(2,0,0));
+            RDGateway.AddFinalizer(TwoHoursSpan);
             template.AddInstance(RDGateway);
             DC1.AddToDomain(RDGateway);
 
@@ -138,12 +143,16 @@ namespace AWS.CloudFormation.Test
             tfsSqlServer.AddBlockDeviceMapping("/dev/sdf", 50, "gp2");
             tfsSqlServer.AddBlockDeviceMapping("/dev/sdg", 20, "gp2");
             tfsSqlServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "SQL2014::express");
-            SecurityGroup sqlServerSecurityGroup = template.GetSecurityGroup("SqlServer4TfsSecurityGroup", vpc,
-                "Allows communication to the SQLServer application");
-            foreach (var subnet in subnetsToAddToNatSecurityGroup)
-            {
-                sqlServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(subnet, Protocol.All, Ports.MsSqlServer);
-            }
+            SecurityGroup sqlServerSecurityGroup = template.GetSecurityGroup("SqlServer4TfsSecurityGroup", vpc, "Allows communication to SQLServer Service");
+            sqlServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(tfsServerSecurityGroup, Protocol.Tcp, Ports.MsSqlServer);
+            sqlServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            sqlServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+
+
+            //foreach (var subnet in subnetsToAddToNatSecurityGroup)
+            //{
+            //    sqlServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(subnet, Protocol.All, Ports.MsSqlServer);
+            //}
             tfsSqlServer.SecurityGroups.Add(sqlServerSecurityGroup);
 
             template.AddInstance(tfsSqlServer);
@@ -152,11 +161,11 @@ namespace AWS.CloudFormation.Test
 
             //ConfigFileContent chefNode;
             //CloudFormationDictionary domainAdminUserInfoNode;
-            var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, vpc, subnetsToAddToNatSecurityGroup, DC1);
+            var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, vpc, subnetsToAddToNatSecurityGroup, DC1, tfsServerSecurityGroup);
 
             var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, vpc, subnetsToAddToNatSecurityGroup, DC1);
             var workstation = AddWorkstation(template, PrivateSubnet1, buildServer, vpc, subnetsToAddToNatSecurityGroup, DC1);
-            workstation.AddFinalizer(new TimeSpan(2,0,0));
+            workstation.AddFinalizer(ThreeHoursSpan);
 
 
             // the below is a remote desktop gateway server that can
@@ -177,7 +186,7 @@ namespace AWS.CloudFormation.Test
                 PrivateSubnet1);
             buildServer.AddBlockDeviceMapping("/dev/sda1", 30, "gp2");
 
-            buildServer.AddDependsOn(tfsServer, new TimeSpan(2, 0, 0));
+            buildServer.AddDependsOn(tfsServer, ThreeHoursSpan);
 
             chefNode = buildServer.GetChefNodeJsonContent(SoftwareS3BucketName, CookbookFileName);
             domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
@@ -208,7 +217,7 @@ namespace AWS.CloudFormation.Test
             workstation.AddBlockDeviceMapping("/dev/sdf", 20, "gp2");
             workstation.AddBlockDeviceMapping("/dev/sdg", 10, "gp2");
 
-            workstation.AddDependsOn(dependsOn, new TimeSpan(2, 0, 0));
+            workstation.AddDependsOn(dependsOn, ThreeHoursSpan);
 
             chefNode = workstation.GetChefNodeJsonContent(SoftwareS3BucketName, CookbookFileName);
             domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
@@ -222,11 +231,11 @@ namespace AWS.CloudFormation.Test
         }
 
         private static WindowsInstance AddTfsServer(Template template, Subnet PrivateSubnet1, WindowsInstance tfsSqlServer,
-            Vpc vpc, Subnet[] subnetsToAddToNatSecurityGroup, DomainController DC1)
+            Vpc vpc, Subnet[] subnetsToAddToNatSecurityGroup, DomainController DC1, SecurityGroup tfsServerSecurityGroup)
         {
             var tfsServer = new WindowsInstance(template, "tfsserver1", InstanceTypes.T2Small,
                 StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
-            tfsServer.AddDependsOn(tfsSqlServer, new TimeSpan(2, 0, 0));
+            tfsServer.AddDependsOn(tfsSqlServer, ThreeHoursSpan);
 
             var chefNode = tfsServer.GetChefNodeJsonContent(SoftwareS3BucketName, CookbookFileName);
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
@@ -235,8 +244,6 @@ namespace AWS.CloudFormation.Test
             template.AddInstance(tfsServer);
             tfsServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
             //Build controller to build agent
-            SecurityGroup tfsServerSecurityGroup = template.GetSecurityGroup("TFSServerSecurityGroup", vpc,
-                "Allows various TFS communication");
             foreach (var subnet in subnetsToAddToNatSecurityGroup)
             {
                 tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(subnet, Protocol.All, Ports.All);
@@ -518,7 +525,7 @@ namespace AWS.CloudFormation.Test
 
             domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(domainMemberSg,Protocol.Tcp|Protocol.Udp,Ports.KerberosKeyDistribution);
 
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(DMZSubnet, Protocol.Tcp|Protocol.Udp, Ports.Rdp);
+            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(DMZSubnet, Protocol.Tcp|Protocol.Udp, Ports.RemoteDesktopProtocol);
 
             domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(DMZSubnet, Protocol.Icmp, Ports.All);
             domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(dmzaz2Subnet, Protocol.Icmp, Ports.All);

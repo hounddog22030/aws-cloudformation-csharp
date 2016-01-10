@@ -57,7 +57,7 @@ namespace AWS.CloudFormation.Instance
         {
             var rdgwSecurityGroup = this.Template.GetSecurityGroup("RDGWSecurityGroup", this.Subnet.Vpc, "Remote Desktop Security Group");
 
-            rdgwSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Rdp, Ports.Ssl);
+            rdgwSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol, Ports.Ssl);
             rdgwSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Udp, Ports.RdpAdmin);
             rdgwSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
 
