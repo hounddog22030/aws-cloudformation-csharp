@@ -61,8 +61,8 @@ namespace AWS.CloudFormation.Test
         const string ADServerNetBIOSName1 = "dc1";
         const string SoftwareS3BucketName = "gtbb";
         const string CookbookFileName = "cookbooks-1452429282.tar.gz";
-        static readonly TimeSpan ThreeHoursSpan = new TimeSpan(0, 3, 0);
-        static readonly TimeSpan TwoHoursSpan = new TimeSpan(0, 2, 0);
+        static readonly TimeSpan ThreeHoursSpan = new TimeSpan(3, 0, 0);
+        static readonly TimeSpan TwoHoursSpan = new TimeSpan(2, 0, 0);
 
         private static Template GetTemplate()
         {
@@ -155,7 +155,7 @@ namespace AWS.CloudFormation.Test
             var RDGateway = new RemoteDesktopGateway(template, "RDGateway", InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, DMZSubnet);
             RDGateway.AddFinalizer(TwoHoursSpan);
             template.AddInstance(RDGateway);
-            DC1.AddToDomain(RDGateway);
+            DC1.AddToDomain(RDGateway, ThreeHoursSpan);
 
             var tfsSqlServer = new WindowsInstance(template, "sql1", InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
             tfsSqlServer.AddBlockDeviceMapping("/dev/sda1", 70, "gp2");
@@ -165,7 +165,7 @@ namespace AWS.CloudFormation.Test
             tfsSqlServer.SecurityGroups.Add(sqlServerSecurityGroup);
 
             template.AddInstance(tfsSqlServer);
-            DC1.AddToDomain(tfsSqlServer);
+            DC1.AddToDomain(tfsSqlServer, ThreeHoursSpan);
 
             var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DC1, tfsServerSecurityGroup);
             tfsServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
@@ -189,7 +189,7 @@ namespace AWS.CloudFormation.Test
 
         private static WindowsInstance AddBuildServer(Template template, Subnet privateSubnet1, WindowsInstance tfsServer, DomainController DC1, SecurityGroup buildServerSecurityGroup)
         {
-            var buildServer = new WindowsInstance(template, "BUILD3", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, privateSubnet1);
+            var buildServer = new WindowsInstance(template, "build", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, privateSubnet1);
             buildServer.AddBlockDeviceMapping("/dev/sda1", 30, "gp2");
 
             buildServer.AddDependsOn(tfsServer, ThreeHoursSpan);
@@ -200,7 +200,7 @@ namespace AWS.CloudFormation.Test
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             template.AddInstance(buildServer);
             buildServer.SecurityGroups.Add(buildServerSecurityGroup);
-            DC1.AddToDomain(buildServer);
+            DC1.AddToDomain(buildServer, ThreeHoursSpan);
             return buildServer;
         }
 
@@ -220,7 +220,7 @@ namespace AWS.CloudFormation.Test
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             template.AddInstance(workstation);
 
-            dc1.AddToDomain(workstation);
+            dc1.AddToDomain(workstation, ThreeHoursSpan);
             return workstation;
         }
 
@@ -235,7 +235,7 @@ namespace AWS.CloudFormation.Test
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             template.AddInstance(tfsServer);
             tfsServer.SecurityGroups.Add(tfsServerSecurityGroup);
-            dc1.AddToDomain(tfsServer);
+            dc1.AddToDomain(tfsServer, ThreeHoursSpan);
             return tfsServer;
         }
 

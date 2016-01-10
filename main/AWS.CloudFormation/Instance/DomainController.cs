@@ -330,7 +330,7 @@ namespace AWS.CloudFormation.Instance
         [JsonIgnore]
         public SecurityGroup DomainMemberSecurityGroup { get; }
 
-        public void AddToDomain(WindowsInstance instanceToAddToDomain)
+        public void AddToDomain(WindowsInstance instanceToAddToDomain, TimeSpan timeToWait)
         {
             var joinCommandConfig =
                 instanceToAddToDomain.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName)
@@ -352,7 +352,7 @@ namespace AWS.CloudFormation.Instance
                 "-Restart\"");
             joinCommand.WaitAfterCompletion = "forever";
 
-            instanceToAddToDomain.AddDependsOn(this, new TimeSpan(0, 90, 0));
+            instanceToAddToDomain.AddDependsOn(this, timeToWait);
             this.SetDnsServers(instanceToAddToDomain);
             this.AddToDomainMemberSecurityGroup(instanceToAddToDomain);
             instanceToAddToDomain.DomainNetBiosName = this.DomainNetBiosName;
