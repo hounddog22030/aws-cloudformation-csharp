@@ -12,14 +12,14 @@ volume_name = "TFS2015.1_SERVER_ENU"
 
 tfsconfigure_exe_file = "C:/Program Files/Microsoft Team Foundation Server 12.0/Tools/TFSConfig.exe"
 
-powershell_script 'Download ISO' do
-	code <<-EOH
-		ECHO "#{iso_url}"
-		$Client = New-Object System.Net.WebClient
-		$Client.DownloadFile( "#{iso_url}", "#{iso_path}")
-		EOH
-	guard_interpreter :powershell_script
-	not_if { File.exists?(iso_path)}
+s3_file iso_path do
+	remote_path "/software/#{iso_name}"
+	bucket "gtbb"
+	aws_access_key_id "#{node[:s3_file][:key]}"
+	aws_secret_access_key "#{node[:s3_file][:secret]}"
+	s3_url "https://s3.amazonaws.com/gtbb"
+	decrypted_file_checksum "a8cbd23feac3da7925634560cdec78b7-17"
+	action :create
 end
 
 # Mounting the Team Foundation Server SP1 Standard ISO.

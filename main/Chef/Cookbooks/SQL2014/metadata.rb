@@ -7,4 +7,4 @@ long_description 'Installs/Configures SQL2014'
 version          '0.1.0'
 
 depends "DotNet35"
-depends "s3_file"
+cookbook 's3_file', '~> 2.5.3'

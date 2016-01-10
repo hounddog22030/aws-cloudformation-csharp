@@ -61,7 +61,7 @@ namespace AWS.CloudFormation.Test
         // ReSharper disable once InconsistentNaming
         const string ADServerNetBIOSName1 = "dc1";
         const string SoftwareS3BucketName = "gtbb";
-        const string CookbookFileName = "cookbooks-1452429282.tar.gz";
+        const string CookbookFileName = "cookbooks-1452449666.tar.gz";
         static readonly TimeSpan ThreeHoursSpan = new TimeSpan(3, 0, 0);
         static readonly TimeSpan TwoHoursSpan = new TimeSpan(2, 0, 0);
 
@@ -165,15 +165,15 @@ namespace AWS.CloudFormation.Test
             template.AddInstance(tfsSqlServer);
             DomainController.AddToDomain(tfsSqlServer, ThreeHoursSpan);
 
-            var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
-            tfsServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
+            //var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
+            //tfsServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
 
-            var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup);
-            buildServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::build");
+            //var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup);
+            //buildServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::build");
 
-            var workstation = AddWorkstation(template, PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup);
-            workstation.AddChefExec(SoftwareS3BucketName, CookbookFileName, "VisualStudio");
-            workstation.AddFinalizer(ThreeHoursSpan);
+            //var workstation = AddWorkstation(template, PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup);
+            //workstation.AddChefExec(SoftwareS3BucketName, CookbookFileName, "VisualStudio");
+            //workstation.AddFinalizer(ThreeHoursSpan);
 
 
             // the below is a remote desktop gateway server that can
