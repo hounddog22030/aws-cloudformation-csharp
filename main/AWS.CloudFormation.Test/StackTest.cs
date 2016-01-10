@@ -11,6 +11,7 @@ using AWS.CloudFormation.Instance.Metadata.Config;
 using AWS.CloudFormation.Instance.Metadata.Config.Command;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource;
+using AWS.CloudFormation.Resource.ElasticLoadBalancing;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -64,7 +65,7 @@ namespace AWS.CloudFormation.Test
         static readonly TimeSpan ThreeHoursSpan = new TimeSpan(3, 0, 0);
         static readonly TimeSpan TwoHoursSpan = new TimeSpan(2, 0, 0);
 
-        private static Template GetTemplate()
+        public static Template GetTemplate()
         {
 
             var template = new Template(KeyPairName);
@@ -164,15 +165,15 @@ namespace AWS.CloudFormation.Test
             template.AddInstance(tfsSqlServer);
             DomainController.AddToDomain(tfsSqlServer, ThreeHoursSpan);
 
-            //var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
-            //tfsServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
+            var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
+            tfsServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
 
-            //var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup);
-            //buildServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::build");
+            var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup);
+            buildServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::build");
 
-            //var workstation = AddWorkstation(template, PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup);
-            //workstation.AddChefExec(SoftwareS3BucketName, CookbookFileName, "VisualStudio");
-            //workstation.AddFinalizer(ThreeHoursSpan);
+            var workstation = AddWorkstation(template, PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup);
+            workstation.AddChefExec(SoftwareS3BucketName, CookbookFileName, "VisualStudio");
+            workstation.AddFinalizer(ThreeHoursSpan);
 
 
             // the below is a remote desktop gateway server that can
@@ -180,6 +181,14 @@ namespace AWS.CloudFormation.Test
             //var RDGateway2 = new RemoteDesktopGateway(template, "RDGateway2", InstanceTypes.T2Micro, "ami-e4034a8e", DMZSubnet);
             //dc1.AddToDomainMemberSecurityGroup(RDGateway2);
             //template.AddInstance(RDGateway2);
+
+            LoadBalancer elb = new LoadBalancer(template,"elb1");
+            elb.AddInstance(tfsServer);
+            elb.AddListener("8080", "8080", "http");
+            elb.AddSubnet(DMZSubnet);
+            //elb.AddListener("8080", "8080", "https");
+            template.AddResource(elb);
+
 
             return template;
         }
@@ -549,7 +558,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateStackTest()
         {
-            var stackName = "Stackb672df30-0952-4d0f-8fd7-54809d646e27";
+            var stackName = "Stackdf54b49a-3769-4c5b-8141-3e54ddd93df3";
             var t = new Stack.Stack();
             t.UpdateStack(stackName, GetTemplate());
         }

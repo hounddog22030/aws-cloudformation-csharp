@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Instance;
 using AWS.CloudFormation.Resource;
+using AWS.CloudFormation.Resource.ElasticLoadBalancing;
 using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Serializer
@@ -93,6 +94,11 @@ namespace AWS.CloudFormation.Serializer
             foreach (var propertyInfo in propertiesToSerializeAsAwsProperties)
             {
                 var propertyValue = propertyInfo.GetValue(value);
+
+                if (propertyValue is Array)
+                {
+                    System.Diagnostics.Debugger.Break();
+                }
 
                 if (propertyValue != null && (!(propertyValue is ICollection) || (propertyValue is ICollection && ((ICollection)propertyValue).Count > 0 )))
                 {

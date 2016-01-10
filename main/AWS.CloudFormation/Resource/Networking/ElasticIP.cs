@@ -6,26 +6,23 @@ using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Serializer;
+using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Resource.Networking
 {
     public class ElasticIP : ResourceBase
     {
-        public ElasticIP(string name) : base( "AWS::EC2::EIP", name, false)
+        public ElasticIP(Instance.Instance instance, string name) : base(instance.Template, "AWS::EC2::EIP", name, false)
         {
+            Instance = instance;
             this.Domain = "vpc";
         }
 
         [CloudFormationProperties]
         [JsonProperty(PropertyName = "InstanceId")]
-        public Instance.Instance Instance { get; set; }
+        public Instance.Instance Instance { get; }
 
-        public static ElasticIP Create(string name, Instance.Instance instance)
-        {
-            ElasticIP returnValue = new ElasticIP( name ) {Instance = instance};
-            return returnValue;
-        }
         [CloudFormationProperties]
         public string Domain { get; private set; }
     }

@@ -151,9 +151,9 @@ namespace AWS.CloudFormation.Instance
         public string PrivateIpAddress { get; set; }
 
 
-        public ElasticIP AddElasticIp(string name)
+        public ElasticIP AddElasticIp()
         {
-            ElasticIP eip = ElasticIP.Create(name, this);
+            ElasticIP eip = new ElasticIP(this, this.Name + "EIP");
             this.Template.AddResource(eip);
             return eip;
         }

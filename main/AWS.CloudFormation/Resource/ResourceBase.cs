@@ -26,13 +26,22 @@ namespace AWS.CloudFormation.Resource
     [JsonConverter(typeof(ResourceJsonConverter))]
     public abstract class ResourceBase : IName
     {
-        protected ResourceBase(string type)
+        //protected ResourceBase(string type)
+        //{
+        //}
+
+        //protected ResourceBase(string type, string name, bool supportsTags) : this(type)
+        //{
+        //}
+
+        [CloudFormationProperties]
+        public List<KeyValuePair<string, string>> Tags { get; private set; }
+
+        protected ResourceBase(Template template, string type, string name, bool supportsTags)
+            //: this(type, name, supportsTags)
         {
             Type = type;
-        }
-
-        protected ResourceBase(string type, string name, bool supportsTags) : this(type)
-        {
+            Template = template;
             Name = name;
             Metadata = new Resource.Metadata(this);
 
@@ -43,17 +52,8 @@ namespace AWS.CloudFormation.Resource
             }
         }
 
-        [CloudFormationPropertiesAttribute]
-        public List<KeyValuePair<string, string>> Tags { get; private set; }
-
-        protected ResourceBase(Template template, string type, string name, bool supportsTags)
-            : this(type, name, supportsTags)
-        {
-            Template = template;
-        }
-
         [JsonIgnore]
-        protected Template Template { get; private set; }
+        internal Template Template { get; private set; }
         public string Type { get; private set; }
 
         public Resource.Metadata Metadata { get; }
