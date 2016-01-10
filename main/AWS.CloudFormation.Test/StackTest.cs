@@ -11,6 +11,7 @@ using AWS.CloudFormation.Instance.Metadata.Config;
 using AWS.CloudFormation.Instance.Metadata.Config.Command;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource;
+using AWS.CloudFormation.Resource.ElasticLoadBalancing;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -180,6 +181,13 @@ namespace AWS.CloudFormation.Test
             //var RDGateway2 = new RemoteDesktopGateway(template, "RDGateway2", InstanceTypes.T2Micro, "ami-e4034a8e", DMZSubnet);
             //dc1.AddToDomainMemberSecurityGroup(RDGateway2);
             //template.AddInstance(RDGateway2);
+
+            LoadBalancer elb = new LoadBalancer(template,"elb1");
+            elb.AddInstance(tfsServer);
+            elb.AddListener("8080", "8080", "http");
+            elb.AddListener("8080", "8080", "https");
+            template.AddResource(elb);
+
 
             return template;
         }

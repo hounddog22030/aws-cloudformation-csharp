@@ -34,7 +34,7 @@ namespace AWS.CloudFormation.Resource
         //{
         //}
 
-        [CloudFormationPropertiesAttribute]
+        [CloudFormationProperties]
         public List<KeyValuePair<string, string>> Tags { get; private set; }
 
         protected ResourceBase(Template template, string type, string name, bool supportsTags)
