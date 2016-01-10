@@ -59,7 +59,7 @@ namespace AWS.CloudFormation.Test
         // ReSharper disable once InconsistentNaming
         const string ADServerNetBIOSName1 = "DC1";
         const string SoftwareS3BucketName = "gtbb";
-        const string CookbookFileName = "cookbooks-1452399033.tar.gz";
+        const string CookbookFileName = "cookbooks-1452429282.tar.gz";
 
         private static Template GetTemplate()
         {
