@@ -69,9 +69,9 @@ namespace AWS.CloudFormation.Stack
             this.Resources.Add(resource.Name, resource);
         }
 
-        public ElasticIP AddElasticIp(string name, Instance.Instance instance)
+        public ElasticIP AddElasticIp(Template template, string name, Instance.Instance instance)
         {
-            ElasticIP eip = new ElasticIP(name) { Instance = instance };
+            ElasticIP eip = new ElasticIP(instance, name);
             this.Resources.Add(name, eip);
             return eip;
         }

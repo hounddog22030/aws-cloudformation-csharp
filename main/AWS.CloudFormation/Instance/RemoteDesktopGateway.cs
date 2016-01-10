@@ -25,7 +25,7 @@ namespace AWS.CloudFormation.Instance
         {
             this.Subnet = subnet;
             this.AddSecurityGroup();
-            this.AddElasticIp(name + "EIP");
+            this.AddElasticIp();
         }
 
         private void InstallRemoteDesktopGateway()
