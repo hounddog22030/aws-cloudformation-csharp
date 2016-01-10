@@ -210,3 +210,5 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+/main/Chef/Cookbooks/nodes/DESKTOP-I3BQHCB.json
+/main/Chef/nodes
