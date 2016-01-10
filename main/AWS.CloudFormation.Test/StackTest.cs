@@ -68,16 +68,15 @@ namespace AWS.CloudFormation.Test
         {
 
             var template = new Template(KeyPairName);
+            var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
 
-            var vpc = new Vpc(template, "VPC", VPCCIDR);
-            template.AddVpc(template, "VPC", VPCCIDR);
 
             // ReSharper disable once InconsistentNaming
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
             // ReSharper disable once InconsistentNaming
             var DMZ2Subnet = template.AddSubnet("DMZ2Subnet", vpc, DMZ2CIDR, Template.AvailabilityZone.UsEast1A);
             // ReSharper disable once InconsistentNaming
-            var PrivateSubnet1 = template.AddSubnet("privateSubnet1", vpc, PrivSub1CIDR, Template.AvailabilityZone.UsEast1A);
+            var PrivateSubnet1 = template.AddSubnet("PrivateSubnet1", vpc, PrivSub1CIDR, Template.AvailabilityZone.UsEast1A);
             // ReSharper disable once InconsistentNaming
             var PrivateSubnet2 = template.AddSubnet("PrivateSubnet2", vpc, PrivSub2CIDR, Template.AvailabilityZone.UsEast1A);
 
@@ -85,15 +84,13 @@ namespace AWS.CloudFormation.Test
             natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Ssh);
             natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
 
-            SecurityGroup buildServerSecurityGroup = template.GetSecurityGroup("BuildServerSecurityGroup", vpc, "Allows build controller to build agent communication");
-            buildServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            buildServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-
             SecurityGroup tfsServerSecurityGroup = template.GetSecurityGroup("TFSServerSecurityGroup", vpc, "Allows various TFS communication");
             tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PrivateSubnet1, Protocol.Tcp, Ports.TeamFoundationServerGeneral);
-            tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PrivateSubnet2, Protocol.Tcp, Ports.TeamFoundationServerGeneral);
+
+            SecurityGroup buildServerSecurityGroup = template.GetSecurityGroup("BuildServerSecurityGroup", vpc, "Allows build controller to build agent communication");
+            buildServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            buildServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             buildServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(tfsServerSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerBuild);
 
             SecurityGroup sqlServerSecurityGroup = template.GetSecurityGroup("SqlServer4TfsSecurityGroup", vpc, "Allows communication to SQLServer Service");
