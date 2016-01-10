@@ -50,7 +50,7 @@ namespace AWS.CloudFormation.Resource.Networking
 
         [CloudFormationProperties]
         [JsonProperty(PropertyName = "InstanceId")]
-        public Instance.Instance Instance { get; set; }
+        public EC2.Instance Instance { get; set; }
 
         
     }

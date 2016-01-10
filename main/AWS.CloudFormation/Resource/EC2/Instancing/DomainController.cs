@@ -1,17 +1,12 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
+using AWS.CloudFormation.Instance;
 using AWS.CloudFormation.Instance.Metadata.Config;
 using AWS.CloudFormation.Instance.Metadata.Config.Command;
-using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
-namespace AWS.CloudFormation.Instance
+namespace AWS.CloudFormation.Resource.EC2.Instancing
 {
     public class DomainController : WindowsInstance
     {
@@ -310,7 +305,7 @@ namespace AWS.CloudFormation.Instance
             return domainMemberSg;
         }
 
-        public void AddToDomainMemberSecurityGroup(Instance domainMember)
+        public void AddToDomainMemberSecurityGroup(Resource.EC2.Instance domainMember)
         {
             //az1Subnet
             DomainMemberSecurityGroup.AddIngressEgress<SecurityGroupIngress>(domainMember.Subnet,

@@ -5,14 +5,15 @@ using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Instance.Metadata;
 using AWS.CloudFormation.Instance.Metadata.Config.Command;
 using AWS.CloudFormation.Property;
-using AWS.CloudFormation.Resource;
+using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Resource.Wait;
 using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
+using OperatingSystem = AWS.CloudFormation.Resource.EC2.Instancing.OperatingSystem;
 
-namespace AWS.CloudFormation.Instance
+namespace AWS.CloudFormation.Resource.EC2
 {
 
     public class Instance : ResourceBase
@@ -41,11 +42,11 @@ namespace AWS.CloudFormation.Instance
             this.InstanceType = instanceType;
             this.ImageId = imageId;
             NetworkInterfaces = new List<NetworkInterface>();
-            if (!this.Template.Parameters.ContainsKey(Instance.ParameterNameDefaultKeyPairKeyName))
+            if (!this.Template.Parameters.ContainsKey(ParameterNameDefaultKeyPairKeyName))
             {
-                throw new InvalidOperationException($"Template must contain a Parameter named {Instance.ParameterNameDefaultKeyPairKeyName} which contains the default encryption key name for the instance.");
+                throw new InvalidOperationException($"Template must contain a Parameter named {ParameterNameDefaultKeyPairKeyName} which contains the default encryption key name for the instance.");
             }
-            var keyName = this.Template.Parameters[Instance.ParameterNameDefaultKeyPairKeyName];
+            var keyName = this.Template.Parameters[ParameterNameDefaultKeyPairKeyName];
             KeyName = keyName;
             UserData = new CloudFormationDictionary(this);
             SourceDestCheck = true;
@@ -162,7 +163,7 @@ namespace AWS.CloudFormation.Instance
         [CloudFormationProperties]
         public CloudFormationDictionary UserData { get; }
 
-        public void AddDependsOn(CloudFormation.Instance.Instance dependsOn, TimeSpan timeout)
+        public void AddDependsOn(Instance dependsOn, TimeSpan timeout)
         {
             if (dependsOn.OperatingSystem != OperatingSystem.Windows)
             {

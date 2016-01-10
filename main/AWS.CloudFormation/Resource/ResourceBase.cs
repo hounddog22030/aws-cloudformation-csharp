@@ -14,7 +14,7 @@ using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using OperatingSystem = AWS.CloudFormation.Instance.OperatingSystem;
+using OperatingSystem = AWS.CloudFormation.Resource.EC2.Instancing.OperatingSystem;
 
 namespace AWS.CloudFormation.Resource
 {
@@ -56,7 +56,7 @@ namespace AWS.CloudFormation.Resource
         internal Template Template { get; private set; }
         public string Type { get; private set; }
 
-        public Resource.Metadata Metadata { get; }
+        public Metadata Metadata { get; }
 
         public KeyValuePair<string, string> AddTag(string key, string value)
         {

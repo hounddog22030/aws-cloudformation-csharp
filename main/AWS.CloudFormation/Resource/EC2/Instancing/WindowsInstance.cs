@@ -1,19 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AWS.CloudFormation.Instance.Metadata;
+﻿using System.Configuration;
 using AWS.CloudFormation.Instance.Metadata.Config;
 using AWS.CloudFormation.Instance.Metadata.Config.Command;
-using AWS.CloudFormation.Resource;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
-namespace AWS.CloudFormation.Instance
+namespace AWS.CloudFormation.Resource.EC2.Instancing
 {
-    public class WindowsInstance : Instance
+    public class WindowsInstance : Resource.EC2.Instance
     {
         public const string DefaultConfigSetName = "config";
         public const string DefaultConfigSetRenameConfig = "rename";
@@ -59,7 +54,7 @@ namespace AWS.CloudFormation.Instance
         {
         }
 
-        private Metadata.Config.Config GetChefConfig(string s3bucketName, string cookbookFileName)
+        private Config GetChefConfig(string s3bucketName, string cookbookFileName)
         {
             var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet(InstallChefConfigSetName).GetConfig(InstallChefConfigName);
 

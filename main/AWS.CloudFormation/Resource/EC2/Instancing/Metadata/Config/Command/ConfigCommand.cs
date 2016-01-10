@@ -5,7 +5,7 @@ namespace AWS.CloudFormation.Instance.Metadata.Config.Command
 {
     public class ConfigCommand : CloudFormationDictionary
     {
-        public ConfigCommand(Instance resource, string key) : base(resource)
+        public ConfigCommand(Resource.EC2.Instance resource, string key) : base(resource)
         {
             this.Name = key;
             this.WaitAfterCompletion = 0.ToString();

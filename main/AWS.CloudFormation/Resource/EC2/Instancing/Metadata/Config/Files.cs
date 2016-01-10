@@ -9,7 +9,7 @@ namespace AWS.CloudFormation.Instance.Metadata.Config
 {
     public class Files : CloudFormationDictionary
     {
-        public Files(Instance resource) : base(resource)
+        public Files(Resource.EC2.Instance resource) : base(resource)
         {
             Instance = resource;
         }
@@ -26,6 +26,6 @@ namespace AWS.CloudFormation.Instance.Metadata.Config
             }
         }
 
-        public Instance Instance { get; }
+        public Resource.EC2.Instance Instance { get; }
     }
 }

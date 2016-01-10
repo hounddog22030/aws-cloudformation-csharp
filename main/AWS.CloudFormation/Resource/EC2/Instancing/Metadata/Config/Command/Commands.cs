@@ -19,13 +19,13 @@ namespace AWS.CloudFormation.Instance.Metadata.Config.Command
             CompleteWaitHandle
         }
 
-        public Commands(Instance resource) : base(resource)
+        public Commands(Resource.EC2.Instance resource) : base(resource)
         {
             Instance = resource;
         }
 
         [JsonIgnore]
-        public Instance Instance { get; }
+        public Resource.EC2.Instance Instance { get; }
 
         public ConfigCommand AddCommand<T>(string key, CommandType commandType) where T : Command, new()
         {

@@ -22,7 +22,7 @@ namespace AWS.CloudFormation.Stack
             AwsTemplateFormatVersion = AwsTemplateFormatVersion20100909;
             this.Resources = new Dictionary<string, ResourceBase>();
             this.Parameters = new Dictionary<string, ParameterBase>();
-            this.Parameters.Add(Instance.Instance.ParameterNameDefaultKeyPairKeyName, new ParameterBase(Instance.Instance.ParameterNameDefaultKeyPairKeyName, "AWS::EC2::KeyPair::KeyName", defaultKeyName));
+            this.Parameters.Add(Resource.EC2.Instance.ParameterNameDefaultKeyPairKeyName, new ParameterBase(Resource.EC2.Instance.ParameterNameDefaultKeyPairKeyName, "AWS::EC2::KeyPair::KeyName", defaultKeyName));
         }
 
         [JsonProperty(PropertyName = "AWSTemplateFormatVersion")]
@@ -59,7 +59,7 @@ namespace AWS.CloudFormation.Stack
 
         }
 
-        public void AddInstance(Instance.Instance resource)
+        public void AddInstance(Resource.EC2.Instance resource)
         {
             AddResource(resource);
         }
@@ -69,7 +69,7 @@ namespace AWS.CloudFormation.Stack
             this.Resources.Add(resource.Name, resource);
         }
 
-        public ElasticIP AddElasticIp(Template template, string name, Instance.Instance instance)
+        public ElasticIP AddElasticIp(Template template, string name, Resource.EC2.Instance instance)
         {
             ElasticIP eip = new ElasticIP(instance, name);
             this.Resources.Add(name, eip);

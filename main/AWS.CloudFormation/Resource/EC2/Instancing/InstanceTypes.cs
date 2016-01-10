@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace AWS.CloudFormation.Instance
+namespace AWS.CloudFormation.Resource.EC2.Instancing
 {
     internal class InstanceTypesConverter : StringEnumConverter
     {
@@ -17,16 +12,16 @@ namespace AWS.CloudFormation.Instance
             switch (valueAsInstanceTypes)
             {
                 case InstanceTypes.T2Nano:
-                    writer.WriteValue(Instance.T2Nano);
+                    writer.WriteValue(Resource.EC2.Instance.T2Nano);
                     break;
                 case InstanceTypes.T2Micro:
-                    writer.WriteValue(Instance.T2Micro);
+                    writer.WriteValue(Resource.EC2.Instance.T2Micro);
                     break;
                 case InstanceTypes.T2Small:
-                    writer.WriteValue(Instance.T2Small);
+                    writer.WriteValue(Resource.EC2.Instance.T2Small);
                     break;
                 case InstanceTypes.M4Xlarge:
-                    writer.WriteValue(Instance.T2Small);
+                    writer.WriteValue(Resource.EC2.Instance.T2Small);
                     break;
 
                 default:

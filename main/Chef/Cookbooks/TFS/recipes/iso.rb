@@ -10,7 +10,7 @@ iso_url           = "https://s3.amazonaws.com/gtbb/software/#{iso_name}"
 iso_path          = "#{Chef::Config['file_cache_path']}/#{iso_name}"
 volume_name = "TFS2015.1_SERVER_ENU"
 
-tfsconfigure_exe_file = "C:/Program Files/Microsoft Team Foundation Server 12.0/Tools/TFSConfig.exe"
+tfsconfigure_exe_file = "C:/Program Files/Microsoft Team Foundation Server 14.0/Tools/TFSConfig.exe"
 
 s3_file iso_path do
 	remote_path "/software/#{iso_name}"
@@ -48,7 +48,7 @@ powershell_script 'Install Team Foundation Server STD' do
 		echo "installing..."
 		$TFS_Server_ISO_Drive_Letter = (gwmi -Class Win32_LogicalDisk | Where-Object {$_.VolumeName -eq "#{volume_name}"}).DeviceID
 		cd $TFS_Server_ISO_Drive_Letter/
-		$Install_TFS = ./tfs_express.exe /install /quiet
+		$Install_TFS = ./tfs_server.exe /quiet
 		$Install_TFS > "#{Chef::Config['file_cache_path']}/Team_Foundation_Server_STD_Install_Results.txt"
 		EOH
 	guard_interpreter :powershell_script

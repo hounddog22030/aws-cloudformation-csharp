@@ -13,7 +13,7 @@ namespace AWS.CloudFormation.Resource.Networking
 {
     public class ElasticIP : ResourceBase
     {
-        public ElasticIP(Instance.Instance instance, string name) : base(instance.Template, "AWS::EC2::EIP", name, false)
+        public ElasticIP(EC2.Instance instance, string name) : base(instance.Template, "AWS::EC2::EIP", name, false)
         {
             Instance = instance;
             this.Domain = "vpc";
@@ -21,7 +21,7 @@ namespace AWS.CloudFormation.Resource.Networking
 
         [CloudFormationProperties]
         [JsonProperty(PropertyName = "InstanceId")]
-        public Instance.Instance Instance { get; }
+        public EC2.Instance Instance { get; }
 
         [CloudFormationProperties]
         public string Domain { get; private set; }

@@ -10,24 +10,24 @@ namespace AWS.CloudFormation.Instance.Metadata
 {
     public class ConfigSet : CloudFormationDictionary
     {
-        public ConfigSet(Instance resource) : base(resource)
+        public ConfigSet(Resource.EC2.Instance resource) : base(resource)
         {
             Instance = resource;
         }
 
-        public Config.Config GetConfig(string configName)
+        public Resource.EC2.Instancing.Metadata.Config.Config GetConfig(string configName)
         {
             if (this.ContainsKey(configName))
             {
-                return this[configName] as Config.Config;
+                return this[configName] as Resource.EC2.Instancing.Metadata.Config.Config;
             }
             else
             {
-                return this.Add(configName, new Config.Config(this.Instance)) as Config.Config;
+                return this.Add(configName, new Resource.EC2.Instancing.Metadata.Config.Config(this.Instance)) as Resource.EC2.Instancing.Metadata.Config.Config;
             }
         }
 
-        public Instance Instance { get; }
+        public Resource.EC2.Instance Instance { get; }
     }
 
 }

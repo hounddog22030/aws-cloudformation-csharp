@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AWS.CloudFormation.Common;
-using AWS.CloudFormation.Resource;
-using AWS.CloudFormation.Stack;
+﻿using AWS.CloudFormation.Common;
 using Newtonsoft.Json;
 
-namespace AWS.CloudFormation.Instance.Metadata
+namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata
 {
     //public abstract class Authentication : ResourceBase
     //{

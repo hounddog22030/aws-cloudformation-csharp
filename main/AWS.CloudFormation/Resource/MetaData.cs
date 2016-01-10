@@ -20,7 +20,7 @@ namespace AWS.CloudFormation.Resource
                 }
                 else
                 {
-                    return this.Add("AWS::CloudFormation::Init", new Init((Instance.Instance)this.Resource)) as Init;
+                    return this.Add("AWS::CloudFormation::Init", new Init((EC2.Instance)this.Resource)) as Init;
                 }
             }
 

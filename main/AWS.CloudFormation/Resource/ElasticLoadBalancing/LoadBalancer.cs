@@ -50,7 +50,7 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
         {
         }
 
-        public void AddInstance(Instance.Instance instance)
+        public void AddInstance(EC2.Instance instance)
         {
             List<ReferenceProperty> tempInstances = new List<ReferenceProperty>();
             if (this.Instances != null && this.Instances.Length > 0)

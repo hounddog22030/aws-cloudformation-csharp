@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AWS.CloudFormation.Common;
-using AWS.CloudFormation.Resource;
+﻿using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Serializer;
 using Newtonsoft.Json;
 
-namespace AWS.CloudFormation.Instance
+namespace AWS.CloudFormation.Resource.EC2.Instancing
 {
     public class NetworkInterface
     {
