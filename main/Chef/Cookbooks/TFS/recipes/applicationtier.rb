@@ -28,7 +28,7 @@ end
 execute 'Configure Team Foundation Server STD' do
 	command "#{psexec_path} -accepteula -h -u #{TFS_DomainAdminUserName} -p #{TFS_DomainAdminPassword} \"C:\\Program Files\\Microsoft Team Foundation Server 12.0\\Tools\\TFSConfig.exe\" unattend /configure /unattendfile:#{Chef::Config['file_cache_path']}\\configbasic.ini>#{LogFile}"
 	guard_interpreter :powershell_script
-	not_if { File.exist?("#{LogFile}") }
+	not_if { File.exist?( LogFile ) }
 end
 
 # Open Firewall To Domain

@@ -196,14 +196,13 @@
     <None Include="Cookbooks\TFS\attributes\default.rb" />
     <None Include="Cookbooks\TFS\Berksfile" />
     <None Include="Cookbooks\TFS\chefignore" />
-    <None Include="Cookbooks\TFS\files\build.ini" />
+    <None Include="Cookbooks\TFS\templates\build.ini.erb" />
     <None Include="Cookbooks\TFS\files\configbasic.ini" />
     <None Include="Cookbooks\TFS\metadata.json" />
     <None Include="Cookbooks\TFS\metadata.rb" />
     <None Include="Cookbooks\TFS\README.md" />
     <None Include="Cookbooks\TFS\recipes\applicationtier.rb" />
     <None Include="Cookbooks\TFS\recipes\build.rb" />
-    <None Include="Cookbooks\TFS\recipes\default.rb" />
     <None Include="Cookbooks\TFS\recipes\iso.rb" />
     <None Include="Cookbooks\TFS\spec\spec_helper.rb" />
     <None Include="Cookbooks\TFS\spec\unit\recipes\default_spec.rb" />

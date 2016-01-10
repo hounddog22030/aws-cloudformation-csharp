@@ -59,7 +59,7 @@ namespace AWS.CloudFormation.Test
         // ReSharper disable once InconsistentNaming
         const string ADServerNetBIOSName1 = "DC1";
         const string SoftwareS3BucketName = "gtbb";
-        const string CookbookFileName = "cookbooks-1452368370.tar.gz";
+        const string CookbookFileName = "cookbooks-1452399033.tar.gz";
 
         private static Template GetTemplate()
         {
@@ -154,7 +154,10 @@ namespace AWS.CloudFormation.Test
             //CloudFormationDictionary domainAdminUserInfoNode;
             var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, vpc, subnetsToAddToNatSecurityGroup, DC1);
 
-            AddBuildServer(template, PrivateSubnet1, tfsServer, vpc, subnetsToAddToNatSecurityGroup, DC1);
+            var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, vpc, subnetsToAddToNatSecurityGroup, DC1);
+            var workstation = AddWorkstation(template, PrivateSubnet1, buildServer, vpc, subnetsToAddToNatSecurityGroup, DC1);
+
+
 
 
             // the below is a remote desktop gateway server that can
@@ -166,14 +169,14 @@ namespace AWS.CloudFormation.Test
             return template;
         }
 
-        private static void AddBuildServer(Template template, Subnet PrivateSubnet1, WindowsInstance tfsServer, Vpc vpc,
+        private static Instance.Instance AddBuildServer(Template template, Subnet PrivateSubnet1, WindowsInstance tfsServer, Vpc vpc,
             Subnet[] subnetsToAddToNatSecurityGroup, DomainController DC1)
         {
             ConfigFileContent chefNode;
             CloudFormationDictionary domainAdminUserInfoNode;
-            var buildServer = new WindowsInstance(template, "BUILD1", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI,
+            var buildServer = new WindowsInstance(template, "BUILD3", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI,
                 PrivateSubnet1);
-            buildServer.AddBlockDeviceMapping("/dev/sda1", 214, "gp2");
+            buildServer.AddBlockDeviceMapping("/dev/sda1", 30, "gp2");
 
             buildServer.AddDependsOn(tfsServer, new TimeSpan(2, 0, 0));
 
@@ -192,6 +195,38 @@ namespace AWS.CloudFormation.Test
             buildServer.SecurityGroups.Add(buildServerSecurityGroup);
             buildServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::build");
             DC1.AddToDomain(buildServer);
+            return buildServer;
+        }
+
+        private static Instance.Instance AddWorkstation(Template template, Subnet PrivateSubnet1, Instance.Instance dependsOn, Vpc vpc,
+            Subnet[] subnetsToAddToNatSecurityGroup, DomainController DC1)
+        {
+            ConfigFileContent chefNode;
+            CloudFormationDictionary domainAdminUserInfoNode;
+            var buildServer = new WindowsInstance(template, "workstation", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI,
+                PrivateSubnet1);
+            buildServer.AddBlockDeviceMapping("/dev/sda1", 40, "gp2");
+            buildServer.AddBlockDeviceMapping("/dev/sdf", 20, "gp2");
+            buildServer.AddBlockDeviceMapping("/dev/sdg", 10, "gp2");
+
+            buildServer.AddDependsOn(dependsOn, new TimeSpan(2, 0, 0));
+
+            chefNode = buildServer.GetChefNodeJsonContent(SoftwareS3BucketName, CookbookFileName);
+            domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
+            domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
+            domainAdminUserInfoNode.Add("password", DomainAdminPassword);
+            template.AddInstance(buildServer);
+            //Build controller to build agent
+            //SecurityGroup buildServerSecurityGroup = template.GetSecurityGroup("BuildServerSecurityGroup", vpc,
+            //    "Allows build controller to build agent communication");
+            //foreach (var subnet in subnetsToAddToNatSecurityGroup)
+            //{
+            //    buildServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(subnet, Protocol.All, Ports.BuildController);
+            //}
+            //buildServer.SecurityGroups.Add(buildServerSecurityGroup);
+            buildServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "VisualStudio");
+            DC1.AddToDomain(buildServer);
+            return buildServer;
         }
 
         private static WindowsInstance AddTfsServer(Template template, Subnet PrivateSubnet1, WindowsInstance tfsSqlServer,
