@@ -3,7 +3,7 @@ using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
-namespace AWS.CloudFormation.Resource.EC2
+namespace AWS.CloudFormation.Resource.EC2.Networking
 {
 
     [JsonConverter(typeof(ResourceJsonConverter))]

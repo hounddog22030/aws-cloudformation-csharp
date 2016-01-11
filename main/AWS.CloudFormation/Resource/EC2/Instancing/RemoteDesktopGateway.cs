@@ -1,5 +1,6 @@
 ﻿using AWS.CloudFormation.Instance;
 using AWS.CloudFormation.Instance.Metadata.Config.Command;
+using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Stack;
 

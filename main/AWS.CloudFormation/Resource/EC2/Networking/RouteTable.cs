@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AWS.CloudFormation.Resource.EC2;
-using AWS.CloudFormation.Serializer;
+﻿using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
-namespace AWS.CloudFormation.Resource.Networking
+namespace AWS.CloudFormation.Resource.EC2.Networking
 {
     public class RouteTable : ResourceBase
     {

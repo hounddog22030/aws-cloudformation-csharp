@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.EC2;
+using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
@@ -51,7 +52,7 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
         {
         }
 
-        public void AddInstance(EC2.Instance instance)
+        public void AddInstance(EC2.Instancing.Instance instance)
         {
             List<ReferenceProperty> tempInstances = new List<ReferenceProperty>();
             if (this.Instances != null && this.Instances.Length > 0)

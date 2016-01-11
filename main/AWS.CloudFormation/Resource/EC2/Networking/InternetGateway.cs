@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AWS.CloudFormation.Stack;
+﻿using AWS.CloudFormation.Stack;
 
-namespace AWS.CloudFormation.Resource.Networking
+namespace AWS.CloudFormation.Resource.EC2.Networking
 {
 
     public class InternetGateway : ResourceBase

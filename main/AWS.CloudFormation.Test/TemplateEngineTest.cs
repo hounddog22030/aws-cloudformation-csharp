@@ -7,6 +7,7 @@ using AWS.CloudFormation.Instance;
 using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing;
+using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OperatingSystem = AWS.CloudFormation.Resource.EC2.Instancing.OperatingSystem;
@@ -108,7 +109,7 @@ namespace AWS.CloudFormation.Test
             {
                 var template = new Template(Guid.NewGuid().ToString());
                 template.Parameters.Clear();
-                var i1 = new Resource.EC2.Instance(template, Guid.NewGuid().ToString(), InstanceTypes.T2Nano, "ami-b17f35db", OperatingSystem.Windows, false);
+                var i1 = new Resource.EC2.Instancing.Instance(template, Guid.NewGuid().ToString(), InstanceTypes.T2Nano, "ami-b17f35db", OperatingSystem.Windows, false);
             }
             catch (InvalidOperationException e)
             {
@@ -121,7 +122,7 @@ namespace AWS.CloudFormation.Test
         {
             string defaultKeyName = "InvalidKeyName";
             var template = new Template(defaultKeyName);
-            var i1 = new Resource.EC2.Instance(template,Guid.NewGuid().ToString(), InstanceTypes.T2Nano, "ami-b17f35db", OperatingSystem.Windows, false);
+            var i1 = new Resource.EC2.Instancing.Instance(template,Guid.NewGuid().ToString(), InstanceTypes.T2Nano, "ami-b17f35db", OperatingSystem.Windows, false);
             template.Resources.Add("instance1", i1);
             var vpc = new Vpc(template,"Vpc","0.0.0.0/0");
             template.Resources.Add("VPC", vpc);

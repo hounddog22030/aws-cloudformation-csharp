@@ -3,12 +3,13 @@ using AWS.CloudFormation.Instance.Metadata.Config;
 using AWS.CloudFormation.Instance.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
+using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Resource.EC2.Instancing
 {
-    public class WindowsInstance : Resource.EC2.Instance
+    public class WindowsInstance : Instance
     {
         public const string DefaultConfigSetName = "config";
         public const string DefaultConfigSetRenameConfig = "rename";

@@ -11,7 +11,7 @@ namespace AWS.CloudFormation.Instance.Metadata.Config
 {
     public class ConfigFile : CloudFormationDictionary
     {
-        public ConfigFile(Resource.EC2.Instance resource) : base(resource)
+        public ConfigFile(Resource.EC2.Instancing.Instance resource) : base(resource)
         {
             Content = (ConfigFileContent)this.Add("content", new ConfigFileContent(resource));
         }

@@ -1,8 +1,7 @@
-﻿using AWS.CloudFormation.Resource.Networking;
-using AWS.CloudFormation.Serializer;
+﻿using AWS.CloudFormation.Serializer;
 using Newtonsoft.Json;
 
-namespace AWS.CloudFormation.Resource.EC2
+namespace AWS.CloudFormation.Resource.EC2.Networking
 {
     public class SecurityGroupIngress : SecurityGroupIngressEgressBase
     {

@@ -1,9 +1,8 @@
 ﻿using AWS.CloudFormation.Common;
-using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Serializer;
 using Newtonsoft.Json;
 
-namespace AWS.CloudFormation.Resource.EC2.Instancing
+namespace AWS.CloudFormation.Resource.EC2.Networking
 {
     public class NetworkInterface
     {

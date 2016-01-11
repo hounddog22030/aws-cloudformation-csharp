@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AWS.CloudFormation.Resource.EC2
+namespace AWS.CloudFormation.Resource.EC2.Networking
 {
     public enum Ports : int
     {

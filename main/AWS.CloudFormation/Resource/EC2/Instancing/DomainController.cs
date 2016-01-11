@@ -2,6 +2,7 @@
 using AWS.CloudFormation.Instance;
 using AWS.CloudFormation.Instance.Metadata.Config;
 using AWS.CloudFormation.Instance.Metadata.Config.Command;
+using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
@@ -305,7 +306,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             return domainMemberSg;
         }
 
-        public void AddToDomainMemberSecurityGroup(Resource.EC2.Instance domainMember)
+        public void AddToDomainMemberSecurityGroup(Instance domainMember)
         {
             //az1Subnet
             DomainMemberSecurityGroup.AddIngressEgress<SecurityGroupIngress>(domainMember.Subnet,

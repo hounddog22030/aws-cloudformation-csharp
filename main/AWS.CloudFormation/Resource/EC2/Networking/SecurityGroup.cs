@@ -5,7 +5,7 @@ using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
 
-namespace AWS.CloudFormation.Resource.EC2
+namespace AWS.CloudFormation.Resource.EC2.Networking
 {
     
     public class SecurityGroup : ResourceBase

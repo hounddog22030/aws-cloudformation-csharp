@@ -14,7 +14,7 @@ namespace AWS.CloudFormation.Instance.Metadata
         public const string FinalizeConfigSetName = "finalizeConfigSet";
         public const string FinalizeConfigName = "finalizeConfig";
 
-        public Init(Resource.EC2.Instance resource) : base(resource)
+        public Init(Resource.EC2.Instancing.Instance resource) : base(resource)
         {
             Instance = resource;
         }
@@ -35,7 +35,7 @@ namespace AWS.CloudFormation.Instance.Metadata
             }
         }
 
-        public Resource.EC2.Instance Instance { get;  }
+        public Resource.EC2.Instancing.Instance Instance { get;  }
 
         public class InitConverter : JsonConverter
         {
