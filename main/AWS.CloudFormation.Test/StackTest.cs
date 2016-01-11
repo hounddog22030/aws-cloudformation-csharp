@@ -11,6 +11,7 @@ using AWS.CloudFormation.Instance.Metadata.Config;
 using AWS.CloudFormation.Instance.Metadata.Config.Command;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource;
+using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Resource.ElasticLoadBalancing;
 using AWS.CloudFormation.Resource.Networking;
@@ -168,6 +169,7 @@ namespace AWS.CloudFormation.Test
 
             var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
             tfsServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
+            tfsServer.AddBlockDeviceMapping("/dev/sda1", 214, "gp2");
 
             //var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup);
             //buildServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::build");

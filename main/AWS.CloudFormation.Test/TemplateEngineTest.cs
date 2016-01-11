@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using AWS.CloudFormation.Instance;
 using AWS.CloudFormation.Resource;
+using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

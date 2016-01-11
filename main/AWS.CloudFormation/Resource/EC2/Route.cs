@@ -1,27 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AWS.CloudFormation.Property;
+﻿using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
-namespace AWS.CloudFormation.Resource.Networking
+namespace AWS.CloudFormation.Resource.EC2
 {
-        //"DMZRoute"                  : {
-        //    "Type" : "AWS::EC2::Route",
-        //    "Properties" : {
-        //        "RouteTableId" : {
-        //            "Ref" : "DMZRouteTable"
-        //        },
-        //        "DestinationCidrBlock" : "0.0.0.0/0",
-        //        "GatewayId"            : {
-        //            "Ref" : "VpcInternetGateway"
-        //        }
-        //    }
-        //},
     public class Route : ResourceBase
     {
         internal Route(Template template, string routeName, InternetGateway gateway, string destinationCidrBlock, RouteTable routeTable)
