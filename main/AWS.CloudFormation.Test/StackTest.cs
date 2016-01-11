@@ -169,12 +169,12 @@ namespace AWS.CloudFormation.Test
             var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
             tfsServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
 
-            var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup);
-            buildServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::build");
+            //var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup);
+            //buildServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::build");
 
-            var workstation = AddWorkstation(template, PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup);
-            workstation.AddChefExec(SoftwareS3BucketName, CookbookFileName, "VisualStudio");
-            workstation.AddFinalizer(ThreeHoursSpan);
+            //var workstation = AddWorkstation(template, PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup);
+            //workstation.AddChefExec(SoftwareS3BucketName, CookbookFileName, "VisualStudio");
+            //workstation.AddFinalizer(ThreeHoursSpan);
 
 
             // the below is a remote desktop gateway server that can
