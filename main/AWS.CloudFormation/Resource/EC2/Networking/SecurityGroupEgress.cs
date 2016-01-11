@@ -1,6 +1,4 @@
-﻿using AWS.CloudFormation.Resource.Networking;
-
-namespace AWS.CloudFormation.Resource.EC2
+﻿namespace AWS.CloudFormation.Resource.EC2.Networking
 {
     public class SecurityGroupEgress : SecurityGroupIngressEgressBase
     {

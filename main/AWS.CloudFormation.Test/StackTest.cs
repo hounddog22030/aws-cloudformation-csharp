@@ -13,6 +13,7 @@ using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing;
+using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.ElasticLoadBalancing;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Stack;
@@ -213,7 +214,7 @@ namespace AWS.CloudFormation.Test
             return buildServer;
         }
 
-        private static WindowsInstance AddWorkstation(Template template, Subnet privateSubnet1, Resource.EC2.Instance dependsOn, DomainController dc1, SecurityGroup workstationSecurityGroup)
+        private static WindowsInstance AddWorkstation(Template template, Subnet privateSubnet1, Resource.EC2.Instancing.Instance dependsOn, DomainController dc1, SecurityGroup workstationSecurityGroup)
         {
             var workstation = new WindowsInstance(template, "workstation", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, privateSubnet1);
             workstation.AddBlockDeviceMapping("/dev/sda1", 40, "gp2");
@@ -257,7 +258,7 @@ namespace AWS.CloudFormation.Test
             template.AddResource(DMZSubnetRouteTableAssociation);
         }
 
-        private static Resource.EC2.Instance AddNat1(   Template template, 
+        private static Resource.EC2.Instancing.Instance AddNat1(   Template template, 
                                                     Subnet DMZSubnet,
                                                     SecurityGroup natSecurityGroup)
         {
@@ -285,7 +286,7 @@ namespace AWS.CloudFormation.Test
             //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(workstationSubnet, Protocol.All, Ports.Min, Ports.Max);
             //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(workstationSubnet, Protocol.Icmp, Ports.All);
 
-            var nat1 = new Resource.EC2.Instance(template,
+            var nat1 = new Resource.EC2.Instancing.Instance(template,
                 "NAT1",
                 InstanceTypes.T2Micro,
                 "ami-4c9e4b24",

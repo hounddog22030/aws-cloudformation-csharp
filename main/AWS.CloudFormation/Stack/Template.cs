@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.EC2;
+using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
 using Newtonsoft.Json;
-using VpcGatewayAttachment = AWS.CloudFormation.Resource.EC2.Vpc.VpcGatewayAttachment;
+using VpcGatewayAttachment = AWS.CloudFormation.Resource.EC2.Networking.Vpc.VpcGatewayAttachment;
 
 namespace AWS.CloudFormation.Stack
 {
@@ -24,7 +25,7 @@ namespace AWS.CloudFormation.Stack
             AwsTemplateFormatVersion = AwsTemplateFormatVersion20100909;
             this.Resources = new Dictionary<string, ResourceBase>();
             this.Parameters = new Dictionary<string, ParameterBase>();
-            this.Parameters.Add(Resource.EC2.Instance.ParameterNameDefaultKeyPairKeyName, new ParameterBase(Resource.EC2.Instance.ParameterNameDefaultKeyPairKeyName, "AWS::EC2::KeyPair::KeyName", defaultKeyName));
+            this.Parameters.Add(Resource.EC2.Instancing.Instance.ParameterNameDefaultKeyPairKeyName, new ParameterBase(Resource.EC2.Instancing.Instance.ParameterNameDefaultKeyPairKeyName, "AWS::EC2::KeyPair::KeyName", defaultKeyName));
         }
 
         [JsonProperty(PropertyName = "AWSTemplateFormatVersion")]
@@ -61,7 +62,7 @@ namespace AWS.CloudFormation.Stack
 
         }
 
-        public void AddInstance(Resource.EC2.Instance resource)
+        public void AddInstance(Resource.EC2.Instancing.Instance resource)
         {
             AddResource(resource);
         }
@@ -71,7 +72,7 @@ namespace AWS.CloudFormation.Stack
             this.Resources.Add(resource.Name, resource);
         }
 
-        public ElasticIp AddElasticIp(Template template, string name, Resource.EC2.Instance instance)
+        public ElasticIp AddElasticIp(Template template, string name, Resource.EC2.Instancing.Instance instance)
         {
             ElasticIp eip = new ElasticIp(instance, name);
             this.Resources.Add(name, eip);

@@ -5,17 +5,14 @@ using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Instance.Metadata;
 using AWS.CloudFormation.Instance.Metadata.Config.Command;
 using AWS.CloudFormation.Property;
-using AWS.CloudFormation.Resource.EC2.Instancing;
-using AWS.CloudFormation.Resource.Networking;
+using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Wait;
 using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
-using OperatingSystem = AWS.CloudFormation.Resource.EC2.Instancing.OperatingSystem;
 
-namespace AWS.CloudFormation.Resource.EC2
+namespace AWS.CloudFormation.Resource.EC2.Instancing
 {
-
     public class Instance : ResourceBase
     {
         public const string ParameterNameDefaultKeyPairKeyName = "DefaultKeyPairKeyName";

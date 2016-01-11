@@ -3,7 +3,7 @@ using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
-namespace AWS.CloudFormation.Resource.EC2
+namespace AWS.CloudFormation.Resource.EC2.Networking
 {
     public class Route : ResourceBase
     {
@@ -33,7 +33,7 @@ namespace AWS.CloudFormation.Resource.EC2
 
         [CloudFormationProperties]
         [JsonProperty(PropertyName = "InstanceId")]
-        public EC2.Instance Instance { get; set; }
+        public Instancing.Instance Instance { get; set; }
 
         
     }
