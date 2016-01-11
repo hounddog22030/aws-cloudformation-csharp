@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AWS.CloudFormation.Instance;
+﻿using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Serializer;
 using Newtonsoft.Json;
 
-namespace AWS.CloudFormation.Resource.Networking
+namespace AWS.CloudFormation.Resource.EC2
 {
     public class SecurityGroupIngress : SecurityGroupIngressEgressBase
     {

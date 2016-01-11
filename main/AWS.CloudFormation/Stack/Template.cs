@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using AWS.CloudFormation.Resource;
+using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.Networking;
 using Newtonsoft.Json;
+using VpcGatewayAttachment = AWS.CloudFormation.Resource.EC2.Vpc.VpcGatewayAttachment;
 
 namespace AWS.CloudFormation.Stack
 {
@@ -69,9 +71,9 @@ namespace AWS.CloudFormation.Stack
             this.Resources.Add(resource.Name, resource);
         }
 
-        public ElasticIP AddElasticIp(Template template, string name, Resource.EC2.Instance instance)
+        public ElasticIp AddElasticIp(Template template, string name, Resource.EC2.Instance instance)
         {
-            ElasticIP eip = new ElasticIP(instance, name);
+            ElasticIp eip = new ElasticIp(instance, name);
             this.Resources.Add(name, eip);
             return eip;
         }
@@ -80,7 +82,7 @@ namespace AWS.CloudFormation.Stack
         {
             InternetGateway gateway = new InternetGateway(this, name);
             this.AddResource(gateway);
-            VPCGatewayAttachment attachment = new VPCGatewayAttachment(this, name + "Attachment")
+            VpcGatewayAttachment attachment = new VpcGatewayAttachment(this, name + "Attachment")
             {
                 InternetGateway = gateway,
                 Vpc = vpc

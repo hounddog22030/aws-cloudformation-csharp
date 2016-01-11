@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Resource;
+using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.Networking;
 using Newtonsoft.Json;
 

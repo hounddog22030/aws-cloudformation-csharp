@@ -1,17 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AWS.CloudFormation.Property;
-using AWS.CloudFormation.Resource.Networking;
+﻿using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
-namespace AWS.CloudFormation.Resource
+namespace AWS.CloudFormation.Resource.EC2
 {
 
     [JsonConverter(typeof(ResourceJsonConverter))]
@@ -26,14 +18,14 @@ namespace AWS.CloudFormation.Resource
         {
         }
 
-        [CloudFormationPropertiesAttribute]
+        [CloudFormationProperties]
         [JsonProperty(PropertyName = "VpcId")]
         public Vpc Vpc { get; set; }
 
-        [CloudFormationPropertiesAttribute]
+        [CloudFormationProperties]
         public string CidrBlock { get; set; }
 
-        [CloudFormationPropertiesAttribute]
+        [CloudFormationProperties]
         public string AvailabilityZone { get; set; }
     }
 }

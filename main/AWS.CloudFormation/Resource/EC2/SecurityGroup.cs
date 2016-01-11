@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AWS.CloudFormation.Property;
+using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
-using Newtonsoft.Json;
 
-namespace AWS.CloudFormation.Resource.Networking
+namespace AWS.CloudFormation.Resource.EC2
 {
     
     public class SecurityGroup : ResourceBase
@@ -27,13 +22,13 @@ namespace AWS.CloudFormation.Resource.Networking
         [CloudFormationProperties]
         public string GroupDescription { get; set; }
 
-        [CloudFormationPropertiesAttribute]
+        [CloudFormationProperties]
         public Vpc VpcId { get;set; }
 
-        [CloudFormationPropertiesAttribute]
+        [CloudFormationProperties]
         public List<SecurityGroupIngress> SecurityGroupIngress { get; set; }
 
-        [CloudFormationPropertiesAttribute]
+        [CloudFormationProperties]
         public List<SecurityGroupEgress> SecurityGroupEgress { get; set; }
 
         private static List<string> GetProtocolsListFromFlaggedValue(Protocol protocol)
