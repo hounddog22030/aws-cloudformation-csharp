@@ -25,7 +25,7 @@ namespace AWS.CloudFormation.Test
     [TestClass]
     public class StackTest
     {
-        const string CookbookFileName = "cookbooks-1452465964.tar.gz";
+        const string CookbookFileName = "cookbooks-1452475851.tar.gz";
         // ReSharper disable once InconsistentNaming
         const string DomainAdminPassword = "kasdfiajs!!9";
         // ReSharper disable once InconsistentNaming
