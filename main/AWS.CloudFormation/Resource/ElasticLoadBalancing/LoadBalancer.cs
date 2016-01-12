@@ -50,6 +50,8 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
     {
         public LoadBalancer(Template template, string name) : base(template, "AWS::ElasticLoadBalancing::LoadBalancer", name, false)
         {
+            SecurityGroups = new CollectionThatSerializesAsIds<SecurityGroup>();
+
         }
 
         public void AddInstance(EC2.Instancing.Instance instance)
@@ -92,6 +94,8 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
         [CloudFormationProperties]
         public ReferenceProperty[] Subnets { get; private set; }
 
+        [CloudFormationProperties]
+        public CollectionThatSerializesAsIds<SecurityGroup> SecurityGroups { get; private set; }
 
         public class Listener
         {

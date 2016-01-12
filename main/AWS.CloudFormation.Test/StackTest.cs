@@ -27,7 +27,7 @@ namespace AWS.CloudFormation.Test
     [TestClass]
     public class StackTest
     {
-        const string CookbookFileName = "cookbooks-1452561138.tar.gz";
+        const string CookbookFileName = "cookbooks-1452580519.tar.gz";
         // ReSharper disable once InconsistentNaming
         const string DomainAdminPassword = "kasdfiajs!!9";
         // ReSharper disable once InconsistentNaming
@@ -67,6 +67,7 @@ namespace AWS.CloudFormation.Test
         const string SoftwareS3BucketName = "gtbb";
         static readonly TimeSpan ThreeHoursSpan = new TimeSpan(3, 0, 0);
         static readonly TimeSpan TwoHoursSpan = new TimeSpan(2, 0, 0);
+        const string BuildServerIpAddress = "10.0.12.85";
 
         public static Template GetTemplate()
         {
@@ -88,9 +89,13 @@ namespace AWS.CloudFormation.Test
             natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Ssh);
             natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
 
+            SecurityGroup tfsServerUsers = template.GetSecurityGroup("TFSUsers", vpc, "Security Group To Contain Users of the TFS Services");
+
             SecurityGroup tfsServerSecurityGroup = template.GetSecurityGroup("TFSServerSecurityGroup", vpc, "Allows various TFS communication");
             tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(tfsServerUsers, Protocol.Tcp, Ports.TeamFoundationServerGeneral);
+
 
             SecurityGroup buildServerSecurityGroup = template.GetSecurityGroup("BuildServerSecurityGroup", vpc, "Allows build controller to build agent communication");
             buildServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -104,7 +109,9 @@ namespace AWS.CloudFormation.Test
 
             SecurityGroup workstationSecurityGroup = template.GetSecurityGroup("WorkstationSecurityGroup", vpc, "Security Group To Contain Workstations");
             tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(workstationSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerGeneral);
-            
+
+
+
 
 
 
@@ -139,6 +146,7 @@ namespace AWS.CloudFormation.Test
             PrivateRoute.Instance = nat1;
 
             // ReSharper disable once InconsistentNaming
+            // uses 21gb
             var DomainController = new DomainController(template,
                 ADServerNetBIOSName1,
                 InstanceTypes.T2Micro,
@@ -152,12 +160,14 @@ namespace AWS.CloudFormation.Test
             DomainController.CreateAdReplicationSubnet(DMZ2Subnet);
             template.AddInstance(DomainController);
 
+            // uses 19gb
             // ReSharper disable once InconsistentNaming
             var RDGateway = new RemoteDesktopGateway(template, "RDGateway", InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, DMZSubnet);
             RDGateway.AddFinalizer(TwoHoursSpan);
             template.AddInstance(RDGateway);
             DomainController.AddToDomain(RDGateway, ThreeHoursSpan);
 
+            // uses 25gb
             var tfsSqlServer = new WindowsInstance(template, "sql1", InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
             tfsSqlServer.AddBlockDeviceMapping("/dev/sda1", 70, "gp2");
             tfsSqlServer.AddBlockDeviceMapping("/dev/sdf", 50, "gp2");
@@ -168,6 +178,7 @@ namespace AWS.CloudFormation.Test
             template.AddInstance(tfsSqlServer);
             DomainController.AddToDomain(tfsSqlServer, ThreeHoursSpan);
 
+            // uses 24gb
             var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
             tfsServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
             tfsServer.AddBlockDeviceMapping("/dev/sda1", 214, "gp2");
@@ -180,13 +191,20 @@ namespace AWS.CloudFormation.Test
             disableFirewallCommand.Command.AddCommandLine(new object[] { "-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\"" });
 
 
+            // uses 24gb
             var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup);
             buildServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::build");
             buildServer.AddFinalizer(ThreeHoursSpan);
+            tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(buildServer, Protocol.Tcp, Ports.TeamFoundationServerGeneral);
+            buildServer.SecurityGroups.Add(tfsServerUsers);
+            
 
+
+            // uses 33gb
             var workstation = AddWorkstation(template, PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup);
             workstation.AddChefExec(SoftwareS3BucketName, CookbookFileName, "VisualStudio");
             workstation.AddFinalizer(ThreeHoursSpan);
+            workstation.SecurityGroups.Add(tfsServerUsers);
 
 
             // the below is a remote desktop gateway server that can
@@ -199,6 +217,7 @@ namespace AWS.CloudFormation.Test
             elb.AddInstance(tfsServer);
             elb.AddListener("8080", "8080", "http");
             elb.AddSubnet(DMZSubnet);
+            elb.SecurityGroups.Add(tfsServerUsers);
             template.AddResource(elb);
 
 
@@ -218,6 +237,7 @@ namespace AWS.CloudFormation.Test
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             template.AddInstance(buildServer);
             buildServer.SecurityGroups.Add(buildServerSecurityGroup);
+            buildServer.PrivateIpAddress = BuildServerIpAddress;
             DomainController.AddToDomain(buildServer, ThreeHoursSpan);
             return buildServer;
         }

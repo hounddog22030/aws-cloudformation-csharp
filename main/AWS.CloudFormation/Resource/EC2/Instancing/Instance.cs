@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Instance.Metadata;
 using AWS.CloudFormation.Instance.Metadata.Config.Command;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.EC2.Networking;
+using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Resource.Wait;
 using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
@@ -13,7 +15,7 @@ using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Resource.EC2.Instancing
 {
-    public class Instance : ResourceBase
+    public class Instance : ResourceBase, ICidrBlock
     {
         public const string ParameterNameDefaultKeyPairKeyName = "DefaultKeyPairKeyName";
 
@@ -149,6 +151,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public string PrivateIpAddress { get; set; }
 
 
+
         public ElasticIp AddElasticIp()
         {
             ElasticIp eip = new ElasticIp(this, this.Name + "EIP");
@@ -218,6 +221,14 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             ebs.Add("VolumeType", volumeType);
             tempBlockDeviceMapping.Add(c);
             this.BlockDeviceMappings = tempBlockDeviceMapping.ToArray();
+        }
+
+        public string CidrBlock {
+            get { return this.PrivateIpAddress + "/32"; }
+            set
+            {
+                throw new ReadOnlyException();
+            }
         }
     }
 }
