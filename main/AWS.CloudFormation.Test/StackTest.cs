@@ -27,7 +27,7 @@ namespace AWS.CloudFormation.Test
     [TestClass]
     public class StackTest
     {
-        const string CookbookFileName = "cookbooks-1452475851.tar.gz";
+        const string CookbookFileName = "cookbooks-1452561138.tar.gz";
         // ReSharper disable once InconsistentNaming
         const string DomainAdminPassword = "kasdfiajs!!9";
         // ReSharper disable once InconsistentNaming
@@ -172,12 +172,21 @@ namespace AWS.CloudFormation.Test
             tfsServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
             tfsServer.AddBlockDeviceMapping("/dev/sda1", 214, "gp2");
 
-            //var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup);
-            //buildServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::build");
+            var disableFirewallConfigSet = tfsServer.Metadata.Init.ConfigSets.GetConfigSet("disable-win-fw-configSet");
+            var disableFirewallConfig = disableFirewallConfigSet.GetConfig("disable-win-fw-configSet");
 
-            //var workstation = AddWorkstation(template, PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup);
-            //workstation.AddChefExec(SoftwareS3BucketName, CookbookFileName, "VisualStudio");
-            //workstation.AddFinalizer(ThreeHoursSpan);
+            var disableFirewallCommand = disableFirewallConfig.Commands.AddCommand<PowerShellCommand>("disable-win-fw-command");
+            disableFirewallCommand.WaitAfterCompletion = 0.ToString();
+            disableFirewallCommand.Command.AddCommandLine(new object[] { "-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\"" });
+
+
+            var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup);
+            buildServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::build");
+            buildServer.AddFinalizer(ThreeHoursSpan);
+
+            var workstation = AddWorkstation(template, PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup);
+            workstation.AddChefExec(SoftwareS3BucketName, CookbookFileName, "VisualStudio");
+            workstation.AddFinalizer(ThreeHoursSpan);
 
 
             // the below is a remote desktop gateway server that can
@@ -186,11 +195,10 @@ namespace AWS.CloudFormation.Test
             //dc1.AddToDomainMemberSecurityGroup(RDGateway2);
             //template.AddInstance(RDGateway2);
 
-            LoadBalancer elb = new LoadBalancer(template,"elb1");
+            LoadBalancer elb = new LoadBalancer(template, "elb1");
             elb.AddInstance(tfsServer);
             elb.AddListener("8080", "8080", "http");
             elb.AddSubnet(DMZSubnet);
-            //elb.AddListener("8080", "8080", "https");
             template.AddResource(elb);
 
 
@@ -562,7 +570,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateStackTest()
         {
-            var stackName = "Stackdf54b49a-3769-4c5b-8141-3e54ddd93df3";
+            var stackName = "Stack0040cc1e-1289-46b3-9fc4-fa6dddfb507c";
             var t = new Stack.Stack();
             t.UpdateStack(stackName, GetTemplate());
         }

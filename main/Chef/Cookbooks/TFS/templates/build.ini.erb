@@ -1,7 +1,7 @@
 [Configuration]
 Activity=Microsoft.TeamFoundation.Admin.TeamBuildActivity
 
-Assembly=Microsoft.TeamFoundation.Admin, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+Assembly=Microsoft.TeamFoundation.Admin, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
 
 ; You can submit information about your Team Foundation Server configuration and administration experience to Microsoft.
 SendFeedback=True
@@ -10,7 +10,7 @@ SendFeedback=True
 ConfigurationType=create
 
 ; The number of build agents to configure
-AgentCount=2
+AgentCount=1
 
 ; The name of the new build controller.  This is typically the machine name that the controller runs on.
 NewControllerName=<%= @buildserver %>-Controller
@@ -19,7 +19,7 @@ NewControllerName=<%= @buildserver %>-Controller
 CleanResources=False
 
 ; The collection URL the build service will be configured for.
-CollectionUrl=http://TFSServer1:8080/tfs/DefaultCollection
+CollectionUrl=
 
 ; Boolean to determine whether the account is a built-in account
 IsServiceAccountBuiltIn=True
@@ -32,5 +32,8 @@ Port=9191
 
 ; The maximum number of concurrent builds that the controller will create.
 MaxConcurrentBuilds=0
+
+
+
 
 
