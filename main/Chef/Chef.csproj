@@ -163,7 +163,6 @@
     <None Include="Cookbooks\VisualStudio\attributes\default.rb" />
     <None Include="Cookbooks\VisualStudio\chefignore" />
     <None Include="Cookbooks\VisualStudio\metadata.json" />
-    <None Include="Cookbooks\VisualStudio\nodes\Lenovo-PC.json" />
     <None Include="Cookbooks\VisualStudio\README.md" />
     <None Include="Cookbooks\VisualStudio\recipes\default.rb" />
     <None Include="Cookbooks\VisualStudio\spec\spec_helper.rb" />

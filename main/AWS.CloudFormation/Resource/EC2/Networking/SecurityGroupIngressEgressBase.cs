@@ -33,7 +33,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         Http = 80,
         MsSqlServer = 1433,
         BuildController = 9191,
-        TeamFoundationServerGeneral = 8080,
+        TeamFoundationServerHttp = 8080,
         TeamFoundationServerBuild = 9191
     }
 

@@ -7,11 +7,11 @@
 include_recipe "DotNet35"
 
 # Declaring Variables
-iso_url           = "http://care.dlservice.microsoft.com/dl/download/6/1/9/619E068C-7115-490A-BFE3-09BFDEF83CB9/SQLServer2014-x64-ENU.iso"
+iso_url           = "https://s3.amazonaws.com/gtbb/software/SQLServer2014-x64-ENU.iso"
 iso_path          = "#{Chef::Config['file_cache_path']}\\SQLServer2014-x64-ENU.iso"
 sql_svc_act       = "NT AUTHORITY\\NETWORK SERVICE"
 sql_svc_pass      = ""
-sql_sysadmins     = "gtbb\\Domain Admins"
+sql_sysadmins     = "#{ENV['USERDOMAIN']}\\Domain Admins"
 sql_agent_svc_act = "NT Service\\SQLSERVERAGENT"
 
 # Download the SQL Server 2012 Standard ISO from a Web Share.
@@ -51,7 +51,7 @@ powershell_script 'Install SQL Server 2012 STD' do
 		$SQL_Server_ISO_Drive_Letter = (gwmi -Class Win32_LogicalDisk | Where-Object {$_.VolumeName -eq "SQL2014_ENU_x64"}).DeviceID
 		cd $SQL_Server_ISO_Drive_Letter\\
 		$Install_SQL = ./Setup.exe /q /ACTION=Install /FEATURES=SQLEngine,FullText,SSMS /INSTANCENAME=MSSQLSERVER /SQLSVCACCOUNT="#{sql_svc_act}" /SQLSYSADMINACCOUNTS="#{sql_sysadmins}" /AGTSVCACCOUNT="#{sql_agent_svc_act}" /IACCEPTSQLSERVERLICENSETERMS /INDICATEPROGRESS /UpdateEnabled=False /SECURITYMODE=SQL /SAPWD=JUhsd82.!#
-		$Install_SQL > "#{Chef::Config['file_cache_path']}\\SQL_Server_2012_STD_Install_Results.txt""
+		$Install_SQL > "#{Chef::Config['file_cache_path']}\\SQL_Server_2012_STD_Install_Results.txt"
 		EOH
 	guard_interpreter :powershell_script
 	not_if '((gwmi -class win32_service | Where-Object {$_.Name -eq "MSSQLSERVER"}).Name -eq "MSSQLSERVER")'

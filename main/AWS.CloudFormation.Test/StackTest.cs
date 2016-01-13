@@ -27,7 +27,7 @@ namespace AWS.CloudFormation.Test
     [TestClass]
     public class StackTest
     {
-        const string CookbookFileName = "cookbooks-1452606274.tar.gz";
+        const string CookbookFileName = "cookbooks-1452687954.tar.gz";
         // ReSharper disable once InconsistentNaming
         const string DomainAdminPassword = "kasdfiajs!!9";
         // ReSharper disable once InconsistentNaming
@@ -67,6 +67,8 @@ namespace AWS.CloudFormation.Test
         const string SoftwareS3BucketName = "gtbb";
         static readonly TimeSpan ThreeHoursSpan = new TimeSpan(3, 0, 0);
         static readonly TimeSpan TwoHoursSpan = new TimeSpan(2, 0, 0);
+        static readonly TimeSpan MaxTimeOut = new TimeSpan(0, 0, 43200);
+
         const string BuildServerIpAddress = "10.0.12.85";
 
         public static Template GetTemplate()
@@ -85,6 +87,9 @@ namespace AWS.CloudFormation.Test
             // ReSharper disable once InconsistentNaming
             var PrivateSubnet2 = template.AddSubnet("PrivateSubnet2", vpc, PrivSub2CIDR, Template.AvailabilityZone.UsEast1A);
 
+            SecurityGroup elbSecurityGroup = template.GetSecurityGroup("ElbSecurityGroup", vpc, "Enables access to the ELB");
+            elbSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+
             SecurityGroup natSecurityGroup = template.GetSecurityGroup("natSecurityGroup", vpc, "Enables Ssh access to NAT1 in AZ1 via port 22 and outbound internet access via private subnets");
             natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Ssh);
             natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
@@ -94,7 +99,9 @@ namespace AWS.CloudFormation.Test
             SecurityGroup tfsServerSecurityGroup = template.GetSecurityGroup("TFSServerSecurityGroup", vpc, "Allows various TFS communication");
             tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(tfsServerUsers, Protocol.Tcp, Ports.TeamFoundationServerGeneral);
+            tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(tfsServerUsers, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            
 
 
             SecurityGroup buildServerSecurityGroup = template.GetSecurityGroup("BuildServerSecurityGroup", vpc, "Allows build controller to build agent communication");
@@ -108,7 +115,7 @@ namespace AWS.CloudFormation.Test
             sqlServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
 
             SecurityGroup workstationSecurityGroup = template.GetSecurityGroup("WorkstationSecurityGroup", vpc, "Security Group To Contain Workstations");
-            tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(workstationSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerGeneral);
+            tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(workstationSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
 
 
@@ -195,7 +202,7 @@ namespace AWS.CloudFormation.Test
             var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup);
             buildServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::build");
             buildServer.AddFinalizer(ThreeHoursSpan);
-            tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(buildServer, Protocol.Tcp, Ports.TeamFoundationServerGeneral);
+            tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(buildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             buildServer.SecurityGroups.Add(tfsServerUsers);
 
 
@@ -203,7 +210,7 @@ namespace AWS.CloudFormation.Test
             // uses 33gb
             var workstation = AddWorkstation(template, PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup);
             workstation.AddChefExec(SoftwareS3BucketName, CookbookFileName, "VisualStudio");
-            workstation.AddFinalizer(ThreeHoursSpan);
+            workstation.AddFinalizer(MaxTimeOut);
             workstation.SecurityGroups.Add(tfsServerUsers);
 
 
@@ -217,7 +224,7 @@ namespace AWS.CloudFormation.Test
             elb.AddInstance(tfsServer);
             elb.AddListener("8080", "8080", "http");
             elb.AddSubnet(DMZSubnet);
-            elb.SecurityGroups.Add(tfsServerUsers);
+            elb.SecurityGroups.Add(elbSecurityGroup);
             template.AddResource(elb);
 
 
