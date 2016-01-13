@@ -27,7 +27,7 @@ namespace AWS.CloudFormation.Test
     [TestClass]
     public class StackTest
     {
-        const string CookbookFileName = "cookbooks-1452687954.tar.gz";
+        const string CookbookFileName = "cookbooks-1452695025.tar.gz";
         // ReSharper disable once InconsistentNaming
         const string DomainAdminPassword = "kasdfiajs!!9";
         // ReSharper disable once InconsistentNaming
@@ -210,8 +210,8 @@ namespace AWS.CloudFormation.Test
             // uses 33gb
             var workstation = AddWorkstation(template, PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup);
             workstation.AddChefExec(SoftwareS3BucketName, CookbookFileName, "VisualStudio");
-            workstation.AddFinalizer(MaxTimeOut);
             workstation.SecurityGroups.Add(tfsServerUsers);
+            //workstation.AddFinalizer(MaxTimeOut);
 
 
             // the below is a remote desktop gateway server that can
@@ -252,9 +252,9 @@ namespace AWS.CloudFormation.Test
         private static WindowsInstance AddWorkstation(Template template, Subnet privateSubnet1, Resource.EC2.Instancing.Instance dependsOn, DomainController dc1, SecurityGroup workstationSecurityGroup)
         {
             var workstation = new WindowsInstance(template, "workstation", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, privateSubnet1);
-            workstation.AddBlockDeviceMapping("/dev/sda1", 40, "gp2");
-            workstation.AddBlockDeviceMapping("/dev/sdf", 20, "gp2");
-            workstation.AddBlockDeviceMapping("/dev/sdg", 10, "gp2");
+            workstation.AddBlockDeviceMapping("/dev/sda1", 214, "gp2");
+            workstation.AddBlockDeviceMapping("/dev/sdf", 5, "gp2");
+            workstation.AddBlockDeviceMapping("/dev/sdg", 5, "gp2");
 
             workstation.AddDependsOn(dependsOn, ThreeHoursSpan);
             workstation.SecurityGroups.Add(workstationSecurityGroup);

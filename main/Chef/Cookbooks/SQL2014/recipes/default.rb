@@ -50,7 +50,7 @@ powershell_script 'Install SQL Server 2012 STD' do
 		echo "installing..."
 		$SQL_Server_ISO_Drive_Letter = (gwmi -Class Win32_LogicalDisk | Where-Object {$_.VolumeName -eq "SQL2014_ENU_x64"}).DeviceID
 		cd $SQL_Server_ISO_Drive_Letter\\
-		$Install_SQL = ./Setup.exe /q /ACTION=Install /FEATURES=SQLEngine,FullText,SSMS /INSTANCENAME=MSSQLSERVER /SQLSVCACCOUNT="#{sql_svc_act}" /SQLSYSADMINACCOUNTS="#{sql_sysadmins}" /AGTSVCACCOUNT="#{sql_agent_svc_act}" /IACCEPTSQLSERVERLICENSETERMS /INDICATEPROGRESS /UpdateEnabled=False /SECURITYMODE=SQL /SAPWD=JUhsd82.!#
+		$Install_SQL = ./Setup.exe /q /ACTION=Install /FEATURES=SQLEngine,FullText,SSMS /INSTANCENAME=MSSQLSERVER /SQLSVCACCOUNT="#{sql_svc_act}" /SQLSYSADMINACCOUNTS="#{sql_sysadmins}" /AGTSVCACCOUNT="#{sql_agent_svc_act}" /IACCEPTSQLSERVERLICENSETERMS /INDICATEPROGRESS /UpdateEnabled=False /SECURITYMODE=SQL /SAPWD=JUhsd82.!! /SQLUSERDBDIR=\"d:\\sqldata\" /SQLUSERDBLOGDIR=\"e:\\sqllog\" /INSTALLSQLDATADIR=\"d:\\sqldata\"
 		$Install_SQL > "#{Chef::Config['file_cache_path']}\\SQL_Server_2012_STD_Install_Results.txt"
 		EOH
 	guard_interpreter :powershell_script
