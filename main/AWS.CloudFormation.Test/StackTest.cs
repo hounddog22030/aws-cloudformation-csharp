@@ -260,9 +260,22 @@ namespace AWS.CloudFormation.Test
             workstation.SecurityGroups.Add(workstationSecurityGroup);
 
             var chefNode = workstation.GetChefNodeJsonContent(SoftwareS3BucketName, CookbookFileName);
+
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
             domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
+
+            var visualStudioNode = chefNode.AddNode("visualstudio");
+            visualStudioNode.Add("source", "https://s3.amazonaws.com/gtbb/software/");
+            visualStudioNode.Add("edition", "professional");
+            visualStudioNode.Add("version", "2015");
+            
+            domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
+            domainAdminUserInfoNode.Add("password", DomainAdminPassword);
+
+
+
+
             template.AddInstance(workstation);
 
             dc1.AddToDomain(workstation, ThreeHoursSpan);

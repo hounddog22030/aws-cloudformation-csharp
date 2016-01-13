@@ -11,7 +11,7 @@
     "ActiveDirectory": ">= 0.0.0",
     "TFS": ">= 0.0.0",
     "SQL2014": ">= 0.0.0",
-    "VisualStudio": ">= 0.0.0"
+    "visualstudio": ">= 0.0.0"
   },
   "recommendations": {
   },
