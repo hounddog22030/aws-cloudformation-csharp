@@ -27,7 +27,7 @@ namespace AWS.CloudFormation.Test
     [TestClass]
     public class StackTest
     {
-        const string CookbookFileName = "cookbooks-1452580519.tar.gz";
+        const string CookbookFileName = "cookbooks-1452606274.tar.gz";
         // ReSharper disable once InconsistentNaming
         const string DomainAdminPassword = "kasdfiajs!!9";
         // ReSharper disable once InconsistentNaming
@@ -197,7 +197,7 @@ namespace AWS.CloudFormation.Test
             buildServer.AddFinalizer(ThreeHoursSpan);
             tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(buildServer, Protocol.Tcp, Ports.TeamFoundationServerGeneral);
             buildServer.SecurityGroups.Add(tfsServerUsers);
-            
+
 
 
             // uses 33gb
@@ -590,7 +590,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateStackTest()
         {
-            var stackName = "Stack0040cc1e-1289-46b3-9fc4-fa6dddfb507c";
+            var stackName = "Stack6f3746db-0522-4e4f-98a5-b39a26f890bb";
             var t = new Stack.Stack();
             t.UpdateStack(stackName, GetTemplate());
         }
