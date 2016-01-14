@@ -223,6 +223,19 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             this.BlockDeviceMappings = tempBlockDeviceMapping.ToArray();
         }
 
+        public void AddBlockDeviceMapping(BlockDeviceMapping blockDeviceMapping)
+        {
+            var tempBlockDeviceMapping = new List<CloudFormationDictionary>();
+
+            if (this.BlockDeviceMappings != null)
+            {
+                tempBlockDeviceMapping.AddRange(this.BlockDeviceMappings);
+            }
+            tempBlockDeviceMapping.Add(blockDeviceMapping);
+            this.BlockDeviceMappings = tempBlockDeviceMapping.ToArray();
+        }
+
+
         public string CidrBlock {
             get { return this.PrivateIpAddress + "/32"; }
             set

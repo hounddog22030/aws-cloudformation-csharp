@@ -175,7 +175,7 @@ namespace AWS.CloudFormation.Test
             DomainController.AddToDomain(RDGateway, ThreeHoursSpan);
 
             // uses 25gb
-            var tfsSqlServer = new WindowsInstance(template, "sql1", InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1);
+            var tfsSqlServer = new WindowsInstance(template, "sql1", InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1, true);
             tfsSqlServer.AddBlockDeviceMapping("/dev/sda1", 70, "gp2");
             tfsSqlServer.AddBlockDeviceMapping("/dev/sdf", 50, "gp2");
             tfsSqlServer.AddBlockDeviceMapping("/dev/sdg", 20, "gp2");
@@ -252,19 +252,44 @@ namespace AWS.CloudFormation.Test
             var t = new Stack.Stack();
             Template template = new Template(KeyPairName);
             var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
+            SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
+            template.AddResource(rdp);
+            rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
-            WindowsInstance w = new WindowsInstance(template,"Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet);
+            WindowsInstance w = new WindowsInstance(template,"Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
+            w.SecurityGroups.Add(rdp);
             w.AddElasticIp();
             template.AddResource(w);
             VolumeAttachment va = new VolumeAttachment(template,"VolumeAttachment1","/dev/sdh", new ReferenceProperty() {Ref = w.Name}, "vol-ec768410");
             template.AddResource(va);
             t.CreateStack(template);
         }
+        [TestMethod]
+        public void CreateStackBlockDeviceMappingFromSnapshotTest()
+        {
+            var t = new Stack.Stack();
+            Template template = new Template(KeyPairName);
+            var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
+            SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
+            template.AddResource(rdp);
+            rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
+            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
+            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
+            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
+            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "/dev/sdi");
+            blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
+            w.AddBlockDeviceMapping(blockDeviceMapping);
+            w.SecurityGroups.Add(rdp);
+            w.AddElasticIp();
+            template.AddResource(w);
+            t.CreateStack(template);
+        }
         private static WindowsInstance AddBuildServer(Template template, Subnet privateSubnet1, WindowsInstance tfsServer, DomainController DomainController, SecurityGroup buildServerSecurityGroup)
         {
-            var buildServer = new WindowsInstance(template, "build", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, privateSubnet1);
+            var buildServer = new WindowsInstance(template, "build", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, privateSubnet1, true);
             buildServer.AddBlockDeviceMapping("/dev/sda1", 30, "gp2");
 
             buildServer.AddDependsOn(tfsServer, ThreeHoursSpan);
@@ -282,7 +307,7 @@ namespace AWS.CloudFormation.Test
 
         private static WindowsInstance AddWorkstation(Template template, string name, Subnet privateSubnet1, Resource.EC2.Instancing.Instance dependsOn, DomainController dc1, SecurityGroup workstationSecurityGroup, SecurityGroup tfsUsers )
         {
-            var workstation = new WindowsInstance(template, name, InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, privateSubnet1);
+            var workstation = new WindowsInstance(template, name, InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, privateSubnet1, true);
             workstation.AddBlockDeviceMapping("/dev/sda1", 214, "gp2");
             workstation.AddBlockDeviceMapping("/dev/sdf", 5, "gp2");
             workstation.AddBlockDeviceMapping("/dev/sdg", 5, "gp2");
@@ -313,7 +338,7 @@ namespace AWS.CloudFormation.Test
 
         private static WindowsInstance AddTfsServer(Template template, Subnet privateSubnet1, WindowsInstance tfsSqlServer, DomainController dc1, SecurityGroup tfsServerSecurityGroup)
         {
-            var tfsServer = new WindowsInstance(template, "tfsserver1", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, privateSubnet1);
+            var tfsServer = new WindowsInstance(template, "tfsserver1", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, privateSubnet1, true);
             tfsServer.AddDependsOn(tfsSqlServer, ThreeHoursSpan);
 
             var chefNode = tfsServer.GetChefNodeJsonContent(SoftwareS3BucketName, CookbookFileName);

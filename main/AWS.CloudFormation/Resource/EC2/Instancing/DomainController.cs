@@ -35,7 +35,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
 
         public DomainController(Template template, string name, InstanceTypes instanceType, string imageId, Subnet subnet, string domainController1PrivateIpAddress, DomainInfo domainInfo)
-            : base(template, name, instanceType, imageId, subnet)
+            : base(template, name, instanceType, imageId, subnet, true)
         {
             this.DomainDnsName = new ParameterBase(DomainController.ParameterNameDomainDnsName, "String", domainInfo.DomainDnsName); ;
             Template.AddParameter(this.DomainDnsName);

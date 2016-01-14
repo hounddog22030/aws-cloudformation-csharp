@@ -16,7 +16,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             InstanceTypes instanceType,
             string imageId,
             Subnet subnet) : 
-            base(template, name, instanceType, imageId, subnet )
+            base(template, name, instanceType, imageId, subnet, true)
         {
             this.Subnet = subnet;
             this.AddSecurityGroup();

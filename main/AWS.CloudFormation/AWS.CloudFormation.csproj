@@ -59,6 +59,7 @@
   <ItemGroup>
     <Compile Include="Common\CloudFormationDictionary.cs" />
     <Compile Include="Common\CollectionAsIdsConverter.cs" />
+    <Compile Include="Resource\EC2\Instancing\BlockDeviceMapping.cs" />
     <Compile Include="Resource\EC2\Instancing\DomainController.cs" />
     <Compile Include="Resource\EC2\Instancing\Metadata\Authentication.cs" />
     <Compile Include="Resource\EC2\Instancing\Metadata\ConfigSet.cs" />
