@@ -208,8 +208,8 @@ namespace AWS.CloudFormation.Test
 
 
             // uses 33gb
-            var workstation = AddWorkstation(template, "workstation", PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup, tfsServerUsers);
-            var workstation2 = AddWorkstation(template, "workstation2", PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup, tfsServerUsers);
+            var workstation = AddWorkstation(template, "workstation3", PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup, tfsServerUsers);
+            //var workstation2 = AddWorkstation(template, "workstation2", PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup, tfsServerUsers);
 
 
             // the below is a remote desktop gateway server that can
