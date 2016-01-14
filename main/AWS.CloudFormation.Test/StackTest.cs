@@ -251,7 +251,14 @@ namespace AWS.CloudFormation.Test
         {
             var t = new Stack.Stack();
             Template template = new Template(KeyPairName);
-            VolumeAttachment va = new VolumeAttachment(template,"VolumeAttachment1","/dev/sdh", "i-edc5a05e", "vol-ec768410");
+            var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
+            var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
+            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
+            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
+            WindowsInstance w = new WindowsInstance(template,"Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet);
+            w.AddElasticIp();
+            template.AddResource(w);
+            VolumeAttachment va = new VolumeAttachment(template,"VolumeAttachment1","/dev/sdh", new ReferenceProperty() {Ref = w.Name}, "vol-ec768410");
             template.AddResource(va);
             t.CreateStack(template);
         }

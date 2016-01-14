@@ -25,10 +25,18 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                                 InstanceTypes instanceType, 
                                 string imageId, 
                                 Subnet subnet) 
-            : base(template, name, instanceType, imageId, OperatingSystem.Windows, true)
+            : this(template, name, instanceType, imageId)
         {
             this.Vpc = subnet.Vpc;
             this.Subnet = subnet;
+        }
+
+        public WindowsInstance(Template template,
+                                string name,
+                                InstanceTypes instanceType,
+                                string imageId)
+            : base(template, name, instanceType, imageId, OperatingSystem.Windows, true)
+        {
             this.Rename();
         }
 
