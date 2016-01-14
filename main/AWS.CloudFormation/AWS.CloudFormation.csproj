@@ -72,6 +72,8 @@
     <Compile Include="Resource\EC2\Instancing\Metadata\Config\File.cs" />
     <Compile Include="Resource\EC2\Instancing\Metadata\Config\Files.cs" />
     <Compile Include="Resource\EC2\Instancing\Metadata\Init.cs" />
+    <Compile Include="Resource\EC2\Volume.cs" />
+    <Compile Include="Resource\EC2\VolumeAttachment.cs" />
     <Compile Include="Resource\ElasticLoadBalancing\LoadBalancer.cs" />
     <Compile Include="Resource\Metadata.cs" />
     <Compile Include="Resource\EC2\Networking\NetworkInterface.cs" />

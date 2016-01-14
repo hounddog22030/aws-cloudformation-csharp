@@ -71,7 +71,7 @@ namespace AWS.CloudFormation.Test
 
         const string BuildServerIpAddress = "10.0.12.85";
 
-        public static Template GetTemplate()
+        public static Template GetTemplateFullStack()
         {
 
             var template = new Template(KeyPairName);
@@ -229,6 +229,32 @@ namespace AWS.CloudFormation.Test
             return template;
         }
 
+        public static Template GetTemplateVolumeOnly()
+        {
+            Template t = new Template(KeyPairName);
+            Volume v = new Volume(t,"Volume1");
+            v.SnapshotId = "snap-c4d7f7c3";
+            v.AvailabilityZone = "us-east-1a";
+            t.AddResource(v);
+            return t;
+        }
+
+        [TestMethod]
+        public void CreateStackVolumeTest()
+        {
+            var t = new Stack.Stack();
+            t.CreateStack(GetTemplateVolumeOnly());
+        }
+
+        [TestMethod]
+        public void CreateStackVolumeAttachmentTest()
+        {
+            var t = new Stack.Stack();
+            Template template = new Template(KeyPairName);
+            VolumeAttachment va = new VolumeAttachment(template,"VolumeAttachment1","/dev/sdh", "i-edc5a05e", "vol-ec768410");
+            template.AddResource(va);
+            t.CreateStack(template);
+        }
         private static WindowsInstance AddBuildServer(Template template, Subnet privateSubnet1, WindowsInstance tfsServer, DomainController DomainController, SecurityGroup buildServerSecurityGroup)
         {
             var buildServer = new WindowsInstance(template, "build", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, privateSubnet1);
@@ -601,14 +627,14 @@ namespace AWS.CloudFormation.Test
         public void CreateStackTest()
         {
             var t = new Stack.Stack();
-            t.CreateStack(GetTemplate());
+            t.CreateStack(GetTemplateFullStack());
         }
         [TestMethod]
         public void UpdateStackTest()
         {
             var stackName = "Stack5500cc69-af8a-4574-9539-778c92577437";
             var t = new Stack.Stack();
-            t.UpdateStack(stackName, GetTemplate());
+            t.UpdateStack(stackName, GetTemplateFullStack());
         }
 
 

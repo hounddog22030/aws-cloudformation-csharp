@@ -82,7 +82,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateTemplateFileTest()
         {
-            var template = StackTest.GetTemplate();
+            var template = StackTest.GetTemplateFullStack();
 
             FileInfo file = TemplateEngine.CreateTemplateFile(template);
             Assert.IsNotNull(file);
