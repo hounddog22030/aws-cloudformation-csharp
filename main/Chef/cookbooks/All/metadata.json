@@ -1,14 +1,16 @@
 {
-  "name": "vs",
-  "description": "Installs/Configures vs",
-  "long_description": "Installs/Configures vs",
-  "maintainer": "YOUR_NAME",
-  "maintainer_email": "YOUR_EMAIL",
-  "license": "All rights reserved",
+  "name": "All",
+  "description": "Installs/Configures All",
+  "long_description": "Installs/Configures All",
+  "maintainer": "The Authors",
+  "maintainer_email": "you@example.com",
+  "license": "all_rights",
   "platforms": {
   },
   "dependencies": {
-    "powershell": ">= 0.0.0"
+    "ActiveDirectory": ">= 0.0.0",
+    "TFS": ">= 0.0.0",
+    "SQL2014": ">= 0.0.0"
   },
   "recommendations": {
   },
