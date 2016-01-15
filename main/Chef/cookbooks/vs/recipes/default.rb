@@ -28,23 +28,27 @@
 
 include_recipe 'ec2helper'
 
-admin_xml = "#{Chef::Config['file_cache_path']}\\AdminDeployment.xml"
+admin_xml = "#{Chef::Config['file_cache_path']}/AdminDeployment.xml"
 
 cookbook_file "AdminDeployment.xml" do
 	path "#{admin_xml}"
 	action :create_if_missing	
 end
 
+drive_letter = "Q:"
+exe_path = "#{drive_letter}/vs_professional.exe"
+
 ec2helper_mount 'MountEc2Drives' do
 	volume_name "VS2015_PRO_ENU"
-	drive_letter "q"
+	drive_letter "#{drive_letter}"
+	not_if { File.exist?("#{exe_path}") }
 	notifies :run, 'execute[Install Visual Studio]', :immediately
 	action :mount
 end
 
 # Installing Team Foundation Server Standard.
 execute 'Install Visual Studio' do
-	command lazy { "#{node[:vs][:exepath]}:/vs_professional.exe /quiet /ADMINFILE #{admin_xml}" }
+	command lazy { "#{exe_path} /quiet /ADMINFILE #{admin_xml}" }
 	timeout 21600
 	returns [0,3010]
 	not_if { File.exist?("C:/Program Files (x86)/Microsoft Visual Studio 14.0/Common7/IDE/DevEnv.exe") }

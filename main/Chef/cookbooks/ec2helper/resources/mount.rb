@@ -8,7 +8,7 @@ action :mount do
 			$offlineDisks | ForEach-Object  {Set-Disk $_.Number -IsReadOnly $False}
 			$offlineDisks | ForEach-Object {Set-Disk -Number $_.Number -IsOffline $False}
  			$volume = Get-WmiObject Win32_Volume -Filter "Label='#{volume_name}'"
-			$volume.DriveLetter = drive_letter
+			$volume.DriveLetter = "#{drive_letter}"
 			$volume.Put()
 		EOH
 		guard_interpreter :powershell_script
