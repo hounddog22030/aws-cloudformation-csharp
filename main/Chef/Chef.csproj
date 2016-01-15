@@ -49,7 +49,6 @@
     <None Include="cookbooks\ActiveDirectory\.kitchen.yml" />
     <None Include="cookbooks\ActiveDirectory\attributes\default.rb" />
     <None Include="cookbooks\ActiveDirectory\Berksfile" />
-    <None Include="cookbooks\ActiveDirectory\chefignore" />
     <None Include="cookbooks\ActiveDirectory\metadata.json" />
     <None Include="cookbooks\ActiveDirectory\metadata.rb" />
     <None Include="cookbooks\ActiveDirectory\README.md" />
@@ -62,7 +61,6 @@
     <None Include="cookbooks\ActiveDirectory\test\integration\default\serverspec\default_spec.rb" />
     <None Include="cookbooks\ActiveDirectory\test\integration\default\serverspec\spec_helper.rb" />
     <None Include="cookbooks\AWS4VisualStudio\.kitchen.yml" />
-    <None Include="cookbooks\AWS4VisualStudio\chefignore" />
     <None Include="cookbooks\AWS4VisualStudio\metadata.json" />
     <None Include="cookbooks\AWS4VisualStudio\README.md" />
     <None Include="cookbooks\AWS4VisualStudio\recipes\default.rb" />
@@ -78,20 +76,10 @@
     <None Include="cookbooks\ec2helper\LICENSE" />
     <None Include="cookbooks\ec2helper\metadata.rb" />
     <None Include="cookbooks\ec2helper\README.md" />
+    <None Include="cookbooks\ec2helper\recipes\default.rb" />
+    <None Include="cookbooks\ec2helper\resources\mount.rb" />
     <None Include="cookbooks\ec2helper\Thorfile" />
     <None Include="cookbooks\ec2helper\Vagrantfile" />
-    <None Include="cookbooks\MountDrives\.kitchen.yml" />
-    <None Include="cookbooks\MountDrives\Berksfile" />
-    <None Include="cookbooks\MountDrives\CHANGELOG.md" />
-    <None Include="cookbooks\MountDrives\chefignore" />
-    <None Include="cookbooks\MountDrives\Gemfile" />
-    <None Include="cookbooks\MountDrives\LICENSE" />
-    <None Include="cookbooks\MountDrives\metadata.rb" />
-    <None Include="cookbooks\MountDrives\README.md" />
-    <None Include="cookbooks\MountDrives\recipes\default.rb" />
-    <None Include="cookbooks\MountDrives\resources\mount.rb" />
-    <None Include="cookbooks\MountDrives\Thorfile" />
-    <None Include="cookbooks\MountDrives\Vagrantfile" />
     <None Include="Cookbooks.dead\ActiveDirectory\.kitchen.yml" />
     <None Include="Cookbooks.dead\ActiveDirectory\attributes\default.rb" />
     <None Include="Cookbooks.dead\ActiveDirectory\Berksfile" />
@@ -219,7 +207,6 @@
     <None Include="Cookbooks.dead\VisualStudio\test\integration\default\serverspec\spec_helper.rb" />
     <None Include="cookbooks\PsTools\.kitchen.yml" />
     <None Include="cookbooks\PsTools\Berksfile" />
-    <None Include="cookbooks\PsTools\chefignore" />
     <None Include="cookbooks\PsTools\metadata.rb" />
     <None Include="cookbooks\PsTools\README.md" />
     <None Include="cookbooks\PsTools\recipes\default.rb" />
@@ -228,7 +215,6 @@
     <None Include="cookbooks\PsTools\test\integration\default\serverspec\default_spec.rb" />
     <None Include="cookbooks\PsTools\test\integration\default\serverspec\spec_helper.rb" />
     <None Include="cookbooks\Resharper\.kitchen.yml" />
-    <None Include="cookbooks\Resharper\chefignore" />
     <None Include="cookbooks\Resharper\metadata.json" />
     <None Include="cookbooks\Resharper\README.md" />
     <None Include="cookbooks\Resharper\recipes\default.rb" />
@@ -288,39 +274,31 @@
     <None Include="cookbooks\vs\LICENSE" />
     <None Include="cookbooks\vs\metadata.rb" />
     <None Include="cookbooks\vs\README.md" />
-    <None Include="cookbooks\vs\recipes\test.rb" />
     <None Include="cookbooks\vs\recipes\default.rb" />
+    <None Include="cookbooks\vs\recipes\test.rb" />
     <None Include="cookbooks\vs\Thorfile" />
+    <None Include="cookbooks\vs\Vagrantfile" />
     <None Include="Scripts\BringDisksOnline.ps" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="cookbooks\MountDrives\.gitignore" />
     <Content Include="Cookbooks.dead\VisualStudio\files\AdminDeployment.xml" />
     <Content Include="cookbooks\VisualStudio\files\AdminDeployment.xml" />
-    <Content Include="cookbooks\vs\.gitignore" />
     <Content Include="cookbooks\vs\files\default\AdminDeployment.xml" />
     <Content Include="stack.template" />
     <Content Include="TextFile1.txt" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="cookbooks\ec2helper\attributes\" />
-    <Folder Include="cookbooks\ec2helper\files\" />
+    <Folder Include="cookbooks\ec2helper\files\default\" />
     <Folder Include="cookbooks\ec2helper\libraries\" />
     <Folder Include="cookbooks\ec2helper\providers\" />
-    <Folder Include="cookbooks\ec2helper\recipes\" />
-    <Folder Include="cookbooks\ec2helper\resources\" />
-    <Folder Include="cookbooks\ec2helper\templates\" />
-    <Folder Include="cookbooks\ec2helper\test\" />
-    <Folder Include="cookbooks\MountDrives\attributes\" />
-    <Folder Include="cookbooks\MountDrives\files\default\" />
-    <Folder Include="cookbooks\MountDrives\libraries\" />
-    <Folder Include="cookbooks\MountDrives\providers\" />
-    <Folder Include="cookbooks\MountDrives\templates\default\" />
-    <Folder Include="cookbooks\MountDrives\test\integration\default\" />
+    <Folder Include="cookbooks\ec2helper\templates\default\" />
+    <Folder Include="cookbooks\ec2helper\test\integration\default\" />
     <Folder Include="cookbooks\vs\libraries\" />
     <Folder Include="cookbooks\vs\providers\" />
     <Folder Include="cookbooks\vs\resources\" />
     <Folder Include="cookbooks\vs\templates\default\" />
+    <Folder Include="cookbooks\vs\test\integration\default\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
