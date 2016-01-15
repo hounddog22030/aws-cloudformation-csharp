@@ -70,6 +70,16 @@
     <None Include="cookbooks\AWS4VisualStudio\spec\unit\recipes\default_spec.rb" />
     <None Include="cookbooks\AWS4VisualStudio\test\integration\default\serverspec\default_spec.rb" />
     <None Include="cookbooks\AWS4VisualStudio\test\integration\default\serverspec\spec_helper.rb" />
+    <None Include="cookbooks\ec2helper\.kitchen.yml" />
+    <None Include="cookbooks\ec2helper\Berksfile" />
+    <None Include="cookbooks\ec2helper\CHANGELOG.md" />
+    <None Include="cookbooks\ec2helper\chefignore" />
+    <None Include="cookbooks\ec2helper\Gemfile" />
+    <None Include="cookbooks\ec2helper\LICENSE" />
+    <None Include="cookbooks\ec2helper\metadata.rb" />
+    <None Include="cookbooks\ec2helper\README.md" />
+    <None Include="cookbooks\ec2helper\Thorfile" />
+    <None Include="cookbooks\ec2helper\Vagrantfile" />
     <None Include="cookbooks\MountDrives\.kitchen.yml" />
     <None Include="cookbooks\MountDrives\Berksfile" />
     <None Include="cookbooks\MountDrives\CHANGELOG.md" />
@@ -290,8 +300,17 @@
     <Content Include="cookbooks\vs\.gitignore" />
     <Content Include="cookbooks\vs\files\default\AdminDeployment.xml" />
     <Content Include="stack.template" />
+    <Content Include="TextFile1.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="cookbooks\ec2helper\attributes\" />
+    <Folder Include="cookbooks\ec2helper\files\" />
+    <Folder Include="cookbooks\ec2helper\libraries\" />
+    <Folder Include="cookbooks\ec2helper\providers\" />
+    <Folder Include="cookbooks\ec2helper\recipes\" />
+    <Folder Include="cookbooks\ec2helper\resources\" />
+    <Folder Include="cookbooks\ec2helper\templates\" />
+    <Folder Include="cookbooks\ec2helper\test\" />
     <Folder Include="cookbooks\MountDrives\attributes\" />
     <Folder Include="cookbooks\MountDrives\files\default\" />
     <Folder Include="cookbooks\MountDrives\libraries\" />
