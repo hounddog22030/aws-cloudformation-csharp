@@ -59,6 +59,7 @@ powershell_script 'Install Team Foundation Server STD' do
 		cd $TFS_Server_ISO_Drive_Letter/
 		$Install_TFS = ./tfs_express.exe /quiet
 		$Install_TFS > "#{Chef::Config['file_cache_path']}/Team_Foundation_Server_STD_Install_Results.txt"
+		Set-Sleep -s 30
 		EOH
 	guard_interpreter :powershell_script
 	not_if  { File.exists?(tfsconfigure_exe_file) }

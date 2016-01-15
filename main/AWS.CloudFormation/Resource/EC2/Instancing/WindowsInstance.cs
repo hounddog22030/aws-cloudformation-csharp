@@ -1,4 +1,7 @@
-﻿using System.Configuration;
+﻿using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using AWS.CloudFormation.Configuration.Packages;
 using AWS.CloudFormation.Instance.Metadata.Config;
 using AWS.CloudFormation.Instance.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
@@ -39,6 +42,14 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                                 bool rename)
             : base(template, name, instanceType, imageId, OperatingSystem.Windows, true)
         {
+            //xvd[f - z]
+            _availableDevices = new List<string>();
+            for (char c = 'f'; c < 'z'; c++)
+            {
+                _availableDevices.Add($"xvd{c}");
+            }
+
+
             if (rename)
             {
                 this.Rename();
@@ -103,7 +114,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             var chefConfig = this.GetChefConfig(s3bucketName, cookbookFileName);
             var chefCommandConfig = chefConfig.Commands.AddCommand<Command>(recipeList.Replace(':','-'));
             //chefCommandConfig.Test = "IF EXIST \"C:\\Program Files\\Microsoft SQL Server\\MSSQL12.MSSQLSERVER\\MSSQL\\Binn\\sqlservr.exe\" EXIT 1";
-            chefCommandConfig.Command.SetFnJoin($"C:\\opscode\\chefdk\\bin\\chef-client.bat -z -o {recipeList}");
+            chefCommandConfig.Command.SetFnJoin($"C:\\opscode\\chefdk\\bin\\chef-client.bat -z -o {recipeList} -c c:/chef/client.rb");
         }
 
         public ConfigFileContent GetChefNodeJsonContent(string s3bucketName, string cookbookFileName)
@@ -111,6 +122,24 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             var chefConfig = this.GetChefConfig(s3bucketName, cookbookFileName);
             var nodeJson = chefConfig.Files.GetFile("c:\\chef\\node.json");
             return nodeJson.Content;
+        }
+
+        public void AddPackage(string s3BucketName, PackageBase package)
+        {
+            var cookbookFileName = $"{package.CookbookName}.tar.gz";
+            this.AddChefExec(s3BucketName, cookbookFileName, package.CookbookName);
+            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this, this.GetNextAvailableDevice());
+            blockDeviceMapping.Ebs.SnapshotId = package.SnapshotId;
+            this.AddBlockDeviceMapping(blockDeviceMapping);
+        }
+
+        List<string> _availableDevices;
+
+        protected string GetNextAvailableDevice()
+        {
+            var returnValue = _availableDevices.First();
+            _availableDevices.Remove(returnValue);
+            return returnValue;
         }
     }
 }

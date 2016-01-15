@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Configuration.Packages;
 using AWS.CloudFormation.Instance;
 using AWS.CloudFormation.Instance.Metadata;
 using AWS.CloudFormation.Instance.Metadata.Config;
@@ -360,30 +361,21 @@ Set-Disk $d.Number -IsOffline $False
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
             WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
-            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "xvdf");
-            blockDeviceMapping.Ebs.SnapshotId = "snap-87e3eb87";
-            w.AddBlockDeviceMapping(blockDeviceMapping);
+            //BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "xvdf");
+            //blockDeviceMapping.Ebs.SnapshotId = "snap-87e3eb87";
+            //w.AddBlockDeviceMapping(blockDeviceMapping);
 
-            blockDeviceMapping = new BlockDeviceMapping(w, "xvdg");
-            blockDeviceMapping.Ebs.SnapshotId = "snap-5e27a85a";
-            w.AddBlockDeviceMapping(blockDeviceMapping);
+            //blockDeviceMapping = new BlockDeviceMapping(w, "xvdg");
+            //blockDeviceMapping.Ebs.SnapshotId = "snap-5e27a85a";
+            //w.AddBlockDeviceMapping(blockDeviceMapping);
 
-            blockDeviceMapping = new BlockDeviceMapping(w, "xvdh");
-            blockDeviceMapping.Ebs.SnapshotId = "snap-4e69d94b";
-            w.AddBlockDeviceMapping(blockDeviceMapping);
-
-
-
+            //blockDeviceMapping = new BlockDeviceMapping(w, "xvdh");
+            //blockDeviceMapping.Ebs.SnapshotId = "snap-4e69d94b";
+            //w.AddBlockDeviceMapping(blockDeviceMapping);
+            w.AddChefExec(SoftwareS3BucketName, "vs.tar.gz", "MountDrives");
 
 
-            /**
-$d = Get-Disk  | Where OperationalStatus -eq 'Offline'
-$d.ToString();
-$d.Number
-Set-Disk $d.Number -IsOffline $False
-            **/
-
-            w.AddChefExec(SoftwareS3BucketName, "vs.tar.gz", "vs");
+            w.AddPackage(SoftwareS3BucketName,new VisualStudio());
 
 
             w.SecurityGroups.Add(rdp);
