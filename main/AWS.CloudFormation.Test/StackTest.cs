@@ -301,6 +301,7 @@ Set-Disk $d.Number -IsOffline $False
             template.AddResource(w);
             Stack.Stack.CreateStack(template);
         }
+
         [TestMethod]
         public void CreateStackWithMountedSqlTfsVsIsosTest()
         {
@@ -343,6 +344,52 @@ Set-Disk $d.Number -IsOffline $False
             w.AddElasticIp();
             template.AddResource(w);
             var name = this.TestContext.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".",string.Empty) ;
+            Stack.Stack.CreateStack(template, name);
+        }
+
+
+        [TestMethod]
+        public void CreateStackWithVisualStudio()
+        {
+            Template template = new Template(KeyPairName);
+            var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
+            SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
+            template.AddResource(rdp);
+            rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
+            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
+            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
+            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
+            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "xvdf");
+            blockDeviceMapping.Ebs.SnapshotId = "snap-87e3eb87";
+            w.AddBlockDeviceMapping(blockDeviceMapping);
+
+            blockDeviceMapping = new BlockDeviceMapping(w, "xvdg");
+            blockDeviceMapping.Ebs.SnapshotId = "snap-5e27a85a";
+            w.AddBlockDeviceMapping(blockDeviceMapping);
+
+            blockDeviceMapping = new BlockDeviceMapping(w, "xvdh");
+            blockDeviceMapping.Ebs.SnapshotId = "snap-4e69d94b";
+            w.AddBlockDeviceMapping(blockDeviceMapping);
+
+
+
+
+
+            /**
+$d = Get-Disk  | Where OperationalStatus -eq 'Offline'
+$d.ToString();
+$d.Number
+Set-Disk $d.Number -IsOffline $False
+            **/
+
+            w.AddChefExec(SoftwareS3BucketName, "vs.tar.gz", "vs");
+
+
+            w.SecurityGroups.Add(rdp);
+            w.AddElasticIp();
+            template.AddResource(w);
+            var name = this.TestContext.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty);
             Stack.Stack.CreateStack(template, name);
         }
 
