@@ -9,7 +9,7 @@ namespace AWS.CloudFormation.Stack
 {
     public class Stack
     {
-        public void CreateStack(Template template)
+        public static CreateStackResponse CreateStack(Template template,string name)
         {
             var templateUri = TemplateEngine.UploadTemplate(template, "gtbb/templates");
 
@@ -18,7 +18,7 @@ namespace AWS.CloudFormation.Stack
             CreateStackRequest request = new CreateStackRequest
             {
                 DisableRollback = true,
-                StackName = "Stack" + Guid.NewGuid(),
+                StackName = name,
                 TemplateURL = templateUri.AbsoluteUri
             };
 
@@ -30,12 +30,17 @@ namespace AWS.CloudFormation.Stack
                 {
                     throw new Exception(response.ToString());
                 }
-
+                return response;
             }
             catch (Amazon.Runtime.Internal.HttpErrorResponseException ex)
             {
                 throw new Exception(ex.Message);
             }
+
+        }
+        public static CreateStackResponse CreateStack(Template template)
+        {
+            return CreateStack(template,$"Stack{Guid.NewGuid().ToString().Replace("{",string.Empty).Replace("}",string.Empty)}");
         }
 
         public void UpdateStack(string stackName, Template template)

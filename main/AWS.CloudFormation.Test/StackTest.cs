@@ -242,14 +242,12 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateStackVolumeTest()
         {
-            var t = new Stack.Stack();
-            t.CreateStack(GetTemplateVolumeOnly());
+            Stack.Stack.CreateStack(GetTemplateVolumeOnly());
         }
 
         [TestMethod]
         public void CreateStackVolumeAttachmentTest()
         {
-            var t = new Stack.Stack();
             Template template = new Template(KeyPairName);
             var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
@@ -264,12 +262,12 @@ namespace AWS.CloudFormation.Test
             template.AddResource(w);
             VolumeAttachment va = new VolumeAttachment(template,"VolumeAttachment1","/dev/sdh", new ReferenceProperty() {Ref = w.Name}, "vol-ec768410");
             template.AddResource(va);
-            t.CreateStack(template);
+            Stack.Stack.CreateStack(template);
         }
+
         [TestMethod]
         public void CreateStackBlockDeviceMappingFromSnapshotTest()
         {
-            var t = new Stack.Stack();
             Template template = new Template(KeyPairName);
             var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
@@ -279,14 +277,74 @@ namespace AWS.CloudFormation.Test
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
             WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
-            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "/dev/sdi");
+            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "/dev/xvdf");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
             w.AddBlockDeviceMapping(blockDeviceMapping);
+
+            blockDeviceMapping = new BlockDeviceMapping(w, "/dev/xvdg");
+            blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
+            w.AddBlockDeviceMapping(blockDeviceMapping);
+
+            blockDeviceMapping = new BlockDeviceMapping(w, "/dev/xvdh");
+            blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
+            w.AddBlockDeviceMapping(blockDeviceMapping);
+
+            /**
+$d = Get-Disk  | Where OperationalStatus -eq 'Offline'
+$d.ToString();
+$d.Number
+Set-Disk $d.Number -IsOffline $False
+            **/
+
             w.SecurityGroups.Add(rdp);
             w.AddElasticIp();
             template.AddResource(w);
-            t.CreateStack(template);
+            Stack.Stack.CreateStack(template);
         }
+        [TestMethod]
+        public void CreateStackWithMounterTest()
+        {
+            Template template = new Template(KeyPairName);
+            var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
+            SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
+            template.AddResource(rdp);
+            rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
+            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
+            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
+            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
+            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "xvdf");
+            blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
+            w.AddBlockDeviceMapping(blockDeviceMapping);
+
+            blockDeviceMapping = new BlockDeviceMapping(w, "xvdg");
+            blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
+            w.AddBlockDeviceMapping(blockDeviceMapping);
+
+            blockDeviceMapping = new BlockDeviceMapping(w, "xvdh");
+            blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
+            w.AddBlockDeviceMapping(blockDeviceMapping);
+
+
+
+            /**
+$d = Get-Disk  | Where OperationalStatus -eq 'Offline'
+$d.ToString();
+$d.Number
+Set-Disk $d.Number -IsOffline $False
+            **/
+
+            w.AddChefExec(SoftwareS3BucketName, "MountDrives.tar.gz", "MountDrives");
+
+
+            w.SecurityGroups.Add(rdp);
+            w.AddElasticIp();
+            template.AddResource(w);
+            var name = "CreateStackWithMounterTest-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".",string.Empty) ;
+            Stack.Stack.CreateStack(template, name);
+        }
+
+
         private static WindowsInstance AddBuildServer(Template template, Subnet privateSubnet1, WindowsInstance tfsServer, DomainController DomainController, SecurityGroup buildServerSecurityGroup)
         {
             var buildServer = new WindowsInstance(template, "build", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, privateSubnet1, true);
@@ -658,8 +716,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateStackTest()
         {
-            var t = new Stack.Stack();
-            t.CreateStack(GetTemplateFullStack());
+            Stack.Stack.CreateStack(GetTemplateFullStack());
         }
         [TestMethod]
         public void UpdateStackTest()
