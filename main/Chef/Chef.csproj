@@ -269,6 +269,7 @@
     <None Include="cookbooks\VisualStudio\test\integration\default\serverspec\default_spec.rb" />
     <None Include="cookbooks\VisualStudio\test\integration\default\serverspec\spec_helper.rb" />
     <None Include="cookbooks\vs\.kitchen.yml" />
+    <None Include="cookbooks\vs\attributes\default.rb" />
     <None Include="cookbooks\vs\Berksfile" />
     <None Include="cookbooks\vs\Berksfile.lock" />
     <None Include="cookbooks\vs\CHANGELOG.md" />
@@ -297,7 +298,6 @@
     <Folder Include="cookbooks\MountDrives\providers\" />
     <Folder Include="cookbooks\MountDrives\templates\default\" />
     <Folder Include="cookbooks\MountDrives\test\integration\default\" />
-    <Folder Include="cookbooks\vs\attributes\" />
     <Folder Include="cookbooks\vs\libraries\" />
     <Folder Include="cookbooks\vs\providers\" />
     <Folder Include="cookbooks\vs\resources\" />
