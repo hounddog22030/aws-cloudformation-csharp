@@ -396,10 +396,11 @@ Set-Disk $d.Number -IsOffline $False
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
-            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
-            //BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "xvdf");
-            //blockDeviceMapping.Ebs.SnapshotId = "snap-87e3eb87";
-            //w.AddBlockDeviceMapping(blockDeviceMapping);
+            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Small, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
+            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "/dev/sda1");
+            blockDeviceMapping.Ebs.VolumeType = "gp2";
+            blockDeviceMapping.Ebs.VolumeSize = "214";
+            w.AddBlockDeviceMapping(blockDeviceMapping);
 
             //blockDeviceMapping = new BlockDeviceMapping(w, "xvdg");
             //blockDeviceMapping.Ebs.SnapshotId = "snap-5e27a85a";

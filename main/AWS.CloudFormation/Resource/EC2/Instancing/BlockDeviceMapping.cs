@@ -38,5 +38,31 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
             set { this["SnapshotId"] = value; }
         }
+        
+
+        public string VolumeSize
+        {
+            get
+            {
+                if (this.ContainsKey("VolumeSize"))
+                {
+                    return (string)this["VolumeSize"];
+                }
+                return null;
+            }
+            set { this["VolumeSize"] = value; }
+        }
+        public string VolumeType
+        {
+            get
+            {
+                if (this.ContainsKey("VolumeType"))
+                {
+                    return (string)this["VolumeType"];
+                }
+                return null;
+            }
+            set { this["VolumeType"] = value; }
+        }
     }
 }
