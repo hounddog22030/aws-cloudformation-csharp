@@ -49,6 +49,13 @@ execute 'Install Visual Studio' do
 	returns [0,3010]
 	not_if { File.exist?("C:/Program Files (x86)/Microsoft Visual Studio 14.0/Common7/IDE/DevEnv.exe") }
 	action :nothing
+	notifies :request_reboot, 'reboot[app_requires_reboot]', :immediately
+end
+
+reboot 'app_requires_reboot' do
+  reason 'Need to reboot when the run completes successfully.'
+  delay_mins 0
+  action :nothing
 end
 
 #include_recipe 'Resharper'
