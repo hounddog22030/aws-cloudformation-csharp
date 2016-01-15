@@ -1,7 +1,0 @@
-default['ActiveDirectory']['name'] = 'invalid'
-default['ActiveDirectory']['DC1PrivateIp'] = 'invalid'
-default['ActiveDirectory']['DC2PrivateIp'] = 'invalid'
-default['ActiveDirectory']['DomainDNSName'] = 'invalid'
-default['ActiveDirectory']['DomainNetBIOSName'] = 'invalid'
-default['ActiveDirectory']['DomainAdminUser'] = 'invalid'
-default['ActiveDirectory']['DomainAdminPassword'] = 'invalid'
