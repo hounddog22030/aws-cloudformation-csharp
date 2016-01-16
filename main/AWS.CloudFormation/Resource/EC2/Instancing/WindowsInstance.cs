@@ -103,13 +103,13 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 chefConfig.Packages.AddPackage("msi", "chef", "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");
             }
 
-            var sourcesKey = $"c:\\chef\\{cookbookFileName}";
+            var sourcesKey = $"c:/chef/{cookbookFileName}";
             if (!chefConfig.Sources.ContainsKey(sourcesKey))
             {
                 chefConfig.Sources.Add(sourcesKey, $"https://{s3bucketName}.s3.amazonaws.com/{cookbookFileName}");
             }
 
-            var clientRbFileKey = $"c:\\chef\\client.{cookbookFileName}.rb";
+            var clientRbFileKey = $"c:/chef/client.{cookbookFileName}.rb";
             if (!chefConfig.Files.ContainsKey(clientRbFileKey))
             {
                 chefConfig.Files.GetFile(clientRbFileKey).Content.SetFnJoin($"cache_path 'c:/chef'\ncookbook_path 'c:/chef/cookbooks/{cookbookFileName}'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
@@ -122,14 +122,14 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         {
             var chefConfig = this.GetChefConfig(s3bucketName, cookbookFileName);
             var chefCommandConfig = chefConfig.Commands.AddCommand<Command>(recipeList.Replace(':','-'));
-            //chefCommandConfig.Test = "IF EXIST \"C:\\Program Files\\Microsoft SQL Server\\MSSQL12.MSSQLSERVER\\MSSQL\\Binn\\sqlservr.exe\" EXIT 1";
+            //chefCommandConfig.Test = "IF EXIST \"C:/Program Files/Microsoft SQL Server/MSSQL12.MSSQLSERVER/MSSQL/Binn/sqlservr.exe\" EXIT 1";
             chefCommandConfig.Command.SetFnJoin($"C:/opscode/chef/bin/chef-client.bat -z -o {recipeList} -c c:/chef/client.{cookbookFileName}.rb");
         }
 
         public ConfigFileContent GetChefNodeJsonContent(string s3bucketName, string cookbookFileName)
         {
             var chefConfig = this.GetChefConfig(s3bucketName, cookbookFileName);
-            var nodeJson = chefConfig.Files.GetFile("c:\\chef\\node.json");
+            var nodeJson = chefConfig.Files.GetFile("c:/chef/node.json");
             return nodeJson.Content;
         }
 
