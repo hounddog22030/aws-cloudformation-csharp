@@ -8,3 +8,4 @@ long_description 'Installs/Configures sqlserver'
 version          '0.1.0'
 
 depends 'ec2helper'
+depends 'ms_dotnet35'

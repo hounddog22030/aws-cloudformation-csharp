@@ -208,7 +208,7 @@ namespace AWS.CloudFormation.Test
 
 
             // uses 33gb
-            var workstation = AddWorkstation(template, "workstation3", PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup, tfsServerUsers);
+            var workstation = AddWorkstation(template, "workstation3", PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup, tfsServerUsers, true);
             //var workstation2 = AddWorkstation(template, "workstation2", PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup, tfsServerUsers);
 
 
@@ -383,23 +383,47 @@ Set-Disk $d.Number -IsOffline $False
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
-            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
-            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "/dev/sda1");
-            blockDeviceMapping.Ebs.VolumeType = "gp2";
-            blockDeviceMapping.Ebs.VolumeSize = "214";
-            w.AddBlockDeviceMapping(blockDeviceMapping);
-            w.AddDisk("gp2", 20);
-            w.AddDisk("gp2", 10);
-            w.AddPackage(SoftwareS3BucketName, new SqlServerExpress());
-            w.AddPackage(SoftwareS3BucketName, new VisualStudio());
-            template.AddResource(w);
 
-            w.SecurityGroups.Add(rdp);
+            WindowsInstance w = AddWorkstation(template, "Windows1",DMZSubnet, null,null, rdp, null, false);
+
             w.AddElasticIp();
 
             CreateTestStack(template);
 
         }
+
+        [TestMethod]
+        public void CreateISOMaker()
+        {
+            Template template = new Template(KeyPairName);
+            var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
+            SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
+            template.AddResource(rdp);
+            rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
+            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
+            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
+
+            WindowsInstance workstation = new WindowsInstance(template, "ISOMaker", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
+            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
+            blockDeviceMapping.Ebs.VolumeType = "gp2";
+            blockDeviceMapping.Ebs.VolumeSize = "30";
+            workstation.AddBlockDeviceMapping(blockDeviceMapping);
+            workstation.AddDisk("gp2", 6);
+
+
+            workstation.SecurityGroups.Add(rdp);
+            
+            template.AddInstance(workstation);
+
+
+            workstation.AddElasticIp();
+
+            CreateTestStack(template);
+
+        }
+
+
 
         public void CreateTestStack(Template template)
         {
@@ -476,29 +500,51 @@ Set-Disk $d.Number -IsOffline $False
             return buildServer;
         }
 
-        private static WindowsInstance AddWorkstation(Template template, string name, Subnet privateSubnet1, Resource.EC2.Instancing.Instance dependsOn, DomainController dc1, SecurityGroup workstationSecurityGroup, SecurityGroup tfsUsers )
+        private static WindowsInstance AddWorkstation(  Template template, 
+                                                        string name, 
+                                                        Subnet subnet, 
+                                                        Resource.EC2.Instancing.Instance dependsOn, 
+                                                        DomainController dc1, 
+                                                        SecurityGroup workstationSecurityGroup, 
+                                                        SecurityGroup tfsUsers,
+                                                        bool rename)
         {
-            var workstation = new WindowsInstance(template, name, InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, privateSubnet1, true);
+            if (subnet == null) throw new ArgumentNullException(nameof(subnet));
 
+            WindowsInstance workstation = new WindowsInstance(template, name, InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, subnet, rename);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
             blockDeviceMapping.Ebs.VolumeType = "gp2";
             blockDeviceMapping.Ebs.VolumeSize = "214";
             workstation.AddBlockDeviceMapping(blockDeviceMapping);
-
+            workstation.AddDisk("gp2", 10);
             workstation.AddDisk("gp2", 5);
-            workstation.AddDisk("gp2", 5);
-
+            workstation.AddPackage(SoftwareS3BucketName, new SqlServerExpress());
             workstation.AddPackage(SoftwareS3BucketName, new VisualStudio());
 
-            workstation.AddDependsOn(dependsOn, ThreeHoursSpan);
-            workstation.SecurityGroups.Add(workstationSecurityGroup);
-            workstation.SecurityGroups.Add(tfsUsers);
+            if (dependsOn != null)
+            {
+                workstation.AddDependsOn(dependsOn, ThreeHoursSpan);
+            }
+
+            if (workstationSecurityGroup != null)
+            {
+                workstation.SecurityGroups.Add(workstationSecurityGroup);
+            }
+
+            if (tfsUsers != null)
+            {
+                workstation.SecurityGroups.Add(tfsUsers);
+            }
 
             workstation.AddFinalizer(MaxTimeOut);
 
             template.AddInstance(workstation);
 
-            dc1.AddToDomain(workstation, ThreeHoursSpan);
+            if (dc1 != null)
+            {
+                dc1.AddToDomain(workstation, ThreeHoursSpan);
+            }
+
             return workstation;
         }
 

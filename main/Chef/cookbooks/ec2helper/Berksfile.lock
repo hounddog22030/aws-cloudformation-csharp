@@ -1,0 +1,7 @@
+DEPENDENCIES
+  ec2helper
+    path: .
+    metadata: true
+
+GRAPH
+  ec2helper (0.1.0)

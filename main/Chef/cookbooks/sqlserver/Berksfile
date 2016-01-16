@@ -5,3 +5,4 @@ source "https://supermarket.chef.io"
 metadata
 
 cookbook 'ec2helper', path: '../ec2helper'
+cookbook 'ms_dotnet35'
