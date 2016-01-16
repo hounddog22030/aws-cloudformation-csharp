@@ -63,7 +63,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         protected void MakeIpAddressStatic()
         {
-            var setup = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("setup");
+            var configSetConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config");
+            var setup = configSetConfig.GetConfig("setup");
 
             var setupFiles = setup.Files;
 
@@ -76,6 +77,9 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                     "Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses $netip.DNSServer.ServerAddresses;",
                     "\n");
 
+            var setStaticIpCommand = configSetConfig.GetConfig("setup").Commands.AddCommand<PowerShellCommand>("a-set-static-ip");
+            setStaticIpCommand.WaitAfterCompletion = 15.ToString();
+            setStaticIpCommand.Command.AddCommandLine("-ExecutionPolicy RemoteSigned -Command \"c:\\cfn\\scripts\\Set-StaticIP.ps1\"");
         }
 
         [JsonIgnore]

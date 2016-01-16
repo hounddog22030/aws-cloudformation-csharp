@@ -88,16 +88,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
             var disableFirewallCommand = setup.Commands.AddCommand<PowerShellCommand>("a-disable-win-fw");
             disableFirewallCommand.WaitAfterCompletion = 0.ToString();
-            disableFirewallCommand.Command.AddCommandLine(new object[]
-            {"-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\""});
+            disableFirewallCommand.Command.AddCommandLine(new object[] {"-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\""});
 
-            var setStaticIpCommand =
-                this.Metadata.Init.ConfigSets.GetConfigSet("config")
-                    .GetConfig("rename")
-                    .Commands.AddCommand<PowerShellCommand>("a-set-static-ip");
-            setStaticIpCommand.WaitAfterCompletion = 15.ToString();
-            setStaticIpCommand.Command.AddCommandLine(
-                "-ExecutionPolicy RemoteSigned -Command \"c:\\cfn\\scripts\\Set-StaticIP.ps1\"");
 
             var currentConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("installADDS");
             var currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("1-install-prereqsz");
