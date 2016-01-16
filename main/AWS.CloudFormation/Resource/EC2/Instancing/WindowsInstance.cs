@@ -91,8 +91,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
                 var auth = this.Metadata.Authentication.Add("S3AccessCreds", new S3Authentication(accessKeyString, secretKeyString, new string[] { s3bucketName }));
                 auth.Type = "S3";
-                chefConfig.Sources.Add("c:\\chef\\", $"https://{s3bucketName}.s3.amazonaws.com/{cookbookFileName}");
                 chefConfig.Packages.AddPackage("msi", "chef", "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");
+                chefConfig.Sources.Add("c:\\chef\\", $"https://{s3bucketName}.s3.amazonaws.com/{cookbookFileName}");
                 chefConfig.Files.GetFile("c:\\chef\\client.rb").Content.SetFnJoin("cache_path 'c:/chef'\ncookbook_path 'c:/chef/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
 
                 var chefConfigContent = GetChefNodeJsonContent(s3bucketName, cookbookFileName);

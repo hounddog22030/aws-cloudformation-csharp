@@ -8,7 +8,7 @@
 #
 
 include_recipe 'ec2helper'
-include_recipe 'ms_dotnet35'
+include_recipe 'msdotnet35'
 
 
 drive_letter = "S:"
