@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Configuration.Packages;
@@ -72,11 +73,11 @@ namespace AWS.CloudFormation.Test
 
         const string BuildServerIpAddress = "10.0.12.85";
 
-        public static Template GetTemplateFullStack()
+        public static Template GetTemplateFullStack(TestContext testContext)
         {
 
-            var template = new Template(KeyPairName);
-            var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
+            var template = GetNewBlankTemplateWithVpc(testContext);
+            Vpc vpc = template.Vpcs.First();
 
 
             // ReSharper disable once InconsistentNaming
@@ -155,7 +156,7 @@ namespace AWS.CloudFormation.Test
 
             // ReSharper disable once InconsistentNaming
             // uses 21gb
-            var DomainController = AddDomainController(template, PrivateSubnet1);
+            var DomainController = AddDomainController(template, PrivateSubnet1, AD1PrivateIp);
             DomainController.CreateAdReplicationSubnet(DMZSubnet);
             DomainController.CreateAdReplicationSubnet(DMZ2Subnet);
 
@@ -191,7 +192,7 @@ namespace AWS.CloudFormation.Test
 
 
             // uses 24gb
-            var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup);
+            var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup, IPNetwork.Parse(BuildServerIpAddress + "/32"));
             buildServer.AddFinalizer(ThreeHoursSpan);
             tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(buildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             buildServer.SecurityGroups.Add(tfsServerUsers);
@@ -220,23 +221,23 @@ namespace AWS.CloudFormation.Test
             return template;
         }
 
-        private static DomainController AddDomainController(Template template, Subnet PrivateSubnet1)
+        private static DomainController AddDomainController(Template template, Subnet subnet, string staticIpAddress)
         {
             var DomainController = new DomainController(template,
                 ADServerNetBIOSName1,
                 InstanceTypes.T2Micro,
                 StackTest.USEAST1AWINDOWS2012R2AMI,
-                PrivateSubnet1,
-                AD1PrivateIp,
+                subnet,
+                staticIpAddress,
                 new DomainController.DomainInfo(StackTest.DomainDNSName, StackTest.DomainNetBIOSName, StackTest.DomainAdminUser,
                     StackTest.DomainAdminPassword));
             template.AddInstance(DomainController);
             return DomainController;
         }
 
-        public static Template GetTemplateVolumeOnly()
+        public static Template GetTemplateVolumeOnly(TestContext testContext)
         {
-            Template t = new Template(KeyPairName);
+            Template t = GetNewBlankTemplateWithVpc(testContext);
             Volume v = new Volume(t,"Volume1");
             v.SnapshotId = "snap-c4d7f7c3";
             v.AvailabilityZone = "us-east-1a";
@@ -247,14 +248,22 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateStackVolumeTest()
         {
-            Stack.Stack.CreateStack(GetTemplateVolumeOnly());
+            Stack.Stack.CreateStack(GetTemplateVolumeOnly(this.TestContext));
         }
 
+
+        [TestMethod]
+        public void TestCidr()
+        {
+            IPNetwork n = IPNetwork.Parse("8.8.8.8");
+            Assert.AreEqual("x",n.Network);
+
+        }
         [TestMethod]
         public void CreateStackVolumeAttachmentTest()
         {
-            Template template = new Template(KeyPairName);
-            var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
+            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             template.AddResource(rdp);
             rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -273,8 +282,8 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateStackBlockDeviceMappingFromSnapshotTest()
         {
-            Template template = new Template(KeyPairName);
-            var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
+            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             template.AddResource(rdp);
             rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -310,8 +319,8 @@ Set-Disk $d.Number -IsOffline $False
         [TestMethod]
         public void CreateStackWithMountedSqlTfsVsIsosTest()
         {
-            Template template = new Template(KeyPairName);
-            var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
+            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             template.AddResource(rdp);
             rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -356,8 +365,8 @@ Set-Disk $d.Number -IsOffline $False
         [TestMethod]
         public void CreateStackWithVisualStudio()
         {
-            Template template = new Template(KeyPairName);
-            var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
+            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             template.AddResource(rdp);
             rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -380,8 +389,8 @@ Set-Disk $d.Number -IsOffline $False
         [TestMethod]
         public void CreateDeveloperWorkstation()
         {
-            Template template = new Template(KeyPairName);
-            var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
+            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             template.AddResource(rdp);
             rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -389,7 +398,7 @@ Set-Disk $d.Number -IsOffline $False
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
             var PrivateSubnet1 = template.AddSubnet("PrivateSubnet1", vpc, PrivSub1CIDR, Template.AvailabilityZone.UsEast1A);
-            var dc1 = AddDomainController(template, PrivateSubnet1);
+            var dc1 = AddDomainController(template, PrivateSubnet1,null);
             WindowsInstance w = AddWorkstation(template, "Windows1",DMZSubnet, null,dc1, rdp, null, false);
             w.AddElasticIp();
 
@@ -400,8 +409,8 @@ Set-Disk $d.Number -IsOffline $False
         [TestMethod]
         public void CreateGenericInstance()
         {
-            Template template = new Template(KeyPairName);
-            var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
+            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             template.AddResource(rdp);
             rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -410,6 +419,7 @@ Set-Disk $d.Number -IsOffline $False
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
             WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI,false);
             w.Subnet = DMZSubnet;
+            w.SecurityGroups.Add(rdp);
             template.AddInstance(w);
             w.AddElasticIp();
 
@@ -420,17 +430,18 @@ Set-Disk $d.Number -IsOffline $False
         [TestMethod]
         public void CreateBuildServer()
         {
-            Template template = new Template(KeyPairName);
-            var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
+            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             template.AddResource(rdp);
             rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
-            var PrivateSubnet1 = template.AddSubnet("PrivateSubnet1", vpc, PrivSub1CIDR, Template.AvailabilityZone.UsEast1A);
-            var dc1 = AddDomainController(template, PrivateSubnet1);
-            WindowsInstance w = AddBuildServer(template, DMZSubnet, null, dc1, rdp);
+            var dc1 = AddDomainController(template, DMZSubnet, null);
+            dc1.AddElasticIp();
+            dc1.SecurityGroups.Add(rdp);
+            WindowsInstance w = AddBuildServer(template, DMZSubnet, null, dc1, rdp,null);
             w.AddElasticIp();
 
             CreateTestStack(template);
@@ -440,8 +451,8 @@ Set-Disk $d.Number -IsOffline $False
         [TestMethod]
         public void CreateDomainController()
         {
-            Template template = new Template(KeyPairName);
-            var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
+            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             template.AddResource(rdp);
             rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -449,7 +460,7 @@ Set-Disk $d.Number -IsOffline $False
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
 
-            WindowsInstance w = AddDomainController(template, DMZSubnet);
+            WindowsInstance w = AddDomainController(template, DMZSubnet, AD1PrivateIp);
             template.AddInstance(w);
             w.SecurityGroups.Add(rdp);
 
@@ -462,8 +473,8 @@ Set-Disk $d.Number -IsOffline $False
         [TestMethod]
         public void CreateISOMaker()
         {
-            Template template = new Template(KeyPairName);
-            var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
+            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             template.AddResource(rdp);
             rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -504,8 +515,8 @@ Set-Disk $d.Number -IsOffline $False
         [TestMethod]
         public void CreateStackWithMounterTest()
         {
-            Template template = new Template(KeyPairName);
-            var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
+            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             template.AddResource(rdp);
             rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -546,10 +557,10 @@ Set-Disk $d.Number -IsOffline $False
 
 
 
-        private static WindowsInstance AddBuildServer(Template template, Subnet privateSubnet1, WindowsInstance tfsServer, DomainController DomainController, SecurityGroup buildServerSecurityGroup)
+        private static WindowsInstance AddBuildServer(Template template, Subnet subnet, WindowsInstance tfsServer, DomainController DomainController, SecurityGroup buildServerSecurityGroup, IPNetwork staticIpAddress)
         {
 
-            var buildServer = new WindowsInstance(template, "build", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, privateSubnet1, true);
+            var buildServer = new WindowsInstance(template, "build", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, subnet, true);
             buildServer.AddBlockDeviceMapping("/dev/sda1", 30, "gp2");
 
             buildServer.AddPackage(SoftwareS3BucketName, new VisualStudio());
@@ -565,7 +576,11 @@ Set-Disk $d.Number -IsOffline $False
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             template.AddInstance(buildServer);
             buildServer.SecurityGroups.Add(buildServerSecurityGroup);
-            buildServer.PrivateIpAddress = BuildServerIpAddress;
+            if (staticIpAddress != null)
+            {
+                buildServer.PrivateIpAddress = staticIpAddress.FirstUsable.ToString();
+            }
+            
             DomainController.AddToDomain(buildServer, ThreeHoursSpan);
             return buildServer;
         }
@@ -940,7 +955,7 @@ Set-Disk $d.Number -IsOffline $False
         [TestMethod]
         public void CreatePrimeTest()
         {
-            CreateTestStack(GetTemplateFullStack());
+            CreateTestStack(GetTemplateFullStack(this.TestContext));
         }
 
         [TestMethod]
@@ -948,7 +963,7 @@ Set-Disk $d.Number -IsOffline $False
         {
             var stackName = "Stack5500cc69-af8a-4574-9539-778c92577437";
             var t = new Stack.Stack();
-            t.UpdateStack(stackName, GetTemplateFullStack());
+            t.UpdateStack(stackName, GetTemplateFullStack(this.TestContext));
         }
 
 
@@ -957,7 +972,7 @@ Set-Disk $d.Number -IsOffline $False
         [TestMethod]
         public void AddingSameResourceTwiceFails()
         {
-            var t = new Template(Guid.NewGuid().ToString());
+            var t = GetNewBlankTemplateWithVpc(this.TestContext);
             var v = new Vpc(t,"X","10.0.0.0/16");
             var s = t.AddSubnet("Vpc1",v,null,Template.AvailabilityZone.UsEast1A);
 
@@ -972,6 +987,13 @@ Set-Disk $d.Number -IsOffline $False
                 expectedException = e;
             }
             Assert.IsNotNull(expectedException);
+        }
+
+        private static Template GetNewBlankTemplateWithVpc(TestContext testContext)
+        {
+            var vpcName = $"Vpc{testContext.TestName}";
+            return new Template(KeyPairName, vpcName, VPCCIDR);
+
         }
         private TestContext testContextInstance;
 

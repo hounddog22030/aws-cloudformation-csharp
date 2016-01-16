@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Networking;
@@ -20,12 +22,13 @@ namespace AWS.CloudFormation.Stack
             UsEast1A
         }
 
-        public Template(string defaultKeyName)
+        public Template(string defaultKeyName, string vpcName, string vpcCidrBlock)
         {
             AwsTemplateFormatVersion = AwsTemplateFormatVersion20100909;
             this.Resources = new Dictionary<string, ResourceBase>();
             this.Parameters = new Dictionary<string, ParameterBase>();
             this.Parameters.Add(Resource.EC2.Instancing.Instance.ParameterNameDefaultKeyPairKeyName, new ParameterBase(Resource.EC2.Instancing.Instance.ParameterNameDefaultKeyPairKeyName, "AWS::EC2::KeyPair::KeyName", defaultKeyName));
+            this.AddVpc(vpcName, vpcCidrBlock);
         }
 
         [JsonProperty(PropertyName = "AWSTemplateFormatVersion")]
@@ -33,6 +36,11 @@ namespace AWS.CloudFormation.Stack
 
         public Dictionary<string, ResourceBase> Resources { get; private set; }
         public Dictionary<string, ParameterBase> Parameters { get; private set; }
+        [JsonIgnore]
+        public IEnumerable<Vpc> Vpcs
+        {
+            get { return this.Resources.Where(r => r.Value is Vpc).Select(r=>r.Value).OfType<Vpc>(); }
+        }
 
         public Subnet AddSubnet(string name, Vpc vpc, string cidrBlock, AvailabilityZone availabilityZone)
         {
@@ -127,9 +135,9 @@ namespace AWS.CloudFormation.Stack
             return route;
         }
 
-        public Vpc AddVpc(Template template, string name, string cidrBlock)
+        public Vpc AddVpc(string name, string cidrBlock)
         {
-            Vpc vpc = new Vpc(template,name,cidrBlock);
+            Vpc vpc = new Vpc(this,name,cidrBlock);
             this.Resources.Add(name, vpc);
             return vpc;
         }

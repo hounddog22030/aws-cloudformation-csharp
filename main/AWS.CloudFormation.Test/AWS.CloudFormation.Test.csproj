@@ -75,6 +75,10 @@
       <Project>{640a43a9-f1d7-4d13-8ab3-819797155f3d}</Project>
       <Name>AWS.CloudFormation</Name>
     </ProjectReference>
+    <ProjectReference Include="..\System.Net.IPNetwork\System.Net.IPNetwork.csproj">
+      <Project>{e76938d8-edec-4568-b73c-b98c41044423}</Project>
+      <Name>System.Net.IPNetwork</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

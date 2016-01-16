@@ -12,6 +12,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
     public class DomainController : WindowsInstance
     {
 
+        public const string DefaultConfigSetRenameConfigSetDnsServers = "a-set-dns-servers";
         public class DomainInfo
         {
             public DomainInfo(string domainDnsName, string domainNetBiosName, string adminUserName, string adminPassword)
@@ -35,7 +36,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         
 
 
-        public DomainController(Template template, string name, InstanceTypes instanceType, string imageId, Subnet subnet, string domainController1PrivateIpAddress, DomainInfo domainInfo)
+        public DomainController(Template template, string name, InstanceTypes instanceType, string imageId, Subnet subnet, string staticIpAddress, DomainInfo domainInfo)
             : base(template, name, instanceType, imageId, subnet, true)
         {
             this.DomainDnsName = new ParameterBase(DomainController.ParameterNameDomainDnsName, "String", domainInfo.DomainDnsName); ;
@@ -52,7 +53,10 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
             DomainMemberSecurityGroup = this.CreateDomainMemberSecurityGroup();
             this.CreateDomainControllerSecurityGroup();
-            this.PrivateIpAddress = domainController1PrivateIpAddress;
+            if (!string.IsNullOrEmpty(staticIpAddress))
+            {
+                this.PrivateIpAddress = staticIpAddress;
+            }
             this.MakeDomainController();
 
         }
@@ -364,13 +368,16 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         private void SetDnsServers(WindowsInstance instanceToAddToDomain)
         {
-            var renameConfig = instanceToAddToDomain.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetJoinConfig);
-            var renameCommandConfig = renameConfig.Commands.AddCommand<PowerShellCommand>(DefaultConfigSetRenameConfigSetDnsServers);
-            //todo: the below is supposed to have two private ip addresses for the two different DCs
-            renameCommandConfig.Command.AddCommandLine("-Command \"Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses ",
-                                                        this.PrivateIpAddress,
-                                                        "\"");
-            renameCommandConfig.WaitAfterCompletion = 0.ToString();
+            if (!string.IsNullOrEmpty(this.PrivateIpAddress))
+            {
+                var renameConfig = instanceToAddToDomain.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetJoinConfig);
+                var renameCommandConfig = renameConfig.Commands.AddCommand<PowerShellCommand>(DefaultConfigSetRenameConfigSetDnsServers);
+                //todo: the below is supposed to have two private ip addresses for the two different DCs
+                renameCommandConfig.Command.AddCommandLine("-Command \"Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses ",
+                                                            this.PrivateIpAddress,
+                                                            "\"");
+                renameCommandConfig.WaitAfterCompletion = 0.ToString();
+            }
         }
     }
 }

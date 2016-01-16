@@ -19,7 +19,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public const string DefaultConfigSetRenameConfig = "rename";
         public const string DefaultConfigSetJoinConfig = "join";
         public const string DefaultConfigSetRenameConfigRenamePowerShellCommand = "1-execute-powershell-script-RenameComputer";
-        public const string DefaultConfigSetRenameConfigSetDnsServers = "a-set-dns-servers";
         public const string DefaultConfigSetRenameConfigJoinDomain = "b-join-domain";
         public const string InstallChefConfigSetName = "InstallChefConfigSet";
         public const string InstallChefConfigName = "InstallChefConfig";
@@ -44,6 +43,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             : base(template, name, instanceType, imageId, OperatingSystem.Windows, true)
         {
             var nodeJson = this.GetChefNodeJsonContent();
+            nodeJson.Add("nothing", "nothing");
             //xvd[f - z]
             _availableDevices = new List<string>();
             for (char c = 'f'; c < 'z'; c++)

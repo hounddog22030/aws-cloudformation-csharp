@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AWS.CloudFormation.Test", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chef", "Chef\Chef.csproj", "{57EFE8EF-75EB-4824-9285-ED7EECC3BC6D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Net.IPNetwork", "System.Net.IPNetwork\System.Net.IPNetwork.csproj", "{E76938D8-EDEC-4568-B73C-B98C41044423}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +28,10 @@ Global
 		{57EFE8EF-75EB-4824-9285-ED7EECC3BC6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{57EFE8EF-75EB-4824-9285-ED7EECC3BC6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57EFE8EF-75EB-4824-9285-ED7EECC3BC6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E76938D8-EDEC-4568-B73C-B98C41044423}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E76938D8-EDEC-4568-B73C-B98C41044423}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E76938D8-EDEC-4568-B73C-B98C41044423}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E76938D8-EDEC-4568-B73C-B98C41044423}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
