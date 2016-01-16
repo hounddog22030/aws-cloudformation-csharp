@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Configuration.Packages;
 using AWS.CloudFormation.Instance.Metadata.Config;
 using AWS.CloudFormation.Instance.Metadata.Config.Command;
@@ -81,31 +82,39 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         private Config GetChefConfig(string s3bucketName, string cookbookFileName)
         {
-            var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet(InstallChefConfigSetName).GetConfig(InstallChefConfigName);
+            var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet(cookbookFileName).GetConfig(cookbookFileName);
 
-            if (!chefConfig.Sources.ContainsKey("c:\\chef\\"))
+
+            if (!this.Metadata.Authentication.ContainsKey("S3AccessCreds"))
             {
                 var appSettingsReader = new AppSettingsReader();
                 string accessKeyString = (string)appSettingsReader.GetValue("S3AccessKey", typeof(string));
                 string secretKeyString = (string)appSettingsReader.GetValue("S3SecretKey", typeof(string));
-
                 var auth = this.Metadata.Authentication.Add("S3AccessCreds", new S3Authentication(accessKeyString, secretKeyString, new string[] { s3bucketName }));
                 auth.Type = "S3";
-                chefConfig.Packages.AddPackage("msi", "chef", "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");
-                chefConfig.Sources.Add("c:\\chef\\", $"https://{s3bucketName}.s3.amazonaws.com/{cookbookFileName}");
-                chefConfig.Files.GetFile("c:\\chef\\client.rb").Content.SetFnJoin("cache_path 'c:/chef'\ncookbook_path 'c:/chef/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
-
                 var chefConfigContent = GetChefNodeJsonContent(s3bucketName, cookbookFileName);
                 var s3FileNode = chefConfigContent.Add("s3_file");
                 s3FileNode.Add("key", accessKeyString);
                 s3FileNode.Add("secret", secretKeyString);
-
             }
-            if (!chefConfig.Sources.ContainsKey("c:\\tools\\pstools\\"))
+
+            if (!chefConfig.Packages.ContainsKey("msi") || (chefConfig.Packages.ContainsKey("msi") && !((CloudFormationDictionary) chefConfig.Packages["msi"]).ContainsKey("chef")))
             {
-                chefConfig.Sources.Add("c:\\tools\\pstools\\", "https://download.sysinternals.com/files/PSTools.zip");
-
+                chefConfig.Packages.AddPackage("msi", "chef", "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");
             }
+
+            var sourcesKey = $"c:\\chef\\{cookbookFileName}";
+            if (!chefConfig.Sources.ContainsKey(sourcesKey))
+            {
+                chefConfig.Sources.Add(sourcesKey, $"https://{s3bucketName}.s3.amazonaws.com/{cookbookFileName}");
+            }
+
+            var clientRbFileKey = $"c:\\chef\\client.{cookbookFileName}.rb";
+            if (!chefConfig.Files.ContainsKey(clientRbFileKey))
+            {
+                chefConfig.Files.GetFile(clientRbFileKey).Content.SetFnJoin($"cache_path 'c:/chef'\ncookbook_path 'c:/chef/cookbooks/{cookbookFileName}'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
+            }
+
             return chefConfig;
         }
 
@@ -114,7 +123,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             var chefConfig = this.GetChefConfig(s3bucketName, cookbookFileName);
             var chefCommandConfig = chefConfig.Commands.AddCommand<Command>(recipeList.Replace(':','-'));
             //chefCommandConfig.Test = "IF EXIST \"C:\\Program Files\\Microsoft SQL Server\\MSSQL12.MSSQLSERVER\\MSSQL\\Binn\\sqlservr.exe\" EXIT 1";
-            chefCommandConfig.Command.SetFnJoin($"C:/opscode/chef/bin/chef-client.bat -z -o {recipeList} -c c:/chef/client.rb");
+            chefCommandConfig.Command.SetFnJoin($"C:/opscode/chef/bin/chef-client.bat -z -o {recipeList} -c c:/chef/client.{cookbookFileName}.rb");
         }
 
         public ConfigFileContent GetChefNodeJsonContent(string s3bucketName, string cookbookFileName)
