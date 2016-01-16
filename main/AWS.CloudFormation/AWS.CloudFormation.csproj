@@ -99,6 +99,8 @@
     <Compile Include="Resource\ResourceBase.cs" />
     <Compile Include="Resource\EC2\Networking\Subnet.cs" />
     <Compile Include="Resource\EC2\Networking\Vpc.cs" />
+    <Compile Include="Resource\Route53\HostedZone.cs" />
+    <Compile Include="Resource\Route53\RecordSet.cs" />
     <Compile Include="Resource\Wait\WaitCondition.cs" />
     <Compile Include="Resource\Wait\WaitConditionHandle.cs" />
     <Compile Include="Serializer\CloudFormationPropertiesAttribute.cs" />

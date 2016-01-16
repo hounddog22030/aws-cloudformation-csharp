@@ -65,6 +65,8 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Route53\HostedZoneTest.cs" />
+    <Compile Include="Route53\RecordSetTest.cs" />
     <Compile Include="StackTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TemplateEngineTest.cs" />

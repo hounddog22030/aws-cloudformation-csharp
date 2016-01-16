@@ -397,7 +397,7 @@ Set-Disk $d.Number -IsOffline $False
             WindowsInstance w = AddWorkstation(template, "Windows1",DMZSubnet, null,dc1, rdp, null, false);
             w.AddElasticIp();
 
-            CreateTestStack(template);
+            CreateTestStack(template,this.TestContext);
 
         }
 
@@ -418,7 +418,7 @@ Set-Disk $d.Number -IsOffline $False
             template.AddInstance(w);
             w.AddElasticIp();
 
-            CreateTestStack(template);
+            CreateTestStack(template, this.TestContext);
 
         }
 
@@ -439,7 +439,7 @@ Set-Disk $d.Number -IsOffline $False
             WindowsInstance w = AddBuildServer(template, DMZSubnet, null, dc1, rdp,null);
             w.AddElasticIp();
 
-            CreateTestStack(template);
+            CreateTestStack(template, this.TestContext);
 
         }
 
@@ -461,7 +461,7 @@ Set-Disk $d.Number -IsOffline $False
 
             w.AddElasticIp();
 
-            CreateTestStack(template);
+            CreateTestStack(template, this.TestContext);
 
         }
 
@@ -492,15 +492,15 @@ Set-Disk $d.Number -IsOffline $False
 
             workstation.AddElasticIp();
 
-            CreateTestStack(template);
+            CreateTestStack(template, this.TestContext);
 
         }
 
 
 
-        public void CreateTestStack(Template template)
+        public static void CreateTestStack(Template template,TestContext context)
         {
-            var name = this.TestContext.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty);
+            var name = context.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty);
             Stack.Stack.CreateStack(template, name);
 
         }
@@ -950,7 +950,7 @@ Set-Disk $d.Number -IsOffline $False
         [TestMethod]
         public void CreatePrimeTest()
         {
-            CreateTestStack(GetTemplateFullStack(this.TestContext));
+            CreateTestStack(GetTemplateFullStack(this.TestContext), this.TestContext);
         }
 
         [TestMethod]
@@ -984,7 +984,7 @@ Set-Disk $d.Number -IsOffline $False
             Assert.IsNotNull(expectedException);
         }
 
-        private static Template GetNewBlankTemplateWithVpc(TestContext testContext)
+        internal static Template GetNewBlankTemplateWithVpc(TestContext testContext)
         {
             var vpcName = $"Vpc{testContext.TestName}";
             return new Template(KeyPairName, vpcName, VPCCIDR);
