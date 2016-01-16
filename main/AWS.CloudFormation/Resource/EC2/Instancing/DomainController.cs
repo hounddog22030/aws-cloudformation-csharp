@@ -1,4 +1,5 @@
 ﻿using System;
+using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Instance;
 using AWS.CloudFormation.Instance.Metadata.Config;
 using AWS.CloudFormation.Instance.Metadata.Config.Command;
@@ -13,6 +14,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
     {
 
         public const string DefaultConfigSetRenameConfigSetDnsServers = "a-set-dns-servers";
+
         public class DomainInfo
         {
             public DomainInfo(string domainDnsName, string domainNetBiosName, string adminUserName, string adminPassword)
@@ -21,7 +23,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 DomainNetBiosName = domainNetBiosName;
                 AdminUserName = adminUserName;
                 AdminPassword = adminPassword;
-                
+
             }
 
             public string DomainDnsName { get; }
@@ -29,26 +31,33 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             public string AdminUserName { get; }
             public string AdminPassword { get; }
         }
+
         public const string ParameterNameDomainAdminPassword = "DomainAdminPassword";
         public const string ParameterNameDomainDnsName = "DomainDNSName";
         public const string ParameterNameDomainNetBiosName = "DomainNetBIOSName";
         public const string ParameterNameDomainAdminUser = "DomainAdminUser";
-        
 
 
-        public DomainController(Template template, string name, InstanceTypes instanceType, string imageId, Subnet subnet, string staticIpAddress, DomainInfo domainInfo)
+
+        public DomainController(Template template, string name, InstanceTypes instanceType, string imageId,
+            Subnet subnet, string staticIpAddress, DomainInfo domainInfo)
             : base(template, name, instanceType, imageId, subnet, true)
         {
-            this.DomainDnsName = new ParameterBase(DomainController.ParameterNameDomainDnsName, "String", domainInfo.DomainDnsName); ;
+            this.DomainDnsName = new ParameterBase(DomainController.ParameterNameDomainDnsName, "String",
+                domainInfo.DomainDnsName);
+            ;
             Template.AddParameter(this.DomainDnsName);
 
-            this.DomainAdminPassword = new ParameterBase(DomainController.ParameterNameDomainAdminPassword, "String", domainInfo.AdminPassword);
+            this.DomainAdminPassword = new ParameterBase(DomainController.ParameterNameDomainAdminPassword, "String",
+                domainInfo.AdminPassword);
             Template.AddParameter(DomainAdminPassword);
 
-            this.DomainNetBiosName = new ParameterBase(DomainController.ParameterNameDomainNetBiosName, "String", domainInfo.DomainNetBiosName);
+            this.DomainNetBiosName = new ParameterBase(DomainController.ParameterNameDomainNetBiosName, "String",
+                domainInfo.DomainNetBiosName);
             template.AddParameter(this.DomainNetBiosName);
 
-            this.DomainAdminUser = new ParameterBase(DomainController.ParameterNameDomainAdminUser, "String", domainInfo.AdminUserName); 
+            this.DomainAdminUser = new ParameterBase(DomainController.ParameterNameDomainAdminUser, "String",
+                domainInfo.AdminUserName);
             template.AddParameter(this.DomainAdminUser);
 
             DomainMemberSecurityGroup = this.CreateDomainMemberSecurityGroup();
@@ -65,29 +74,13 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         public ParameterBase DomainAdminPassword { get; set; }
 
-
         private void MakeDomainController()
         {
             var setup = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("setup");
 
             var setupFiles = setup.Files;
 
-            setupFiles.GetFile("c:\\cfn\\scripts\\Set-StaticIP.ps1")
-                .Content.SetFnJoin(
-                    "$netip = Get-NetIPConfiguration;",
-                    "$ipconfig = Get-NetIPAddress | ?{$_.IpAddress -eq $netip.IPv4Address.IpAddress};",
-                    "Get-NetAdapter | Set-NetIPInterface -DHCP Disabled;",
-                    "Get-NetAdapter | New-NetIPAddress -AddressFamily IPv4 -IPAddress $netip.IPv4Address.IpAddress -PrefixLength $ipconfig.PrefixLength -DefaultGateway $netip.IPv4DefaultGateway.NextHop;",
-                    "Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses $netip.DNSServer.ServerAddresses;",
-                    "\n");
-
-            ConfigFile file = setupFiles.GetFile("c:\\cfn\\scripts\\New-LabADUser.ps1");
-            file.Source = "https://s3.amazonaws.com/CFN_WS2012_Scripts/AD/New-LabADUser.ps1";
-
-            file = setupFiles.GetFile("c:\\cfn\\scripts\\users.csv");
-            file.Source = "https://s3.amazonaws.com/CFN_WS2012_Scripts/AD/users.csv";
-
-            file = setupFiles.GetFile("c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1");
+            ConfigFile file = setupFiles.GetFile("c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1");
             file.Source =
                 "https://s3.amazonaws.com/quickstart-reference/microsoft/activedirectory/latest/scripts/ConvertTo-EnterpriseAdmin.ps1";
 
@@ -368,16 +361,30 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         private void SetDnsServers(WindowsInstance instanceToAddToDomain)
         {
-            if (!string.IsNullOrEmpty(this.PrivateIpAddress))
-            {
-                var renameConfig = instanceToAddToDomain.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetJoinConfig);
-                var renameCommandConfig = renameConfig.Commands.AddCommand<PowerShellCommand>(DefaultConfigSetRenameConfigSetDnsServers);
-                //todo: the below is supposed to have two private ip addresses for the two different DCs
-                renameCommandConfig.Command.AddCommandLine("-Command \"Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses ",
-                                                            this.PrivateIpAddress,
-                                                            "\"");
-                renameCommandConfig.WaitAfterCompletion = 0.ToString();
-            }
+            var renameConfig =
+                instanceToAddToDomain.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName)
+                    .GetConfig(DefaultConfigSetJoinConfig);
+            var renameCommandConfig =
+                renameConfig.Commands.AddCommand<PowerShellCommand>(DefaultConfigSetRenameConfigSetDnsServers);
+            //todo: the below is supposed to have two private ip addresses for the two different DCs
+
+            string[] ipAddress = new[] {this.Name, "PrivateIp"};
+
+            var ipAddressDictionary = new CloudFormationDictionary(this);
+
+            ipAddressDictionary.Add("Fn::GetAtt", ipAddress);
+
+            renameCommandConfig.Command.AddCommandLine(
+                "-Command \"Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses ",
+                ipAddressDictionary,
+                "\"");
+            renameCommandConfig.WaitAfterCompletion = 0.ToString();
+        }
+
+        public class FnGetAtt
+        {
+            //{ "Fn::GetAtt": [ "dc1", "PrivateIp" ] }
+
         }
     }
 }
