@@ -201,7 +201,6 @@ namespace AWS.CloudFormation.Test
 
             // uses 24gb
             var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup);
-            buildServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::build");
             buildServer.AddFinalizer(ThreeHoursSpan);
             tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(buildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             buildServer.SecurityGroups.Add(tfsServerUsers);
@@ -361,21 +360,9 @@ Set-Disk $d.Number -IsOffline $False
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
             WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
-            //BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "xvdf");
-            //blockDeviceMapping.Ebs.SnapshotId = "snap-87e3eb87";
-            //w.AddBlockDeviceMapping(blockDeviceMapping);
 
-            //blockDeviceMapping = new BlockDeviceMapping(w, "xvdg");
-            //blockDeviceMapping.Ebs.SnapshotId = "snap-5e27a85a";
-            //w.AddBlockDeviceMapping(blockDeviceMapping);
-
-            //blockDeviceMapping = new BlockDeviceMapping(w, "xvdh");
-            //blockDeviceMapping.Ebs.SnapshotId = "snap-4e69d94b";
-            //w.AddBlockDeviceMapping(blockDeviceMapping);
-            w.AddChefExec(SoftwareS3BucketName, "vs.tar.gz", "MountDrives");
-
-
-            w.AddPackage(SoftwareS3BucketName,new VisualStudio());
+            w.AddPackage(SoftwareS3BucketName, new SqlServerExpress());
+            w.AddPackage(SoftwareS3BucketName, new VisualStudio());
 
 
             w.SecurityGroups.Add(rdp);
@@ -386,7 +373,7 @@ Set-Disk $d.Number -IsOffline $False
         }
 
         [TestMethod]
-        public void CreateStackWithVisualStudioWithNoPremount()
+        public void CreateDeveloperWorkstation()
         {
             Template template = new Template(KeyPairName);
             var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
@@ -396,29 +383,29 @@ Set-Disk $d.Number -IsOffline $False
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
-            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Small, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
+            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "/dev/sda1");
             blockDeviceMapping.Ebs.VolumeType = "gp2";
             blockDeviceMapping.Ebs.VolumeSize = "214";
             w.AddBlockDeviceMapping(blockDeviceMapping);
-
-            //blockDeviceMapping = new BlockDeviceMapping(w, "xvdg");
-            //blockDeviceMapping.Ebs.SnapshotId = "snap-5e27a85a";
-            //w.AddBlockDeviceMapping(blockDeviceMapping);
-
-            //blockDeviceMapping = new BlockDeviceMapping(w, "xvdh");
-            //blockDeviceMapping.Ebs.SnapshotId = "snap-4e69d94b";
-            //w.AddBlockDeviceMapping(blockDeviceMapping);
-
-
+            w.AddDisk("gp2", 20);
+            w.AddDisk("gp2", 10);
+            w.AddPackage(SoftwareS3BucketName, new SqlServerExpress());
             w.AddPackage(SoftwareS3BucketName, new VisualStudio());
-
+            template.AddResource(w);
 
             w.SecurityGroups.Add(rdp);
             w.AddElasticIp();
-            template.AddResource(w);
+
+            CreateTestStack(template);
+
+        }
+
+        public void CreateTestStack(Template template)
+        {
             var name = this.TestContext.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty);
             Stack.Stack.CreateStack(template, name);
+
         }
 
 
@@ -470,8 +457,11 @@ Set-Disk $d.Number -IsOffline $False
 
         private static WindowsInstance AddBuildServer(Template template, Subnet privateSubnet1, WindowsInstance tfsServer, DomainController DomainController, SecurityGroup buildServerSecurityGroup)
         {
+
             var buildServer = new WindowsInstance(template, "build", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, privateSubnet1, true);
             buildServer.AddBlockDeviceMapping("/dev/sda1", 30, "gp2");
+
+            buildServer.AddPackage(SoftwareS3BucketName, new VisualStudio());
 
             buildServer.AddDependsOn(tfsServer, ThreeHoursSpan);
 
@@ -489,26 +479,21 @@ Set-Disk $d.Number -IsOffline $False
         private static WindowsInstance AddWorkstation(Template template, string name, Subnet privateSubnet1, Resource.EC2.Instancing.Instance dependsOn, DomainController dc1, SecurityGroup workstationSecurityGroup, SecurityGroup tfsUsers )
         {
             var workstation = new WindowsInstance(template, name, InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, privateSubnet1, true);
-            workstation.AddBlockDeviceMapping("/dev/sda1", 214, "gp2");
-            workstation.AddBlockDeviceMapping("/dev/sdf", 5, "gp2");
-            workstation.AddBlockDeviceMapping("/dev/sdg", 5, "gp2");
+
+            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
+            blockDeviceMapping.Ebs.VolumeType = "gp2";
+            blockDeviceMapping.Ebs.VolumeSize = "214";
+            workstation.AddBlockDeviceMapping(blockDeviceMapping);
+
+            workstation.AddDisk("gp2", 5);
+            workstation.AddDisk("gp2", 5);
+
+            workstation.AddPackage(SoftwareS3BucketName, new VisualStudio());
 
             workstation.AddDependsOn(dependsOn, ThreeHoursSpan);
             workstation.SecurityGroups.Add(workstationSecurityGroup);
-
-            var chefNode = workstation.GetChefNodeJsonContent(SoftwareS3BucketName, CookbookFileName);
-
-            var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
-            domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
-            domainAdminUserInfoNode.Add("password", DomainAdminPassword);
-
-            var visualStudioNode = chefNode.AddNode("visualstudio");
-            visualStudioNode.Add("source", "https://s3.amazonaws.com/gtbb/software/");
-            visualStudioNode.Add("edition", "professional");
-            visualStudioNode.Add("version", "2015");
-            
-            workstation.AddChefExec(SoftwareS3BucketName, CookbookFileName, "developer-workstation");
             workstation.SecurityGroups.Add(tfsUsers);
+
             workstation.AddFinalizer(MaxTimeOut);
 
             template.AddInstance(workstation);
@@ -837,10 +822,11 @@ Set-Disk $d.Number -IsOffline $False
         //}
 
         [TestMethod]
-        public void CreateStackTest()
+        public void CreatePrimeTest()
         {
-            Stack.Stack.CreateStack(GetTemplateFullStack());
+            CreateTestStack(GetTemplateFullStack());
         }
+
         [TestMethod]
         public void UpdateStackTest()
         {

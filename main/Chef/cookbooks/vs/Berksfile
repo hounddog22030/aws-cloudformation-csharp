@@ -4,5 +4,4 @@ source "https://supermarket.chef.io"
 
 metadata
 
-cookbook 'powershell'
 cookbook 'ec2helper', path: '../ec2helper'

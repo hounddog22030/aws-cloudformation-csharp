@@ -1,9 +1,9 @@
-name             'vs'
+name             'sqlserver'
 maintainer       'YOUR_NAME'
 maintainer_email 'YOUR_EMAIL'
 license          'All rights reserved'
-description      'Installs/Configures vs'
-long_description 'Installs/Configures vs'
+description      'Installs/Configures sqlserver'
+long_description 'Installs/Configures sqlserver'
 
 version          '0.1.0'
 

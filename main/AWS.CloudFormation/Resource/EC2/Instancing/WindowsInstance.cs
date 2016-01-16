@@ -128,18 +128,25 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         {
             var cookbookFileName = $"{package.CookbookName}.tar.gz";
             this.AddChefExec(s3BucketName, cookbookFileName, package.CookbookName);
-            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this, this.GetNextAvailableDevice());
+            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this, this.GetAvailableDevice());
             blockDeviceMapping.Ebs.SnapshotId = package.SnapshotId;
             this.AddBlockDeviceMapping(blockDeviceMapping);
         }
 
         List<string> _availableDevices;
 
-        protected string GetNextAvailableDevice()
+        protected string GetAvailableDevice()
         {
             var returnValue = _availableDevices.First();
             _availableDevices.Remove(returnValue);
             return returnValue;
+        }
+
+        public void AddDisk(string ec2DiskType, int sizeInGigabytes)
+        {
+            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this,this.GetAvailableDevice());
+            blockDeviceMapping.Ebs.VolumeSize = sizeInGigabytes.ToString();
+            blockDeviceMapping.Ebs.VolumeType = ec2DiskType;
         }
     }
 }
