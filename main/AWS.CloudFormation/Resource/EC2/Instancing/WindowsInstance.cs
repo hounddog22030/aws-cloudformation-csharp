@@ -156,10 +156,10 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             return returnValue;
         }
 
-        public void AddDisk(string ec2DiskType, int sizeInGigabytes)
+        public void AddDisk(Ebs.VolumeTypes ec2DiskType, int sizeInGigabytes)
         {
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this,this.GetAvailableDevice());
-            blockDeviceMapping.Ebs.VolumeSize = sizeInGigabytes.ToString();
+            blockDeviceMapping.Ebs.VolumeSize = sizeInGigabytes;
             blockDeviceMapping.Ebs.VolumeType = ec2DiskType;
             this.AddBlockDeviceMapping(blockDeviceMapping);
         }

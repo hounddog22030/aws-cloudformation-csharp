@@ -40,27 +40,35 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         }
         
 
-        public string VolumeSize
+        public int VolumeSize
         {
             get
             {
                 if (this.ContainsKey("VolumeSize"))
                 {
-                    return (string)this["VolumeSize"];
+                    return (int)this["VolumeSize"];
                 }
-                return null;
+                return 0;
             }
             set { this["VolumeSize"] = value; }
         }
-        public string VolumeType
+
+        public enum VolumeTypes
+        {
+            none,
+            gp2,
+            standard,
+            io1
+        }
+        public VolumeTypes VolumeType
         {
             get
             {
                 if (this.ContainsKey("VolumeType"))
                 {
-                    return (string)this["VolumeType"];
+                    return (VolumeTypes)this["VolumeType"];
                 }
-                return null;
+                return VolumeTypes.none;
             }
             set { this["VolumeType"] = value; }
         }

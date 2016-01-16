@@ -398,6 +398,26 @@ Set-Disk $d.Number -IsOffline $False
         }
 
         [TestMethod]
+        public void CreateGenericInstance()
+        {
+            Template template = new Template(KeyPairName);
+            var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
+            SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
+            template.AddResource(rdp);
+            rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
+            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
+            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
+            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI,false);
+            w.Subnet = DMZSubnet;
+            template.AddInstance(w);
+            w.AddElasticIp();
+
+            CreateTestStack(template);
+
+        }
+
+        [TestMethod]
         public void CreateBuildServer()
         {
             Template template = new Template(KeyPairName);
@@ -453,10 +473,10 @@ Set-Disk $d.Number -IsOffline $False
 
             WindowsInstance workstation = new WindowsInstance(template, "ISOMaker", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
-            blockDeviceMapping.Ebs.VolumeType = "gp2";
-            blockDeviceMapping.Ebs.VolumeSize = "30";
+            blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.gp2;
+            blockDeviceMapping.Ebs.VolumeSize = 30;
             workstation.AddBlockDeviceMapping(blockDeviceMapping);
-            workstation.AddDisk("gp2", 6);
+            workstation.AddDisk(Ebs.VolumeTypes.gp2, 6);
 
 
             workstation.SecurityGroups.Add(rdp);
@@ -563,11 +583,11 @@ Set-Disk $d.Number -IsOffline $False
 
             WindowsInstance workstation = new WindowsInstance(template, name, InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, subnet, rename);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
-            blockDeviceMapping.Ebs.VolumeType = "gp2";
-            blockDeviceMapping.Ebs.VolumeSize = "214";
+            blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.gp2;
+            blockDeviceMapping.Ebs.VolumeSize = 214;
             workstation.AddBlockDeviceMapping(blockDeviceMapping);
-            workstation.AddDisk("gp2", 10);
-            workstation.AddDisk("gp2", 5);
+            workstation.AddDisk(Ebs.VolumeTypes.gp2, 10);
+            workstation.AddDisk(Ebs.VolumeTypes.gp2, 5);
             workstation.AddPackage(SoftwareS3BucketName, new SqlServerExpress());
             workstation.AddPackage(SoftwareS3BucketName, new VisualStudio());
 
