@@ -217,3 +217,4 @@ ModelManifest.xml
 /main/Chef/Cookbooks/x.txt
 /main/Chef/x.txt
 /main/Chef/berks-cookbooks
+/main/Chef/cookbooks/sqlserver.tar

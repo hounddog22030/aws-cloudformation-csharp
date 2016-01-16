@@ -40,7 +40,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
 
         public DomainController(Template template, string name, InstanceTypes instanceType, string imageId,
-            Subnet subnet, string staticIpAddress, DomainInfo domainInfo)
+            Subnet subnet, DomainInfo domainInfo)
             : base(template, name, instanceType, imageId, subnet, true)
         {
             this.DomainDnsName = new ParameterBase(DomainController.ParameterNameDomainDnsName, "String",
@@ -62,10 +62,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
             DomainMemberSecurityGroup = this.CreateDomainMemberSecurityGroup();
             this.CreateDomainControllerSecurityGroup();
-            if (!string.IsNullOrEmpty(staticIpAddress))
-            {
-                this.PrivateIpAddress = staticIpAddress;
-            }
             this.MakeDomainController();
 
         }

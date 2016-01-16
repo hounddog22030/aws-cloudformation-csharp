@@ -51,10 +51,6 @@ namespace AWS.CloudFormation.Test
         // ReSharper disable once InconsistentNaming
         const string KeyPairName = "corp.getthebuybox.com";
         // ReSharper disable once InconsistentNaming
-        const string AD1PrivateIp = "10.0.0.10";
-        // ReSharper disable once InconsistentNaming
-        const string AD2PrivateIp = "10.0.64.10";
-        // ReSharper disable once InconsistentNaming
         const string VPCCIDR = "10.0.0.0/16";
         // ReSharper disable once InconsistentNaming
         const string DomainDNSName = "prime.getthebuybox.com";
@@ -156,7 +152,7 @@ namespace AWS.CloudFormation.Test
 
             // ReSharper disable once InconsistentNaming
             // uses 21gb
-            var DomainController = AddDomainController(template, PrivateSubnet1, AD1PrivateIp);
+            var DomainController = AddDomainController(template, PrivateSubnet1);
             DomainController.CreateAdReplicationSubnet(DMZSubnet);
             DomainController.CreateAdReplicationSubnet(DMZ2Subnet);
 
@@ -221,14 +217,13 @@ namespace AWS.CloudFormation.Test
             return template;
         }
 
-        private static DomainController AddDomainController(Template template, Subnet subnet, string staticIpAddress)
+        private static DomainController AddDomainController(Template template, Subnet subnet)
         {
             var DomainController = new DomainController(template,
                 ADServerNetBIOSName1,
                 InstanceTypes.T2Micro,
                 StackTest.USEAST1AWINDOWS2012R2AMI,
                 subnet,
-                staticIpAddress,
                 new DomainController.DomainInfo(StackTest.DomainDNSName, StackTest.DomainNetBIOSName, StackTest.DomainAdminUser,
                     StackTest.DomainAdminPassword));
             template.AddInstance(DomainController);
@@ -398,7 +393,7 @@ Set-Disk $d.Number -IsOffline $False
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
             var PrivateSubnet1 = template.AddSubnet("PrivateSubnet1", vpc, PrivSub1CIDR, Template.AvailabilityZone.UsEast1A);
-            var dc1 = AddDomainController(template, PrivateSubnet1,null);
+            var dc1 = AddDomainController(template, PrivateSubnet1);
             WindowsInstance w = AddWorkstation(template, "Windows1",DMZSubnet, null,dc1, rdp, null, false);
             w.AddElasticIp();
 
@@ -438,7 +433,7 @@ Set-Disk $d.Number -IsOffline $False
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
-            var dc1 = AddDomainController(template, DMZSubnet, null);
+            var dc1 = AddDomainController(template, DMZSubnet);
             dc1.AddElasticIp();
             dc1.SecurityGroups.Add(rdp);
             WindowsInstance w = AddBuildServer(template, DMZSubnet, null, dc1, rdp,null);
@@ -460,7 +455,7 @@ Set-Disk $d.Number -IsOffline $False
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
 
-            WindowsInstance w = AddDomainController(template, DMZSubnet, AD1PrivateIp);
+            WindowsInstance w = AddDomainController(template, DMZSubnet);
             template.AddInstance(w);
             w.SecurityGroups.Add(rdp);
 
