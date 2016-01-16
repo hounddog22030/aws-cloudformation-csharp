@@ -60,9 +60,9 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         }
 
 
-        protected internal override void OnAddedToDomain()
+        protected internal override void OnAddedToDomain(string domainName)
         {
-            base.OnAddedToDomain();
+            base.OnAddedToDomain(domainName);
             this.InstallRemoteDesktopGateway();
         }
     }

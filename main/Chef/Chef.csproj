@@ -122,9 +122,9 @@
     <None Include="cookbooks\SQL2014\test\integration\default\serverspec\default_spec.rb" />
     <None Include="cookbooks\SQL2014\test\integration\default\serverspec\spec_helper.rb" />
     <None Include="cookbooks\sqlserver\.kitchen.yml" />
+    <None Include="cookbooks\sqlserver\attributes\default.rb" />
     <None Include="cookbooks\sqlserver\Berksfile" />
     <None Include="cookbooks\sqlserver\CHANGELOG.md" />
-    <None Include="cookbooks\sqlserver\chefignore" />
     <None Include="cookbooks\sqlserver\Gemfile" />
     <None Include="cookbooks\sqlserver\LICENSE" />
     <None Include="cookbooks\sqlserver\metadata.rb" />
@@ -196,7 +196,6 @@
     <Folder Include="cookbooks\msdotnet35\resources\" />
     <Folder Include="cookbooks\msdotnet35\templates\" />
     <Folder Include="cookbooks\msdotnet35\test\" />
-    <Folder Include="cookbooks\sqlserver\attributes\" />
     <Folder Include="cookbooks\sqlserver\files\" />
     <Folder Include="cookbooks\sqlserver\libraries\" />
     <Folder Include="cookbooks\sqlserver\providers\" />

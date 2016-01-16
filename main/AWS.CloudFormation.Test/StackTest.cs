@@ -155,18 +155,9 @@ namespace AWS.CloudFormation.Test
 
             // ReSharper disable once InconsistentNaming
             // uses 21gb
-            var DomainController = new DomainController(template,
-                ADServerNetBIOSName1,
-                InstanceTypes.T2Micro,
-                StackTest.USEAST1AWINDOWS2012R2AMI,
-                PrivateSubnet1,
-                AD1PrivateIp,
-                new DomainController.DomainInfo(StackTest.DomainDNSName, StackTest.DomainNetBIOSName, StackTest.DomainAdminUser, StackTest.DomainAdminPassword));
-
-
+            var DomainController = AddDomainController(template, PrivateSubnet1);
             DomainController.CreateAdReplicationSubnet(DMZSubnet);
             DomainController.CreateAdReplicationSubnet(DMZ2Subnet);
-            template.AddInstance(DomainController);
 
             // uses 19gb
             // ReSharper disable once InconsistentNaming
@@ -227,6 +218,20 @@ namespace AWS.CloudFormation.Test
 
 
             return template;
+        }
+
+        private static DomainController AddDomainController(Template template, Subnet PrivateSubnet1)
+        {
+            var DomainController = new DomainController(template,
+                ADServerNetBIOSName1,
+                InstanceTypes.T2Micro,
+                StackTest.USEAST1AWINDOWS2012R2AMI,
+                PrivateSubnet1,
+                AD1PrivateIp,
+                new DomainController.DomainInfo(StackTest.DomainDNSName, StackTest.DomainNetBIOSName, StackTest.DomainAdminUser,
+                    StackTest.DomainAdminPassword));
+            template.AddInstance(DomainController);
+            return DomainController;
         }
 
         public static Template GetTemplateVolumeOnly()
@@ -383,8 +388,50 @@ Set-Disk $d.Number -IsOffline $False
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
+            var PrivateSubnet1 = template.AddSubnet("PrivateSubnet1", vpc, PrivSub1CIDR, Template.AvailabilityZone.UsEast1A);
+            var dc1 = AddDomainController(template, PrivateSubnet1);
+            WindowsInstance w = AddWorkstation(template, "Windows1",DMZSubnet, null,dc1, rdp, null, false);
+            w.AddElasticIp();
 
-            WindowsInstance w = AddWorkstation(template, "Windows1",DMZSubnet, null,null, rdp, null, false);
+            CreateTestStack(template);
+
+        }
+
+        [TestMethod]
+        public void CreateBuildServer()
+        {
+            Template template = new Template(KeyPairName);
+            var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
+            SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
+            template.AddResource(rdp);
+            rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
+            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
+            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
+            var PrivateSubnet1 = template.AddSubnet("PrivateSubnet1", vpc, PrivSub1CIDR, Template.AvailabilityZone.UsEast1A);
+            var dc1 = AddDomainController(template, PrivateSubnet1);
+            WindowsInstance w = AddBuildServer(template, DMZSubnet, null, dc1, rdp);
+            w.AddElasticIp();
+
+            CreateTestStack(template);
+
+        }
+
+        [TestMethod]
+        public void CreateDomainController()
+        {
+            Template template = new Template(KeyPairName);
+            var vpc = template.AddVpc(template, DomainNetBIOSName, VPCCIDR);
+            SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
+            template.AddResource(rdp);
+            rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            var DMZSubnet = template.AddSubnet("PrivateSubnet", vpc, PrivSub1CIDR, Template.AvailabilityZone.UsEast1A);
+            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
+            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
+
+            WindowsInstance w = AddDomainController(template, DMZSubnet);
+            template.AddInstance(w);
+            w.SecurityGroups.Add(rdp);
 
             w.AddElasticIp();
 
@@ -487,9 +534,12 @@ Set-Disk $d.Number -IsOffline $False
 
             buildServer.AddPackage(SoftwareS3BucketName, new VisualStudio());
 
-            buildServer.AddDependsOn(tfsServer, ThreeHoursSpan);
+            if (tfsServer != null)
+            {
+                buildServer.AddDependsOn(tfsServer, ThreeHoursSpan);
+            }
 
-            var chefNode = buildServer.GetChefNodeJsonContent(SoftwareS3BucketName, CookbookFileName);
+            var chefNode = buildServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
             domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
@@ -553,7 +603,7 @@ Set-Disk $d.Number -IsOffline $False
             var tfsServer = new WindowsInstance(template, "tfsserver1", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, privateSubnet1, true);
             tfsServer.AddDependsOn(tfsSqlServer, ThreeHoursSpan);
 
-            var chefNode = tfsServer.GetChefNodeJsonContent(SoftwareS3BucketName, CookbookFileName);
+            var chefNode = tfsServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
             domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);

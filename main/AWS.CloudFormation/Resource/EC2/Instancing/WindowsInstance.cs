@@ -43,6 +43,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                                 bool rename)
             : base(template, name, instanceType, imageId, OperatingSystem.Windows, true)
         {
+            var nodeJson = this.GetChefNodeJsonContent();
             //xvd[f - z]
             _availableDevices = new List<string>();
             for (char c = 'f'; c < 'z'; c++)
@@ -55,6 +56,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             {
                 this.Rename();
             }
+
         }
 
         [JsonIgnore]
@@ -76,15 +78,15 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
         }
 
-        protected internal virtual void OnAddedToDomain()
+        protected internal virtual void OnAddedToDomain(string domainName)
         {
+
+            var nodeJson = this.GetChefNodeJsonContent();
+            nodeJson.Add("domain", domainName);
         }
 
         private Config GetChefConfig(string s3bucketName, string cookbookFileName)
         {
-            var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet(cookbookFileName).GetConfig(cookbookFileName);
-
-
             if (!this.Metadata.Authentication.ContainsKey("S3AccessCreds"))
             {
                 var appSettingsReader = new AppSettingsReader();
@@ -92,27 +94,29 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 string secretKeyString = (string)appSettingsReader.GetValue("S3SecretKey", typeof(string));
                 var auth = this.Metadata.Authentication.Add("S3AccessCreds", new S3Authentication(accessKeyString, secretKeyString, new string[] { s3bucketName }));
                 auth.Type = "S3";
-                var chefConfigContent = GetChefNodeJsonContent(s3bucketName, cookbookFileName);
+                var chefConfigContent = GetChefNodeJsonContent();
                 var s3FileNode = chefConfigContent.Add("s3_file");
                 s3FileNode.Add("key", accessKeyString);
                 s3FileNode.Add("secret", secretKeyString);
             }
+
+            var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet(cookbookFileName).GetConfig(cookbookFileName);
 
             if (!chefConfig.Packages.ContainsKey("msi") || (chefConfig.Packages.ContainsKey("msi") && !((CloudFormationDictionary) chefConfig.Packages["msi"]).ContainsKey("chef")))
             {
                 chefConfig.Packages.AddPackage("msi", "chef", "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");
             }
 
-            var sourcesKey = $"c:/chef/{cookbookFileName}";
+            var sourcesKey = $"c:/chef/{cookbookFileName}/";
             if (!chefConfig.Sources.ContainsKey(sourcesKey))
             {
                 chefConfig.Sources.Add(sourcesKey, $"https://{s3bucketName}.s3.amazonaws.com/{cookbookFileName}");
             }
 
-            var clientRbFileKey = $"c:/chef/client.{cookbookFileName}.rb";
+            var clientRbFileKey = $"c:/chef/{cookbookFileName}/client.rb";
             if (!chefConfig.Files.ContainsKey(clientRbFileKey))
             {
-                chefConfig.Files.GetFile(clientRbFileKey).Content.SetFnJoin($"cache_path 'c:/chef'\ncookbook_path 'c:/chef/cookbooks/{cookbookFileName}'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
+                chefConfig.Files.GetFile(clientRbFileKey).Content.SetFnJoin($"cache_path 'c:/chef'\ncookbook_path 'c:/chef/{cookbookFileName}/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
             }
 
             return chefConfig;
@@ -123,12 +127,13 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             var chefConfig = this.GetChefConfig(s3bucketName, cookbookFileName);
             var chefCommandConfig = chefConfig.Commands.AddCommand<Command>(recipeList.Replace(':','-'));
             //chefCommandConfig.Test = "IF EXIST \"C:/Program Files/Microsoft SQL Server/MSSQL12.MSSQLSERVER/MSSQL/Binn/sqlservr.exe\" EXIT 1";
-            chefCommandConfig.Command.SetFnJoin($"C:/opscode/chef/bin/chef-client.bat -z -o {recipeList} -c c:/chef/client.{cookbookFileName}.rb");
+            chefCommandConfig.Command.SetFnJoin($"C:/opscode/chef/bin/chef-client.bat -z -o {recipeList} -c c:/chef/{cookbookFileName}/client.rb");
         }
 
-        public ConfigFileContent GetChefNodeJsonContent(string s3bucketName, string cookbookFileName)
+        public ConfigFileContent GetChefNodeJsonContent()
         {
-            var chefConfig = this.GetChefConfig(s3bucketName, cookbookFileName);
+
+            var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet(InstallChefConfigSetName).GetConfig(InstallChefConfigSetName);
             var nodeJson = chefConfig.Files.GetFile("c:/chef/node.json");
             return nodeJson.Content;
         }

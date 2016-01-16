@@ -20,6 +20,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 DomainNetBiosName = domainNetBiosName;
                 AdminUserName = adminUserName;
                 AdminPassword = adminPassword;
+                
             }
 
             public string DomainDnsName { get; }
@@ -53,6 +54,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             this.CreateDomainControllerSecurityGroup();
             this.PrivateIpAddress = domainController1PrivateIpAddress;
             this.MakeDomainController();
+
         }
 
         public ParameterBase DomainAdminUser { get; }
@@ -203,6 +205,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             currentCommand.WaitAfterCompletion = 0.ToString();
             currentCommand.Command.AddCommandLine("-Command \"",
                 "Get-ADReplicationSiteLink -Filter * | Set-ADReplicationSiteLink -SitesIncluded @{add='DMZ2Subnet'} -ReplicationFrequencyInMinutes 15\"");
+
+            this.OnAddedToDomain(this.DomainNetBiosName.Default.ToString());
         }
 
         public void CreateAdReplicationSubnet(Subnet subnet)
@@ -355,7 +359,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             instanceToAddToDomain.DomainDnsName = this.DomainDnsName;
 
 
-            instanceToAddToDomain.OnAddedToDomain();
+            instanceToAddToDomain.OnAddedToDomain(this.DomainNetBiosName.Default.ToString());
         }
 
         private void SetDnsServers(WindowsInstance instanceToAddToDomain)
