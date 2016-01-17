@@ -16,7 +16,7 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
 {
 
     [JsonConverter(typeof(JsonConverterListThatSerializesAsRef))]
-    public class ListThatSerializesAsRef : List<IName>
+    public class ListThatSerializesAsRef : List<ILogicalId>
     {
         
     }
@@ -30,7 +30,7 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
             {
                 writer.WriteStartObject();
                 writer.WritePropertyName("Ref");
-                writer.WriteValue(item.Name);
+                writer.WriteValue(item.LogicalId);
                 writer.WriteEndObject();
             }
         }
@@ -61,7 +61,7 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
             {
                 tempInstances.AddRange(this.Instances);
             }
-            tempInstances.Add(new ReferenceProperty() { Ref = instance.Name });
+            tempInstances.Add(new ReferenceProperty() { Ref = instance.LogicalId });
             this.Instances = tempInstances.ToArray();
         }
         public void AddSubnet(Subnet Subnet)
@@ -71,7 +71,7 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
             {
                 tempSubnets.AddRange(this.Subnets);
             }
-            tempSubnets.Add(new ReferenceProperty() { Ref = Subnet.Name });
+            tempSubnets.Add(new ReferenceProperty() { Ref = Subnet.LogicalId });
             this.Subnets = tempSubnets.ToArray();
         }
         public void AddListener(string loadBalancePort,string instancePort, string protocol)

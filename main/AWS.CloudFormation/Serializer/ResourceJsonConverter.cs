@@ -117,11 +117,11 @@ namespace AWS.CloudFormation.Serializer
                     }
                     else
                     {
-                        if (propertyValue is IName)
+                        if (propertyValue is ILogicalId)
                         {
                             writer.WriteStartObject();
                             writer.WritePropertyName("Ref");
-                            writer.WriteValue(((IName)propertyValue).Name);
+                            writer.WriteValue(((ILogicalId)propertyValue).LogicalId);
                             writer.WriteEndObject();
                         }
                         else

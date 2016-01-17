@@ -41,9 +41,9 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
 
             foreach (var o in commandLine)
             {
-                if (o is IName)
+                if (o is ILogicalId)
                 {
-                    stringCommandLine.Add(new ReferenceProperty() { Ref = ((IName)o).Name });
+                    stringCommandLine.Add(new ReferenceProperty() { Ref = ((ILogicalId)o).LogicalId });
                 }
                 else
                 {

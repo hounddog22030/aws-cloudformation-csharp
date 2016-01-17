@@ -23,7 +23,7 @@ namespace AWS.CloudFormation.Common
             {
                 writer.WriteStartObject();
                 writer.WritePropertyName("Ref");
-                writer.WriteValue(collectionThatSerializesAsId.Name);
+                writer.WriteValue(collectionThatSerializesAsId.LogicalId);
                 writer.WriteEndObject();
             }
             writer.WriteEndArray();

@@ -41,7 +41,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             installRdsCommand = installRdsConfig.Commands.AddCommand<PowerShellCommand>("b-configure-rdgw");
             installRdsCommand.Command.AddCommandLine(
                                             "-ExecutionPolicy RemoteSigned",
-                                            " C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN " + this.Name + ".",
+                                            " C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN " + this.LogicalId + ".",
                                             this.DomainDnsName,
                                             " -DomainNetBiosName ",
                                             this.DomainNetBiosName,
@@ -72,11 +72,11 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             this.InstallRemoteDesktopGateway();
             RecordSet routing = RecordSet.AddByHostedZoneName(
                 this.Template, 
-                this.Name + "Record",
+                this.LogicalId + "Record",
                 tldDomain,
                 $"rdp.{this.DomainDnsName.Default}.",
                 RecordSet.RecordSetTypeEnum.A);
-            routing.AddResourceRecord(new ReferenceProperty() { Ref = this.ElasticIp.Name });
+            routing.AddResourceRecord(new ReferenceProperty() { Ref = this.ElasticIp.LogicalId });
 
             routing.TTL = "60";
 

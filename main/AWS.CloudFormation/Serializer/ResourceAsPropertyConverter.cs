@@ -14,7 +14,7 @@ namespace AWS.CloudFormation.Serializer
         {
             writer.WriteStartObject();
             writer.WritePropertyName("Ref");
-            writer.WriteValue(((ResourceBase)value).Name);
+            writer.WriteValue(((ResourceBase)value).LogicalId);
             writer.WriteEndObject();
         }
 

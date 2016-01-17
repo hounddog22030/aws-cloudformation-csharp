@@ -14,7 +14,7 @@ namespace AWS.CloudFormation.Resource.Wait
         public WaitCondition(Template template, string name, TimeSpan timeout) : base(template,"AWS::CloudFormation::WaitCondition",name,false)
         {
             Timeout = (int)timeout.TotalSeconds;
-            Handle = new WaitConditionHandle(template, this.Name + "Handle");
+            Handle = new WaitConditionHandle(template, this.LogicalId + "Handle");
             template.AddResource(Handle);
         }
 

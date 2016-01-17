@@ -108,7 +108,7 @@ namespace AWS.CloudFormation.Test.Route53
             var target = RecordSet.AddByHostedZoneName(template, "testprime", "getthebuybox.com.", "test.prime.getthebuybox.com.", RecordSet.RecordSetTypeEnum.A);
             target.TTL = "60";
             target.RecordSetType = RecordSet.RecordSetTypeEnum.A.ToString();
-            target.AddResourceRecord(new ReferenceProperty() {Ref = eip.Name});
+            target.AddResourceRecord(new ReferenceProperty() {Ref = eip.LogicalId});
             template.AddResource(target);
             StackTest.CreateTestStack(template, this.TestContext);
         }

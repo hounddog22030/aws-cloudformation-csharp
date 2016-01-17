@@ -26,7 +26,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         internal const string T2Micro = "t2.micro";
         internal const string M4XLarge = "m4.xlarge";
 
-        public string WaitConditionName => $"{this.Name}WaitCondition";
+        public string WaitConditionName => $"{this.LogicalId}WaitCondition";
         public string WaitConditionHandleName => this.WaitConditionName + "Handle";
 
         public Instance(    Template template, 
@@ -74,7 +74,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                         string.Join(",", this.Metadata.Init.ConfigSets.Keys),
                         " -s ",
                         new ReferenceProperty() { Ref = "AWS::StackId" },
-                        " -r " + this.Name + " --region ",
+                        " -r " + this.LogicalId + " --region ",
                         new ReferenceProperty() { Ref = "AWS::Region" }, "</script>");
                     break;
                 case OperatingSystem.Linux:
@@ -102,13 +102,13 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 autoReloader.Content.SetFnJoin(
                     "[cfn-auto-reloader-hook]\n",
                     "triggers=post.update\n",
-                    "path=Resources." + Name + ".Metadata.AWS::CloudFormation::Init\n",
+                    "path=Resources." + LogicalId + ".Metadata.AWS::CloudFormation::Init\n",
                     "action=cfn-init.exe -v -c ",
                     string.Join(",",this.Metadata.Init.ConfigSets.Keys),
                     " -s ",
                     new ReferenceProperty() {Ref = "AWS::StackName"},
                     " -r ",
-                    this.Name,
+                    this.LogicalId,
                     " --region ",
                     new ReferenceProperty() {Ref = "AWS::Region"},
                     "\n");
@@ -156,7 +156,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         public ElasticIp AddElasticIp()
         {
-            ElasticIp = new ElasticIp(this, this.Name + "EIP");
+            ElasticIp = new ElasticIp(this, this.LogicalId + "EIP");
             this.Template.AddResource(ElasticIp);
             return ElasticIp;
         }
@@ -202,7 +202,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 command.WaitAfterCompletion = 0.ToString();
 
                 WaitCondition wait = new WaitCondition(Template, this.WaitConditionName, timeout);
-                Template.Resources.Add(wait.Name, wait);
+                Template.Resources.Add(wait.LogicalId, wait);
             }
 
 

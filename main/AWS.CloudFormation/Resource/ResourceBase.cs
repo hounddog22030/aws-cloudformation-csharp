@@ -7,21 +7,13 @@ using Newtonsoft.Json;
 namespace AWS.CloudFormation.Resource
 {
 
-    public interface IName
+    public interface ILogicalId
     {
-        string Name { get; }
+        string LogicalId { get; }
     }
     [JsonConverter(typeof(ResourceJsonConverter))]
-    public abstract class ResourceBase : IName
+    public abstract class ResourceBase : ILogicalId
     {
-        //protected ResourceBase(string type)
-        //{
-        //}
-
-        //protected ResourceBase(string type, string name, bool supportsTags) : this(type)
-        //{
-        //}
-
         [CloudFormationProperties]
         public List<KeyValuePair<string, string>> Tags { get; private set; }
 
@@ -30,7 +22,7 @@ namespace AWS.CloudFormation.Resource
         {
             Type = type;
             Template = template;
-            Name = name;
+            LogicalId = name;
             Metadata = new Metadata(this);
 
             if (supportsTags)
@@ -54,7 +46,7 @@ namespace AWS.CloudFormation.Resource
         }
 
         [JsonIgnore]
-        public string Name { get ; private set; }
+        public string LogicalId { get ; private set; }
 
         public string[] DependsOn { get; protected set; }
     }

@@ -17,6 +17,7 @@ namespace AWS.CloudFormation.Resource.EC2
                                     ReferenceProperty instanceId, 
                                     object volume) : base(template, "AWS::EC2::VolumeAttachment", name, false)
         {
+            template.AddResource(this);
             Device = device;
             InstanceId = instanceId;
             VolumeId = volume;

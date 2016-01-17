@@ -211,22 +211,14 @@ namespace AWS.CloudFormation.Test
 
         private static DomainController AddDomainController(Template template, Subnet subnet)
         {
+            //"ami-805d79ea",
             var DomainController = new DomainController(template,
                 ADServerNetBIOSName1,
                 InstanceTypes.T2Micro,
-                StackTest.USEAST1AWINDOWS2012R2AMI,
+                USEAST1AWINDOWS2012R2AMI,
                 subnet,
                 new DomainController.DomainInfo(StackTest.DomainDNSName, StackTest.DomainNetBIOSName, StackTest.DomainAdminUser,
                     StackTest.DomainAdminPassword));
-
-            Volume v = new Volume(template, "Volume1");
-            v.SnapshotId = "snap-3edf4c71";
-            v.AvailabilityZone = "us-east-1a";
-            template.AddResource(v);
-            VolumeAttachment va = new VolumeAttachment(template,
-                $"{DomainController.Name}AttachDevDda1", "/dev/sda1", 
-                new ReferenceProperty() { Ref = DomainController.Name },
-                new ReferenceProperty() { Ref = v.Name });
             template.AddInstance(DomainController);
             return DomainController;
         }
@@ -270,7 +262,7 @@ namespace AWS.CloudFormation.Test
             w.SecurityGroups.Add(rdp);
             w.AddElasticIp();
             template.AddResource(w);
-            VolumeAttachment va = new VolumeAttachment(template,"VolumeAttachment1","/dev/sdh", new ReferenceProperty() {Ref = w.Name}, "vol-ec768410");
+            VolumeAttachment va = new VolumeAttachment(template,"VolumeAttachment1","/dev/sdh", new ReferenceProperty() {Ref = w.LogicalId}, "vol-ec768410");
             template.AddResource(va);
             Stack.Stack.CreateStack(template);
         }
@@ -649,7 +641,7 @@ Set-Disk $d.Number -IsOffline $False
             RouteTable dmzRouteTable = template.AddRouteTable("DMZRouteTable", vpc);
             template.AddRoute("DMZRoute", gateway, "0.0.0.0/0", dmzRouteTable);
             SubnetRouteTableAssociation DMZSubnetRouteTableAssociation = new SubnetRouteTableAssociation(template,
-                "DMZSubnetRouteTableAssociation" + subnet.Name, subnet, dmzRouteTable);
+                "DMZSubnetRouteTableAssociation" + subnet.LogicalId, subnet, dmzRouteTable);
             template.AddResource(DMZSubnetRouteTableAssociation);
         }
 

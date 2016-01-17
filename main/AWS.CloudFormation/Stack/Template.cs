@@ -78,7 +78,7 @@ namespace AWS.CloudFormation.Stack
 
         public void AddResource(ResourceBase resource)
         {
-            this.Resources.Add(resource.Name, resource);
+            this.Resources.Add(resource.LogicalId, resource);
         }
 
         public ElasticIp AddElasticIp(Template template, string name, Instance instance)
@@ -152,15 +152,15 @@ namespace AWS.CloudFormation.Stack
 
         public void AddParameter(ParameterBase parameter)
         {
-            Parameters.Add(parameter.Name,parameter);
+            Parameters.Add(parameter.LogicalId,parameter);
         }
     }
 
-    public class ParameterBase : Dictionary<string,object>, IName
+    public class ParameterBase : Dictionary<string,object>, ILogicalId
     {
         public ParameterBase(string name, string type, object defaultValue)
         {
-            Name = name;
+            LogicalId = name;
             this.Add("Type",type);
             this.Add("Default", defaultValue);
 
@@ -169,6 +169,6 @@ namespace AWS.CloudFormation.Stack
         public string Type => this["Type"].ToString();
         public object Default => this["Default"];
 
-        public string Name { get; }
+        public string LogicalId { get; }
     }
 }

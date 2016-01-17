@@ -195,12 +195,12 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public void CreateAdReplicationSubnet(Subnet subnet)
         {
             var currentConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("configureSites");
-            var currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>($"create-subnet-{subnet.Name}");
+            var currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>($"create-subnet-{subnet.LogicalId}");
             currentCommand.WaitAfterCompletion = 0.ToString();
             currentCommand.Command.AddCommandLine("-Command New-ADReplicationSubnet -Name ",
                 subnet.CidrBlock,
                 " -Site ",
-                subnet.Name);
+                subnet.LogicalId);
         }
 
         private void CreateDomainControllerSecurityGroup()
@@ -354,7 +354,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 renameConfig.Commands.AddCommand<PowerShellCommand>(DefaultConfigSetRenameConfigSetDnsServers);
             //todo: the below is supposed to have two private ip addresses for the two different DCs
 
-            string[] ipAddress = new[] {this.Name, "PrivateIp"};
+            string[] ipAddress = new[] {this.LogicalId, "PrivateIp"};
 
             var ipAddressDictionary = new CloudFormationDictionary(this);
 
