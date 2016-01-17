@@ -113,6 +113,8 @@ namespace AWS.CloudFormation.Test
 
 
 
+            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
+            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
 
             // ReSharper disable once InconsistentNaming
             RouteTable PrivateRouteTable = template.AddRouteTable("PrivateRouteTable", vpc);
@@ -216,6 +218,15 @@ namespace AWS.CloudFormation.Test
                 subnet,
                 new DomainController.DomainInfo(StackTest.DomainDNSName, StackTest.DomainNetBIOSName, StackTest.DomainAdminUser,
                     StackTest.DomainAdminPassword));
+
+            Volume v = new Volume(template, "Volume1");
+            v.SnapshotId = "snap-3edf4c71";
+            v.AvailabilityZone = "us-east-1a";
+            template.AddResource(v);
+            VolumeAttachment va = new VolumeAttachment(template,
+                $"{DomainController.Name}AttachDevDda1", "/dev/sda1", 
+                new ReferenceProperty() { Ref = DomainController.Name },
+                new ReferenceProperty() { Ref = v.Name });
             template.AddInstance(DomainController);
             return DomainController;
         }

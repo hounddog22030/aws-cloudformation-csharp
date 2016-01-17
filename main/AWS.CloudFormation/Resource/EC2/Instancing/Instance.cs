@@ -152,12 +152,13 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public string PrivateIpAddress { get; set; }
 
 
+        protected ElasticIp ElasticIp { get; set; }
 
         public ElasticIp AddElasticIp()
         {
-            ElasticIp eip = new ElasticIp(this, this.Name + "EIP");
-            this.Template.AddResource(eip);
-            return eip;
+            ElasticIp = new ElasticIp(this, this.Name + "EIP");
+            this.Template.AddResource(ElasticIp);
+            return ElasticIp;
         }
 
          

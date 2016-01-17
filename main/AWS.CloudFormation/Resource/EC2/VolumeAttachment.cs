@@ -11,11 +11,15 @@ namespace AWS.CloudFormation.Resource.EC2
 {
     public class VolumeAttachment : ResourceBase
     {
-        public VolumeAttachment(Template template, string name, string device, ReferenceProperty instanceId, string volumeId) : base(template, "AWS::EC2::VolumeAttachment", name, false)
+        public VolumeAttachment(    Template template, 
+                                    string name, 
+                                    string device, 
+                                    ReferenceProperty instanceId, 
+                                    object volume) : base(template, "AWS::EC2::VolumeAttachment", name, false)
         {
             Device = device;
             InstanceId = instanceId;
-            VolumeId = volumeId;
+            VolumeId = volume;
         }
 
         [CloudFormationProperties]
@@ -25,7 +29,7 @@ namespace AWS.CloudFormation.Resource.EC2
         public ReferenceProperty InstanceId { get; }
 
         [CloudFormationProperties]
-        public string VolumeId { get; }
+        public object VolumeId { get; }
 
 
     }

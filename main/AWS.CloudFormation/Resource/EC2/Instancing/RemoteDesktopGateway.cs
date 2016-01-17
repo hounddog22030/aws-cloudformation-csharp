@@ -1,4 +1,5 @@
-﻿using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
+﻿using AWS.CloudFormation.Property;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Resource.Route53;
@@ -63,13 +64,19 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         protected internal override void OnAddedToDomain(string domainName)
         {
             base.OnAddedToDomain(domainName);
-            
+
+            var domainParts = this.DomainDnsName.Default.ToString().Split('.');
+            var tldDomain = $"{domainParts[domainParts.Length - 2]}.{domainParts[domainParts.Length - 1]}.";
+
+
             this.InstallRemoteDesktopGateway();
             RecordSet routing = RecordSet.AddByHostedZoneName(
                 this.Template, 
-                this.Name + "Record", 
-                $"{this.DomainDnsName.Default}.",
-                $"rdp.{this.DomainDnsName.Default}.");
+                this.Name + "Record",
+                tldDomain,
+                $"rdp.{this.DomainDnsName.Default}.",
+                RecordSet.RecordSetTypeEnum.A);
+            routing.AddResourceRecord(new ReferenceProperty() { Ref = this.ElasticIp.Name });
 
             routing.TTL = "60";
 
