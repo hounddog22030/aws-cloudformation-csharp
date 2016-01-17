@@ -168,9 +168,7 @@ namespace AWS.CloudFormation.Test
             var tfsSqlServer = AddSql4Tfs(template, PrivateSubnet1, DomainController, sqlServerSecurityGroup);
 
             //// uses 24gb
-            //var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
-            //tfsServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
-            //tfsServer.AddBlockDeviceMapping("/dev/sda1", 214, "gp2");
+            var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
 
             //var disableFirewallConfigSet = tfsServer.Metadata.Init.ConfigSets.GetConfigSet("disable-win-fw-configSet");
             //var disableFirewallConfig = disableFirewallConfigSet.GetConfig("disable-win-fw-configSet");
@@ -636,7 +634,14 @@ Set-Disk $d.Number -IsOffline $False
 
         private static WindowsInstance AddTfsServer(Template template, Subnet privateSubnet1, WindowsInstance tfsSqlServer, DomainController dc1, SecurityGroup tfsServerSecurityGroup)
         {
-            var tfsServer = new WindowsInstance(template, "tfsserver1", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, privateSubnet1, true);
+            var tfsServer = new WindowsInstance(    template, 
+                                                    "tfsserver1", 
+                                                    InstanceTypes.T2Small, 
+                                                    StackTest.USEAST1AWINDOWS2012R2AMI, 
+                                                    privateSubnet1, 
+                                                    true, 
+                                                    Ebs.VolumeTypes.gp2,
+                                                    214);
             tfsServer.AddDependsOn(tfsSqlServer, ThreeHoursSpan);
 
             var chefNode = tfsServer.GetChefNodeJsonContent();
@@ -645,6 +650,7 @@ Set-Disk $d.Number -IsOffline $False
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             template.AddInstance(tfsServer);
             tfsServer.SecurityGroups.Add(tfsServerSecurityGroup);
+            tfsServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
             dc1.AddToDomain(tfsServer, ThreeHoursSpan);
             return tfsServer;
         }

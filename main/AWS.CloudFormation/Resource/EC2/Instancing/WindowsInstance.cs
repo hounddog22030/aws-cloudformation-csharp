@@ -22,13 +22,26 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public const string InstallChefConfigSetName = "InstallChefConfigSet";
         public const string InstallChefConfigName = "InstallChefConfig";
 
-        public WindowsInstance( Template template, 
-                                string name, 
-                                InstanceTypes instanceType, 
-                                string imageId, 
+        public WindowsInstance(Template template,
+                                string name,
+                                InstanceTypes instanceType,
+                                string imageId,
                                 Subnet subnet,
-                                bool rename) 
-            : this(template, name, instanceType, imageId,rename)
+                                bool rename,
+                                Ebs.VolumeTypes volumeType,
+                                uint volumeSize)
+            : this(template, name, instanceType, imageId, rename)
+        {
+            this.AddBlockDeviceMapping("/dev/sda1", volumeSize, volumeType.ToString());
+
+        }
+        public WindowsInstance(Template template,
+                                string name,
+                                InstanceTypes instanceType,
+                                string imageId,
+                                Subnet subnet,
+                                bool rename)
+            : this(template, name, instanceType, imageId, rename)
         {
             this.Vpc = subnet.Vpc;
             this.Subnet = subnet;
