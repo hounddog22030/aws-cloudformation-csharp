@@ -165,14 +165,7 @@ namespace AWS.CloudFormation.Test
             DomainController.AddToDomain(RDGateway, ThreeHoursSpan);
 
             //// uses 25gb
-            var tfsSqlServer = new WindowsInstance(template, "Sql4Tfs", InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1, true);
-            DomainController.AddToDomain(tfsSqlServer, ThreeHoursSpan);
-            //tfsSqlServer.AddBlockDeviceMapping("/dev/sda1", 70, "gp2");
-            //tfsSqlServer.AddBlockDeviceMapping("/dev/sdf", 50, "gp2");
-            //tfsSqlServer.AddBlockDeviceMapping("/dev/sdg", 20, "gp2");
-            //tfsSqlServer.AddPackage(SoftwareS3BucketName, new SqlServerExpress());
-            tfsSqlServer.SecurityGroups.Add(sqlServerSecurityGroup);
-            template.AddInstance(tfsSqlServer);
+            var tfsSqlServer = AddSql4Tfs(template, PrivateSubnet1, DomainController, sqlServerSecurityGroup);
 
             //// uses 24gb
             //var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
@@ -215,6 +208,18 @@ namespace AWS.CloudFormation.Test
 
 
             return template;
+        }
+
+        private static WindowsInstance AddSql4Tfs(Template template, Subnet PrivateSubnet1, DomainController DomainController,
+            SecurityGroup sqlServerSecurityGroup)
+        {
+            var tfsSqlServer = new WindowsInstance(template, "Sql4Tfs", InstanceTypes.T2Micro,
+                StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1, true);
+            DomainController.AddToDomain(tfsSqlServer, ThreeHoursSpan);
+            tfsSqlServer.AddPackage(SoftwareS3BucketName, new SqlServerExpress(tfsSqlServer));
+            tfsSqlServer.SecurityGroups.Add(sqlServerSecurityGroup);
+            template.AddInstance(tfsSqlServer);
+            return tfsSqlServer;
         }
 
         private static DomainController AddDomainController(Template template, Subnet subnet)
@@ -371,7 +376,7 @@ Set-Disk $d.Number -IsOffline $False
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
             WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
 
-            w.AddPackage(SoftwareS3BucketName, new SqlServerExpress());
+            w.AddPackage(SoftwareS3BucketName, new SqlServerExpress(w));
             w.AddPackage(SoftwareS3BucketName, new VisualStudio());
 
 
@@ -480,7 +485,7 @@ Set-Disk $d.Number -IsOffline $False
 
             WindowsInstance workstation = new WindowsInstance(template, "ISOMaker", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
-            blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.gp2;
+            blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.gp2.ToString();
             blockDeviceMapping.Ebs.VolumeSize = 30;
             workstation.AddBlockDeviceMapping(blockDeviceMapping);
             workstation.AddDisk(Ebs.VolumeTypes.gp2, 6);
@@ -594,12 +599,12 @@ Set-Disk $d.Number -IsOffline $False
 
             WindowsInstance workstation = new WindowsInstance(template, name, InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, subnet, rename);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
-            blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.gp2;
+            blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.gp2.ToString();
             blockDeviceMapping.Ebs.VolumeSize = 214;
             workstation.AddBlockDeviceMapping(blockDeviceMapping);
             workstation.AddDisk(Ebs.VolumeTypes.gp2, 10);
             workstation.AddDisk(Ebs.VolumeTypes.gp2, 5);
-            workstation.AddPackage(SoftwareS3BucketName, new SqlServerExpress());
+            workstation.AddPackage(SoftwareS3BucketName, new SqlServerExpress(workstation));
             workstation.AddPackage(SoftwareS3BucketName, new VisualStudio());
 
             if (dependsOn != null)

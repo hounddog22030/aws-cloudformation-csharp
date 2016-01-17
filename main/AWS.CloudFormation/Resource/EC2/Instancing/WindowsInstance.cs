@@ -169,7 +169,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             this.AddBlockDeviceMapping(blockDeviceMapping);
         }
 
-        List<string> _availableDevices;
+        readonly List<string> _availableDevices;
 
         protected string GetAvailableDevice()
         {
@@ -182,7 +182,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         {
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this,this.GetAvailableDevice());
             blockDeviceMapping.Ebs.VolumeSize = sizeInGigabytes;
-            blockDeviceMapping.Ebs.VolumeType = ec2DiskType;
+            blockDeviceMapping.Ebs.VolumeType = ec2DiskType.ToString();
             this.AddBlockDeviceMapping(blockDeviceMapping);
         }
     }

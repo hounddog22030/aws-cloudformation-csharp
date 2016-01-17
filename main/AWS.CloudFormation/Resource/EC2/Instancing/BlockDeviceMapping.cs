@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace AWS.CloudFormation.Resource.EC2.Instancing
 {
@@ -60,15 +62,17 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             standard,
             io1
         }
-        public VolumeTypes VolumeType
+
+        //[JsonProperty(ItemConverterType = typeof(Enum))]
+        public string VolumeType
         {
             get
             {
                 if (this.ContainsKey("VolumeType"))
                 {
-                    return (VolumeTypes)this["VolumeType"];
+                    return (string)this["VolumeType"];
                 }
-                return VolumeTypes.none;
+                return null;
             }
             set { this["VolumeType"] = value; }
         }

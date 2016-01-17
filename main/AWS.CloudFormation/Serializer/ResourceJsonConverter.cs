@@ -15,6 +15,10 @@ namespace AWS.CloudFormation.Serializer
         {
 
             ResourceBase valueAsResourceBase = value as ResourceBase;
+            if (valueAsResourceBase.LogicalId == "Sql4Tfs")
+            {
+                System.Diagnostics.Debugger.Break();
+            }
 
             List<PropertyInfo> propertiesToSerializeAsAwsProperties = new List<PropertyInfo>();
             PropertyInfo MetadataPropertyInfo = null;
@@ -92,11 +96,6 @@ namespace AWS.CloudFormation.Serializer
             {
                 var propertyValue = propertyInfo.GetValue(value);
 
-                if (propertyValue is Array)
-                {
-                    System.Diagnostics.Debugger.Break();
-                }
-
                 if (propertyValue != null && (!(propertyValue is ICollection) || (propertyValue is ICollection && ((ICollection)propertyValue).Count > 0 )))
                 {
                     var propertyType = propertyValue.GetType();
@@ -126,7 +125,19 @@ namespace AWS.CloudFormation.Serializer
                         }
                         else
                         {
-                            serializer.Serialize(writer, propertyValue);
+                            var customerSerializerAttribute = propertyInfo.GetCustomAttributes(typeof(JsonConverterAttribute), true);
+                            if (customerSerializerAttribute.Any())
+                            {
+                                Type serializerType =
+                                    ((JsonConverterAttribute) customerSerializerAttribute.First()).ConverterType;
+
+                                JsonConverter customSerializer = Activator.CreateInstance(serializerType) as JsonConverter;
+                                customSerializer.WriteJson(writer, propertyValue,serializer);
+                            }
+                            else
+                            {
+                                serializer.Serialize(writer, propertyValue);
+                            }
                         }
                     }
                 }
