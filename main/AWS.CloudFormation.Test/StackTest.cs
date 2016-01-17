@@ -7,17 +7,10 @@ using System.Net;
 using System.Net.Sockets;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Configuration.Packages;
-using AWS.CloudFormation.Instance;
-using AWS.CloudFormation.Instance.Metadata;
-using AWS.CloudFormation.Instance.Metadata.Config;
-using AWS.CloudFormation.Instance.Metadata.Config.Command;
 using AWS.CloudFormation.Property;
-using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Resource.EC2.Networking;
-using AWS.CloudFormation.Resource.ElasticLoadBalancing;
-using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OperatingSystem = AWS.CloudFormation.Resource.EC2.Instancing.OperatingSystem;
@@ -582,7 +575,7 @@ Set-Disk $d.Number -IsOffline $False
         private static WindowsInstance AddWorkstation(  Template template, 
                                                         string name, 
                                                         Subnet subnet, 
-                                                        Resource.EC2.Instancing.Instance dependsOn, 
+                                                        Instance dependsOn, 
                                                         DomainController dc1, 
                                                         SecurityGroup workstationSecurityGroup, 
                                                         SecurityGroup tfsUsers,
@@ -651,7 +644,7 @@ Set-Disk $d.Number -IsOffline $False
             template.AddResource(DMZSubnetRouteTableAssociation);
         }
 
-        private static Resource.EC2.Instancing.Instance AddNat1(   Template template, 
+        private static Instance AddNat1(   Template template, 
                                                     Subnet DMZSubnet,
                                                     SecurityGroup natSecurityGroup)
         {
@@ -679,7 +672,7 @@ Set-Disk $d.Number -IsOffline $False
             //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(workstationSubnet, Protocol.All, Ports.Min, Ports.Max);
             //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(workstationSubnet, Protocol.Icmp, Ports.All);
 
-            var nat1 = new Resource.EC2.Instancing.Instance(template,
+            var nat1 = new Instance(template,
                 "NAT1",
                 InstanceTypes.T2Micro,
                 "ami-4c9e4b24",

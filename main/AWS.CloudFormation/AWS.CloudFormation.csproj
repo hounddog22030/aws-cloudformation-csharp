@@ -77,7 +77,7 @@
     <Compile Include="Resource\EC2\Volume.cs" />
     <Compile Include="Resource\EC2\VolumeAttachment.cs" />
     <Compile Include="Resource\ElasticLoadBalancing\LoadBalancer.cs" />
-    <Compile Include="Resource\Metadata.cs" />
+    <Compile Include="Resource\EC2\Instancing\Metadata\Metadata.cs" />
     <Compile Include="Resource\EC2\Networking\NetworkInterface.cs" />
     <Compile Include="Resource\EC2\Instancing\OperatingSystem.cs" />
     <Compile Include="Resource\EC2\Instancing\RemoteDesktopGateway.cs" />

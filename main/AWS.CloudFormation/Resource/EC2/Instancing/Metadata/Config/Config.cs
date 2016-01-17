@@ -1,6 +1,5 @@
 ﻿using AWS.CloudFormation.Common;
-using AWS.CloudFormation.Instance.Metadata.Config;
-using AWS.CloudFormation.Instance.Metadata.Config.Command;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config

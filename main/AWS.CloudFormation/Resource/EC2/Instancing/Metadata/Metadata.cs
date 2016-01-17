@@ -1,7 +1,6 @@
 ﻿using AWS.CloudFormation.Common;
-using AWS.CloudFormation.Instance.Metadata;
 
-namespace AWS.CloudFormation.Resource
+namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata
 {
     public class Metadata : CloudFormationDictionary
     {

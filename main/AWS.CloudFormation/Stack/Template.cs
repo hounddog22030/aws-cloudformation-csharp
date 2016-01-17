@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.EC2;
+using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
 using Newtonsoft.Json;
@@ -27,7 +28,7 @@ namespace AWS.CloudFormation.Stack
             AwsTemplateFormatVersion = AwsTemplateFormatVersion20100909;
             this.Resources = new Dictionary<string, ResourceBase>();
             this.Parameters = new Dictionary<string, ParameterBase>();
-            this.Parameters.Add(Resource.EC2.Instancing.Instance.ParameterNameDefaultKeyPairKeyName, new ParameterBase(Resource.EC2.Instancing.Instance.ParameterNameDefaultKeyPairKeyName, "AWS::EC2::KeyPair::KeyName", defaultKeyName));
+            this.Parameters.Add(Instance.ParameterNameDefaultKeyPairKeyName, new ParameterBase(Instance.ParameterNameDefaultKeyPairKeyName, "AWS::EC2::KeyPair::KeyName", defaultKeyName));
             this.AddVpc(vpcName, vpcCidrBlock);
         }
 
@@ -70,7 +71,7 @@ namespace AWS.CloudFormation.Stack
 
         }
 
-        public void AddInstance(Resource.EC2.Instancing.Instance resource)
+        public void AddInstance(Instance resource)
         {
             AddResource(resource);
         }
@@ -80,7 +81,7 @@ namespace AWS.CloudFormation.Stack
             this.Resources.Add(resource.Name, resource);
         }
 
-        public ElasticIp AddElasticIp(Template template, string name, Resource.EC2.Instancing.Instance instance)
+        public ElasticIp AddElasticIp(Template template, string name, Instance instance)
         {
             ElasticIp eip = new ElasticIp(instance, name);
             this.Resources.Add(name, eip);

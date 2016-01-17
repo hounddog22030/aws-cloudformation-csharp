@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
-using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
-namespace AWS.CloudFormation.Instance.Metadata.Config.Command
+namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
 {
 
 

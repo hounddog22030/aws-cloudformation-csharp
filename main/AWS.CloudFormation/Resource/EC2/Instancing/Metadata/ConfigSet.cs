@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AWS.CloudFormation.Common;
-using AWS.CloudFormation.Instance.Metadata.Config;
+﻿using AWS.CloudFormation.Common;
 
-namespace AWS.CloudFormation.Instance.Metadata
+namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata
 {
     public class ConfigSet : CloudFormationDictionary
     {
-        public ConfigSet(Resource.EC2.Instancing.Instance resource) : base(resource)
+        public ConfigSet(Instance resource) : base(resource)
         {
             Instance = resource;
         }
@@ -27,7 +21,7 @@ namespace AWS.CloudFormation.Instance.Metadata
             }
         }
 
-        public Resource.EC2.Instancing.Instance Instance { get; }
+        public Instance Instance { get; }
     }
 
 }

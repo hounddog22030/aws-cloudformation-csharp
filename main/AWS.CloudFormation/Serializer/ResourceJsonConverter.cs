@@ -4,10 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
-using AWS.CloudFormation.Instance;
 using AWS.CloudFormation.Resource;
-using AWS.CloudFormation.Resource.ElasticLoadBalancing;
 using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Serializer

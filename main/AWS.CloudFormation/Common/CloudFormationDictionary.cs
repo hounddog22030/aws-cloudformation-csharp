@@ -1,15 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AWS.CloudFormation.Instance.Metadata.Config;
-using AWS.CloudFormation.Instance.Metadata.Config.Command;
-using AWS.CloudFormation.Property;
+﻿using System.Collections.Generic;
 using AWS.CloudFormation.Resource;
-using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Common
 {

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
 using AWS.CloudFormation.Common;
-using AWS.CloudFormation.Instance.Metadata.Config;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 using Newtonsoft.Json;
 
-namespace AWS.CloudFormation.Instance.Metadata
+namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata
 {
 
 
@@ -14,7 +14,7 @@ namespace AWS.CloudFormation.Instance.Metadata
         public const string FinalizeConfigSetName = "finalizeConfigSet";
         public const string FinalizeConfigName = "finalizeConfig";
 
-        public Init(Resource.EC2.Instancing.Instance resource) : base(resource)
+        public Init(Instance resource) : base(resource)
         {
             Instance = resource;
         }
@@ -35,7 +35,7 @@ namespace AWS.CloudFormation.Instance.Metadata
             }
         }
 
-        public Resource.EC2.Instancing.Instance Instance { get;  }
+        public Instance Instance { get;  }
 
         public class InitConverter : JsonConverter
         {

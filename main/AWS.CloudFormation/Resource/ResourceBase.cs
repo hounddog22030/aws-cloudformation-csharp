@@ -1,20 +1,8 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Reflection;
-using AWS.CloudFormation.Common;
-using AWS.CloudFormation.Instance.Metadata;
-using AWS.CloudFormation.Instance.Metadata.Config.Command;
-using AWS.CloudFormation.Property;
-using AWS.CloudFormation.Resource.Networking;
-using AWS.CloudFormation.Resource.Wait;
+﻿using System.Collections.Generic;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using OperatingSystem = AWS.CloudFormation.Resource.EC2.Instancing.OperatingSystem;
 
 namespace AWS.CloudFormation.Resource
 {
@@ -43,7 +31,7 @@ namespace AWS.CloudFormation.Resource
             Type = type;
             Template = template;
             Name = name;
-            Metadata = new Resource.Metadata(this);
+            Metadata = new Metadata(this);
 
             if (supportsTags)
             {

@@ -62,12 +62,12 @@ namespace AWS.CloudFormation.Resource.Route53
         // ReSharper disable once InconsistentNaming
         public string TTL { get; set; }
 
-        List<string> _resourceRecords = new List<string>();
+        List<object> _resourceRecords = new List<object>();
 
         [CloudFormationProperties]
-        public string[] ResourceRecords => _resourceRecords.ToArray();
+        public object[] ResourceRecords => _resourceRecords.ToArray();
 
-        public void AddResourceRecord(string resourceRecord)
+        public void AddResourceRecord(object resourceRecord)
         {
             _resourceRecords.Add(resourceRecord);
         }

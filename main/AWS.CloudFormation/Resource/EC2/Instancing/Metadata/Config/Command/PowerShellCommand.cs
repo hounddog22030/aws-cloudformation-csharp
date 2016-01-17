@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AWS.CloudFormation.Property;
-using AWS.CloudFormation.Resource;
-using AWS.CloudFormation.Stack;
+﻿using System.Collections.Generic;
 
-namespace AWS.CloudFormation.Instance.Metadata.Config.Command
+namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
 {
-    public class PowerShellCommand : Command
+    public class PowerShellCommand : Resource.EC2.Instancing.Metadata.Config.Command.Command
     {
         public override void AddCommandLine(object[] commandLine)
         {
