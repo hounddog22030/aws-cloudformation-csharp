@@ -30,11 +30,12 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                                 bool rename,
                                 Ebs.VolumeTypes volumeType,
                                 uint volumeSize)
-            : this(template, name, instanceType, imageId, rename)
+            : this(template, name, instanceType, imageId, subnet, rename)
         {
             this.AddBlockDeviceMapping("/dev/sda1", volumeSize, volumeType.ToString());
 
         }
+
         public WindowsInstance(Template template,
                                 string name,
                                 InstanceTypes instanceType,
