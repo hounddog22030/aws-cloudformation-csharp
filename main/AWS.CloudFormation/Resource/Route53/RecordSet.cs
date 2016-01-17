@@ -40,6 +40,7 @@ namespace AWS.CloudFormation.Resource.Route53
 
         private RecordSet(Template template, string name) : base(template, "AWS::Route53::RecordSet", name, false)
         {
+            template.AddResource(this);
             TTL = "900";
         }
 
@@ -72,17 +73,17 @@ namespace AWS.CloudFormation.Resource.Route53
             _resourceRecords.Add(resourceRecord);
         }
 
-        public static RecordSet CreateByHostedZoneId(Template template, string resourceName, string hostedZoneId)
+        public static RecordSet AddByHostedZoneId(Template template, string resourceName, string hostedZoneId)
         {
             return new RecordSet(template, resourceName) { HostedZoneId = hostedZoneId };
         }
 
-        public static RecordSet CreateByHostedZoneId(Template template, string resourceName, string hostedZoneId, string dnsName)
+        public static RecordSet AddByHostedZoneId(Template template, string resourceName, string hostedZoneId, string dnsName)
         {
             return new RecordSet(template, resourceName) { HostedZoneId = hostedZoneId, RecordSetName = dnsName };
         }
 
-        public static RecordSet CreateByHostedZoneName(Template template, string name, string hostedZoneName, string dnsName)
+        public static RecordSet AddByHostedZoneName(Template template, string name, string hostedZoneName, string dnsName)
         {
             return new RecordSet(template, name) { HostedZoneName = hostedZoneName, RecordSetName = dnsName };
         }

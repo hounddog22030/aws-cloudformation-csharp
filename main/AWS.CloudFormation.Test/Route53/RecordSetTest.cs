@@ -72,7 +72,7 @@ namespace AWS.CloudFormation.Test.Route53
             Template template = StackTest.GetNewBlankTemplateWithVpc(this.TestContext);
             string recordSetName = $"A{DateTime.Now.Ticks.ToString().Substring(10, 5)}";
             recordSetName = "abc";
-            var target = RecordSet.CreateByHostedZoneId(template, recordSetName, "Z1H285MI71YUD0", recordSetName + ".sircupsalot.com.");
+            var target = RecordSet.AddByHostedZoneId(template, recordSetName, "Z1H285MI71YUD0", recordSetName + ".sircupsalot.com.");
             target.RecordSetType = RecordSet.RecordSetTypeEnum.A.ToString();
             target.AddResourceRecord("206.190.36.45");
             template.AddResource(target);
@@ -85,7 +85,7 @@ namespace AWS.CloudFormation.Test.Route53
             Template template = StackTest.GetNewBlankTemplateWithVpc(this.TestContext);
             string recordSetName = $"A{DateTime.Now.Ticks.ToString().Substring(10, 5)}";
             recordSetName = "abc";
-            var target = RecordSet.CreateByHostedZoneName(template, recordSetName, "sircupsalot.com.", recordSetName + ".sircupsalot.com.");
+            var target = RecordSet.AddByHostedZoneName(template, recordSetName, "sircupsalot.com.", recordSetName + ".sircupsalot.com.");
             target.RecordSetType = RecordSet.RecordSetTypeEnum.A.ToString();
             target.AddResourceRecord("192.168.0.1");
             target.AddResourceRecord("192.168.0.2");
@@ -105,10 +105,8 @@ namespace AWS.CloudFormation.Test.Route53
 
             template.AddResource(testBox);
             var eip = testBox.AddElasticIp();
-
-            string recordSetName = $"A{DateTime.Now.Ticks.ToString().Substring(10, 5)}";
-            recordSetName = "abc";
-            var target = RecordSet.CreateByHostedZoneName(template, recordSetName, "getthebuybox.com.", recordSetName + ".getthebuybox.com.");
+            var target = RecordSet.AddByHostedZoneName(template, "testprime", "getthebuybox.com.", "test.prime.getthebuybox.com.");
+            target.TTL = "60";
             target.RecordSetType = RecordSet.RecordSetTypeEnum.A.ToString();
             target.AddResourceRecord(new ReferenceProperty() {Ref = eip.Name});
             template.AddResource(target);

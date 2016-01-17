@@ -1,6 +1,7 @@
 ﻿using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
+using AWS.CloudFormation.Resource.Route53;
 using AWS.CloudFormation.Stack;
 
 namespace AWS.CloudFormation.Resource.EC2.Instancing
@@ -62,7 +63,16 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         protected internal override void OnAddedToDomain(string domainName)
         {
             base.OnAddedToDomain(domainName);
+            
             this.InstallRemoteDesktopGateway();
+            RecordSet routing = RecordSet.AddByHostedZoneName(
+                this.Template, 
+                this.Name + "Record", 
+                $"{this.DomainDnsName.Default}.",
+                $"rdp.{this.DomainDnsName.Default}.");
+
+            routing.TTL = "60";
+
         }
     }
 }

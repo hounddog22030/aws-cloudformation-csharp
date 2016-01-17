@@ -8,6 +8,7 @@ using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
+using AWS.CloudFormation.Resource.Route53;
 using AWS.CloudFormation.Resource.Wait;
 using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
@@ -158,6 +159,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             this.Template.AddResource(eip);
             return eip;
         }
+
+         
 
 
         [CloudFormationProperties]

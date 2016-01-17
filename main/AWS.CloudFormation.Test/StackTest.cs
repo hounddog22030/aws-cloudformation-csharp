@@ -944,9 +944,9 @@ Set-Disk $d.Number -IsOffline $False
         }
 
         [TestMethod]
-        public void UpdateStackTest()
+        public void UpdatePrimeTest()
         {
-            var stackName = "Stack5500cc69-af8a-4574-9539-778c92577437";
+            var stackName = "CreatePrimeTest-2016-01-16T2140318684050-0500";
             var t = new Stack.Stack();
             t.UpdateStack(stackName, GetTemplateFullStack(this.TestContext));
         }
