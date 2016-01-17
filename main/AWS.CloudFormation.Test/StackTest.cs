@@ -163,54 +163,54 @@ namespace AWS.CloudFormation.Test
             template.AddInstance(RDGateway);
             DomainController.AddToDomain(RDGateway, ThreeHoursSpan);
 
-            // uses 25gb
-            var tfsSqlServer = new WindowsInstance(template, "Sql4Tfs", InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1, true);
-            DomainController.AddToDomain(tfsSqlServer, ThreeHoursSpan);
-            //tfsSqlServer.AddBlockDeviceMapping("/dev/sda1", 70, "gp2");
-            //tfsSqlServer.AddBlockDeviceMapping("/dev/sdf", 50, "gp2");
-            //tfsSqlServer.AddBlockDeviceMapping("/dev/sdg", 20, "gp2");
-            //tfsSqlServer.AddPackage(SoftwareS3BucketName, new SqlServerExpress());
-            //tfsSqlServer.SecurityGroups.Add(sqlServerSecurityGroup);
-            template.AddInstance(tfsSqlServer);
+            //// uses 25gb
+            //var tfsSqlServer = new WindowsInstance(template, "Sql4Tfs", InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1, true);
+            //DomainController.AddToDomain(tfsSqlServer, ThreeHoursSpan);
+            ////tfsSqlServer.AddBlockDeviceMapping("/dev/sda1", 70, "gp2");
+            ////tfsSqlServer.AddBlockDeviceMapping("/dev/sdf", 50, "gp2");
+            ////tfsSqlServer.AddBlockDeviceMapping("/dev/sdg", 20, "gp2");
+            ////tfsSqlServer.AddPackage(SoftwareS3BucketName, new SqlServerExpress());
+            ////tfsSqlServer.SecurityGroups.Add(sqlServerSecurityGroup);
+            //template.AddInstance(tfsSqlServer);
 
-            // uses 24gb
-            var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
-            tfsServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
-            tfsServer.AddBlockDeviceMapping("/dev/sda1", 214, "gp2");
+            //// uses 24gb
+            //var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
+            //tfsServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
+            //tfsServer.AddBlockDeviceMapping("/dev/sda1", 214, "gp2");
 
-            var disableFirewallConfigSet = tfsServer.Metadata.Init.ConfigSets.GetConfigSet("disable-win-fw-configSet");
-            var disableFirewallConfig = disableFirewallConfigSet.GetConfig("disable-win-fw-configSet");
+            //var disableFirewallConfigSet = tfsServer.Metadata.Init.ConfigSets.GetConfigSet("disable-win-fw-configSet");
+            //var disableFirewallConfig = disableFirewallConfigSet.GetConfig("disable-win-fw-configSet");
 
-            var disableFirewallCommand = disableFirewallConfig.Commands.AddCommand<PowerShellCommand>("disable-win-fw-command");
-            disableFirewallCommand.WaitAfterCompletion = 0.ToString();
-            disableFirewallCommand.Command.AddCommandLine(new object[] { "-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\"" });
-
-
-            // uses 24gb
-            var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup, IPNetwork.Parse(BuildServerIpAddress + "/32"));
-            buildServer.AddFinalizer(ThreeHoursSpan);
-            tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(buildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
-            buildServer.SecurityGroups.Add(tfsServerUsers);
+            //var disableFirewallCommand = disableFirewallConfig.Commands.AddCommand<PowerShellCommand>("disable-win-fw-command");
+            //disableFirewallCommand.WaitAfterCompletion = 0.ToString();
+            //disableFirewallCommand.Command.AddCommandLine(new object[] { "-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\"" });
 
 
+            //// uses 24gb
+            //var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup, IPNetwork.Parse(BuildServerIpAddress + "/32"));
+            //buildServer.AddFinalizer(ThreeHoursSpan);
+            //tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(buildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            //buildServer.SecurityGroups.Add(tfsServerUsers);
 
-            // uses 33gb
-            var workstation = AddWorkstation(template, "workstation3", PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup, tfsServerUsers, true);
-            //var workstation2 = AddWorkstation(template, "workstation2", PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup, tfsServerUsers);
 
 
-            // the below is a remote desktop gateway server that can
-            // be uncommented to debug domain setup problems
-            //var RDGateway2 = new RemoteDesktopGateway(template, "RDGateway2", InstanceTypes.T2Micro, "ami-e4034a8e", DMZSubnet);
-            //dc1.AddToDomainMemberSecurityGroup(RDGateway2);
-            //template.AddInstance(RDGateway2);
+            //// uses 33gb
+            //var workstation = AddWorkstation(template, "workstation3", PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup, tfsServerUsers, true);
+            ////var workstation2 = AddWorkstation(template, "workstation2", PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup, tfsServerUsers);
 
-            LoadBalancer elb = new LoadBalancer(template, "elb1");
-            elb.AddInstance(tfsServer);
-            elb.AddListener("8080", "8080", "http");
-            elb.AddSubnet(DMZSubnet);
-            elb.SecurityGroups.Add(elbSecurityGroup);
-            template.AddResource(elb);
+
+            //// the below is a remote desktop gateway server that can
+            //// be uncommented to debug domain setup problems
+            ////var RDGateway2 = new RemoteDesktopGateway(template, "RDGateway2", InstanceTypes.T2Micro, "ami-e4034a8e", DMZSubnet);
+            ////dc1.AddToDomainMemberSecurityGroup(RDGateway2);
+            ////template.AddInstance(RDGateway2);
+
+            //LoadBalancer elb = new LoadBalancer(template, "elb1");
+            //elb.AddInstance(tfsServer);
+            //elb.AddListener("8080", "8080", "http");
+            //elb.AddSubnet(DMZSubnet);
+            //elb.SecurityGroups.Add(elbSecurityGroup);
+            //template.AddResource(elb);
 
 
             return template;
