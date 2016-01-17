@@ -64,10 +64,18 @@ namespace AWS.CloudFormation.Test
 
         public static Template GetTemplateFullStack(TestContext testContext)
         {
+            return GetTemplateFullStack(testContext, null);
+        }
 
-            var template = GetNewBlankTemplateWithVpc(testContext);
+        private static Template GetTemplateFullStack(TestContext testContext, string vpcName)
+        {
+            if (string.IsNullOrEmpty(vpcName))
+            {
+                vpcName = $"Vpc{testContext.TestName}";
+            }
+
+            var template = GetNewBlankTemplateWithVpc(testContext,vpcName);
             Vpc vpc = template.Vpcs.First();
-
 
             // ReSharper disable once InconsistentNaming
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
@@ -157,14 +165,14 @@ namespace AWS.CloudFormation.Test
             DomainController.AddToDomain(RDGateway, ThreeHoursSpan);
 
             //// uses 25gb
-            //var tfsSqlServer = new WindowsInstance(template, "Sql4Tfs", InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1, true);
-            //DomainController.AddToDomain(tfsSqlServer, ThreeHoursSpan);
-            ////tfsSqlServer.AddBlockDeviceMapping("/dev/sda1", 70, "gp2");
-            ////tfsSqlServer.AddBlockDeviceMapping("/dev/sdf", 50, "gp2");
-            ////tfsSqlServer.AddBlockDeviceMapping("/dev/sdg", 20, "gp2");
-            ////tfsSqlServer.AddPackage(SoftwareS3BucketName, new SqlServerExpress());
-            ////tfsSqlServer.SecurityGroups.Add(sqlServerSecurityGroup);
-            //template.AddInstance(tfsSqlServer);
+            var tfsSqlServer = new WindowsInstance(template, "Sql4Tfs", InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1, true);
+            DomainController.AddToDomain(tfsSqlServer, ThreeHoursSpan);
+            //tfsSqlServer.AddBlockDeviceMapping("/dev/sda1", 70, "gp2");
+            //tfsSqlServer.AddBlockDeviceMapping("/dev/sdf", 50, "gp2");
+            //tfsSqlServer.AddBlockDeviceMapping("/dev/sdg", 20, "gp2");
+            //tfsSqlServer.AddPackage(SoftwareS3BucketName, new SqlServerExpress());
+            tfsSqlServer.SecurityGroups.Add(sqlServerSecurityGroup);
+            template.AddInstance(tfsSqlServer);
 
             //// uses 24gb
             //var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
@@ -949,11 +957,10 @@ Set-Disk $d.Number -IsOffline $False
         [TestMethod]
         public void UpdatePrimeTest()
         {
-            var stackName = "CreatePrimeTest-2016-01-16T2140318684050-0500";
+            var stackName = "CreatePrimeTest-2016-01-17T0302231807358-0500";
             var t = new Stack.Stack();
-            t.UpdateStack(stackName, GetTemplateFullStack(this.TestContext));
+            t.UpdateStack(stackName, GetTemplateFullStack(this.TestContext, "VpcCreatePrimeTest"));
         }
-
 
 
 
@@ -977,10 +984,18 @@ Set-Disk $d.Number -IsOffline $False
             Assert.IsNotNull(expectedException);
         }
 
+        internal static Template GetNewBlankTemplateWithVpc(TestContext testContext, string vpcName)
+        {
+            if (string.IsNullOrEmpty(vpcName))
+            {
+                vpcName = $"Vpc{testContext.TestName}";
+            }
+            return new Template(KeyPairName, vpcName, VPCCIDR);
+
+        }
         internal static Template GetNewBlankTemplateWithVpc(TestContext testContext)
         {
-            var vpcName = $"Vpc{testContext.TestName}";
-            return new Template(KeyPairName, vpcName, VPCCIDR);
+            return GetNewBlankTemplateWithVpc(testContext, null);
 
         }
         private TestContext testContextInstance;
