@@ -7,19 +7,6 @@
 # All rights reserved - Do Not Redistribute
 #
 
-
-puts node['domain']
-puts node['system']['short_hostname']
-puts 'domain'
-puts node['system']['domain_name']
-puts 'domain'
-puts 'netbios_name'
-puts node['system']['netbios_name']
-puts 'netbios_name'
-puts 'workgroup'
-puts node['system']['workgroup']
-puts 'workgroup'
-
 include_recipe 'ec2helper'
 include_recipe 'msdotnet35'
 
@@ -34,8 +21,6 @@ ec2helper_mount 'MountEc2Drives' do
 	action :mount
 end
 
-#	command "#{exe_path} /q /ACTION=Install /FEATURES=SQLEngine,SSMS /INSTANCENAME=MSSQLSERVER /SQLSVCACCOUNT=\"NT AUTHORITY\\NETWORK SERVICE\" /SQLSYSADMINACCOUNTS=\"#{ENV['USERDOMAIN']}\\Domain Admins\" \"BUILTIN\\USERS\" /AGTSVCACCOUNT=\"NT Service\\SQLSERVERAGENT\" /IACCEPTSQLSERVERLICENSETERMS /INDICATEPROGRESS /UpdateEnabled=False /SECURITYMODE=SQL /SAPWD=JUhsd82.!# /TCPENABLED=1 /ADDCURRENTUSERASSQLADMIN=true /SQLUSERDBDIR=\"d:\\sqldata\" /SQLUSERDBLOGDIR=\"e:\\sqllog\" /INSTALLSQLDATADIR=\"d:\\sqldata\""
-# S:/setup.exe /q /ACTION=Install /FEATURES=SQLEngine,SSMS /INSTANCENAME=MSSQLSERVER /IAcceptSQLServerLicenseTerms=true /SQLSVCACCOUNT="NT AUTHORITY\NETWORK SERVICE" /AGTSVCACCOUNT="NT Service\SQLSERVERAGENT" /IACCEPTSQLSERVERLICENSETERMS /INDICATEPROGRESS /UpdateEnabled=False /SECURITYMODE=SQL /SAPWD=JUhsd82.!# /TCPENABLED=1 /ADDCURRENTUSERASSQLADMIN=true /SQLUSERDBDIR=c:\sqldata /SQLUSERDBLOGDIR=c:\sqllog /INSTALLSQLDATADIR=c:\sqldata
 SQLSYSADMINACCOUNTS = ''
 
 if node['domain']
@@ -43,21 +28,6 @@ if node['domain']
 end
 
 puts "SQLSYSADMINACCOUNTS=#{SQLSYSADMINACCOUNTS}"
-
-
-
-#default['sqlserver']['FEATURES'] = 'SQLEngine,SSMS'
-#default['sqlserver']['INSTANCENAME'] = 'MSSQLSERVER'
-#default['sqlserver']['IAcceptSQLServerLicenseTerms'] = 'true'
-#default['sqlserver']['SQLSVCACCOUNT'] = 'NT AUTHORITY\\NETWORK SERVICE'
-#default['sqlserver']['AGTSVCACCOUNT'] = 'NT Service\\SQLSERVERAGENT'
-#default['sqlserver']['SECURITYMODE'] = 'SQL'
-#default['sqlserver']['SAPWD'] = 'JUhsd82.!#'
-#default['sqlserver']['TCPENABLED'] = '1'
-#default['sqlserver']['ADDCURRENTUSERASSQLADMIN'] = 'false'
-#default['sqlserver']['SQLUSERDBDIR'] = 'd:\\sqldata'
-#default['sqlserver']['SQLUSERDBLOGDIR'] = 'c:\\sqllog'
-#default['sqlserver']['INSTALLSQLDATADIR'] = 'd:\\sqldata'
 
 execute 'Install SQL' do
 	timeout 7200
