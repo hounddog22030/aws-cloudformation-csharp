@@ -113,8 +113,6 @@ namespace AWS.CloudFormation.Test
 
 
 
-            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
-            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
 
             // ReSharper disable once InconsistentNaming
             RouteTable PrivateRouteTable = template.AddRouteTable("PrivateRouteTable", vpc);
