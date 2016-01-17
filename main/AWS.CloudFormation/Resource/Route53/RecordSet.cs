@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
@@ -37,8 +38,9 @@ namespace AWS.CloudFormation.Resource.Route53
         }
 
 
-        public RecordSet(Template template, string name) : base(template, "AWS::Route53::RecordSet", name, false)
+        private RecordSet(Template template, string name) : base(template, "AWS::Route53::RecordSet", name, false)
         {
+            TTL = "900";
         }
 
         [CloudFormationProperties]
@@ -46,12 +48,43 @@ namespace AWS.CloudFormation.Resource.Route53
 
         [CloudFormationProperties]
         [JsonProperty(PropertyName = "Name")]
-        public string RecordSetName => Name;
+        public string RecordSetName { get; private set; }
 
         [CloudFormationProperties]
         [JsonProperty(PropertyName = "Type")]
         //[JsonConverter(typeof(StringEnumConverter))]
         public string RecordSetType { get; set; }
 
+        [CloudFormationProperties]
+        public string HostedZoneId { get; private set; }
+
+        [CloudFormationProperties]
+        // ReSharper disable once InconsistentNaming
+        public string TTL { get; set; }
+
+        List<string> _resourceRecords = new List<string>();
+
+        [CloudFormationProperties]
+        public string[] ResourceRecords => _resourceRecords.ToArray();
+
+        public void AddResourceRecord(string resourceRecord)
+        {
+            _resourceRecords.Add(resourceRecord);
+        }
+
+        public static RecordSet CreateByHostedZoneId(Template template, string resourceName, string hostedZoneId)
+        {
+            return new RecordSet(template, resourceName) { HostedZoneId = hostedZoneId };
+        }
+
+        public static RecordSet CreateByHostedZoneId(Template template, string resourceName, string hostedZoneId, string dnsName)
+        {
+            return new RecordSet(template, resourceName) { HostedZoneId = hostedZoneId, RecordSetName = dnsName };
+        }
+
+        public static RecordSet CreateByHostedZoneName(Template template, string name, string hostedZoneName, string dnsName)
+        {
+            return new RecordSet(template, name) { HostedZoneName = hostedZoneName, RecordSetName = dnsName };
+        }
     }
 }

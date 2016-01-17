@@ -61,13 +61,28 @@ namespace AWS.CloudFormation.Test.Route53
         #endregion
 
         [TestMethod]
-        public void RecordSetTest1()
+        public void RecordSetTestByZoneId()
         {
             Template template = StackTest.GetNewBlankTemplateWithVpc(this.TestContext);
-            string recordSetName = $"{this.TestContext.TestName}{Guid.NewGuid().ToString().Replace("-", string.Empty)}";
-            var target = new RecordSet(template, recordSetName);
+            string recordSetName = $"A{DateTime.Now.Ticks.ToString().Substring(10, 5)}";
+            recordSetName = "abc";
+            var target = RecordSet.CreateByHostedZoneId(template, recordSetName, "Z1H285MI71YUD0", recordSetName + ".sircupsalot.com.");
             target.RecordSetType = RecordSet.RecordSetTypeEnum.A.ToString();
-            target.HostedZoneName = Guid.NewGuid().ToString();
+            target.AddResourceRecord("206.190.36.45");
+            template.AddResource(target);
+            StackTest.CreateTestStack(template, this.TestContext);
+        }
+
+        [TestMethod]
+        public void RecordSetTestByZoneName()
+        {
+            Template template = StackTest.GetNewBlankTemplateWithVpc(this.TestContext);
+            string recordSetName = $"A{DateTime.Now.Ticks.ToString().Substring(10, 5)}";
+            recordSetName = "abc";
+            var target = RecordSet.CreateByHostedZoneName(template, recordSetName, "sircupsalot.com.", recordSetName + ".sircupsalot.com.");
+            target.RecordSetType = RecordSet.RecordSetTypeEnum.A.ToString();
+            target.AddResourceRecord("192.168.0.1");
+            target.AddResourceRecord("192.168.0.2");
             template.AddResource(target);
             StackTest.CreateTestStack(template, this.TestContext);
         }

@@ -166,11 +166,11 @@ namespace AWS.CloudFormation.Test
             // uses 25gb
             var tfsSqlServer = new WindowsInstance(template, "Sql4Tfs", InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1, true);
             DomainController.AddToDomain(tfsSqlServer, ThreeHoursSpan);
-            tfsSqlServer.AddBlockDeviceMapping("/dev/sda1", 70, "gp2");
-            tfsSqlServer.AddBlockDeviceMapping("/dev/sdf", 50, "gp2");
-            tfsSqlServer.AddBlockDeviceMapping("/dev/sdg", 20, "gp2");
-            tfsSqlServer.AddPackage(SoftwareS3BucketName, new SqlServerExpress());
-            tfsSqlServer.SecurityGroups.Add(sqlServerSecurityGroup);
+            //tfsSqlServer.AddBlockDeviceMapping("/dev/sda1", 70, "gp2");
+            //tfsSqlServer.AddBlockDeviceMapping("/dev/sdf", 50, "gp2");
+            //tfsSqlServer.AddBlockDeviceMapping("/dev/sdg", 20, "gp2");
+            //tfsSqlServer.AddPackage(SoftwareS3BucketName, new SqlServerExpress());
+            //tfsSqlServer.SecurityGroups.Add(sqlServerSecurityGroup);
             template.AddInstance(tfsSqlServer);
 
             // uses 24gb
