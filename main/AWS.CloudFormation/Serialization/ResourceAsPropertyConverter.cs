@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using AWS.CloudFormation.Resource;
 using Newtonsoft.Json;
 
-namespace AWS.CloudFormation.Serializer
+namespace AWS.CloudFormation.Serialization
 {
     public class ResourceAsPropertyConverter : JsonConverter
     {

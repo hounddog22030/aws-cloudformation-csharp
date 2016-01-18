@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Serialization;
+using AWS.CloudFormation.Serializer;
+using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -55,7 +58,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             set { this["VolumeSize"] = value; }
         }
 
-        [JsonConverter(typeof(InstanceTypesConverter))]
+        [JsonConverter(typeof(EnumConverter))]
         public enum VolumeTypes
         {
             none,

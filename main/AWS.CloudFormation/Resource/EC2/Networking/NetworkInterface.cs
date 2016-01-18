@@ -1,4 +1,5 @@
 ﻿using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Serialization;
 using AWS.CloudFormation.Serializer;
 using Newtonsoft.Json;
 

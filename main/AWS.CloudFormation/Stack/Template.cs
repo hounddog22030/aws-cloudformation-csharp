@@ -7,6 +7,8 @@ using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
+using AWS.CloudFormation.Serialization;
+using AWS.CloudFormation.Serializer;
 using Newtonsoft.Json;
 using VpcGatewayAttachment = AWS.CloudFormation.Resource.EC2.Networking.Vpc.VpcGatewayAttachment;
 
@@ -18,7 +20,7 @@ namespace AWS.CloudFormation.Stack
         public const string AwsTemplateFormatVersion20100909 = "2010-09-09";
         public const string CIDR_IP_THE_WORLD = "0.0.0.0/0";
 
-        [JsonConverter(typeof(InstanceTypesConverter))]
+        [JsonConverter(typeof(EnumConverter))]
         public enum AvailabilityZone
         {
             [EnumMember(Value = "invalid")]
