@@ -1,4 +1,5 @@
-﻿using AWS.CloudFormation.Resource.Networking;
+﻿using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
@@ -28,13 +29,37 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             }
 
 
-            [JsonProperty(PropertyName = "InternetGatewayId")]
-            [CloudFormationProperties]
-            public InternetGateway InternetGateway { get; set; }
+            [JsonIgnore]
+            public InternetGateway InternetGateway
+            {
+                get
+                {
+                    var vpcId = this.Properties.GetValue<CloudFormationDictionary>();
+                    return vpcId["Ref"] as InternetGateway;
+                }
+                set
+                {
+                    var refDictionary = new CloudFormationDictionary();
+                    refDictionary.Add("Ref", ((ILogicalId)value).LogicalId);
+                    this.Properties.SetValue(refDictionary);
+                }
+            }
 
-            [JsonProperty(PropertyName = "VpcId")]
-            [CloudFormationProperties]
-            public Vpc Vpc { get; set; }
+            [JsonIgnore]
+            public Vpc Vpc
+            {
+                get
+                {
+                    var vpcId = this.Properties.GetValue<CloudFormationDictionary>();
+                    return vpcId["Ref"] as Vpc;
+                }
+                set
+                {
+                    var refDictionary = new CloudFormationDictionary();
+                    refDictionary.Add("Ref", ((ILogicalId)value).LogicalId);
+                    this.Properties.SetValue(refDictionary);
+                }
+            }
         }
     }
 }

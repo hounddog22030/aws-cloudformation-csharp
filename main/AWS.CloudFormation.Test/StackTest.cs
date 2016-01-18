@@ -508,6 +508,8 @@ Set-Disk $d.Number -IsOffline $False
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             
             Subnet DMZSubnet = new Subnet(template, "DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
+            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
+            
             CreateTestStack(template, this.TestContext);
 
         }
