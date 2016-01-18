@@ -302,7 +302,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
         }
 
-        public void AddBlockDeviceMapping(string deviceName, uint volumeSize, string volumeType)
+        public void AddBlockDeviceMapping(string deviceName, uint volumeSize, Ebs.VolumeTypes volumeType)
         {
             var tempBlockDeviceMapping = new List<CloudFormationDictionary>();
             if (this.BlockDeviceMappings != null)

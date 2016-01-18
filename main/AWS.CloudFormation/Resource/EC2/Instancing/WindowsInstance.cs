@@ -32,7 +32,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                                 uint volumeSize)
             : this(template, name, instanceType, imageId, subnet, rename)
         {
-            this.AddBlockDeviceMapping("/dev/sda1", volumeSize, volumeType.ToString());
+            this.AddBlockDeviceMapping("/dev/sda1", volumeSize, Ebs.VolumeTypes.GeneralPurpose);
 
         }
 

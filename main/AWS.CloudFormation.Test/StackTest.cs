@@ -168,14 +168,8 @@ namespace AWS.CloudFormation.Test
             var tfsSqlServer = AddSql4Tfs(template, PrivateSubnet1, DomainController, sqlServerSecurityGroup);
 
             //// uses 24gb
-            //var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
+            var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
 
-            //var disableFirewallConfigSet = tfsServer.Metadata.Init.ConfigSets.GetConfigSet("disable-win-fw-configSet");
-            //var disableFirewallConfig = disableFirewallConfigSet.GetConfig("disable-win-fw-configSet");
-
-            //var disableFirewallCommand = disableFirewallConfig.Commands.AddCommand<PowerShellCommand>("disable-win-fw-command");
-            //disableFirewallCommand.WaitAfterCompletion = 0.ToString();
-            //disableFirewallCommand.Command.AddCommandLine(new object[] { "-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\"" });
 
 
             //// uses 24gb
@@ -211,7 +205,7 @@ namespace AWS.CloudFormation.Test
         private static WindowsInstance AddSql4Tfs(Template template, Subnet PrivateSubnet1, DomainController DomainController,
             SecurityGroup sqlServerSecurityGroup)
         {
-            var tfsSqlServer = new WindowsInstance(template, "Sql4Tfs", InstanceTypes.T2Micro,
+            var tfsSqlServer = new WindowsInstance(template, "sql1", InstanceTypes.T2Micro,
                 StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1, true);
             DomainController.AddToDomain(tfsSqlServer, ThreeHoursSpan);
             tfsSqlServer.AddPackage(SoftwareS3BucketName, new SqlServerExpress(tfsSqlServer));
@@ -628,7 +622,7 @@ Set-Disk $d.Number -IsOffline $False
         {
 
             var buildServer = new WindowsInstance(template, "build", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, subnet, true);
-            buildServer.AddBlockDeviceMapping("/dev/sda1", 30, "gp2");
+            buildServer.AddBlockDeviceMapping("/dev/sda1", 30, Ebs.VolumeTypes.GeneralPurpose);
 
             buildServer.AddPackage(SoftwareS3BucketName, new VisualStudio());
 
@@ -708,15 +702,22 @@ Set-Disk $d.Number -IsOffline $False
                                                     true, 
                                                     Ebs.VolumeTypes.GeneralPurpose,
                                                     214);
-            tfsServer.AddDependsOn(tfsSqlServer, ThreeHoursSpan);
-
+            tfsServer.AddDependsOn(tfsSqlServer, MaxTimeOut);
             var chefNode = tfsServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
             domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             tfsServer.SecurityGroupIds.Add(tfsServerSecurityGroup);
             tfsServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
+            
+            
             dc1.AddToDomain(tfsServer, ThreeHoursSpan);
+            var disableFirewallConfigSet = tfsServer.Metadata.Init.ConfigSets.GetConfigSet("disable-win-fw-configSet");
+            var disableFirewallConfig = disableFirewallConfigSet.GetConfig("disable-win-fw-configSet");
+
+            var disableFirewallCommand = disableFirewallConfig.Commands.AddCommand<PowerShellCommand>("disable-win-fw-command");
+            disableFirewallCommand.WaitAfterCompletion = 0.ToString();
+            disableFirewallCommand.Command.AddCommandLine(new object[] { "-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\"" });
             return tfsServer;
         }
 
@@ -1031,7 +1032,7 @@ Set-Disk $d.Number -IsOffline $False
         [TestMethod]
         public void UpdatePrimeTest()
         {
-            var stackName = "CreatePrimeTest-2016-01-17T0302231807358-0500";
+            var stackName = "CreatePrimeTest-2016-01-18T0344481214534-0500";
             
             Stack.Stack.UpdateStack(stackName, GetTemplateFullStack(this.TestContext, "VpcCreatePrimeTest"));
         }
