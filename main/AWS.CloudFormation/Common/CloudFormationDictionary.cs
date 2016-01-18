@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using AWS.CloudFormation.Resource;
 using Newtonsoft.Json;
 
@@ -67,20 +68,38 @@ namespace AWS.CloudFormation.Common
             base.Add("Fn::Join", final);
         }
 
+
         public void SetValue(object value)
         {
-            StackTrace stackTrace = new StackTrace();           // get call stack
+            var propertyName = GetPropertyName(value);
+            this[propertyName] = value;
+        }
+
+        private static string GetPropertyName(object value)
+        {
+            StackTrace stackTrace = new StackTrace();
             StackFrame[] stackFrames = stackTrace.GetFrames();
-            StackFrame propertyStackFrame = stackFrames[1];
-            var m = propertyStackFrame.GetMethod();
-            string propertyName = m.Name.Substring("set_".Length);
+
+            StackFrame propertyStackFrame = null;
+            MethodBase propertyMethod = null;
+            for (int i = 0; i < stackFrames.Length -1; i++)
+            {
+                propertyStackFrame = stackFrames[i];
+                propertyMethod = propertyStackFrame.GetMethod();
+                if (propertyMethod.IsSpecialName)
+                {
+                    break;
+                }
+            }
+
+            string propertyName = propertyMethod.Name.Substring("set_".Length);
+
             CloudFormationDictionary valueAsCloudFormationDictionary = value as CloudFormationDictionary;
             if (valueAsCloudFormationDictionary != null && valueAsCloudFormationDictionary.First().Key == "Ref" && !propertyName.EndsWith("Id"))
             {
                 propertyName += "Id";
             }
-            System.Diagnostics.Debug.WriteLine(propertyName);
-            this[propertyName] = value;
+            return propertyName;
         }
 
         public object GetValue(string name)
