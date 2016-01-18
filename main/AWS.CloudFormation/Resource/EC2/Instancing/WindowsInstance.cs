@@ -44,7 +44,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                                 bool rename)
             : this(template, name, instanceType, imageId, rename)
         {
-            this.Vpc = subnet.Vpc;
             this.Subnet = subnet;
         }
 

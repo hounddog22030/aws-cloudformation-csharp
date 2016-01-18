@@ -123,6 +123,10 @@ namespace AWS.CloudFormation.Common
                 {
                     return (T) _objects[name];
                 }
+                else if (typeof (Enum).IsAssignableFrom(typeof (T)))
+                {
+                    return (T) Enum.Parse(typeof(T), this[name].ToString());
+                }
                 else
                 {
                     return (T)this[name];

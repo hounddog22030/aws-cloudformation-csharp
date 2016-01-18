@@ -512,6 +512,7 @@ Set-Disk $d.Number -IsOffline $False
             RouteTable dmzRouteTable = new RouteTable(template,"DMZRouteTable", vpc);
             Route dmzRoute = new Route(template, "DMZRoute", gateway, "0.0.0.0/0", dmzRouteTable);
             SubnetRouteTableAssociation DMZSubnetRouteTableAssociation = new SubnetRouteTableAssociation(template, DMZSubnet, dmzRouteTable);
+            WindowsInstance workstation = new WindowsInstance(template, "SerializerTest", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
 
             CreateTestStack(template, this.TestContext);
 

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Linq;
+using System.Runtime.Serialization;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
@@ -26,7 +28,10 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         internal const string T2Micro = "t2.micro";
         internal const string M4XLarge = "m4.xlarge";
 
+        [JsonIgnore]
         public string WaitConditionName => $"{this.LogicalId}WaitCondition";
+
+        [JsonIgnore]
         public string WaitConditionHandleName => this.WaitConditionName + "Handle";
 
         public Instance(    Template template, 
@@ -47,7 +52,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 throw new InvalidOperationException($"Template must contain a Parameter named {ParameterNameDefaultKeyPairKeyName} which contains the default encryption key name for the instance.");
             }
             var keyName = this.Template.Parameters[ParameterNameDefaultKeyPairKeyName];
-            KeyName = keyName;
+            KeyName = keyName.Default.ToString();
             UserData = new CloudFormationDictionary(this);
             SourceDestCheck = true;
             ShouldEnableHup = enableHup;
@@ -55,103 +60,116 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             SetUserData();
         }
 
+        [JsonIgnore]
+        public bool ShouldEnableHup { get; set; }
 
 
         [JsonIgnore]
-        public Vpc Vpc { get; protected set; }
+        public OperatingSystem OperatingSystem { get; set; }
 
         [JsonIgnore]
-        public bool ShouldEnableHup { get; }
-
-        internal void SetUserData()
+        public string ImageId
         {
-            switch (this.OperatingSystem)
+            get
             {
-                case OperatingSystem.Windows:
-                    this.UserData.Clear();
-                    this.UserData.Add("Fn::Base64").SetFnJoin(
-                        "<script>cfn-init.exe -v -c ",
-                        string.Join(",", this.Metadata.Init.ConfigSets.Keys),
-                        " -s ",
-                        new ReferenceProperty() { Ref = "AWS::StackId" },
-                        " -r " + this.LogicalId + " --region ",
-                        new ReferenceProperty() { Ref = "AWS::Region" }, "</script>");
-                    break;
-                case OperatingSystem.Linux:
-                    break;
-                default:
-                    throw new InvalidEnumArgumentException();
+                return this.Properties.GetValue<string>();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
             }
         }
 
-        internal void EnableHup()
+        [JsonIgnore] public string KeyName
         {
-            if (this.ShouldEnableHup)
+            get
             {
+                return this.Properties.GetValue<string>();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
+            }
+        }
 
-                var setup = Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("setup");
-                var setupFiles = setup.Files;
+        [JsonIgnore] public Subnet Subnet
+        {
+            get
+            {
+                return this.Properties.GetValue<Subnet>();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
+            }
+        }
 
-                var cfnHupConfContent = setupFiles.GetFile("c:\\cfn\\cfn-hup.conf").Content;
-                cfnHupConfContent.Clear();
-                cfnHupConfContent.SetFnJoin( "[main]\nstack=", new ReferenceProperty() {Ref = "AWS::StackName"},
-                        "\nregion=", new ReferenceProperty() {Ref = "AWS::Region"}, "\ninterval=1\nverbose=true");
-
-                var autoReloader = setupFiles.GetFile("c:\\cfn\\hooks.d\\cfn-auto-reloader.conf");
-                autoReloader.Content.Clear();
-                autoReloader.Content.SetFnJoin(
-                    "[cfn-auto-reloader-hook]\n",
-                    "triggers=post.update\n",
-                    "path=Resources." + LogicalId + ".Metadata.AWS::CloudFormation::Init\n",
-                    "action=cfn-init.exe -v -c ",
-                    string.Join(",",this.Metadata.Init.ConfigSets.Keys),
-                    " -s ",
-                    new ReferenceProperty() {Ref = "AWS::StackName"},
-                    " -r ",
-                    this.LogicalId,
-                    " --region ",
-                    new ReferenceProperty() {Ref = "AWS::Region"},
-                    "\n");
-
-                setup.Services.Clear();
-
-                var cfnHup = setup.Services.Add("windows").Add("cfn-hup");
-                cfnHup.Add("enabled", true);
-                cfnHup.Add("ensureRunning", true);
-                cfnHup.Add("files", new string[] {"c:\\cfn\\cfn-hup.conf", "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf"});
+        [JsonIgnore] public InstanceTypes InstanceType
+        {
+            get
+            {
+                return this.Properties.GetValue<InstanceTypes>();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
             }
         }
 
         [JsonIgnore]
-        public OperatingSystem OperatingSystem { get; }
+        public CollectionThatSerializesAsIds<SecurityGroup> SecurityGroups
+        {
+            get
+            {
+                return this.Properties.GetValue<CollectionThatSerializesAsIds<SecurityGroup>>();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
+            }
+        }
 
-        [CloudFormationProperties]
-        public string ImageId { get; set; }
+        [JsonIgnore]
+        public bool SourceDestCheck
+        {
+            get
+            {
+                return this.Properties.GetValue<bool>();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
+            }
+        }
 
-        [CloudFormationProperties]
-        public ParameterBase KeyName { get; }
+        [JsonIgnore]
+        public List<NetworkInterface> NetworkInterfaces
+        {
+            get
+            {
+                return this.Properties.GetValue<List<NetworkInterface>>();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
+            }
+        }
 
-        [CloudFormationProperties]
-        [JsonProperty(PropertyName = "SubnetId")]
-        public Subnet Subnet { get; set; }
-
-        [CloudFormationProperties]
-        public InstanceTypes InstanceType { get; private set; }
-
-        [CloudFormationProperties]
-        [JsonProperty(PropertyName = "SecurityGroupIds")]
-        public CollectionThatSerializesAsIds<SecurityGroup> SecurityGroups { get; private set; }
-
-        [CloudFormationProperties]
-        public bool SourceDestCheck { get; set; }
-
-        [CloudFormationProperties]
-        public List<NetworkInterface> NetworkInterfaces { get; private set; }
-
-        [CloudFormationProperties]
-        public string PrivateIpAddress { get; set; }
+        [JsonIgnore]
+        public string PrivateIpAddress
+        {
+            get
+            {
+                return this.Properties.GetValue<string>();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
+            }
+        }
 
 
+        [JsonIgnore]
         protected ElasticIp ElasticIp { get; set; }
 
         public ElasticIp AddElasticIp()
@@ -164,8 +182,18 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
          
 
 
-        [CloudFormationProperties]
-        public CloudFormationDictionary UserData { get; }
+        [JsonIgnore]
+        public CloudFormationDictionary UserData
+        {
+            get
+            {
+                return this.Properties.GetValue<CloudFormationDictionary>();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
+            }
+        }
 
         public void AddDependsOn(Instance dependsOn, TimeSpan timeout)
         {
@@ -208,8 +236,76 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         }
 
-        [CloudFormationProperties]
-        public CloudFormationDictionary[] BlockDeviceMappings { get; private set; }
+        public CloudFormationDictionary[] BlockDeviceMappings
+        {
+            get
+            {
+                return this.Properties.GetValue<CloudFormationDictionary[]>();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
+            }
+        }
+
+        internal void SetUserData()
+        {
+            switch (this.OperatingSystem)
+            {
+                case OperatingSystem.Windows:
+                    this.UserData.Clear();
+                    this.UserData.Add("Fn::Base64").SetFnJoin(
+                        "<script>cfn-init.exe -v -c ",
+                        string.Join(",", this.Metadata.Init.ConfigSets.Keys),
+                        " -s ",
+                        new ReferenceProperty() { Ref = "AWS::StackId" },
+                        " -r " + this.LogicalId + " --region ",
+                        new ReferenceProperty() { Ref = "AWS::Region" }, "</script>");
+                    break;
+                case OperatingSystem.Linux:
+                    break;
+                default:
+                    throw new InvalidEnumArgumentException();
+            }
+        }
+
+        internal void EnableHup()
+        {
+            if (this.ShouldEnableHup)
+            {
+
+                var setup = Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("setup");
+                var setupFiles = setup.Files;
+
+                var cfnHupConfContent = setupFiles.GetFile("c:\\cfn\\cfn-hup.conf").Content;
+                cfnHupConfContent.Clear();
+                cfnHupConfContent.SetFnJoin("[main]\nstack=", new ReferenceProperty() { Ref = "AWS::StackName" },
+                        "\nregion=", new ReferenceProperty() { Ref = "AWS::Region" }, "\ninterval=1\nverbose=true");
+
+                var autoReloader = setupFiles.GetFile("c:\\cfn\\hooks.d\\cfn-auto-reloader.conf");
+                autoReloader.Content.Clear();
+                autoReloader.Content.SetFnJoin(
+                    "[cfn-auto-reloader-hook]\n",
+                    "triggers=post.update\n",
+                    "path=Resources." + LogicalId + ".Metadata.AWS::CloudFormation::Init\n",
+                    "action=cfn-init.exe -v -c ",
+                    string.Join(",", this.Metadata.Init.ConfigSets.Keys),
+                    " -s ",
+                    new ReferenceProperty() { Ref = "AWS::StackName" },
+                    " -r ",
+                    this.LogicalId,
+                    " --region ",
+                    new ReferenceProperty() { Ref = "AWS::Region" },
+                    "\n");
+
+                setup.Services.Clear();
+
+                var cfnHup = setup.Services.Add("windows").Add("cfn-hup");
+                cfnHup.Add("enabled", true);
+                cfnHup.Add("ensureRunning", true);
+                cfnHup.Add("files", new string[] { "c:\\cfn\\cfn-hup.conf", "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf" });
+            }
+        }
 
         public void AddBlockDeviceMapping(string deviceName, uint volumeSize, string volumeType)
         {
@@ -240,6 +336,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         }
 
 
+        [JsonIgnore]
         public string CidrBlock {
             get { return this.PrivateIpAddress + "/32"; }
             set

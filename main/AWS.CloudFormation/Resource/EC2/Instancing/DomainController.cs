@@ -206,11 +206,11 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         private void CreateDomainControllerSecurityGroup()
         {
             // ReSharper disable once InconsistentNaming
-            SecurityGroup DomainControllerSG1 = Template.GetSecurityGroup("DomainControllerSG1", this.Vpc,
+            SecurityGroup DomainControllerSG1 = Template.GetSecurityGroup("DomainControllerSG1", this.Subnet.Vpc,
                 "Domain Controller");
-            DomainControllerSG1.AddIngress(this.Vpc, Protocol.Tcp,
+            DomainControllerSG1.AddIngress(this.Subnet.Vpc, Protocol.Tcp,
                 Ports.WsManagementPowerShell);
-            DomainControllerSG1.AddIngress(this.Vpc, Protocol.Tcp, Ports.Http);
+            DomainControllerSG1.AddIngress(this.Subnet.Vpc, Protocol.Tcp, Ports.Http);
             //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Udp, Ports.Ntp);
             //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp, Ports.WinsManager);
             //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryManagement);
@@ -274,7 +274,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             //ParameterBase domain = Template.Parameters["DomainDNSName"];
             //SecurityGroup returnValue = Template.AddSecurityGroup(domain.Default.Replace(".",string.Empty) + "SecurityGroup", this.Vpc,"Domain Member Security Group");
             //return returnValue;
-            SecurityGroup domainMemberSg = Template.GetSecurityGroup("DomainMemberSG", this.Vpc,
+            SecurityGroup domainMemberSg = Template.GetSecurityGroup("DomainMemberSG", this.Subnet.Vpc,
                 "For All Domain Members");
             domainMemberSg.GroupDescription = "Domain Member Security Group";
             ////az1Subnet
