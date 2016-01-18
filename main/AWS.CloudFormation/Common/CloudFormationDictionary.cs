@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using AWS.CloudFormation.Resource;
 using Newtonsoft.Json;
 
@@ -73,6 +74,11 @@ namespace AWS.CloudFormation.Common
             StackFrame propertyStackFrame = stackFrames[1];
             var m = propertyStackFrame.GetMethod();
             string propertyName = m.Name.Substring("set_".Length);
+            CloudFormationDictionary valueAsCloudFormationDictionary = value as CloudFormationDictionary;
+            if (valueAsCloudFormationDictionary != null && valueAsCloudFormationDictionary.First().Key == "Ref" && !propertyName.EndsWith("Id"))
+            {
+                propertyName += "Id";
+            }
             System.Diagnostics.Debug.WriteLine(propertyName);
             this[propertyName] = value;
         }

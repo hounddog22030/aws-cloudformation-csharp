@@ -16,7 +16,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             : base(template, "AWS::EC2::SecurityGroup", name, true)
         {
             template.AddResource(this);
-            VpcId = vpc;
+            Vpc = vpc;
             GroupDescription = description;
             this.SecurityGroupIngress = new List<SecurityGroupIngress>();
             this.SecurityGroupEgress = new List<SecurityGroupEgress>();
@@ -30,11 +30,11 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         }
 
         [JsonIgnore]
-        public Vpc VpcId
+        public Vpc Vpc
         {
             get
             {
-                var vpcId = this.Properties.GetValue("VpcId") as CloudFormationDictionary;
+                var vpcId = this.Properties.GetValue() as CloudFormationDictionary;
                 return vpcId["Ref"] as Vpc;
             }
             set
