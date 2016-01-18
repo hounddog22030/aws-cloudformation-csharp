@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.Serialization;
 using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing;
@@ -20,6 +21,7 @@ namespace AWS.CloudFormation.Stack
         public enum AvailabilityZone
         {
             None,
+            [EnumMember(Value="us-east-1a")]
             UsEast1A
         }
 
@@ -45,14 +47,7 @@ namespace AWS.CloudFormation.Stack
 
         public Subnet AddSubnet(string name, Vpc vpc, string cidrBlock, AvailabilityZone availabilityZone)
         {
-            var subnet = new Subnet(this, name)
-            {
-                Vpc = vpc,
-                CidrBlock = cidrBlock,
-                AvailabilityZone = Subnet.AVAILIBILITY_ZONE_US_EAST_1A
-            };
-            AddResource(subnet);
-            return subnet;
+            return new Subnet(this, name, vpc, cidrBlock, availabilityZone);
         }
 
         public SecurityGroup GetSecurityGroup(string name, Vpc vpc, string description)

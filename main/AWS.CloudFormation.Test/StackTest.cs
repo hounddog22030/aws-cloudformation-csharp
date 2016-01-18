@@ -506,6 +506,8 @@ Set-Disk $d.Number -IsOffline $False
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            
+            Subnet DMZSubnet = new Subnet(template, "DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
             CreateTestStack(template, this.TestContext);
 
         }
