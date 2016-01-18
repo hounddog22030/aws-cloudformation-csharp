@@ -517,19 +517,22 @@ Set-Disk $d.Number -IsOffline $False
 
             workstation.Metadata.Init.ConfigSets.GetConfigSet("x").GetConfig("y").Commands.AddCommand<Command>("z").Command.AddCommandLine(true,"dir");
 
-            do
-            {
-                try
-                {
+            Thread.Sleep(new TimeSpan(0, 60, 0));
+
+
+            //do
+            //{
+            //    try
+            //    {
                     Stack.Stack.UpdateStack(name, template);
-                    break;
-                }
-                catch (Exception)
-                {
-                    Thread.Sleep(new TimeSpan(0,5,0));
-                }
+            //        break;
+            //    }
+            //    catch (Exception)
+            //    {
+            //        Thread.Sleep(new TimeSpan(0,5,0));
+            //    }
                 
-            } while (true);
+            //} while (true);
         }
 
 
