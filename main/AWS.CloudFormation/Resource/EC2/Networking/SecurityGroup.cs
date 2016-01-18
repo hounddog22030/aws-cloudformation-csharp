@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Serializer;
@@ -18,7 +19,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             template.AddResource(this);
             Vpc = vpc;
             GroupDescription = description;
-            this.SecurityGroupIngress = new List<SecurityGroupIngress>();
+            this.SecurityGroupIngress = new SecurityGroupIngress[0]; 
             this.SecurityGroupEgress = new List<SecurityGroupEgress>();
         }
 
@@ -47,10 +48,10 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 
 
         [JsonIgnore]
-        public List<SecurityGroupIngress> SecurityGroupIngress
+        public SecurityGroupIngress[] SecurityGroupIngress
         {
-            get { return this.Properties.GetValue() as List<SecurityGroupIngress>; }
-            set { this.Properties.SetValue(value); }
+            get { return this.Properties.GetValue() as SecurityGroupIngress[]; }
+            private set { this.Properties.SetValue(value); }
         }
 
 
@@ -94,7 +95,11 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             if (typeof(T) == typeof(SecurityGroupIngress))
             {
                 newIngressEgress = new SecurityGroupIngress(fromPort, toPort, protocol.ToString().ToLower(), cidr) as T;
-                this.SecurityGroupIngress.Add(newIngressEgress as SecurityGroupIngress);
+                var currentValue = this.SecurityGroupIngress;
+                List<T> temp = new List<T>();
+                temp.AddRange(this.SecurityGroupIngress.Cast<T>());
+                T[] myArray = temp.ToArray();
+                this.SecurityGroupIngress = myArray;
             }
             else
             {
