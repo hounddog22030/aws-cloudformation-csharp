@@ -208,63 +208,63 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             // ReSharper disable once InconsistentNaming
             SecurityGroup DomainControllerSG1 = Template.GetSecurityGroup("DomainControllerSG1", this.Vpc,
                 "Domain Controller");
-            DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(this.Vpc, Protocol.Tcp,
+            DomainControllerSG1.AddIngress(this.Vpc, Protocol.Tcp,
                 Ports.WsManagementPowerShell);
-            DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(this.Vpc, Protocol.Tcp, Ports.Http);
-            //DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Udp, Ports.Ntp);
-            //DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp, Ports.WinsManager);
-            //DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryManagement);
-            //DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Udp, Ports.NetBios);
+            DomainControllerSG1.AddIngress(this.Vpc, Protocol.Tcp, Ports.Http);
+            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Udp, Ports.Ntp);
+            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp, Ports.WinsManager);
+            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryManagement);
+            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Udp, Ports.NetBios);
 
-            //DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp | Protocol.Udp, Ports.Smb);
-            //DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp | Protocol.Udp, Ports.ActiveDirectoryManagement2);
-            //DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp | Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
-            //DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp | Protocol.Udp, Ports.Ldap);
+            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp | Protocol.Udp, Ports.Smb);
+            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp | Protocol.Udp, Ports.ActiveDirectoryManagement2);
+            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp | Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
+            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp | Protocol.Udp, Ports.Ldap);
 
-            //DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp, Ports.Ldaps);
-            //DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp, Ports.Ldap2Begin, Ports.Ldap2End);
+            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp, Ports.Ldaps);
+            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp, Ports.Ldap2Begin, Ports.Ldap2End);
 
-            //DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp | Protocol.Udp, Ports.DnsQuery);
+            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp | Protocol.Udp, Ports.DnsQuery);
 
-            //DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryManagement);
+            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryManagement);
 
-            //DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp | Protocol.Udp, Ports.KerberosKeyDistribution);
+            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp | Protocol.Udp, Ports.KerberosKeyDistribution);
 
-            //DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Udp, Ports.DnsLlmnr);
-            //DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Udp, Ports.NetBt);
-            //DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp, Ports.NetBiosNameServices);
-            //DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryFileReplication);
-            DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(DomainMemberSecurityGroup, Protocol.Udp,
+            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Udp, Ports.DnsLlmnr);
+            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Udp, Ports.NetBt);
+            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp, Ports.NetBiosNameServices);
+            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryFileReplication);
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Udp,
                 Ports.Ntp);
-            DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(DomainMemberSecurityGroup, Protocol.Tcp,
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
                 Ports.WinsManager);
-            DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(DomainMemberSecurityGroup, Protocol.Tcp,
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
                 Ports.ActiveDirectoryManagement);
-            DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(DomainMemberSecurityGroup, Protocol.Udp,
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Udp,
                 Ports.NetBios);
-            DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(DomainMemberSecurityGroup,
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.Smb);
-            DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(DomainMemberSecurityGroup,
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.ActiveDirectoryManagement2);
-            DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(DomainMemberSecurityGroup,
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
-            DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(DomainMemberSecurityGroup,
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.Ldap);
-            DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(DomainMemberSecurityGroup, Protocol.Tcp,
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
                 Ports.Ldaps);
-            DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(DomainMemberSecurityGroup, Protocol.Tcp,
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
                 Ports.Ldap2Begin, Ports.Ldap2End);
-            DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(DomainMemberSecurityGroup,
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.DnsQuery);
-            DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(DomainMemberSecurityGroup,
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.KerberosKeyDistribution);
-            DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(DomainMemberSecurityGroup,
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.RemoteDesktopProtocol);
 
-            //DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(DMZSubnet, Protocol.Tcp | Protocol.Udp, Ports.Rdp);
+            //DomainControllerSG1.AddIngress(DMZSubnet, Protocol.Tcp | Protocol.Udp, Ports.Rdp);
 
-            //DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(DMZSubnet, Protocol.Icmp, Ports.All);
-            //DomainControllerSG1.AddIngressEgress<SecurityGroupIngress>(dmzaz2Subnet, Protocol.Icmp, Ports.All);
+            //DomainControllerSG1.AddIngress(DMZSubnet, Protocol.Icmp, Ports.All);
+            //DomainControllerSG1.AddIngress(dmzaz2Subnet, Protocol.Icmp, Ports.All);
             this.SecurityGroups.Add(DomainControllerSG1);
 
         }
@@ -278,8 +278,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 "For All Domain Members");
             domainMemberSg.GroupDescription = "Domain Member Security Group";
             ////az1Subnet
-            //domainMemberSg.AddIngressEgress<SecurityGroupIngress>(domainMemberSg, Protocol.Tcp | Protocol.Udp, Ports.DnsQuery);
-            //domainMemberSg.AddIngressEgress<SecurityGroupIngress>(domainMemberSg, Protocol.Tcp | Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
+            //domainMemberSg.AddIngress(domainMemberSg, Protocol.Tcp | Protocol.Udp, Ports.DnsQuery);
+            //domainMemberSg.AddIngress(domainMemberSg, Protocol.Tcp | Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
 
 
             //SubnetRouteTableAssociation az1PrivateSubnetRouteTableAssociation = new SubnetRouteTableAssociation(
@@ -296,15 +296,15 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public void AddToDomainMemberSecurityGroup(Instance domainMember)
         {
             //az1Subnet
-            DomainMemberSecurityGroup.AddIngressEgress<SecurityGroupIngress>(domainMember.Subnet,
+            DomainMemberSecurityGroup.AddIngress(domainMember.Subnet,
                 Protocol.Tcp | Protocol.Udp, Ports.DnsQuery);
-            DomainMemberSecurityGroup.AddIngressEgress<SecurityGroupIngress>(domainMember.Subnet,
+            DomainMemberSecurityGroup.AddIngress(domainMember.Subnet,
                 Protocol.Tcp | Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
             //DMZSubnet
             // this is questionable overkill
-            DomainMemberSecurityGroup.AddIngressEgress<SecurityGroupIngress>(domainMember.Subnet, Protocol.Tcp,
+            DomainMemberSecurityGroup.AddIngress(domainMember.Subnet, Protocol.Tcp,
                 Ports.RemoteDesktopProtocol);
-            DomainMemberSecurityGroup.AddIngressEgress<SecurityGroupIngress>(domainMember.Subnet, Protocol.Tcp,
+            DomainMemberSecurityGroup.AddIngress(domainMember.Subnet, Protocol.Tcp,
                 Ports.RemoteDesktopProtocol);
 
             domainMember.SecurityGroups.Add(DomainMemberSecurityGroup);

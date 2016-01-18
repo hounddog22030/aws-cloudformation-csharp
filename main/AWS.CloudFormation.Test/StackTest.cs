@@ -87,34 +87,34 @@ namespace AWS.CloudFormation.Test
             var PrivateSubnet2 = template.AddSubnet("PrivateSubnet2", vpc, PrivSub2CIDR, Template.AvailabilityZone.UsEast1A);
 
             SecurityGroup elbSecurityGroup = template.GetSecurityGroup("ElbSecurityGroup", vpc, "Enables access to the ELB");
-            elbSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
             SecurityGroup natSecurityGroup = template.GetSecurityGroup("natSecurityGroup", vpc, "Enables Ssh access to NAT1 in AZ1 via port 22 and outbound internet access via private subnets");
-            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Ssh);
-            natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
+            natSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Ssh);
+            natSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
 
             SecurityGroup tfsServerUsers = template.GetSecurityGroup("TFSUsers", vpc, "Security Group To Contain Users of the TFS Services");
 
             SecurityGroup tfsServerSecurityGroup = template.GetSecurityGroup("TFSServerSecurityGroup", vpc, "Allows various TFS communication");
-            tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(tfsServerUsers, Protocol.Tcp, Ports.TeamFoundationServerHttp);
-            tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            tfsServerSecurityGroup.AddIngress(DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            tfsServerSecurityGroup.AddIngress(DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            tfsServerSecurityGroup.AddIngress(tfsServerUsers, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             
 
 
             SecurityGroup buildServerSecurityGroup = template.GetSecurityGroup("BuildServerSecurityGroup", vpc, "Allows build controller to build agent communication");
-            buildServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            buildServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            buildServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(tfsServerSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerBuild);
+            buildServerSecurityGroup.AddIngress(DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            buildServerSecurityGroup.AddIngress(DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            buildServerSecurityGroup.AddIngress(tfsServerSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerBuild);
 
             SecurityGroup sqlServerSecurityGroup = template.GetSecurityGroup("SqlServer4TfsSecurityGroup", vpc, "Allows communication to SQLServer Service");
-            sqlServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(tfsServerSecurityGroup, Protocol.Tcp, Ports.MsSqlServer);
-            sqlServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            sqlServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            sqlServerSecurityGroup.AddIngress(tfsServerSecurityGroup, Protocol.Tcp, Ports.MsSqlServer);
+            sqlServerSecurityGroup.AddIngress(DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            sqlServerSecurityGroup.AddIngress(DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
 
             SecurityGroup workstationSecurityGroup = template.GetSecurityGroup("WorkstationSecurityGroup", vpc, "Security Group To Contain Workstations");
-            tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(workstationSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            tfsServerSecurityGroup.AddIngress(workstationSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
 
 
@@ -144,8 +144,8 @@ namespace AWS.CloudFormation.Test
 
             foreach (var subnet in subnetsToAddToNatSecurityGroup)
             {
-                natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(subnet, Protocol.All, Ports.Min, Ports.Max);
-                natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(subnet, Protocol.Icmp, Ports.All);
+                natSecurityGroup.AddIngress(subnet, Protocol.All, Ports.Min, Ports.Max);
+                natSecurityGroup.AddIngress(subnet, Protocol.Icmp, Ports.All);
             }
 
             var nat1 = AddNat1(template, DMZSubnet, natSecurityGroup);
@@ -181,7 +181,7 @@ namespace AWS.CloudFormation.Test
             //// uses 24gb
             //var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup, IPNetwork.Parse(BuildServerIpAddress + "/32"));
             //buildServer.AddFinalizer(ThreeHoursSpan);
-            //tfsServerSecurityGroup.AddIngressEgress<SecurityGroupIngress>(buildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            //tfsServerSecurityGroup.AddIngress(buildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             //buildServer.SecurityGroups.Add(tfsServerUsers);
 
 
@@ -265,7 +265,7 @@ namespace AWS.CloudFormation.Test
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             template.AddResource(rdp);
-            rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
@@ -285,7 +285,7 @@ namespace AWS.CloudFormation.Test
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             template.AddResource(rdp);
-            rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
@@ -322,7 +322,7 @@ Set-Disk $d.Number -IsOffline $False
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             template.AddResource(rdp);
-            rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
@@ -368,7 +368,7 @@ Set-Disk $d.Number -IsOffline $False
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             template.AddResource(rdp);
-            rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
@@ -392,7 +392,7 @@ Set-Disk $d.Number -IsOffline $False
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             template.AddResource(rdp);
-            rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
@@ -412,7 +412,7 @@ Set-Disk $d.Number -IsOffline $False
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             template.AddResource(rdp);
-            rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
@@ -433,7 +433,7 @@ Set-Disk $d.Number -IsOffline $False
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             template.AddResource(rdp);
-            rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
@@ -454,7 +454,7 @@ Set-Disk $d.Number -IsOffline $False
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             template.AddResource(rdp);
-            rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("PrivateSubnet", vpc, PrivSub1CIDR, Template.AvailabilityZone.UsEast1A);
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
@@ -475,7 +475,7 @@ Set-Disk $d.Number -IsOffline $False
             var template = GetNewBlankTemplateWithVpc(this.TestContext);
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
-            rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
@@ -505,6 +505,7 @@ Set-Disk $d.Number -IsOffline $False
             var template = GetNewBlankTemplateWithVpc(this.TestContext);
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
+            rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             CreateTestStack(template, this.TestContext);
 
         }
@@ -526,7 +527,7 @@ Set-Disk $d.Number -IsOffline $False
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             template.AddResource(rdp);
-            rdp.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
@@ -679,26 +680,26 @@ Set-Disk $d.Number -IsOffline $False
             //SecurityGroup natSecurityGroup = template.GetSecurityGroup("natSecurityGroup", vpc,
             //    "Enables Ssh access to NAT1 in AZ1 via port 22 and outbound internet access via private subnets");
 
-            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Ssh);
-            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
+            //natSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Ssh);
+            //natSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
 
-            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az1Subnet, Protocol.All, Ports.Min, Ports.Max);
-            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az1Subnet, Protocol.Icmp, Ports.All);
+            //natSecurityGroup.AddIngress(az1Subnet, Protocol.All, Ports.Min, Ports.Max);
+            //natSecurityGroup.AddIngress(az1Subnet, Protocol.Icmp, Ports.All);
 
-            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.All, Ports.Min, Ports.Max);
-            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Icmp, Ports.All);
+            //natSecurityGroup.AddIngress(az2Subnet, Protocol.All, Ports.Min, Ports.Max);
+            //natSecurityGroup.AddIngress(az2Subnet, Protocol.Icmp, Ports.All);
 
-            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(SQL4TFSSubnet, Protocol.All, Ports.Min, Ports.Max);
-            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(SQL4TFSSubnet, Protocol.Icmp, Ports.All);
+            //natSecurityGroup.AddIngress(SQL4TFSSubnet, Protocol.All, Ports.Min, Ports.Max);
+            //natSecurityGroup.AddIngress(SQL4TFSSubnet, Protocol.Icmp, Ports.All);
 
-            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(tfsServer1Subnet, Protocol.All, Ports.Min, Ports.Max);
-            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(tfsServer1Subnet, Protocol.Icmp, Ports.All);
+            //natSecurityGroup.AddIngress(tfsServer1Subnet, Protocol.All, Ports.Min, Ports.Max);
+            //natSecurityGroup.AddIngress(tfsServer1Subnet, Protocol.Icmp, Ports.All);
 
-            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(buildServer1Subnet, Protocol.All, Ports.Min, Ports.Max);
-            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(buildServer1Subnet, Protocol.Icmp, Ports.All);
+            //natSecurityGroup.AddIngress(buildServer1Subnet, Protocol.All, Ports.Min, Ports.Max);
+            //natSecurityGroup.AddIngress(buildServer1Subnet, Protocol.Icmp, Ports.All);
 
-            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(workstationSubnet, Protocol.All, Ports.Min, Ports.Max);
-            //natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(workstationSubnet, Protocol.Icmp, Ports.All);
+            //natSecurityGroup.AddIngress(workstationSubnet, Protocol.All, Ports.Min, Ports.Max);
+            //natSecurityGroup.AddIngress(workstationSubnet, Protocol.Icmp, Ports.All);
 
             var nat1 = new Instance(template,
                 "NAT1",
@@ -728,11 +729,11 @@ Set-Disk $d.Number -IsOffline $False
         //    //SecurityGroup domainMemberSg = template.AddSecurityGroup("DomainMemberSG", vpc, "For All Domain Members");
         //    //domainMemberSg.GroupDescription = "Domain Member Security Group";
         //    ////az1Subnet
-        //    //domainMemberSg.AddIngressEgress<SecurityGroupIngress>(az1Subnet, Protocol.Tcp | Protocol.Udp, Ports.DnsQuery);
-        //    //domainMemberSg.AddIngressEgress<SecurityGroupIngress>(az1Subnet, Protocol.Tcp | Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
+        //    //domainMemberSg.AddIngress(az1Subnet, Protocol.Tcp | Protocol.Udp, Ports.DnsQuery);
+        //    //domainMemberSg.AddIngress(az1Subnet, Protocol.Tcp | Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
         //    ////DMZSubnet
-        //    //domainMemberSg.AddIngressEgress<SecurityGroupIngress>(DMZSubnet, Protocol.Tcp, Ports.Rdp);
-        //    //domainMemberSg.AddIngressEgress<SecurityGroupIngress>(dmzaz2Subnet, Protocol.Tcp, Ports.Rdp);
+        //    //domainMemberSg.AddIngress(DMZSubnet, Protocol.Tcp, Ports.Rdp);
+        //    //domainMemberSg.AddIngress(dmzaz2Subnet, Protocol.Tcp, Ports.Rdp);
 
 
         //    SubnetRouteTableAssociation az1PrivateSubnetRouteTableAssociation = new SubnetRouteTableAssociation(template,
@@ -894,77 +895,77 @@ Set-Disk $d.Number -IsOffline $False
 
         private static void SetupDomainController1SecurityGround(SecurityGroup domainControllerSg1, Vpc vpc, Subnet az2Subnet, SecurityGroup domainMemberSg, Subnet DMZSubnet, Subnet dmzaz2Subnet)
         {
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(vpc, Protocol.Tcp, Ports.WsManagementPowerShell);
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Udp,Ports.Ntp);
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp, Ports.WinsManager);
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryManagement);
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Udp, Ports.NetBios);
+            domainControllerSg1.AddIngress(vpc, Protocol.Tcp, Ports.WsManagementPowerShell);
+            domainControllerSg1.AddIngress(az2Subnet, Protocol.Udp,Ports.Ntp);
+            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp, Ports.WinsManager);
+            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryManagement);
+            domainControllerSg1.AddIngress(az2Subnet, Protocol.Udp, Ports.NetBios);
 
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(az2Subnet,Protocol.Tcp|Protocol.Udp, Ports.Smb);
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp|Protocol.Udp, Ports.ActiveDirectoryManagement2);
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp|Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp|Protocol.Udp, Ports.Ldap);
+            domainControllerSg1.AddIngress(az2Subnet,Protocol.Tcp|Protocol.Udp, Ports.Smb);
+            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp|Protocol.Udp, Ports.ActiveDirectoryManagement2);
+            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp|Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
+            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp|Protocol.Udp, Ports.Ldap);
 
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp, Ports.Ldaps);
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp, Ports.Ldap2Begin, Ports.Ldap2End);
+            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp, Ports.Ldaps);
+            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp, Ports.Ldap2Begin, Ports.Ldap2End);
 
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp|Protocol.Udp, Ports.DnsQuery);
+            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp|Protocol.Udp, Ports.DnsQuery);
 
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryManagement);
+            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryManagement);
 
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp|Protocol.Udp, Ports.KerberosKeyDistribution);
+            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp|Protocol.Udp, Ports.KerberosKeyDistribution);
 
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Udp, Ports.DnsLlmnr);
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Udp, Ports.NetBt);
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp, Ports.NetBiosNameServices);
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryFileReplication);
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(domainMemberSg, Protocol.Udp,Ports.Ntp);
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(domainMemberSg,Protocol.Tcp,Ports.WinsManager);
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(domainMemberSg,Protocol.Tcp,Ports.ActiveDirectoryManagement);
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(domainMemberSg,Protocol.Udp, Ports.NetBios);
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(domainMemberSg,Protocol.Tcp|Protocol.Udp, Ports.Smb);
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(domainMemberSg,Protocol.Tcp| Protocol.Udp, Ports.ActiveDirectoryManagement2);
+            domainControllerSg1.AddIngress(az2Subnet, Protocol.Udp, Ports.DnsLlmnr);
+            domainControllerSg1.AddIngress(az2Subnet, Protocol.Udp, Ports.NetBt);
+            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp, Ports.NetBiosNameServices);
+            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryFileReplication);
+            domainControllerSg1.AddIngress(domainMemberSg, Protocol.Udp,Ports.Ntp);
+            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp,Ports.WinsManager);
+            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp,Ports.ActiveDirectoryManagement);
+            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Udp, Ports.NetBios);
+            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp|Protocol.Udp, Ports.Smb);
+            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp| Protocol.Udp, Ports.ActiveDirectoryManagement2);
 
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(domainMemberSg,Protocol.Tcp|Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(domainMemberSg,Protocol.Tcp|Protocol.Udp, Ports.Ldap);
+            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp|Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
+            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp|Protocol.Udp, Ports.Ldap);
 
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(domainMemberSg,Protocol.Tcp, Ports.Ldaps);
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(domainMemberSg,Protocol.Tcp, Ports.Ldap2Begin, Ports.Ldap2End);
+            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp, Ports.Ldaps);
+            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp, Ports.Ldap2Begin, Ports.Ldap2End);
 
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(domainMemberSg,Protocol.Tcp|Protocol.Udp, Ports.DnsQuery);
+            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp|Protocol.Udp, Ports.DnsQuery);
 
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(domainMemberSg,Protocol.Tcp|Protocol.Udp,Ports.KerberosKeyDistribution);
+            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp|Protocol.Udp,Ports.KerberosKeyDistribution);
 
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(DMZSubnet, Protocol.Tcp|Protocol.Udp, Ports.RemoteDesktopProtocol);
+            domainControllerSg1.AddIngress(DMZSubnet, Protocol.Tcp|Protocol.Udp, Ports.RemoteDesktopProtocol);
 
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(DMZSubnet, Protocol.Icmp, Ports.All);
-            domainControllerSg1.AddIngressEgress<SecurityGroupIngress>(dmzaz2Subnet, Protocol.Icmp, Ports.All);
+            domainControllerSg1.AddIngress(DMZSubnet, Protocol.Icmp, Ports.All);
+            domainControllerSg1.AddIngress(dmzaz2Subnet, Protocol.Icmp, Ports.All);
         }
 
         //private static void AddNatSecurityGroupIngressRules(SecurityGroup natSecurityGroup, Subnet az1Subnet, Subnet az2Subnet,
         //    Subnet SQL4TFSSubnet, Subnet tfsServer1Subnet, Subnet buildServer1Subnet, Subnet workstationSubnet)
         //{
 
-        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld,Protocol.Tcp, Ports.Ssh);
-        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
+        //    natSecurityGroup.AddIngress(PredefinedCidr.TheWorld,Protocol.Tcp, Ports.Ssh);
+        //    natSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
 
-        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az1Subnet, Protocol.All, Ports.Min,Ports.Max);
-        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az1Subnet, Protocol.Icmp, Ports.All);
+        //    natSecurityGroup.AddIngress(az1Subnet, Protocol.All, Ports.Min,Ports.Max);
+        //    natSecurityGroup.AddIngress(az1Subnet, Protocol.Icmp, Ports.All);
 
-        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az2Subnet,Protocol.All, Ports.Min, Ports.Max);
-        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(az2Subnet, Protocol.Icmp, Ports.All);
+        //    natSecurityGroup.AddIngress(az2Subnet,Protocol.All, Ports.Min, Ports.Max);
+        //    natSecurityGroup.AddIngress(az2Subnet, Protocol.Icmp, Ports.All);
 
-        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(SQL4TFSSubnet, Protocol.All, Ports.Min,Ports.Max);
-        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(SQL4TFSSubnet,Protocol.Icmp, Ports.All);
+        //    natSecurityGroup.AddIngress(SQL4TFSSubnet, Protocol.All, Ports.Min,Ports.Max);
+        //    natSecurityGroup.AddIngress(SQL4TFSSubnet,Protocol.Icmp, Ports.All);
 
-        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(tfsServer1Subnet, Protocol.All, Ports.Min,Ports.Max);
-        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(tfsServer1Subnet, Protocol.Icmp, Ports.All);
+        //    natSecurityGroup.AddIngress(tfsServer1Subnet, Protocol.All, Ports.Min,Ports.Max);
+        //    natSecurityGroup.AddIngress(tfsServer1Subnet, Protocol.Icmp, Ports.All);
 
-        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(buildServer1Subnet, Protocol.All, Ports.Min,Ports.Max);
-        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(buildServer1Subnet,Protocol.Icmp, Ports.All);
+        //    natSecurityGroup.AddIngress(buildServer1Subnet, Protocol.All, Ports.Min,Ports.Max);
+        //    natSecurityGroup.AddIngress(buildServer1Subnet,Protocol.Icmp, Ports.All);
 
-        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(workstationSubnet, Protocol.All, Ports.Min,Ports.Max);
-        //    natSecurityGroup.AddIngressEgress<SecurityGroupIngress>(workstationSubnet, Protocol.Icmp, Ports.All);
+        //    natSecurityGroup.AddIngress(workstationSubnet, Protocol.All, Ports.Min,Ports.Max);
+        //    natSecurityGroup.AddIngress(workstationSubnet, Protocol.Icmp, Ports.All);
         //}
 
         [TestMethod]

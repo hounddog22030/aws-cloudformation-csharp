@@ -88,71 +88,58 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             return protocols;
         }
 
-        private T AddIngressEgress<T>(string cidr, string protocol, int fromPort, int toPort) where T : SecurityGroupIngressEgressBase
+        private SecurityGroupIngress AddIngress(string cidr, string protocol, int fromPort, int toPort)
         {
 
-            T newIngressEgress;
-            if (typeof(T) == typeof(SecurityGroupIngress))
-            {
-                newIngressEgress = new SecurityGroupIngress(fromPort, toPort, protocol.ToString().ToLower(), cidr) as T;
-                var currentValue = this.SecurityGroupIngress;
-                List<T> temp = new List<T>();
-                temp.AddRange(this.SecurityGroupIngress.Cast<T>());
-                T[] myArray = temp.ToArray();
-                this.SecurityGroupIngress = myArray;
-            }
-            else
-            {
-                newIngressEgress = new SecurityGroupEgress(fromPort, toPort, protocol.ToString().ToLower(), cidr) as T;
-                this.SecurityGroupEgress.Add(newIngressEgress as SecurityGroupEgress);
-
-            }
+            SecurityGroupIngress newIngressEgress;
+            newIngressEgress = new SecurityGroupIngress(fromPort, toPort, protocol.ToString().ToLower(), cidr) as SecurityGroupIngress;
+            List<SecurityGroupIngress> temp = new List<SecurityGroupIngress>();
+            temp.AddRange(this.SecurityGroupIngress.Cast<SecurityGroupIngress>());
+            temp.Add(new SecurityGroupIngress(fromPort,toPort,protocol,cidr));
+            SecurityGroupIngress[] myArray = temp.ToArray();
+            this.SecurityGroupIngress = myArray;
             return newIngressEgress;
         }
 
-        private List<T> AddIngressEgress<T>(string cidrBlock, Protocol protocol, Ports portBegin, Ports portEnd) where T : SecurityGroupIngressEgressBase, new()
+        private List<SecurityGroupIngress> AddIngress(string cidrBlock, Protocol protocol, Ports portBegin, Ports portEnd)
         {
-            List<T> returnValue = new List<T>();
+            List<SecurityGroupIngress> returnValue = new List<SecurityGroupIngress>();
 
             var protocols = GetProtocolsListFromFlaggedValue(protocol);
 
             foreach (var thisProtocol in protocols)
             {
-                returnValue.Add(this.AddIngressEgress<T>(cidrBlock, thisProtocol, (int)portBegin, (int)portEnd));
+                returnValue.Add(this.AddIngress(cidrBlock, thisProtocol, (int)portBegin, (int)portEnd));
 
             }
             return returnValue;
         }
 
-        public List<T> AddIngressEgress<T>(SecurityGroup securityGroup, Protocol protocol, Ports port) where T : SecurityGroupIngressEgressBase, new()
+        public List<SecurityGroupIngress> AddIngress(SecurityGroup securityGroup, Protocol protocol, Ports port)
         {
-            return this.AddIngressEgress<T>(securityGroup, protocol, port, port);
+            return this.AddIngress(securityGroup, protocol, port, port);
         }
 
-        public List<T> AddIngressEgress<T>(SecurityGroup securityGroup, Protocol protocol, Ports fromPort, Ports toPort) where T : SecurityGroupIngressEgressBase
+        public List<SecurityGroupIngress> AddIngress(SecurityGroup securityGroup, Protocol protocol, Ports fromPort, Ports toPort)
         {
-            List<T> returnValue = new List<T>();
+            List<SecurityGroupIngress> returnValue = new List<SecurityGroupIngress>();
 
             var protocols = GetProtocolsListFromFlaggedValue(protocol);
 
             foreach (var thisProtocol in protocols)
             {
-                T newIngressEgress;
+                SecurityGroupIngress newIngressEgress;
 
                 if (((int)toPort) == 0)
                 {
                     toPort = fromPort;
                 }
 
-                if (typeof(T) == typeof(SecurityGroupIngress))
-                {
-                    newIngressEgress = new SecurityGroupIngress((int)fromPort, (int)toPort, thisProtocol.ToLower(), securityGroup) as T;
-                    this.SecurityGroupIngress.Add(newIngressEgress as SecurityGroupIngress);
-                }
-                else
-                {
-                    throw new InvalidOperationException();
-                }
+                    newIngressEgress = new SecurityGroupIngress((int)fromPort, (int)toPort, thisProtocol.ToLower(), securityGroup) as SecurityGroupIngress;
+                    List<SecurityGroupIngress> temp = new List<SecurityGroupIngress>();
+                    temp.AddRange(this.SecurityGroupIngress);
+                    temp.Add(newIngressEgress);
+                    this.SecurityGroupIngress = temp.ToArray();
 
                 returnValue.Add(newIngressEgress);
 
@@ -162,9 +149,9 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             return returnValue;
         }
 
-        public List<T> AddIngressEgress<T>(PredefinedCidr cidr, Protocol protocol, params Ports[] ports) where T: SecurityGroupIngressEgressBase, new()
+        public List<SecurityGroupIngress> AddIngress(PredefinedCidr cidr, Protocol protocol, params Ports[] ports)
         {
-            var returnValue = new List<T>();
+            var returnValue = new List<SecurityGroupIngress>();
             var protocols = GetProtocolsListFromFlaggedValue(protocol);
             string cidrAsString;
 
@@ -181,7 +168,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             {
                 foreach (var thisProtocol in protocols)
                 {
-                    returnValue.AddRange(this.AddIngressEgress<T>( cidrAsString, (Protocol) Enum.Parse(typeof(Protocol),thisProtocol), port, port));
+                    returnValue.AddRange(this.AddIngress( cidrAsString, (Protocol) Enum.Parse(typeof(Protocol),thisProtocol), port, port));
                     
                 }
 
@@ -189,14 +176,14 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             return returnValue;
         }
 
-        public List<T> AddIngressEgress<T>(ICidrBlock cidrObject, Protocol protocol, Ports port) where T : SecurityGroupIngressEgressBase, new()
+        public List<SecurityGroupIngress> AddIngress(ICidrBlock cidrObject, Protocol protocol, Ports port)
         {
-            return AddIngressEgress<T>(cidrObject, protocol, port, port);
+            return AddIngress(cidrObject, protocol, port, port);
         }
 
-        public List<T> AddIngressEgress<T>(ICidrBlock cidrObject, Protocol protocol, Ports portBegin, Ports portEnd) where T : SecurityGroupIngressEgressBase, new()
+        public List<SecurityGroupIngress> AddIngress(ICidrBlock cidrObject, Protocol protocol, Ports portBegin, Ports portEnd)
         {
-            return AddIngressEgress<T>(cidrObject.CidrBlock, protocol, portBegin, portEnd);
+            return AddIngress(cidrObject.CidrBlock, protocol, portBegin, portEnd);
         }
 
     }
