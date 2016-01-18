@@ -68,11 +68,24 @@ namespace AWS.CloudFormation.Common
             base.Add("Fn::Join", final);
         }
 
+        readonly Dictionary<string,ILogicalId> _objects = new Dictionary<string, ILogicalId>();
 
         public void SetValue(object value)
         {
             var propertyName = GetPropertyName(value);
-            this[propertyName] = value;
+            ILogicalId valueAsLogicalId = value as ILogicalId;
+            if (valueAsLogicalId != null)
+            {
+                var refDictionary = new CloudFormationDictionary();
+                refDictionary.Add("Ref", valueAsLogicalId.LogicalId);
+                _objects[propertyName] = valueAsLogicalId;
+                this[propertyName] = refDictionary;
+            }
+            else
+            {
+                this[propertyName] = value;
+            }
+
         }
 
         private static string GetPropertyName(object value)
@@ -82,7 +95,7 @@ namespace AWS.CloudFormation.Common
 
             StackFrame propertyStackFrame = null;
             MethodBase propertyMethod = null;
-            for (int i = 0; i < stackFrames.Length -1; i++)
+            for (int i = 1; i < stackFrames.Length -1; i++)
             {
                 propertyStackFrame = stackFrames[i];
                 propertyMethod = propertyStackFrame.GetMethod();
@@ -95,7 +108,7 @@ namespace AWS.CloudFormation.Common
             string propertyName = propertyMethod.Name.Substring("set_".Length);
 
             CloudFormationDictionary valueAsCloudFormationDictionary = value as CloudFormationDictionary;
-            if (valueAsCloudFormationDictionary != null && valueAsCloudFormationDictionary.First().Key == "Ref" && !propertyName.EndsWith("Id"))
+            if (value is ILogicalId && !propertyName.EndsWith("Id"))
             {
                 propertyName += "Id";
             }
@@ -106,20 +119,45 @@ namespace AWS.CloudFormation.Common
         {
             if (this.ContainsKey(name))
             {
-                return (T) this[name];
+                if (typeof (ILogicalId).IsAssignableFrom(typeof (T)))
+                {
+                    return (T) _objects[name];
+                }
+                else
+                {
+                    return (T)this[name];
+                }
             }
             return default(T);
 
         }
         public T GetValue<T>()
         {
+            T returnValue = default(T);
             StackTrace stackTrace = new StackTrace();           // get call stack
             StackFrame[] stackFrames = stackTrace.GetFrames();
             StackFrame propertyStackFrame = stackFrames[1];
             var m = propertyStackFrame.GetMethod();
+            MethodInfo mi = m as MethodInfo;
+            System.Diagnostics.Debug.WriteLine(mi.ReturnType.FullName);
             string propertyName = m.Name.Substring("get_".Length);
-            System.Diagnostics.Debug.WriteLine(propertyName);
-            return GetValue<T>(propertyName);
+
+            if (typeof (ILogicalId).IsAssignableFrom(mi.ReturnType))
+            {
+                propertyName += "Id";
+                System.Diagnostics.Debug.WriteLine("Is LogicalId");
+                CloudFormationDictionary referenceDictionary = GetValue<CloudFormationDictionary>(propertyName);
+                if (referenceDictionary != null)
+                {
+                    returnValue = (T)_objects[propertyName];
+                }
+            }
+            else
+            {
+                returnValue = GetValue<T>(propertyName);
+            }
+
+            return returnValue;
         }
     }
 

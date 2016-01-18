@@ -34,14 +34,11 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             {
                 get
                 {
-                    var vpcId = this.Properties.GetValue<CloudFormationDictionary>();
-                    return vpcId["Ref"] as InternetGateway;
+                    return this.Properties.GetValue<InternetGateway>();
                 }
                 set
                 {
-                    var refDictionary = new CloudFormationDictionary();
-                    refDictionary.Add("Ref", ((ILogicalId)value).LogicalId);
-                    this.Properties.SetValue(refDictionary);
+                    this.Properties.SetValue(value);
                 }
             }
 
@@ -50,14 +47,11 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             {
                 get
                 {
-                    var vpcId = this.Properties.GetValue<CloudFormationDictionary>();
-                    return vpcId["Ref"] as Vpc;
+                    return this.Properties.GetValue<Vpc>();
                 }
                 set
                 {
-                    var refDictionary = new CloudFormationDictionary();
-                    refDictionary.Add("Ref", ((ILogicalId)value).LogicalId);
-                    this.Properties.SetValue(refDictionary);
+                    this.Properties.SetValue(value);
                 }
             }
         }

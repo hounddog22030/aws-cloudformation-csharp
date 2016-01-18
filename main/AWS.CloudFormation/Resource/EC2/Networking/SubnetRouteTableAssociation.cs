@@ -19,14 +19,11 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         {
             get
             {
-                var resourceId = this.Properties.GetValue<CloudFormationDictionary>();
-                return resourceId["Ref"] as Subnet;
+                return this.Properties.GetValue<Subnet>();
             }
             set
             {
-                var refDictionary = new CloudFormationDictionary();
-                refDictionary.Add("Ref", ((ILogicalId)value).LogicalId);
-                this.Properties.SetValue(refDictionary);
+                this.Properties.SetValue(value);
             }
         }
 
@@ -34,14 +31,11 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         {
             get
             {
-                var resourceId = this.Properties.GetValue<CloudFormationDictionary>();
-                return resourceId["Ref"] as RouteTable;
+                return this.Properties.GetValue<RouteTable>();
             }
             set
             {
-                var refDictionary = new CloudFormationDictionary();
-                refDictionary.Add("Ref", ((ILogicalId)value).LogicalId);
-                this.Properties.SetValue(refDictionary);
+                this.Properties.SetValue(value);
             }
         }
 
