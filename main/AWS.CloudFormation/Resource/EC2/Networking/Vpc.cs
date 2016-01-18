@@ -12,8 +12,11 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             CidrBlock = cidrBlock;
         }
 
-        [CloudFormationProperties]
-        public string CidrBlock { get; set; }
+        [JsonIgnore]
+        public string CidrBlock {
+            get { return (string)this.Properties.GetValue(); }
+            set { this.Properties.SetValue(value); }
+        }
 
         public class VpcGatewayAttachment : ResourceBase
         {

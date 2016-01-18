@@ -500,6 +500,13 @@ Set-Disk $d.Number -IsOffline $False
 
         }
 
+        [TestMethod]
+        public void SerializerTest()
+        {
+            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            CreateTestStack(template, this.TestContext);
+
+        }
 
 
         public static void CreateTestStack(Template template,TestContext context)

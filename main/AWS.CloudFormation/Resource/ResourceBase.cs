@@ -14,8 +14,6 @@ namespace AWS.CloudFormation.Resource
     }
     public abstract class ResourceBase : ILogicalId
     {
-        [CloudFormationProperties]
-        public List<KeyValuePair<string, string>> Tags { get; private set; }
 
         protected ResourceBase(Template template, string type, string name, bool supportsTags)
             //: this(type, name, supportsTags)
@@ -50,7 +48,16 @@ namespace AWS.CloudFormation.Resource
         public string LogicalId { get ; private set; }
 
         public string[] DependsOn { get; protected set; }
+        [JsonConverter(typeof(CloudFormationDictionaryConverter))]
 
         public CloudFormationDictionary Properties { get; }
+        [CloudFormationProperties]
+
+        [JsonIgnore]
+        public List<KeyValuePair<string, string>> Tags 
+        {
+            get { return (List<KeyValuePair<string, string>>)this.Properties.GetValue(); }
+            set { this.Properties.SetValue(value); }
+        }
     }
 }
