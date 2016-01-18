@@ -126,7 +126,7 @@ namespace AWS.CloudFormation.Test
 
             // ReSharper disable once InconsistentNaming
             RouteTable PrivateRouteTable = template.AddRouteTable("PrivateRouteTable", vpc);
-            PrivateRouteTable.AddTag("Network", "AZ1 Private");
+            PrivateRouteTable.Tags.Add("Network", "AZ1 Private");
 
             // ReSharper disable once InconsistentNaming
             Route PrivateRoute = template.AddRoute("PrivateRoute", Template.CIDR_IP_THE_WORLD, PrivateRouteTable);

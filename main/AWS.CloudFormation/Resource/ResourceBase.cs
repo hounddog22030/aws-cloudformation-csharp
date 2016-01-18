@@ -29,8 +29,8 @@ namespace AWS.CloudFormation.Resource
 
             if (supportsTags)
             {
-                this.Tags = new CloudFormationDictionary();
-                this.AddTag("Name", name);
+                this.Tags = new TagDictionary();
+                this.Tags.Add("Name", name);
             }
         }
 
@@ -40,24 +40,26 @@ namespace AWS.CloudFormation.Resource
 
         public Metadata Metadata { get; }
 
-        public void AddTag(string key, string value)
-        {
-            this.Tags.Add(key, value);
-        }
 
         [JsonIgnore]
         public string LogicalId { get ; private set; }
 
         public string[] DependsOn { get; protected set; }
 
-        //[JsonConverter(typeof(CloudFormationDictionaryConverter))]
         public CloudFormationDictionary Properties { get; }
 
         [JsonIgnore]
-        public CloudFormationDictionary Tags
+        public TagDictionary Tags
         {
-            get { return this.Properties.GetValue<CloudFormationDictionary>(); }
+
+            get { return this.Properties.GetValue<TagDictionary>(); }
             set { this.Properties.SetValue(value); }
+        }
+
+        [JsonArray]
+        public class TagDictionary : Dictionary<string, string>
+        {
+            
         }
     }
 }
