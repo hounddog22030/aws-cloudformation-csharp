@@ -22,10 +22,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public const string ParameterNameDefaultKeyPairKeyName = "DefaultKeyPairKeyName";
 
 
-        internal const string T2Nano = "t2.nano";
-        internal const string T2Small = "t2.small";
-        internal const string T2Micro = "t2.micro";
-        internal const string M4XLarge = "m4.xlarge";
 
         [JsonIgnore]
         public string WaitConditionName => $"{this.LogicalId}WaitCondition";
@@ -53,6 +49,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             var keyName = this.Template.Parameters[ParameterNameDefaultKeyPairKeyName];
             KeyName = keyName.Default.ToString();
             UserData = new CloudFormationDictionary(this);
+            UserData.Add("Fn::Base64", "");
             SourceDestCheck = true;
             ShouldEnableHup = enableHup;
             this.EnableHup();
@@ -174,7 +171,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public ElasticIp AddElasticIp()
         {
             ElasticIp = new ElasticIp(this, this.LogicalId + "EIP");
-            this.Template.AddResource(ElasticIp);
             return ElasticIp;
         }
 
@@ -229,7 +225,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 command.WaitAfterCompletion = 0.ToString();
 
                 WaitCondition wait = new WaitCondition(Template, this.WaitConditionName, timeout);
-                Template.Resources.Add(wait.LogicalId, wait);
             }
 
 

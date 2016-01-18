@@ -16,7 +16,6 @@ namespace AWS.CloudFormation.Resource.Wait
         {
             Timeout = (int)timeout.TotalSeconds;
             Handle = new WaitConditionHandle(template, this.LogicalId + "Handle");
-            template.AddResource(Handle);
         }
 
 
@@ -29,7 +28,8 @@ namespace AWS.CloudFormation.Resource.Wait
 
 
 
-        [JsonConverter(typeof(ResourceAsPropertyConverter))]
+        [JsonIgnore]
+        [JsonProperty(PropertyName = "Handle")]
         public WaitConditionHandle Handle
         {
             get { return this.Properties.GetValue<WaitConditionHandle>(); }

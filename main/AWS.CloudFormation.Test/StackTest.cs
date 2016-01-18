@@ -160,7 +160,6 @@ namespace AWS.CloudFormation.Test
             // ReSharper disable once InconsistentNaming
             var RDGateway = new RemoteDesktopGateway(template, "RDGateway", InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, DMZSubnet);
             RDGateway.AddFinalizer(TwoHoursSpan);
-            template.AddInstance(RDGateway);
             DomainController.AddToDomain(RDGateway, ThreeHoursSpan);
 
             //// uses 25gb
@@ -215,7 +214,6 @@ namespace AWS.CloudFormation.Test
             DomainController.AddToDomain(tfsSqlServer, ThreeHoursSpan);
             tfsSqlServer.AddPackage(SoftwareS3BucketName, new SqlServerExpress(tfsSqlServer));
             tfsSqlServer.SecurityGroupIds.Add(sqlServerSecurityGroup);
-            template.AddInstance(tfsSqlServer);
             return tfsSqlServer;
         }
 
@@ -229,7 +227,6 @@ namespace AWS.CloudFormation.Test
                 subnet,
                 new DomainController.DomainInfo(StackTest.DomainDNSName, StackTest.DomainNetBIOSName, StackTest.DomainAdminUser,
                     StackTest.DomainAdminPassword));
-            template.AddInstance(DomainController);
             return DomainController;
         }
 
@@ -418,7 +415,6 @@ Set-Disk $d.Number -IsOffline $False
             WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI,false);
             w.Subnet = DMZSubnet;
             w.SecurityGroupIds.Add(rdp);
-            template.AddInstance(w);
             w.AddElasticIp();
 
             CreateTestStack(template, this.TestContext);
@@ -459,7 +455,6 @@ Set-Disk $d.Number -IsOffline $False
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
 
             WindowsInstance w = AddDomainController(template, DMZSubnet);
-            template.AddInstance(w);
             w.SecurityGroupIds.Add(rdp);
 
             w.AddElasticIp();
@@ -489,7 +484,6 @@ Set-Disk $d.Number -IsOffline $False
 
             workstation.SecurityGroupIds.Add(rdp);
             
-            template.AddInstance(workstation);
 
 
             workstation.AddElasticIp();
@@ -598,7 +592,6 @@ Set-Disk $d.Number -IsOffline $False
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
             domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
-            template.AddInstance(buildServer);
             buildServer.SecurityGroupIds.Add(buildServerSecurityGroup);
             if (staticIpAddress != null)
             {
@@ -647,7 +640,6 @@ Set-Disk $d.Number -IsOffline $False
 
             workstation.AddFinalizer(MaxTimeOut);
 
-            template.AddInstance(workstation);
 
             if (dc1 != null)
             {
@@ -673,7 +665,6 @@ Set-Disk $d.Number -IsOffline $False
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
             domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
-            template.AddInstance(tfsServer);
             tfsServer.SecurityGroupIds.Add(tfsServerSecurityGroup);
             tfsServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
             dc1.AddToDomain(tfsServer, ThreeHoursSpan);
@@ -686,7 +677,6 @@ Set-Disk $d.Number -IsOffline $False
             template.AddRoute("DMZRoute", gateway, "0.0.0.0/0", dmzRouteTable);
             SubnetRouteTableAssociation DMZSubnetRouteTableAssociation = new SubnetRouteTableAssociation(template,
                 subnet, dmzRouteTable);
-            template.AddResource(DMZSubnetRouteTableAssociation);
         }
 
         private static Instance AddNat1(   Template template, 
@@ -735,7 +725,6 @@ Set-Disk $d.Number -IsOffline $False
             };
             natNetworkInterface.GroupSet.Add(natSecurityGroup);
             nat1.NetworkInterfaces.Add(natNetworkInterface);
-            template.AddInstance(nat1);
             return nat1;
         }
 

@@ -40,9 +40,9 @@ namespace AWS.CloudFormation.Resource.Route53
 
         private RecordSet(Template template, string name, RecordSetTypeEnum recordSetType) : base(template, "AWS::Route53::RecordSet", name, false)
         {
-            template.AddResource(this);
             TTL = "900";
             this.RecordSetType = recordSetType.ToString();
+            this.ResourceRecords = new IdCollection<object>();
         }
 
         [JsonIgnore]
@@ -62,7 +62,6 @@ namespace AWS.CloudFormation.Resource.Route53
 
         [JsonProperty(PropertyName = "Type")]
         [JsonIgnore]
-        //[JsonConverter(typeof(StringEnumConverter))]
         public string RecordSetType
         {
             get { return this.Properties.GetValue<string>(); }
@@ -89,16 +88,19 @@ namespace AWS.CloudFormation.Resource.Route53
         List<object> _resourceRecords = new List<object>();
 
         [JsonIgnore]
-        public object[] ResourceRecords
+        public IdCollection<object> ResourceRecords
         {
-            get { return this.Properties.GetValue<object[]>(); }
+            get { return this.Properties.GetValue<IdCollection<object>>(); }
             set { this.Properties.SetValue(value); }
         }
 
-        public void AddResourceRecord(object resourceRecord)
-        {
-            _resourceRecords.Add(resourceRecord);
-        }
+        //public void AddResourceRecord(object resourceRecord)
+        //{
+        //    List<object> temp = new List<object>();
+        //    temp.AddRange(this.ResourceRecords);
+        //    temp.Add(resourceRecord);
+        //    this.ResourceRecords = temp.ToArray();
+        //}
 
         public static RecordSet AddByHostedZoneId(Template template, string resourceName, string hostedZoneId, string dnsName, RecordSetTypeEnum recordSetType)
         {

@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.EC2.Instancing;
-
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 

@@ -64,8 +64,10 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         }
 
+        [JsonIgnore]
         public ParameterBase DomainAdminUser { get; }
 
+        [JsonIgnore]
         public ParameterBase DomainAdminPassword { get; set; }
 
         private void MakeDomainController()

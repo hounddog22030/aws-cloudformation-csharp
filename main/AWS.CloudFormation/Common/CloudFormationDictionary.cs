@@ -73,6 +73,7 @@ namespace AWS.CloudFormation.Common
         public void SetValue(object value)
         {
             var propertyName = GetPropertyName(value);
+            
             ILogicalId valueAsLogicalId = value as ILogicalId;
             if (valueAsLogicalId != null)
             {
@@ -95,23 +96,35 @@ namespace AWS.CloudFormation.Common
 
             StackFrame propertyStackFrame = null;
             MethodBase propertyMethod = null;
+            PropertyInfo theActualProperty = null;
             for (int i = 1; i < stackFrames.Length -1; i++)
             {
                 propertyStackFrame = stackFrames[i];
                 propertyMethod = propertyStackFrame.GetMethod();
                 if (propertyMethod.IsSpecialName)
                 {
+                    theActualProperty = propertyMethod.DeclaringType.GetProperty(propertyMethod.Name.Substring("get_".Length));
                     break;
                 }
             }
 
-            string propertyName = propertyMethod.Name.Substring("set_".Length);
-
-            CloudFormationDictionary valueAsCloudFormationDictionary = value as CloudFormationDictionary;
-            if (value is ILogicalId && !propertyName.EndsWith("Id"))
+            var jsonPropertyAttribute = theActualProperty.GetCustomAttributes<JsonPropertyAttribute>().FirstOrDefault();
+            string propertyName = theActualProperty.Name;
+            if (jsonPropertyAttribute != null)
             {
-                propertyName += "Id";
+                propertyName = jsonPropertyAttribute.PropertyName;
             }
+            else
+            {
+                CloudFormationDictionary valueAsCloudFormationDictionary = value as CloudFormationDictionary;
+                if (value is ILogicalId && !propertyName.EndsWith("Id"))
+                {
+                    propertyName += "Id";
+                }
+
+            }
+
+
             return propertyName;
         }
 

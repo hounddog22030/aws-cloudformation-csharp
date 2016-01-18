@@ -22,9 +22,15 @@ namespace AWS.CloudFormation.Common
             foreach (var item in ((IEnumerable)value))
             {
                 writer.WriteStartObject();
-                writer.WritePropertyName("Ref");
-                
-                writer.WriteValue(((ILogicalId)item).LogicalId);
+                if (item is ILogicalId)
+                {
+                    writer.WritePropertyName("Ref");
+                    writer.WriteValue(((ILogicalId)item).LogicalId);
+                }
+                else
+                {
+                    writer.WriteValue(item);
+                }
                 writer.WriteEndObject();
             }
             writer.WriteEndArray();
@@ -42,7 +48,7 @@ namespace AWS.CloudFormation.Common
     }
 
     [JsonConverter(typeof(IdCollectionConverter))]
-    public class IdCollection<T> : List<T> where T : ILogicalId
+    public class IdCollection<T> : List<T>
     {
 
     }

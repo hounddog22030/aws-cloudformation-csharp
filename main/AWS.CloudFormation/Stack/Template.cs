@@ -64,16 +64,11 @@ namespace AWS.CloudFormation.Stack
             else
             {
                 securityGroup = new SecurityGroup(this, name, description, vpc);
-                AddResource(securityGroup);
             }
             return securityGroup;
 
         }
 
-        public void AddInstance(Instance resource)
-        {
-            AddResource(resource);
-        }
 
         public void AddResource(ResourceBase resource)
         {

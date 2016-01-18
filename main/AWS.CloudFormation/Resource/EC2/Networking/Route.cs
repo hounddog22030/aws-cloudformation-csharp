@@ -54,6 +54,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             }
         }
 
+        [JsonIgnore]
         public Instance Instance
         {
             get { return this.Properties.GetValue<Instance>(); }

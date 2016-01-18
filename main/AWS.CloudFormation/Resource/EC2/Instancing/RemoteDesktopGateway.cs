@@ -76,7 +76,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 tldDomain,
                 $"rdp.{this.DomainDnsName.Default}.",
                 RecordSet.RecordSetTypeEnum.A);
-            routing.AddResourceRecord(new ReferenceProperty() { Ref = this.ElasticIp.LogicalId });
+            routing.ResourceRecords.Add(this.ElasticIp);
 
             routing.TTL = "60";
 

@@ -74,7 +74,7 @@ namespace AWS.CloudFormation.Test.Route53
             recordSetName = "abc";
             var target = RecordSet.AddByHostedZoneId(template, recordSetName, "Z1H285MI71YUD0", recordSetName + ".sircupsalot.com.", RecordSet.RecordSetTypeEnum.A);
             target.RecordSetType = RecordSet.RecordSetTypeEnum.A.ToString();
-            target.AddResourceRecord("206.190.36.45");
+            target.ResourceRecords.Add("206.190.36.45");
             template.AddResource(target);
             StackTest.CreateTestStack(template, this.TestContext);
         }
@@ -87,8 +87,8 @@ namespace AWS.CloudFormation.Test.Route53
             recordSetName = "abc";
             var target = RecordSet.AddByHostedZoneName(template, recordSetName, "sircupsalot.com.", recordSetName + ".sircupsalot.com.", RecordSet.RecordSetTypeEnum.A);
             target.RecordSetType = RecordSet.RecordSetTypeEnum.A.ToString();
-            target.AddResourceRecord("192.168.0.1");
-            target.AddResourceRecord("192.168.0.2");
+            target.ResourceRecords.Add("192.168.0.1");
+            target.ResourceRecords.Add("192.168.0.2");
             template.AddResource(target);
             StackTest.CreateTestStack(template, this.TestContext);
         }
@@ -108,7 +108,7 @@ namespace AWS.CloudFormation.Test.Route53
             var target = RecordSet.AddByHostedZoneName(template, "testprime", "getthebuybox.com.", "test.prime.getthebuybox.com.", RecordSet.RecordSetTypeEnum.A);
             target.TTL = "60";
             target.RecordSetType = RecordSet.RecordSetTypeEnum.A.ToString();
-            target.AddResourceRecord(new ReferenceProperty() {Ref = eip.LogicalId});
+            target.ResourceRecords.Add(eip);
             template.AddResource(target);
             StackTest.CreateTestStack(template, this.TestContext);
         }
