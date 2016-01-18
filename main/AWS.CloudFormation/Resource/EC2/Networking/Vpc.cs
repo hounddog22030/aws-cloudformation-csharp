@@ -5,7 +5,6 @@ using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Resource.EC2.Networking
 {
-    [JsonConverter(typeof(ResourceJsonConverter))]
     public class Vpc : ResourceBase, ICidrBlock
     {
         public Vpc(Template template, string name, string cidrBlock) : base(template, "AWS::EC2::VPC", name, true)

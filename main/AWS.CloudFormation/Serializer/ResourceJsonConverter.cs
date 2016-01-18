@@ -9,166 +9,166 @@ using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Serializer
 {
-    public class ResourceJsonConverter : JsonConverter
-    {
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
+    //public class ResourceJsonConverter : JsonConverter
+    //{
+    //    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+    //    {
 
-            ResourceBase valueAsResourceBase = value as ResourceBase;
-            if (valueAsResourceBase.LogicalId == "Sql4Tfs")
-            {
-                System.Diagnostics.Debugger.Break();
-            }
+    //        ResourceBase valueAsResourceBase = value as ResourceBase;
+    //        if (valueAsResourceBase.LogicalId == "Sql4Tfs")
+    //        {
+    //            System.Diagnostics.Debugger.Break();
+    //        }
 
-            List<PropertyInfo> propertiesToSerializeAsAwsProperties = new List<PropertyInfo>();
-            PropertyInfo MetadataPropertyInfo = null;
-
-
-            foreach (var propertyInfo in value.GetType().GetProperties())
-            {
-                if (!propertyInfo.GetCustomAttributes(typeof (JsonIgnoreAttribute), true).Any())
-                {
-                    if (propertyInfo.GetCustomAttributes(typeof(CloudFormationPropertiesAttribute), true).Any())
-                    {
-                        propertiesToSerializeAsAwsProperties.Add(propertyInfo);
-                    }
-                    else if (propertyInfo.Name == "Metadata")
-                    {
-                        MetadataPropertyInfo = propertyInfo;
-                    }
-                }
-            }
-
-            // the resource itself
-            writer.WriteStartObject();
-
-            writer.WritePropertyName("Type");
-            writer.WriteValue(valueAsResourceBase.Type);
-
-            //if (valueAsResourceBase.DependsOn!=null && valueAsResourceBase.DependsOn.Length>0)
-            //{
-            //    writer.WritePropertyName("DependsOn");
-            //    writer.WriteStartArray();
-            //    var sb = new StringBuilder();
-            //    sb.Append("\"");
-            //    foreach (var s in valueAsResourceBase.DependsOn)
-            //    {
-            //        if (sb.Length > 1)
-            //        {
-            //            sb.Append("\",\"");
-            //        }
-            //        sb.Append(s);
-            //    }
-            //    sb.Append("\"");
-            //    writer.WriteValue(sb.ToString());
-            //    writer.WriteEndArray();
-
-            //}
-            if (valueAsResourceBase.DependsOn != null && valueAsResourceBase.DependsOn.Length > 0)
-            {
-                writer.WritePropertyName("DependsOn");
-                writer.WriteStartArray();
-                var sb = new StringBuilder();
-                sb.Append("\"");
-                foreach (var s in valueAsResourceBase.DependsOn)
-                {
-                    if (sb.Length > 1)
-                    {
-                        sb.Append("\",\"");
-                    }
-                    sb.Append(s);
-                }
-                sb.Append("\"");
-                writer.WriteRaw(sb.ToString());
-                writer.WriteEndArray();
-
-            }
+    //        List<PropertyInfo> propertiesToSerializeAsAwsProperties = new List<PropertyInfo>();
+    //        PropertyInfo MetadataPropertyInfo = null;
 
 
+    //        foreach (var propertyInfo in value.GetType().GetProperties())
+    //        {
+    //            if (!propertyInfo.GetCustomAttributes(typeof (JsonIgnoreAttribute), true).Any())
+    //            {
+    //                if (propertyInfo.GetCustomAttributes(typeof(CloudFormationPropertiesAttribute), true).Any())
+    //                {
+    //                    propertiesToSerializeAsAwsProperties.Add(propertyInfo);
+    //                }
+    //                else if (propertyInfo.Name == "Metadata")
+    //                {
+    //                    MetadataPropertyInfo = propertyInfo;
+    //                }
+    //            }
+    //        }
 
-            writer.WritePropertyName("Properties");
+    //        // the resource itself
+    //        writer.WriteStartObject();
 
-            // properties
-            writer.WriteStartObject();
+    //        writer.WritePropertyName("Type");
+    //        writer.WriteValue(valueAsResourceBase.Type);
+
+    //        //if (valueAsResourceBase.DependsOn!=null && valueAsResourceBase.DependsOn.Length>0)
+    //        //{
+    //        //    writer.WritePropertyName("DependsOn");
+    //        //    writer.WriteStartArray();
+    //        //    var sb = new StringBuilder();
+    //        //    sb.Append("\"");
+    //        //    foreach (var s in valueAsResourceBase.DependsOn)
+    //        //    {
+    //        //        if (sb.Length > 1)
+    //        //        {
+    //        //            sb.Append("\",\"");
+    //        //        }
+    //        //        sb.Append(s);
+    //        //    }
+    //        //    sb.Append("\"");
+    //        //    writer.WriteValue(sb.ToString());
+    //        //    writer.WriteEndArray();
+
+    //        //}
+    //        if (valueAsResourceBase.DependsOn != null && valueAsResourceBase.DependsOn.Length > 0)
+    //        {
+    //            writer.WritePropertyName("DependsOn");
+    //            writer.WriteStartArray();
+    //            var sb = new StringBuilder();
+    //            sb.Append("\"");
+    //            foreach (var s in valueAsResourceBase.DependsOn)
+    //            {
+    //                if (sb.Length > 1)
+    //                {
+    //                    sb.Append("\",\"");
+    //                }
+    //                sb.Append(s);
+    //            }
+    //            sb.Append("\"");
+    //            writer.WriteRaw(sb.ToString());
+    //            writer.WriteEndArray();
+
+    //        }
 
 
-            foreach (var propertyInfo in propertiesToSerializeAsAwsProperties)
-            {
-                var propertyValue = propertyInfo.GetValue(value);
 
-                if (propertyValue != null && (!(propertyValue is ICollection) || (propertyValue is ICollection && ((ICollection)propertyValue).Count > 0 )))
-                {
-                    var propertyType = propertyValue.GetType();
-                    var serializeAsName = propertyInfo.GetCustomAttributes(typeof(JsonPropertyAttribute), true);
-                    var nameToSerializeAs = propertyInfo.Name;
+    //        writer.WritePropertyName("Properties");
 
-                    if (serializeAsName != null && serializeAsName.Length > 0)
-                    {
-                        nameToSerializeAs = ((JsonPropertyAttribute)serializeAsName[0]).PropertyName;
-                    }
-                    writer.WritePropertyName(nameToSerializeAs);
+    //        // properties
+    //        writer.WriteStartObject();
 
 
-                    if (propertyType.IsPrimitive || propertyType == typeof(Decimal) ||
-                        propertyType == typeof(String))
-                    {
-                        writer.WriteValue(propertyValue);
-                    }
-                    else
-                    {
-                        if (propertyValue is ILogicalId)
-                        {
-                            writer.WriteStartObject();
-                            writer.WritePropertyName("Ref");
-                            writer.WriteValue(((ILogicalId)propertyValue).LogicalId);
-                            writer.WriteEndObject();
-                        }
-                        else
-                        {
-                            var customerSerializerAttribute = propertyInfo.GetCustomAttributes(typeof(JsonConverterAttribute), true);
-                            if (customerSerializerAttribute.Any())
-                            {
-                                Type serializerType =
-                                    ((JsonConverterAttribute) customerSerializerAttribute.First()).ConverterType;
+    //        foreach (var propertyInfo in propertiesToSerializeAsAwsProperties)
+    //        {
+    //            var propertyValue = propertyInfo.GetValue(value);
 
-                                JsonConverter customSerializer = Activator.CreateInstance(serializerType) as JsonConverter;
-                                customSerializer.WriteJson(writer, propertyValue,serializer);
-                            }
-                            else
-                            {
-                                serializer.Serialize(writer, propertyValue);
-                            }
-                        }
-                    }
-                }
-            }
-            // properties
-            writer.WriteEndObject();
+    //            if (propertyValue != null && (!(propertyValue is ICollection) || (propertyValue is ICollection && ((ICollection)propertyValue).Count > 0 )))
+    //            {
+    //                var propertyType = propertyValue.GetType();
+    //                var serializeAsName = propertyInfo.GetCustomAttributes(typeof(JsonPropertyAttribute), true);
+    //                var nameToSerializeAs = propertyInfo.Name;
 
-            if (MetadataPropertyInfo != null)
-            {
-                var propertyValue = MetadataPropertyInfo.GetValue(value);
-                Dictionary<string, object> Metadata = propertyValue as Dictionary<string, object>;
+    //                if (serializeAsName != null && serializeAsName.Length > 0)
+    //                {
+    //                    nameToSerializeAs = ((JsonPropertyAttribute)serializeAsName[0]).PropertyName;
+    //                }
+    //                writer.WritePropertyName(nameToSerializeAs);
 
-                if (Metadata != null && Metadata.Any())
-                {
-                    writer.WritePropertyName("Metadata");
-                    serializer.Serialize(writer, Metadata);
-                }
-            }
 
-            writer.WriteEndObject();
-        }
+    //                if (propertyType.IsPrimitive || propertyType == typeof(Decimal) ||
+    //                    propertyType == typeof(String))
+    //                {
+    //                    writer.WriteValue(propertyValue);
+    //                }
+    //                else
+    //                {
+    //                    if (propertyValue is ILogicalId)
+    //                    {
+    //                        writer.WriteStartObject();
+    //                        writer.WritePropertyName("Ref");
+    //                        writer.WriteValue(((ILogicalId)propertyValue).LogicalId);
+    //                        writer.WriteEndObject();
+    //                    }
+    //                    else
+    //                    {
+    //                        var customerSerializerAttribute = propertyInfo.GetCustomAttributes(typeof(JsonConverterAttribute), true);
+    //                        if (customerSerializerAttribute.Any())
+    //                        {
+    //                            Type serializerType =
+    //                                ((JsonConverterAttribute) customerSerializerAttribute.First()).ConverterType;
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            throw new NotImplementedException();
-        }
+    //                            JsonConverter customSerializer = Activator.CreateInstance(serializerType) as JsonConverter;
+    //                            customSerializer.WriteJson(writer, propertyValue,serializer);
+    //                        }
+    //                        else
+    //                        {
+    //                            serializer.Serialize(writer, propertyValue);
+    //                        }
+    //                    }
+    //                }
+    //            }
+    //        }
+    //        // properties
+    //        writer.WriteEndObject();
 
-        public override bool CanConvert(Type objectType)
-        {
-            throw new NotImplementedException();
-        }
-    }
+    //        if (MetadataPropertyInfo != null)
+    //        {
+    //            var propertyValue = MetadataPropertyInfo.GetValue(value);
+    //            Dictionary<string, object> Metadata = propertyValue as Dictionary<string, object>;
+
+    //            if (Metadata != null && Metadata.Any())
+    //            {
+    //                writer.WritePropertyName("Metadata");
+    //                serializer.Serialize(writer, Metadata);
+    //            }
+    //        }
+
+    //        writer.WriteEndObject();
+    //    }
+
+    //    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+    //    {
+    //        throw new NotImplementedException();
+    //    }
+
+    //    public override bool CanConvert(Type objectType)
+    //    {
+    //        throw new NotImplementedException();
+    //    }
+    //}
 
 }

@@ -6,8 +6,6 @@ using Newtonsoft.Json;
 namespace AWS.CloudFormation.Resource.EC2.Networking
 {
 
-    [JsonConverter(typeof(ResourceJsonConverter))]
-    [JsonObject(IsReference = true)]
     public class Subnet : ResourceBase, ICidrBlock
     {
         public const string AVAILIBILITY_ZONE_US_EAST_1A = "us-east-1a";

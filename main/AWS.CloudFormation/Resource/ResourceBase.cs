@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
@@ -11,7 +12,6 @@ namespace AWS.CloudFormation.Resource
     {
         string LogicalId { get; }
     }
-    [JsonConverter(typeof(ResourceJsonConverter))]
     public abstract class ResourceBase : ILogicalId
     {
         [CloudFormationProperties]
@@ -23,6 +23,7 @@ namespace AWS.CloudFormation.Resource
             Type = type;
             Template = template;
             LogicalId = name;
+            Properties = new CloudFormationDictionary();
             Metadata = new Metadata(this);
 
             if (supportsTags)
@@ -49,5 +50,7 @@ namespace AWS.CloudFormation.Resource
         public string LogicalId { get ; private set; }
 
         public string[] DependsOn { get; protected set; }
+
+        public CloudFormationDictionary Properties { get; }
     }
 }
