@@ -31,7 +31,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         {
             get
             {
-                var vpcId = this.Properties.GetValue() as CloudFormationDictionary;
+                var vpcId = this.Properties.GetValue<CloudFormationDictionary>();
                 return vpcId["Ref"] as Vpc;
             }
             set
@@ -45,14 +45,14 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         [JsonIgnore]
         public string CidrBlock
         {
-            get { return (string)this.Properties.GetValue(); }
+            get { return (string)this.Properties.GetValue<string>(); }
             set { this.Properties.SetValue(value); }
         }
 
         [JsonIgnore]
         public Template.AvailabilityZone AvailabilityZone
         {
-            get { return (Template.AvailabilityZone)this.Properties.GetValue(); }
+            get { return this.Properties.GetValue<Template.AvailabilityZone>(); }
             set
             {
                 var enumType = typeof(Template.AvailabilityZone);

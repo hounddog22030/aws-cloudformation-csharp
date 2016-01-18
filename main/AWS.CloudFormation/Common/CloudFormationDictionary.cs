@@ -102,12 +102,28 @@ namespace AWS.CloudFormation.Common
             return propertyName;
         }
 
-        public object GetValue(string name)
+        //public object GetValue(string name)
+        //{
+        //    return this[name];
+
+        //}
+        //public object GetValue()
+        //{
+        //    StackTrace stackTrace = new StackTrace();           // get call stack
+        //    StackFrame[] stackFrames = stackTrace.GetFrames();
+        //    StackFrame propertyStackFrame = stackFrames[1];
+        //    var m = propertyStackFrame.GetMethod();
+        //    string propertyName = m.Name.Substring("get_".Length);
+        //    System.Diagnostics.Debug.WriteLine(propertyName);
+        //    return GetValue(propertyName);
+        //}
+
+        public T GetValue<T>(string name)
         {
-            return this[name];
+            return (T)this[name];
 
         }
-        public object GetValue()
+        public T GetValue<T>()
         {
             StackTrace stackTrace = new StackTrace();           // get call stack
             StackFrame[] stackFrames = stackTrace.GetFrames();
@@ -115,7 +131,7 @@ namespace AWS.CloudFormation.Common
             var m = propertyStackFrame.GetMethod();
             string propertyName = m.Name.Substring("get_".Length);
             System.Diagnostics.Debug.WriteLine(propertyName);
-            return GetValue(propertyName);
+            return GetValue<T>(propertyName);
         }
     }
 

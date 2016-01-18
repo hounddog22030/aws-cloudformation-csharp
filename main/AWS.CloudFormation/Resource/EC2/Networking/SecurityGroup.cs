@@ -26,7 +26,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         [JsonIgnore]
         public string GroupDescription
         {
-            get { return (string)this.Properties.GetValue(); }
+            get { return (string)this.Properties.GetValue<string>(); }
             set { this.Properties.SetValue(value); }
         }
 
@@ -35,7 +35,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         {
             get
             {
-                var vpcId = this.Properties.GetValue() as CloudFormationDictionary;
+                var vpcId = this.Properties.GetValue<CloudFormationDictionary>();
                 return vpcId["Ref"] as Vpc;
             }
             set
@@ -50,7 +50,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         [JsonIgnore]
         public SecurityGroupIngress[] SecurityGroupIngress
         {
-            get { return this.Properties.GetValue() as SecurityGroupIngress[]; }
+            get { return this.Properties.GetValue<SecurityGroupIngress[]>(); }
             private set { this.Properties.SetValue(value); }
         }
 
@@ -58,7 +58,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         [JsonIgnore]
         public List<SecurityGroupEgress> SecurityGroupEgress
         {
-            get { return this.Properties.GetValue() as List<SecurityGroupEgress>; }
+            get { return this.Properties.GetValue<List<SecurityGroupEgress>>(); }
             set { this.Properties.SetValue(value); }
         }
 

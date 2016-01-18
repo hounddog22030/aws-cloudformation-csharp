@@ -14,7 +14,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 
         [JsonIgnore]
         public string CidrBlock {
-            get { return (string)this.Properties.GetValue(); }
+            get { return (string)this.Properties.GetValue<string>(); }
             set { this.Properties.SetValue(value); }
         }
 
