@@ -1,4 +1,6 @@
-﻿using AWS.CloudFormation.Resource.Networking;
+﻿using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Resource.EC2.Instancing;
+using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
@@ -7,34 +9,64 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 {
     public class Route : ResourceBase
     {
-        internal Route(Template template, string routeName, InternetGateway gateway, string destinationCidrBlock, RouteTable routeTable)
+        public Route(Template template, string routeName, InternetGateway gateway, string destinationCidrBlock, RouteTable routeTable)
             : this(template, routeName, destinationCidrBlock, routeTable)
         {
-            InternetGateway = gateway;
+            Gateway = gateway;
         }
 
         public Route(Template template, string routeName, string destinationCidrBlock, RouteTable routeTable) : base(template, "AWS::EC2::Route", routeName, false)
         {
             DestinationCidrBlock = destinationCidrBlock;
             RouteTable = routeTable;
-            RouteTable = routeTable;
         }
 
-        [CloudFormationProperties]
-        public string DestinationCidrBlock {get; set; }
+        [JsonIgnore]
+        public string DestinationCidrBlock
+        {
+            get { return this.Properties.GetValue<string>(); }
+            set { this.Properties.SetValue(value); }
+        }
 
-        [CloudFormationProperties]
-        [JsonProperty(PropertyName = "RouteTableId")]
-        public RouteTable RouteTable {get;set;}
+        [JsonIgnore]
+        public RouteTable RouteTable
+        {
+            get
+            {
+                var vpcId = this.Properties.GetValue<CloudFormationDictionary>();
+                return vpcId["Ref"] as RouteTable;
+            }
+            set
+            {
+                var refDictionary = new CloudFormationDictionary();
+                refDictionary.Add("Ref", ((ILogicalId)value).LogicalId);
+                this.Properties.SetValue(refDictionary);
+            }
+        }
 
-        [CloudFormationProperties]
-        [JsonProperty(PropertyName = "GatewayId")]
-        public InternetGateway InternetGateway { get; set; }
+        [JsonIgnore]
+        public InternetGateway Gateway
+        {
+            get
+            {
+                var vpcId = this.Properties.GetValue<CloudFormationDictionary>();
+                return vpcId["Ref"] as InternetGateway;
+            }
+            set
+            {
+                var refDictionary = new CloudFormationDictionary();
+                refDictionary.Add("Ref", ((ILogicalId)value).LogicalId);
+                this.Properties.SetValue(refDictionary);
+            }
+        }
 
-        [CloudFormationProperties]
-        [JsonProperty(PropertyName = "InstanceId")]
-        public Instancing.Instance Instance { get; set; }
+        public Instance Instance
+        {
+            get { return this.Properties.GetValue<Instance>(); }
+            set { this.Properties.SetValue(value); }
+        }
 
-        
+
+
     }
 }

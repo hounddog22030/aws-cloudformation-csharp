@@ -86,13 +86,11 @@ namespace AWS.CloudFormation.Stack
         public InternetGateway AddInternetGateway(string name, Vpc vpc)
         {
             InternetGateway gateway = new InternetGateway(this, name);
-            this.AddResource(gateway);
             VpcGatewayAttachment attachment = new VpcGatewayAttachment(this, name + "Attachment")
             {
                 InternetGateway = gateway,
                 Vpc = vpc
             };
-            this.AddResource(attachment);
             return gateway;
         }
 
@@ -107,7 +105,6 @@ namespace AWS.CloudFormation.Stack
             else
             {
                 returnValue = new RouteTable(this, key, vpc);
-                this.AddResource(returnValue);
                 return returnValue;
 
             }
@@ -126,22 +123,18 @@ namespace AWS.CloudFormation.Stack
             else
             {
                 route = new Route(this, routeName, gateway, destinationCidrBlock, routeTable);
-                this.AddResource(route);
             }
             return route;
         }
 
         public Vpc AddVpc(string name, string cidrBlock)
         {
-            Vpc vpc = new Vpc(this,name,cidrBlock);
-            this.Resources.Add(name, vpc);
-            return vpc;
+            return new Vpc(this,name,cidrBlock);
         }
 
         public Route AddRoute(string routeName, string cidr, RouteTable routeTable)
         {
             Route route = new Route(this, routeName, cidr, routeTable);
-            this.AddResource(route);
             return route;
         }
 

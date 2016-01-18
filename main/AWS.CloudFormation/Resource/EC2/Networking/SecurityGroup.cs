@@ -16,7 +16,6 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         public SecurityGroup(Template template, string name, string description, Vpc vpc)
             : base(template, "AWS::EC2::SecurityGroup", name, true)
         {
-            template.AddResource(this);
             Vpc = vpc;
             GroupDescription = description;
             this.SecurityGroupIngress = new SecurityGroupIngress[0]; 

@@ -120,7 +120,11 @@ namespace AWS.CloudFormation.Common
 
         public T GetValue<T>(string name)
         {
-            return (T)this[name];
+            if (this.ContainsKey(name))
+            {
+                return (T) this[name];
+            }
+            return default(T);
 
         }
         public T GetValue<T>()

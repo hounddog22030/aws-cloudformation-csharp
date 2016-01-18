@@ -19,7 +19,6 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 
         public Subnet(Template template, string logicalId, Vpc vpc, string cidr, Template.AvailabilityZone availabilityZone) : base(template, SUBNET_TYPE,logicalId,true)
         {
-            template.AddResource(this);
             Vpc = vpc;
             CidrBlock = cidr;
             AvailabilityZone = availabilityZone;

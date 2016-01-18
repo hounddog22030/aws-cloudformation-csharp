@@ -509,7 +509,12 @@ Set-Disk $d.Number -IsOffline $False
             
             Subnet DMZSubnet = new Subnet(template, "DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
-            
+            RouteTable dmzRouteTable = new RouteTable(template,"DMZRouteTable", vpc);
+            Route dmzRoute = new Route(template, "DMZRoute", gateway, "0.0.0.0/0", dmzRouteTable);
+            //SubnetRouteTableAssociation DMZSubnetRouteTableAssociation = new SubnetRouteTableAssociation(template,
+            //    "DMZSubnetRouteTableAssociation" + subnet.LogicalId, subnet, dmzRouteTable);
+            //template.AddResource(DMZSubnetRouteTableAssociation);
+
             CreateTestStack(template, this.TestContext);
 
         }

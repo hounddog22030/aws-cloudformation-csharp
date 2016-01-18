@@ -21,6 +21,9 @@ namespace AWS.CloudFormation.Resource
             Type = type;
             Template = template;
             LogicalId = name;
+
+            this.Template.AddResource(this);
+
             Properties = new CloudFormationDictionary();
             Metadata = new Metadata(this);
 
