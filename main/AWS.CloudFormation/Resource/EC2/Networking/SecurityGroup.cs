@@ -4,6 +4,7 @@ using System.ComponentModel;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
+using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Resource.EC2.Networking
 {
@@ -13,23 +14,42 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         public SecurityGroup(Template template, string name, string description, Vpc vpc)
             : base(template, "AWS::EC2::SecurityGroup", name, true)
         {
+            template.AddResource(this);
             VpcId = vpc;
             GroupDescription = description;
             this.SecurityGroupIngress = new List<SecurityGroupIngress>();
             this.SecurityGroupEgress = new List<SecurityGroupEgress>();
         }
 
-        [CloudFormationProperties]
-        public string GroupDescription { get; set; }
+        [JsonIgnore]
+        public string GroupDescription
+        {
+            get { return (string)this.Properties.GetValue(); }
+            set { this.Properties.SetValue(value); }
+        }
 
-        [CloudFormationProperties]
-        public Vpc VpcId { get;set; }
+        [JsonIgnore]
+        public object VpcId
+        {
+            get { return this.Properties.GetValue(); }
+            set { this.Properties.SetValue(value); }
+        }
 
-        [CloudFormationProperties]
-        public List<SecurityGroupIngress> SecurityGroupIngress { get; set; }
 
-        [CloudFormationProperties]
-        public List<SecurityGroupEgress> SecurityGroupEgress { get; set; }
+        [JsonIgnore]
+        public List<SecurityGroupIngress> SecurityGroupIngress
+        {
+            get { return this.Properties.GetValue() as List<SecurityGroupIngress>; }
+            set { /*this.Properties.SetValue(value);*/ }
+        }
+
+
+        [JsonIgnore]
+        public List<SecurityGroupEgress> SecurityGroupEgress
+        {
+            get { return this.Properties.GetValue() as List<SecurityGroupEgress>; }
+            set { /*this.Properties.SetValue(value);*/ }
+        }
 
         private static List<string> GetProtocolsListFromFlaggedValue(Protocol protocol)
         {

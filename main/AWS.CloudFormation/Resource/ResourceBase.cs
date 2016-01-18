@@ -39,9 +39,10 @@ namespace AWS.CloudFormation.Resource
 
         public KeyValuePair<string, string> AddTag(string key, string value)
         {
-            var returnValue = new KeyValuePair<string, string>(key, value);
-            this.Tags.Add(returnValue);
-            return returnValue;
+            //var returnValue = new KeyValuePair<string, string>(key, value);
+            //this.Tags.Add(returnValue);
+            //return returnValue;
+            return new KeyValuePair<string, string>("Name","X");
         }
 
         [JsonIgnore]
@@ -56,8 +57,10 @@ namespace AWS.CloudFormation.Resource
         [JsonIgnore]
         public List<KeyValuePair<string, string>> Tags 
         {
-            get { return (List<KeyValuePair<string, string>>)this.Properties.GetValue(); }
-            set { this.Properties.SetValue(value); }
+            get { return null;  }
+            set { }
+            //get { return (List<KeyValuePair<string, string>>)this.Properties.GetValue(); }
+            //set { this.Properties.SetValue(value); }
         }
     }
 }
