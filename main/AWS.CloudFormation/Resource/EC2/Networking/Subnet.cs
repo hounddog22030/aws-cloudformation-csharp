@@ -3,7 +3,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Resource.Networking;
-using AWS.CloudFormation.Serializer;
+
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;

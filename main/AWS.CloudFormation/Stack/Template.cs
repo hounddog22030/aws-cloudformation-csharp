@@ -8,7 +8,7 @@ using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Serialization;
-using AWS.CloudFormation.Serializer;
+
 using Newtonsoft.Json;
 using VpcGatewayAttachment = AWS.CloudFormation.Resource.EC2.Networking.Vpc.VpcGatewayAttachment;
 

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Serialization;
-using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -62,9 +62,12 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public enum VolumeTypes
         {
             none,
-            gp2,
-            standard,
-            io1
+            [EnumMember(Value="gp2")]
+            GeneralPurpose,
+            [EnumMember(Value = "standard")]
+            Magnetic,
+            [EnumMember(Value = "io1")]
+            ProvisionedIops
         }
 
         //[JsonProperty(ItemConverterType = typeof(Enum))]

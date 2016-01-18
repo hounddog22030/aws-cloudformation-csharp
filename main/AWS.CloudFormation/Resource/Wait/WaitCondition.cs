@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Serialization;
-using AWS.CloudFormation.Serializer;
+
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
@@ -19,12 +19,22 @@ namespace AWS.CloudFormation.Resource.Wait
             template.AddResource(Handle);
         }
 
-        [CloudFormationProperties]
-        public int Timeout { get; }
+
+        [JsonIgnore]
+        public int Timeout
+        {
+            get { return this.Properties.GetValue<int>(); }
+            set { this.Properties.SetValue(value); }
+        }
+
 
 
         [JsonConverter(typeof(ResourceAsPropertyConverter))]
-        [CloudFormationProperties]
-        public WaitConditionHandle Handle { get; }
+        public WaitConditionHandle Handle
+        {
+            get { return this.Properties.GetValue<WaitConditionHandle>(); }
+            set { this.Properties.SetValue(value); }
+        }
+
     }
 }

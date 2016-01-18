@@ -1,6 +1,6 @@
 ﻿using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Resource.Networking;
-using AWS.CloudFormation.Serializer;
+
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 

@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AWS.CloudFormation.Serializer;
+
 using AWS.CloudFormation.Stack;
+using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Resource.EC2
 {
@@ -14,10 +15,18 @@ namespace AWS.CloudFormation.Resource.EC2
         {
         }
 
-        [CloudFormationProperties]
-        public string SnapshotId { get; set; }
+        [JsonIgnore]
+        public string SnapshotId
+        {
+            get { return this.Properties.GetValue<string>(); }
+            set { this.Properties.SetValue(value); }
+        }
 
-        [CloudFormationProperties]
-        public string AvailabilityZone { get; set; }
+        [JsonIgnore]
+        public Template.AvailabilityZone AvailabilityZone
+        {
+            get { return this.Properties.GetValue<Template.AvailabilityZone>(); }
+            set { this.Properties.SetValue(value); }
+        }
     }
 }

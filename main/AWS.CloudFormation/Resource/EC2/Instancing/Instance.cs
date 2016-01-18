@@ -12,7 +12,6 @@ using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Resource.Route53;
 using AWS.CloudFormation.Resource.Wait;
-using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
@@ -236,6 +235,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         }
 
+        [JsonIgnore]
         public CloudFormationDictionary[] BlockDeviceMappings
         {
             get

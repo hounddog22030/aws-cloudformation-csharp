@@ -1,6 +1,6 @@
 ﻿using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Serialization;
-using AWS.CloudFormation.Serializer;
+
 using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Resource.EC2.Networking

@@ -1,4 +1,5 @@
-﻿using AWS.CloudFormation.Serializer;
+﻿using AWS.CloudFormation.Resource.EC2.Instancing;
+
 using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Resource.EC2.Networking
@@ -11,11 +12,18 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             this.Domain = "vpc";
         }
 
-        [CloudFormationProperties]
-        [JsonProperty(PropertyName = "InstanceId")]
-        public Instancing.Instance Instance { get; }
+        [JsonIgnore]
+        public Instance Instance
+        {
+            get { return this.Properties.GetValue<Instance>(); }
+            set { this.Properties.SetValue(value); }
+        }
 
-        [CloudFormationProperties]
-        public string Domain { get; private set; }
+        [JsonIgnore]
+        public string Domain
+        {
+            get { return this.Properties.GetValue<string>(); }
+            set { this.Properties.SetValue(value); }
+        }
     }
 }

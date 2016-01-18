@@ -30,9 +30,9 @@ namespace AWS.CloudFormation.Configuration.Packages
     {
         public SqlServerExpress(WindowsInstance sqlServer) : base("sqlserver", "snap-2cf80f29")
         {
-            sqlServer.AddDisk(Ebs.VolumeTypes.gp2, 20);
-            sqlServer.AddDisk(Ebs.VolumeTypes.gp2, 10);
-            sqlServer.AddDisk(Ebs.VolumeTypes.gp2, 10);
+            sqlServer.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 20);
+            sqlServer.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 10);
+            sqlServer.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 10);
             var node = sqlServer.GetChefNodeJsonContent();
             var sqlServerNode =  node.Add("sqlserver");
             sqlServerNode.Add("SQLUSERDBDIR", "d:\\SqlUserDb");

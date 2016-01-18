@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
-using AWS.CloudFormation.Serializer;
+
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -45,29 +45,55 @@ namespace AWS.CloudFormation.Resource.Route53
             this.RecordSetType = recordSetType.ToString();
         }
 
-        [CloudFormationProperties]
-        public string HostedZoneName { get; set; }
+        [JsonIgnore]
+        public string HostedZoneName
+        {
+            get { return this.Properties.GetValue<string>(); }
+            set { this.Properties.SetValue(value); }
+        }
 
-        [CloudFormationProperties]
-        [JsonProperty(PropertyName = "Name")]
-        public string RecordSetName { get; private set; }
+        [JsonIgnore]
+        public string Name
+        {
+            get { return this.Properties.GetValue<string>(); }
+            set { this.Properties.SetValue(value); }
+        }
 
-        [CloudFormationProperties]
+
         [JsonProperty(PropertyName = "Type")]
+        [JsonIgnore]
         //[JsonConverter(typeof(StringEnumConverter))]
-        public string RecordSetType { get; set; }
+        public string RecordSetType
+        {
+            get { return this.Properties.GetValue<string>(); }
+            set { this.Properties.SetValue(value); }
+        }
 
-        [CloudFormationProperties]
-        public string HostedZoneId { get; private set; }
 
-        [CloudFormationProperties]
+        [JsonIgnore]
+        public string HostedZoneId
+        {
+            get { return this.Properties.GetValue<string>(); }
+            set { this.Properties.SetValue(value); }
+        }
+
+
+        [JsonIgnore]
         // ReSharper disable once InconsistentNaming
-        public string TTL { get; set; }
+        public string TTL
+        {
+            get { return this.Properties.GetValue<string>(); }
+            set { this.Properties.SetValue(value); }
+        }
 
         List<object> _resourceRecords = new List<object>();
 
-        [CloudFormationProperties]
-        public object[] ResourceRecords => _resourceRecords.ToArray();
+        [JsonIgnore]
+        public object[] ResourceRecords
+        {
+            get { return this.Properties.GetValue<object[]>(); }
+            set { this.Properties.SetValue(value); }
+        }
 
         public void AddResourceRecord(object resourceRecord)
         {
@@ -76,12 +102,12 @@ namespace AWS.CloudFormation.Resource.Route53
 
         public static RecordSet AddByHostedZoneId(Template template, string resourceName, string hostedZoneId, string dnsName, RecordSetTypeEnum recordSetType)
         {
-            return new RecordSet(template, resourceName, recordSetType) { HostedZoneId = hostedZoneId, RecordSetName = dnsName };
+            return new RecordSet(template, resourceName, recordSetType) { HostedZoneId = hostedZoneId, Name = dnsName };
         }
 
         public static RecordSet AddByHostedZoneName(Template template, string name, string hostedZoneName, string dnsName, RecordSetTypeEnum recordSetType)
         {
-            return new RecordSet(template, name, recordSetType) { HostedZoneName = hostedZoneName, RecordSetName = dnsName };
+            return new RecordSet(template, name, recordSetType) { HostedZoneName = hostedZoneName, Name = dnsName };
         }
     }
 }

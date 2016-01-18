@@ -8,7 +8,7 @@ using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Networking;
-using AWS.CloudFormation.Serializer;
+
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
@@ -85,17 +85,33 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
             this.Listeners = tempListeners.ToArray();
         }
 
-        [CloudFormationProperties]
-        public Listener[] Listeners { get; private set; }
+        [JsonIgnore]
+        public Listener[] Listeners
+        {
+            get { return this.Properties.GetValue<Listener[]>(); }
+            set { this.Properties.SetValue(value); }
+        }
 
-        [CloudFormationProperties]
-        public ReferenceProperty[] Instances { get; private set; }
+        [JsonIgnore]
+        public ReferenceProperty[] Instances
+        {
+            get { return this.Properties.GetValue<ReferenceProperty[]>(); }
+            set { this.Properties.SetValue(value); }
+        }
 
-        [CloudFormationProperties]
-        public ReferenceProperty[] Subnets { get; private set; }
+        [JsonIgnore]
+        public ReferenceProperty[] Subnets
+        {
+            get { return this.Properties.GetValue<ReferenceProperty[]>(); }
+            set { this.Properties.SetValue(value); }
+        }
 
-        [CloudFormationProperties]
-        public IdCollection<SecurityGroup> SecurityGroups { get; private set; }
+        [JsonIgnore]
+        public IdCollection<SecurityGroup> SecurityGroups
+        {
+            get { return this.Properties.GetValue<IdCollection<SecurityGroup>>(); }
+            set { this.Properties.SetValue(value); }
+        }
 
         public class Listener
         {

@@ -105,7 +105,6 @@
     <Compile Include="Resource\Route53\RecordSet.cs" />
     <Compile Include="Resource\Wait\WaitCondition.cs" />
     <Compile Include="Resource\Wait\WaitConditionHandle.cs" />
-    <Compile Include="Serialization\CloudFormationPropertiesAttribute.cs" />
     <Compile Include="Serialization\ResourceAsPropertyConverter.cs" />
     <Compile Include="Stack\Stack.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

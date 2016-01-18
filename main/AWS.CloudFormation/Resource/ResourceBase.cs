@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
-using AWS.CloudFormation.Serializer;
+
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
@@ -55,15 +55,12 @@ namespace AWS.CloudFormation.Resource
 
         //[JsonConverter(typeof(CloudFormationDictionaryConverter))]
         public CloudFormationDictionary Properties { get; }
-        [CloudFormationProperties]
 
         [JsonIgnore]
-        public List<KeyValuePair<string, string>> Tags 
+        public List<KeyValuePair<string, string>> Tags
         {
-            get { return null;  }
-            set { }
-            //get { return (List<KeyValuePair<string, string>>)this.Properties.GetValue(); }
-            //set { this.Properties.SetValue(value); }
+            get { return this.Properties.GetValue<List<KeyValuePair<string, string>>>(); }
+            set { this.Properties.SetValue(value); }
         }
     }
 }

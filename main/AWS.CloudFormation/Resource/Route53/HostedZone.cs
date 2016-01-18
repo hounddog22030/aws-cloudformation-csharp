@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
-using AWS.CloudFormation.Serializer;
+
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
@@ -14,20 +14,37 @@ namespace AWS.CloudFormation.Resource.Route53
     {
         public HostedZone(Template template, string resourceName,string hostedZoneName) : base(template, "AWS::Route53::HostedZone", resourceName, false)
         {
-            HostedZoneName = hostedZoneName;
+            Name = hostedZoneName;
         }
 
-        [CloudFormationProperties]
-        public object HostedZoneConfig { get; set; }
+        [JsonIgnore]
+        public object HostedZoneConfig
+        {
+            get { return this.Properties.GetValue<object>(); }
+            set { this.Properties.SetValue(value); }
+        }
 
-        [CloudFormationProperties]
-        public CloudFormationDictionary HostedZoneTags { get; set; }
+        [JsonIgnore]
+        public CloudFormationDictionary HostedZoneTags
+        {
+            get { return this.Properties.GetValue<CloudFormationDictionary>(); }
+            set { this.Properties.SetValue(value); }
+        }
 
-        [CloudFormationProperties]
-        public object VPCs { get; set; }
+        [JsonIgnore]
+        public object VPCs
+        {
+            get { return this.Properties.GetValue<object>(); }
+            set { this.Properties.SetValue(value); }
+        }
 
-        [CloudFormationProperties]
-        [JsonProperty(PropertyName = "Name")]
-        public string HostedZoneName { get; }
+
+        [JsonIgnore]
+        //[JsonProperty(PropertyName = "Name")]
+        public string Name
+        {
+            get { return this.Properties.GetValue<string>(); }
+            set { this.Properties.SetValue(value); }
+        }
     }
 }

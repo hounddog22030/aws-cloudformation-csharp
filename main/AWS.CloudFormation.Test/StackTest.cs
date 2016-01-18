@@ -238,7 +238,7 @@ namespace AWS.CloudFormation.Test
             Template t = GetNewBlankTemplateWithVpc(testContext);
             Volume v = new Volume(t,"Volume1");
             v.SnapshotId = "snap-c4d7f7c3";
-            v.AvailabilityZone = "us-east-1a";
+            v.AvailabilityZone = Template.AvailabilityZone.UsEast1A;
             t.AddResource(v);
             return t;
         }
@@ -272,7 +272,7 @@ namespace AWS.CloudFormation.Test
             w.SecurityGroupIds.Add(rdp);
             w.AddElasticIp();
             template.AddResource(w);
-            VolumeAttachment va = new VolumeAttachment(template,"VolumeAttachment1","/dev/sdh", new ReferenceProperty() {Ref = w.LogicalId}, "vol-ec768410");
+            VolumeAttachment va = new VolumeAttachment(template,"VolumeAttachment1","/dev/sdh", w, "vol-ec768410");
             template.AddResource(va);
             Stack.Stack.CreateStack(template);
         }
@@ -481,10 +481,10 @@ Set-Disk $d.Number -IsOffline $False
 
             WindowsInstance workstation = new WindowsInstance(template, "ISOMaker", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
-            blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.gp2;
+            blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.GeneralPurpose;
             blockDeviceMapping.Ebs.VolumeSize = 30;
             workstation.AddBlockDeviceMapping(blockDeviceMapping);
-            workstation.AddDisk(Ebs.VolumeTypes.gp2, 6);
+            workstation.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 6);
 
 
             workstation.SecurityGroupIds.Add(rdp);
@@ -514,6 +514,13 @@ Set-Disk $d.Number -IsOffline $False
             SubnetRouteTableAssociation DMZSubnetRouteTableAssociation = new SubnetRouteTableAssociation(template, DMZSubnet, dmzRouteTable);
             WindowsInstance workstation = new WindowsInstance(template, "SerializerTest", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
             workstation.SecurityGroupIds.Add(rdp);
+            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
+            blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.GeneralPurpose;
+            blockDeviceMapping.Ebs.VolumeSize = 30;
+            workstation.AddBlockDeviceMapping(blockDeviceMapping);
+            workstation.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 6);
+            workstation.AddElasticIp();
+
 
             CreateTestStack(template, this.TestContext);
 
@@ -615,11 +622,11 @@ Set-Disk $d.Number -IsOffline $False
 
             WindowsInstance workstation = new WindowsInstance(template, name, InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, subnet, rename);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
-            blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.gp2;
+            blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.GeneralPurpose;
             blockDeviceMapping.Ebs.VolumeSize = 214;
             workstation.AddBlockDeviceMapping(blockDeviceMapping);
-            workstation.AddDisk(Ebs.VolumeTypes.gp2, 10);
-            workstation.AddDisk(Ebs.VolumeTypes.gp2, 5);
+            workstation.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 10);
+            workstation.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 5);
             workstation.AddPackage(SoftwareS3BucketName, new SqlServerExpress(workstation));
             workstation.AddPackage(SoftwareS3BucketName, new VisualStudio());
 
@@ -658,7 +665,7 @@ Set-Disk $d.Number -IsOffline $False
                                                     StackTest.USEAST1AWINDOWS2012R2AMI, 
                                                     privateSubnet1, 
                                                     true, 
-                                                    Ebs.VolumeTypes.gp2,
+                                                    Ebs.VolumeTypes.GeneralPurpose,
                                                     214);
             tfsServer.AddDependsOn(tfsSqlServer, ThreeHoursSpan);
 
