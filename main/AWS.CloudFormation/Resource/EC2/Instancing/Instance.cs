@@ -43,7 +43,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             : base(template,"AWS::EC2::Instance", name, true)
         {
             this.OperatingSystem = operatingSystem;
-            SecurityGroupIds = new CollectionThatSerializesAsIds<SecurityGroup>();
+            SecurityGroupIds = new IdCollection<SecurityGroup>();
             this.InstanceType = instanceType;
             this.ImageId = imageId;
             NetworkInterfaces = new List<NetworkInterface>();
@@ -117,11 +117,11 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         }
 
         [JsonIgnore]
-        public CollectionThatSerializesAsIds<SecurityGroup> SecurityGroupIds
+        public IdCollection<SecurityGroup> SecurityGroupIds
         {
             get
             {
-                return this.Properties.GetValue<CollectionThatSerializesAsIds<SecurityGroup>>();
+                return this.Properties.GetValue<IdCollection<SecurityGroup>>();
             }
             set
             {

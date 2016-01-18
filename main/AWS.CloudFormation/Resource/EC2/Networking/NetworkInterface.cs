@@ -9,7 +9,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         public NetworkInterface(Subnet subnet)
         {
             Subnet = subnet;
-            GroupSet = new CollectionThatSerializesAsIds<SecurityGroup>();
+            GroupSet = new IdCollection<SecurityGroup>();
 
         }
 
@@ -21,7 +21,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         [JsonProperty(PropertyName = "SubnetId")]
         public Subnet Subnet { get; set; }
 
-        public CollectionThatSerializesAsIds<SecurityGroup> GroupSet { get; private set; }
+        public IdCollection<SecurityGroup> GroupSet { get; private set; }
     }
 
 }
