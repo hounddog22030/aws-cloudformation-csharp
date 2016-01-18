@@ -18,8 +18,10 @@ namespace AWS.CloudFormation.Stack
         public const string AwsTemplateFormatVersion20100909 = "2010-09-09";
         public const string CIDR_IP_THE_WORLD = "0.0.0.0/0";
 
+        [JsonConverter(typeof(InstanceTypesConverter))]
         public enum AvailabilityZone
         {
+            [EnumMember(Value = "invalid")]
             None,
             [EnumMember(Value="us-east-1a")]
             UsEast1A

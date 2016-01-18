@@ -481,7 +481,7 @@ Set-Disk $d.Number -IsOffline $False
 
             WindowsInstance workstation = new WindowsInstance(template, "ISOMaker", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
-            blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.gp2.ToString();
+            blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.gp2;
             blockDeviceMapping.Ebs.VolumeSize = 30;
             workstation.AddBlockDeviceMapping(blockDeviceMapping);
             workstation.AddDisk(Ebs.VolumeTypes.gp2, 6);
@@ -615,7 +615,7 @@ Set-Disk $d.Number -IsOffline $False
 
             WindowsInstance workstation = new WindowsInstance(template, name, InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, subnet, rename);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
-            blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.gp2.ToString();
+            blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.gp2;
             blockDeviceMapping.Ebs.VolumeSize = 214;
             workstation.AddBlockDeviceMapping(blockDeviceMapping);
             workstation.AddDisk(Ebs.VolumeTypes.gp2, 10);

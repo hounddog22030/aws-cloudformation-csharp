@@ -55,6 +55,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             set { this["VolumeSize"] = value; }
         }
 
+        [JsonConverter(typeof(InstanceTypesConverter))]
         public enum VolumeTypes
         {
             none,
@@ -64,15 +65,15 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         }
 
         //[JsonProperty(ItemConverterType = typeof(Enum))]
-        public string VolumeType
+        public VolumeTypes VolumeType
         {
             get
             {
                 if (this.ContainsKey("VolumeType"))
                 {
-                    return (string)this["VolumeType"];
+                    return (VolumeTypes)this["VolumeType"];
                 }
-                return null;
+                return VolumeTypes.none;
             }
             set { this["VolumeType"] = value; }
         }
