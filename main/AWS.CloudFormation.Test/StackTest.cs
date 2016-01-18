@@ -133,7 +133,6 @@ namespace AWS.CloudFormation.Test
 
             SubnetRouteTableAssociation PrivateSubnetRouteTableAssociation1 = new SubnetRouteTableAssociation(    
                 template,
-                "PrivateSubnetRouteTableAssociation1", 
                 PrivateSubnet1, 
                 PrivateRouteTable);
 
@@ -511,9 +510,7 @@ Set-Disk $d.Number -IsOffline $False
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             RouteTable dmzRouteTable = new RouteTable(template,"DMZRouteTable", vpc);
             Route dmzRoute = new Route(template, "DMZRoute", gateway, "0.0.0.0/0", dmzRouteTable);
-            //SubnetRouteTableAssociation DMZSubnetRouteTableAssociation = new SubnetRouteTableAssociation(template,
-            //    "DMZSubnetRouteTableAssociation" + subnet.LogicalId, subnet, dmzRouteTable);
-            //template.AddResource(DMZSubnetRouteTableAssociation);
+            SubnetRouteTableAssociation DMZSubnetRouteTableAssociation = new SubnetRouteTableAssociation(template, DMZSubnet, dmzRouteTable);
 
             CreateTestStack(template, this.TestContext);
 
@@ -678,7 +675,7 @@ Set-Disk $d.Number -IsOffline $False
             RouteTable dmzRouteTable = template.AddRouteTable("DMZRouteTable", vpc);
             template.AddRoute("DMZRoute", gateway, "0.0.0.0/0", dmzRouteTable);
             SubnetRouteTableAssociation DMZSubnetRouteTableAssociation = new SubnetRouteTableAssociation(template,
-                "DMZSubnetRouteTableAssociation" + subnet.LogicalId, subnet, dmzRouteTable);
+                subnet, dmzRouteTable);
             template.AddResource(DMZSubnetRouteTableAssociation);
         }
 
