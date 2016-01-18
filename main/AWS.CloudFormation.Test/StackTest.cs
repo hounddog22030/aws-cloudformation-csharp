@@ -181,7 +181,7 @@ namespace AWS.CloudFormation.Test
             //var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup, IPNetwork.Parse(BuildServerIpAddress + "/32"));
             //buildServer.AddFinalizer(ThreeHoursSpan);
             //tfsServerSecurityGroup.AddIngress(buildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
-            //buildServer.SecurityGroups.Add(tfsServerUsers);
+            //buildServer.SecurityGroupIds.Add(tfsServerUsers);
 
 
 
@@ -200,7 +200,7 @@ namespace AWS.CloudFormation.Test
             //elb.AddInstance(tfsServer);
             //elb.AddListener("8080", "8080", "http");
             //elb.AddSubnet(DMZSubnet);
-            //elb.SecurityGroups.Add(elbSecurityGroup);
+            //elb.SecurityGroupIds.Add(elbSecurityGroup);
             //template.AddResource(elb);
 
 
@@ -214,7 +214,7 @@ namespace AWS.CloudFormation.Test
                 StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1, true);
             DomainController.AddToDomain(tfsSqlServer, ThreeHoursSpan);
             tfsSqlServer.AddPackage(SoftwareS3BucketName, new SqlServerExpress(tfsSqlServer));
-            tfsSqlServer.SecurityGroups.Add(sqlServerSecurityGroup);
+            tfsSqlServer.SecurityGroupIds.Add(sqlServerSecurityGroup);
             template.AddInstance(tfsSqlServer);
             return tfsSqlServer;
         }
@@ -269,7 +269,7 @@ namespace AWS.CloudFormation.Test
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
             WindowsInstance w = new WindowsInstance(template,"Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
-            w.SecurityGroups.Add(rdp);
+            w.SecurityGroupIds.Add(rdp);
             w.AddElasticIp();
             template.AddResource(w);
             VolumeAttachment va = new VolumeAttachment(template,"VolumeAttachment1","/dev/sdh", new ReferenceProperty() {Ref = w.LogicalId}, "vol-ec768410");
@@ -308,7 +308,7 @@ $d.Number
 Set-Disk $d.Number -IsOffline $False
             **/
 
-            w.SecurityGroups.Add(rdp);
+            w.SecurityGroupIds.Add(rdp);
             w.AddElasticIp();
             template.AddResource(w);
             Stack.Stack.CreateStack(template);
@@ -352,7 +352,7 @@ Set-Disk $d.Number -IsOffline $False
             w.AddChefExec(SoftwareS3BucketName, "MountDrives.tar.gz", "MountDrives");
 
 
-            w.SecurityGroups.Add(rdp);
+            w.SecurityGroupIds.Add(rdp);
             w.AddElasticIp();
             template.AddResource(w);
             var name = this.TestContext.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".",string.Empty) ;
@@ -377,7 +377,7 @@ Set-Disk $d.Number -IsOffline $False
             w.AddPackage(SoftwareS3BucketName, new VisualStudio());
 
 
-            w.SecurityGroups.Add(rdp);
+            w.SecurityGroupIds.Add(rdp);
             w.AddElasticIp();
             template.AddResource(w);
             var name = this.TestContext.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty);
@@ -417,7 +417,7 @@ Set-Disk $d.Number -IsOffline $False
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
             WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI,false);
             w.Subnet = DMZSubnet;
-            w.SecurityGroups.Add(rdp);
+            w.SecurityGroupIds.Add(rdp);
             template.AddInstance(w);
             w.AddElasticIp();
 
@@ -438,7 +438,7 @@ Set-Disk $d.Number -IsOffline $False
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
             var dc1 = AddDomainController(template, DMZSubnet);
             dc1.AddElasticIp();
-            dc1.SecurityGroups.Add(rdp);
+            dc1.SecurityGroupIds.Add(rdp);
             WindowsInstance w = AddBuildServer(template, DMZSubnet, null, dc1, rdp,null);
             w.AddElasticIp();
 
@@ -460,7 +460,7 @@ Set-Disk $d.Number -IsOffline $False
 
             WindowsInstance w = AddDomainController(template, DMZSubnet);
             template.AddInstance(w);
-            w.SecurityGroups.Add(rdp);
+            w.SecurityGroupIds.Add(rdp);
 
             w.AddElasticIp();
 
@@ -487,7 +487,7 @@ Set-Disk $d.Number -IsOffline $False
             workstation.AddDisk(Ebs.VolumeTypes.gp2, 6);
 
 
-            workstation.SecurityGroups.Add(rdp);
+            workstation.SecurityGroupIds.Add(rdp);
             
             template.AddInstance(workstation);
 
@@ -503,7 +503,7 @@ Set-Disk $d.Number -IsOffline $False
         {
             var template = GetNewBlankTemplateWithVpc(this.TestContext);
             var vpc = template.Vpcs.First();
-            SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
+            SecurityGroup rdp = new SecurityGroup(template, "SecurityGroupRdp", "Allows Remote Desktop Access", vpc);
             System.Diagnostics.Debug.WriteLine(rdp.Vpc);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             
@@ -513,7 +513,7 @@ Set-Disk $d.Number -IsOffline $False
             Route dmzRoute = new Route(template, "DMZRoute", gateway, "0.0.0.0/0", dmzRouteTable);
             SubnetRouteTableAssociation DMZSubnetRouteTableAssociation = new SubnetRouteTableAssociation(template, DMZSubnet, dmzRouteTable);
             WindowsInstance workstation = new WindowsInstance(template, "SerializerTest", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
-            workstation.SecurityGroups.Add(rdp);
+            workstation.SecurityGroupIds.Add(rdp);
 
             CreateTestStack(template, this.TestContext);
 
@@ -565,7 +565,7 @@ Set-Disk $d.Number -IsOffline $False
             w.AddChefExec(SoftwareS3BucketName, "MountDrives.tar.gz", "MountDrives");
 
 
-            w.SecurityGroups.Add(rdp);
+            w.SecurityGroupIds.Add(rdp);
             w.AddElasticIp();
             template.AddResource(w);
             var name = "CreateStackWithMounterTest-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty);
@@ -592,7 +592,7 @@ Set-Disk $d.Number -IsOffline $False
             domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             template.AddInstance(buildServer);
-            buildServer.SecurityGroups.Add(buildServerSecurityGroup);
+            buildServer.SecurityGroupIds.Add(buildServerSecurityGroup);
             if (staticIpAddress != null)
             {
                 buildServer.PrivateIpAddress = staticIpAddress.FirstUsable.ToString();
@@ -630,12 +630,12 @@ Set-Disk $d.Number -IsOffline $False
 
             if (workstationSecurityGroup != null)
             {
-                workstation.SecurityGroups.Add(workstationSecurityGroup);
+                workstation.SecurityGroupIds.Add(workstationSecurityGroup);
             }
 
             if (tfsUsers != null)
             {
-                workstation.SecurityGroups.Add(tfsUsers);
+                workstation.SecurityGroupIds.Add(tfsUsers);
             }
 
             workstation.AddFinalizer(MaxTimeOut);
@@ -667,7 +667,7 @@ Set-Disk $d.Number -IsOffline $False
             domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             template.AddInstance(tfsServer);
-            tfsServer.SecurityGroups.Add(tfsServerSecurityGroup);
+            tfsServer.SecurityGroupIds.Add(tfsServerSecurityGroup);
             tfsServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
             dc1.AddToDomain(tfsServer, ThreeHoursSpan);
             return tfsServer;

@@ -57,7 +57,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Udp, Ports.RdpAdmin);
             rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
 
-            this.SecurityGroups.Add(rdgwSecurityGroup);
+            this.SecurityGroupIds.Add(rdgwSecurityGroup);
         }
 
 

@@ -265,7 +265,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
             //DomainControllerSG1.AddIngress(DMZSubnet, Protocol.Icmp, Ports.All);
             //DomainControllerSG1.AddIngress(dmzaz2Subnet, Protocol.Icmp, Ports.All);
-            this.SecurityGroups.Add(DomainControllerSG1);
+            this.SecurityGroupIds.Add(DomainControllerSG1);
 
         }
 
@@ -307,7 +307,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             DomainMemberSecurityGroup.AddIngress(domainMember.Subnet, Protocol.Tcp,
                 Ports.RemoteDesktopProtocol);
 
-            domainMember.SecurityGroups.Add(DomainMemberSecurityGroup);
+            domainMember.SecurityGroupIds.Add(DomainMemberSecurityGroup);
         }
 
         [JsonIgnore]
