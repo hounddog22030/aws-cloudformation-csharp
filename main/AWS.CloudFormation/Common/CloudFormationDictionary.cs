@@ -77,6 +77,11 @@ namespace AWS.CloudFormation.Common
             this[propertyName] = value;
         }
 
+        public object GetValue(string name)
+        {
+            return this[name];
+
+        }
         public object GetValue()
         {
             StackTrace stackTrace = new StackTrace();           // get call stack
@@ -85,50 +90,50 @@ namespace AWS.CloudFormation.Common
             var m = propertyStackFrame.GetMethod();
             string propertyName = m.Name.Substring("get_".Length);
             System.Diagnostics.Debug.WriteLine(propertyName);
-            return this[propertyName];
+            return GetValue(propertyName);
         }
     }
 
-    public class CloudFormationDictionaryConverter : JsonConverter
-    {
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            CloudFormationDictionary valueAsCloudFormationDictionary = value as CloudFormationDictionary;
+    //public class CloudFormationDictionaryConverter : JsonConverter
+    //{
+    //    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+    //    {
+    //        CloudFormationDictionary valueAsCloudFormationDictionary = value as CloudFormationDictionary;
 
-            writer.WriteStartObject();
+    //        writer.WriteStartObject();
 
-            foreach (var thisValue in valueAsCloudFormationDictionary)
-            {
-                ILogicalId valueAsLogicalId = thisValue.Value as ILogicalId;
+    //        foreach (var thisValue in valueAsCloudFormationDictionary)
+    //        {
+    //            ILogicalId valueAsLogicalId = thisValue.Value as ILogicalId;
 
-                if (valueAsLogicalId == null)
-                {
+    //            if (valueAsLogicalId == null)
+    //            {
 
-                    writer.WritePropertyName(thisValue.Key);
-                    writer.WriteValue(thisValue.Value);
-                }
-                else
-                {
-                    writer.WritePropertyName(thisValue.Key);
-                    writer.WriteStartObject();
-                    writer.WritePropertyName("Ref");
-                    writer.WriteValue(valueAsLogicalId.LogicalId);
-                    writer.WriteEndObject();
-                }
+    //                writer.WritePropertyName(thisValue.Key);
+    //                writer.WriteValue(thisValue.Value);
+    //            }
+    //            else
+    //            {
+    //                writer.WritePropertyName(thisValue.Key);
+    //                writer.WriteStartObject();
+    //                writer.WritePropertyName("Ref");
+    //                writer.WriteValue(valueAsLogicalId.LogicalId);
+    //                writer.WriteEndObject();
+    //            }
 
-            }
+    //        }
 
-            writer.WriteEndObject();
-        }
+    //        writer.WriteEndObject();
+    //    }
 
-        public override bool CanConvert(Type objectType)
-        {
-            throw new System.NotImplementedException();
-        }
+    //    public override bool CanConvert(Type objectType)
+    //    {
+    //        throw new System.NotImplementedException();
+    //    }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            throw new System.NotImplementedException();
-        }
-    }
+    //    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+    //    {
+    //        throw new System.NotImplementedException();
+    //    }
+    //}
 }

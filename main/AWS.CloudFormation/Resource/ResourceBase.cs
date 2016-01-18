@@ -49,8 +49,8 @@ namespace AWS.CloudFormation.Resource
         public string LogicalId { get ; private set; }
 
         public string[] DependsOn { get; protected set; }
-        [JsonConverter(typeof(CloudFormationDictionaryConverter))]
 
+        //[JsonConverter(typeof(CloudFormationDictionaryConverter))]
         public CloudFormationDictionary Properties { get; }
         [CloudFormationProperties]
 

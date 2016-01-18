@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Serializer;
 using AWS.CloudFormation.Stack;
@@ -29,10 +30,19 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         }
 
         [JsonIgnore]
-        public object VpcId
+        public Vpc VpcId
         {
-            get { return this.Properties.GetValue(); }
-            set { this.Properties.SetValue(value); }
+            get
+            {
+                var vpcId = this.Properties.GetValue("VpcId") as CloudFormationDictionary;
+                return vpcId["Ref"] as Vpc;
+            }
+            set
+            {
+                var refDictionary = new CloudFormationDictionary();
+                refDictionary.Add("Ref", ((ILogicalId)value).LogicalId);
+                this.Properties.SetValue(refDictionary);
+            }
         }
 
 
@@ -40,7 +50,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         public List<SecurityGroupIngress> SecurityGroupIngress
         {
             get { return this.Properties.GetValue() as List<SecurityGroupIngress>; }
-            set { /*this.Properties.SetValue(value);*/ }
+            set { this.Properties.SetValue(value); }
         }
 
 
@@ -48,7 +58,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         public List<SecurityGroupEgress> SecurityGroupEgress
         {
             get { return this.Properties.GetValue() as List<SecurityGroupEgress>; }
-            set { /*this.Properties.SetValue(value);*/ }
+            set { this.Properties.SetValue(value); }
         }
 
         private static List<string> GetProtocolsListFromFlaggedValue(Protocol protocol)
