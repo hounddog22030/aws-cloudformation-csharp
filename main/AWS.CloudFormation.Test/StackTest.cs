@@ -5,11 +5,13 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Configuration.Packages;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -166,7 +168,7 @@ namespace AWS.CloudFormation.Test
             var tfsSqlServer = AddSql4Tfs(template, PrivateSubnet1, DomainController, sqlServerSecurityGroup);
 
             //// uses 24gb
-            var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
+            //var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
 
             //var disableFirewallConfigSet = tfsServer.Metadata.Init.ConfigSets.GetConfigSet("disable-win-fw-configSet");
             //var disableFirewallConfig = disableFirewallConfigSet.GetConfig("disable-win-fw-configSet");
@@ -493,6 +495,45 @@ Set-Disk $d.Number -IsOffline $False
         }
 
         [TestMethod]
+        [Timeout(int.MaxValue)]
+        public void CfnInitOverWriteTest()
+        {
+            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var vpc = template.Vpcs.First();
+            SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
+            rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
+            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
+            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
+
+            WindowsInstance workstation = new WindowsInstance(template, "ISOMaker", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
+            workstation.SecurityGroupIds.Add(rdp);
+            workstation.AddElasticIp();
+
+
+            var name = this.TestContext.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty);
+
+            CreateTestStack(template, this.TestContext, name);
+
+            workstation.Metadata.Init.ConfigSets.GetConfigSet("x").GetConfig("y").Commands.AddCommand<Command>("z").Command.AddCommandLine(true,"dir");
+
+            do
+            {
+                try
+                {
+                    Stack.Stack.UpdateStack(name, template);
+                    break;
+                }
+                catch (Exception)
+                {
+                    Thread.Sleep(new TimeSpan(0,5,0));
+                }
+                
+            } while (true);
+        }
+
+
+        [TestMethod]
         public void SerializerTest()
         {
             var template = GetNewBlankTemplateWithVpc(this.TestContext);
@@ -521,9 +562,14 @@ Set-Disk $d.Number -IsOffline $False
         }
 
 
-        public static void CreateTestStack(Template template,TestContext context)
+        public static void CreateTestStack(Template template, TestContext context)
         {
             var name = context.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty);
+            CreateTestStack(template, context, name);
+
+        }
+        public static void CreateTestStack(Template template, TestContext context, string name)
+        {
             Stack.Stack.CreateStack(template, name);
 
         }
@@ -983,8 +1029,8 @@ Set-Disk $d.Number -IsOffline $False
         public void UpdatePrimeTest()
         {
             var stackName = "CreatePrimeTest-2016-01-17T0302231807358-0500";
-            var t = new Stack.Stack();
-            t.UpdateStack(stackName, GetTemplateFullStack(this.TestContext, "VpcCreatePrimeTest"));
+            
+            Stack.Stack.UpdateStack(stackName, GetTemplateFullStack(this.TestContext, "VpcCreatePrimeTest"));
         }
 
 

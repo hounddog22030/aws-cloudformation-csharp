@@ -43,7 +43,7 @@ namespace AWS.CloudFormation.Stack
             return CreateStack(template,$"Stack{Guid.NewGuid().ToString().Replace("{",string.Empty).Replace("}",string.Empty)}");
         }
 
-        public void UpdateStack(string stackName, Template template)
+        public static void UpdateStack(string stackName, Template template)
         {
             var templateUri = TemplateEngine.UploadTemplate(template, "gtbb/templates");
             AmazonCloudFormationClient client = new AmazonCloudFormationClient(RegionEndpoint.USEast1);
