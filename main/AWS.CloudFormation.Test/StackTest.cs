@@ -708,7 +708,7 @@ Set-Disk $d.Number -IsOffline $False
             domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             tfsServer.SecurityGroupIds.Add(tfsServerSecurityGroup);
-            tfsServer.AddChefExec(SoftwareS3BucketName, CookbookFileName, "TFS::applicationtier");
+            tfsServer.AddChefExec(SoftwareS3BucketName, "tfs.tar", "tfs::install");
             
             
             dc1.AddToDomain(tfsServer, ThreeHoursSpan);
@@ -1032,7 +1032,7 @@ Set-Disk $d.Number -IsOffline $False
         [TestMethod]
         public void UpdatePrimeTest()
         {
-            var stackName = "CreatePrimeTest-2016-01-18T0344481214534-0500";
+            var stackName = "CreatePrimeTest-2016-01-18T1122251892625-0500";
             
             Stack.Stack.UpdateStack(stackName, GetTemplateFullStack(this.TestContext, "VpcCreatePrimeTest"));
         }

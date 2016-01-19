@@ -1,0 +1,20 @@
+DEPENDENCIES
+  PsTools
+    path: ../PsTools
+  ec2helper
+    path: ../ec2helper
+  tfs
+    path: .
+    metadata: true
+  vs
+    path: ../vs
+
+GRAPH
+  PsTools (0.1.0)
+  ec2helper (0.1.0)
+  tfs (0.1.0)
+    PsTools (>= 0.0.0)
+    ec2helper (>= 0.0.0)
+    vs (>= 0.0.0)
+  vs (0.1.0)
+    ec2helper (>= 0.0.0)

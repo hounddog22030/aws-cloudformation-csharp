@@ -92,6 +92,7 @@
     <None Include="cookbooks\msdotnet35\Thorfile" />
     <None Include="cookbooks\msdotnet35\Vagrantfile" />
     <None Include="cookbooks\PsTools\.kitchen.yml" />
+    <None Include="cookbooks\PsTools\attributes\default.rb" />
     <None Include="cookbooks\PsTools\Berksfile" />
     <None Include="cookbooks\PsTools\metadata.rb" />
     <None Include="cookbooks\PsTools\README.md" />
@@ -133,29 +134,21 @@
     <None Include="cookbooks\sqlserver\Thorfile" />
     <None Include="cookbooks\sqlserver\Vagrantfile" />
     <None Include="cookbooks\tfs\.kitchen.yml" />
+    <None Include="cookbooks\tfs\attributes\default.rb" />
     <None Include="cookbooks\tfs\Berksfile" />
     <None Include="cookbooks\tfs\CHANGELOG.md" />
     <None Include="cookbooks\tfs\chefignore" />
+    <None Include="cookbooks\tfs\files\configbasic.ini" />
     <None Include="cookbooks\tfs\Gemfile" />
     <None Include="cookbooks\tfs\LICENSE" />
     <None Include="cookbooks\tfs\metadata.rb" />
     <None Include="cookbooks\tfs\README.md" />
-    <None Include="cookbooks\tfs\recipes\default.rb" />
+    <None Include="cookbooks\tfs\recipes\applicationtier.rb" />
+    <None Include="cookbooks\tfs\recipes\build.rb" />
+    <None Include="cookbooks\tfs\recipes\install.rb" />
+    <None Include="cookbooks\tfs\templates\build.ini.erb" />
     <None Include="cookbooks\tfs\Thorfile" />
     <None Include="cookbooks\tfs\Vagrantfile" />
-    <None Include="cookbooks\VisualStudio\.kitchen.yml" />
-    <None Include="cookbooks\VisualStudio\attributes\default.rb" />
-    <None Include="cookbooks\VisualStudio\Berksfile" />
-    <None Include="cookbooks\VisualStudio\Berksfile.lock" />
-    <None Include="cookbooks\VisualStudio\chefignore" />
-    <None Include="cookbooks\VisualStudio\metadata.json" />
-    <None Include="cookbooks\VisualStudio\metadata.rb" />
-    <None Include="cookbooks\VisualStudio\README.md" />
-    <None Include="cookbooks\VisualStudio\recipes\default.rb" />
-    <None Include="cookbooks\VisualStudio\spec\spec_helper.rb" />
-    <None Include="cookbooks\VisualStudio\spec\unit\recipes\default_spec.rb" />
-    <None Include="cookbooks\VisualStudio\test\integration\default\serverspec\default_spec.rb" />
-    <None Include="cookbooks\VisualStudio\test\integration\default\serverspec\spec_helper.rb" />
     <None Include="cookbooks\vs\.kitchen.yml" />
     <None Include="cookbooks\vs\attributes\default.rb" />
     <None Include="cookbooks\vs\Berksfile" />
@@ -172,7 +165,6 @@
     <None Include="Scripts\BringDisksOnline.ps" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="cookbooks\VisualStudio\files\AdminDeployment.xml" />
     <Content Include="cookbooks\vs\files\default\AdminDeployment.xml" />
     <Content Include="stack.template" />
     <Content Include="TextFile1.txt" />
@@ -198,7 +190,6 @@
     <Folder Include="cookbooks\sqlserver\resources\" />
     <Folder Include="cookbooks\sqlserver\templates\" />
     <Folder Include="cookbooks\sqlserver\test\" />
-    <Folder Include="cookbooks\tfs\attributes\" />
     <Folder Include="cookbooks\tfs\files\default\" />
     <Folder Include="cookbooks\tfs\libraries\" />
     <Folder Include="cookbooks\tfs\providers\" />

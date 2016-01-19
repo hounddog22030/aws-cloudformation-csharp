@@ -1,6 +1,7 @@
 source "https://supermarket.chef.io"
 
-
-
 metadata
 
+cookbook 'ec2helper', path: '../ec2helper'
+cookbook 'vs', path: '../vs'
+cookbook 'PsTools', path: '../PsTools'
