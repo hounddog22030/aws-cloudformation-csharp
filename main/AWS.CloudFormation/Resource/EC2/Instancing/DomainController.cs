@@ -77,15 +77,11 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             var setupFiles = setup.Files;
 
             ConfigFile file = setupFiles.GetFile("c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1");
+
             file.Source =
                 "https://s3.amazonaws.com/quickstart-reference/microsoft/activedirectory/latest/scripts/ConvertTo-EnterpriseAdmin.ps1";
 
             //powershell - Command "Get-NetFirewallProfile | Set-NetFirewallProfile - Enabled False" > c:\cfn\log\a-disable-win-fw.log
-
-            var disableFirewallCommand = setup.Commands.AddCommand<PowerShellCommand>("a-disable-win-fw");
-            disableFirewallCommand.WaitAfterCompletion = 0.ToString();
-            disableFirewallCommand.Command.AddCommandLine(new object[] {"-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\""});
-
 
             var currentConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("installADDS");
             var currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("1-install-prereqsz");
@@ -193,6 +189,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
             this.OnAddedToDomain(this.DomainNetBiosName.Default.ToString());
         }
+
 
         public void CreateAdReplicationSubnet(Subnet subnet)
         {

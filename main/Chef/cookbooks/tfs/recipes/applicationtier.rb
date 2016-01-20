@@ -22,7 +22,7 @@ LogFile = "#{Chef::Config['file_cache_path']}\\Configure-Team-Foundation-Server-
 
 tfsconfigure_exe_file = "C:\\Program Files\\Microsoft Team Foundation Server 14.0\\Tools\\TFSConfig.exe"
 
-psexec_path = "c:\\tools\\pstools\\psexec.exe"
+
 
 cookbook_file "configbasic.ini" do
 	path "#{Chef::Config['file_cache_path']}\\configbasic.ini"
@@ -31,7 +31,7 @@ end
 
 # Installing Team Foundation Server Standard.
 execute 'Configure Team Foundation Server STD' do
-	command "#{psexec_path} -accepteula -h -u #{TFS_DomainAdminUserName} -p #{TFS_DomainAdminPassword} \"C:\\Program Files\\Microsoft Team Foundation Server 14.0\\Tools\\TFSConfig.exe\" unattend /configure /unattendfile:#{Chef::Config['file_cache_path']}\\configbasic.ini>#{LogFile}"
+	command "#{node[:PsTools][:exe_path]} -accepteula -h -u #{node[:domainAdmin][:name]} -p #{node[:domainAdmin][:password]} \"C:\\Program Files\\Microsoft Team Foundation Server 14.0\\Tools\\TFSConfig.exe\" unattend /configure /unattendfile:#{Chef::Config['file_cache_path']}\\configbasic.ini>#{LogFile}"
 	not_if { File.exist?( LogFile ) }
 end
 

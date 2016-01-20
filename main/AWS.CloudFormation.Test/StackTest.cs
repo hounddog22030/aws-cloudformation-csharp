@@ -24,7 +24,6 @@ namespace AWS.CloudFormation.Test
     [TestClass]
     public class StackTest
     {
-        const string CookbookFileName = "cookbooks-1452723974.tar.gz";
         // ReSharper disable once InconsistentNaming
         const string DomainAdminPassword = "kasdfiajs!!9";
         // ReSharper disable once InconsistentNaming
@@ -102,8 +101,6 @@ namespace AWS.CloudFormation.Test
             tfsServerSecurityGroup.AddIngress(DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             tfsServerSecurityGroup.AddIngress(tfsServerUsers, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
-            
-
 
             SecurityGroup buildServerSecurityGroup = template.GetSecurityGroup("BuildServerSecurityGroup", vpc, "Allows build controller to build agent communication");
             buildServerSecurityGroup.AddIngress(DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -111,17 +108,12 @@ namespace AWS.CloudFormation.Test
             buildServerSecurityGroup.AddIngress(tfsServerSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerBuild);
 
             SecurityGroup sqlServerSecurityGroup = template.GetSecurityGroup("SqlServer4TfsSecurityGroup", vpc, "Allows communication to SQLServer Service");
-            sqlServerSecurityGroup.AddIngress(tfsServerSecurityGroup, Protocol.Tcp, Ports.MsSqlServer);
             sqlServerSecurityGroup.AddIngress(DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             sqlServerSecurityGroup.AddIngress(DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
 
+
             SecurityGroup workstationSecurityGroup = template.GetSecurityGroup("WorkstationSecurityGroup", vpc, "Security Group To Contain Workstations");
             tfsServerSecurityGroup.AddIngress(workstationSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
-
-
-
-
-
 
             InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
             AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
@@ -169,6 +161,12 @@ namespace AWS.CloudFormation.Test
 
             //// uses 24gb
             var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
+
+            // create security group for access to sql port from tfs to sql1;
+            SecurityGroup sqlAccessForTfsServer = new SecurityGroup(template,"SqlAccess", "Sql Access For Tfs server", vpc);
+            sqlAccessForTfsServer.AddIngress(tfsServer, Protocol.Tcp, Ports.MsSqlServer);
+
+
 
 
 
@@ -702,6 +700,8 @@ Set-Disk $d.Number -IsOffline $False
                                                     true, 
                                                     Ebs.VolumeTypes.GeneralPurpose,
                                                     214);
+
+            
             tfsServer.AddDependsOn(tfsSqlServer, MaxTimeOut);
             var chefNode = tfsServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
@@ -1032,7 +1032,7 @@ Set-Disk $d.Number -IsOffline $False
         [TestMethod]
         public void UpdatePrimeTest()
         {
-            var stackName = "CreatePrimeTest-2016-01-18T1122251892625-0500";
+            var stackName = "prime-manual";
             
             Stack.Stack.UpdateStack(stackName, GetTemplateFullStack(this.TestContext, "VpcCreatePrimeTest"));
         }

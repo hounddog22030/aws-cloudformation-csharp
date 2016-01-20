@@ -70,7 +70,16 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
 
             this.MakeIpAddressStatic();
+            this.DisableFirewall();
+        }
 
+        private void DisableFirewall()
+        {
+            var setup = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("setup");
+            var disableFirewallCommand = setup.Commands.AddCommand<PowerShellCommand>("a-disable-win-fw");
+            disableFirewallCommand.WaitAfterCompletion = 0.ToString();
+            disableFirewallCommand.Command.AddCommandLine(new object[]
+            {"-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\""});
         }
 
         protected void MakeIpAddressStatic()

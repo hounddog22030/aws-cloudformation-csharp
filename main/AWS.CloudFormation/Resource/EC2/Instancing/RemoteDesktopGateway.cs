@@ -1,4 +1,5 @@
-﻿using AWS.CloudFormation.Property;
+﻿using System;
+using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
@@ -74,7 +75,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 this.Template, 
                 this.LogicalId + "Record",
                 tldDomain,
-                $"rdp.{this.DomainDnsName.Default}.",
+                $"rdp{DateTime.Now.Second}.{this.DomainDnsName.Default}.",
                 RecordSet.RecordSetTypeEnum.A);
             routing.ResourceRecords.Add(this.ElasticIp);
 

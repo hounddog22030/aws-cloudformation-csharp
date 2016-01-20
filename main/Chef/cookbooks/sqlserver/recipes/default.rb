@@ -32,6 +32,6 @@ puts "SQLSYSADMINACCOUNTS=#{SQLSYSADMINACCOUNTS}"
 execute 'Install SQL' do
 	timeout 7200
 	command "#{exe_path} /q #{SQLSYSADMINACCOUNTS} /ACTION=Install /FEATURES=#{node[:sqlserver][:FEATURES]} /INSTANCENAME=#{node[:sqlserver][:INSTANCENAME]} /IAcceptSQLServerLicenseTerms=#{node[:sqlserver][:IAcceptSQLServerLicenseTerms]} /SQLSVCACCOUNT=\"#{node[:sqlserver][:SQLSVCACCOUNT]}\" /AGTSVCACCOUNT=\"#{node[:sqlserver][:AGTSVCACCOUNT]}\" /INDICATEPROGRESS /UpdateEnabled=False /SECURITYMODE=#{node[:sqlserver][:SECURITYMODE]} /SAPWD=#{node[:sqlserver][:SAPWD]} /TCPENABLED=#{node[:sqlserver][:TCPENABLED]} /ADDCURRENTUSERASSQLADMIN=#{node[:sqlserver][:ADDCURRENTUSERASSQLADMIN]} /SQLUSERDBDIR=\"#{node[:sqlserver][:SQLUSERDBDIR]}\" /SQLUSERDBLOGDIR=\"#{node[:sqlserver][:SQLUSERDBLOGDIR]}\" /INSTALLSQLDATADIR=\"#{node[:sqlserver][:INSTALLSQLDATADIR]}\""
-	not_if { File.exist?("C:\\Program Files\\Microsoft SQL Server\\MSSQL13.#{node[:sqlserver][:INSTANCENAME]}\\MSSQL\\Binn\\sqlserv.exe") }
+	not_if { File.exist?("C:\\Program Files\\Microsoft SQL Server\\MSSQL12.#{node[:sqlserver][:INSTANCENAME]}\\MSSQL\\Binn\\sqlserv.exe") }
 	action :nothing
 end
