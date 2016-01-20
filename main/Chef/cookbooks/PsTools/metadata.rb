@@ -6,3 +6,4 @@ description      'Installs/Configures PsTools'
 long_description 'Installs/Configures PsTools'
 version          '0.1.0'
 
+depends 'windows'

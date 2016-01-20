@@ -10,15 +10,21 @@ namespace AWS.CloudFormation.Configuration.Packages
 {
     public abstract class PackageBase
     {
-        protected PackageBase(string cookbookName, string snapshotId)
+        protected PackageBase(string cookbookName, string snapshotId) : this(cookbookName,snapshotId, "default")
+        {
+        }
+        protected PackageBase(string cookbookName, string snapshotId, string recipeName)
         {
             CookbookName = cookbookName;
             SnapshotId = snapshotId;
+            RecipeName = $"{CookbookName}::{recipeName}";
         }
 
         public string CookbookName { get; }
 
         public string SnapshotId { get; }
+
+        public string RecipeName { get; private set; }
     }
     public class VisualStudio : PackageBase
     {
@@ -38,6 +44,22 @@ namespace AWS.CloudFormation.Configuration.Packages
             sqlServerNode.Add("SQLUSERDBDIR", "d:\\SqlUserDb");
             sqlServerNode.Add("SQLUSERDBLOGDIR", "e:\\SqlUserDbLog");
             sqlServerNode.Add("INSTALLSQLDATADIR", "f:\\SqlData");
+        }
+    }
+
+    public abstract class TeamFoundationServer : PackageBase
+    {
+        public TeamFoundationServer(string recipeName) : base ("tfs", "snap-4e69d94b", recipeName)
+        {
+            
+        }
+    }
+
+    public class TeamFoundationServerApplicationTier : TeamFoundationServer
+    {
+        public TeamFoundationServerApplicationTier() : base("applicationtier")
+        {
+            
         }
     }
 

@@ -17,7 +17,7 @@ end
 
 # Installing Team Foundation Server Standard.
 execute 'Install TFS' do
-	command { "#{node[:tfs][:setup_exe_path]} /quiet" }
+	command "#{node[:tfs][:setup_exe_path]} /quiet"
 	timeout 21600
 	returns [0,3010]
 	not_if { File.exist?("#{node[:tfs][:config_exe_path]}") }

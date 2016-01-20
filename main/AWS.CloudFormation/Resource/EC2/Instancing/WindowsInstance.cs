@@ -176,7 +176,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public void AddPackage(string s3BucketName, PackageBase package)
         {
             var cookbookFileName = $"{package.CookbookName}.tar.gz";
-            this.AddChefExec(s3BucketName, cookbookFileName, package.CookbookName);
+            this.AddChefExec(s3BucketName, cookbookFileName,package.RecipeName);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this, this.GetAvailableDevice());
             blockDeviceMapping.Ebs.SnapshotId = package.SnapshotId;
             this.AddBlockDeviceMapping(blockDeviceMapping);

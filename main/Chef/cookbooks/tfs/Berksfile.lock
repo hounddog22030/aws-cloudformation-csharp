@@ -11,6 +11,8 @@ DEPENDENCIES
 
 GRAPH
   PsTools (0.1.0)
+    windows (>= 0.0.0)
+  chef_handler (1.2.0)
   ec2helper (0.1.0)
   tfs (0.1.0)
     PsTools (>= 0.0.0)
@@ -18,3 +20,5 @@ GRAPH
     vs (>= 0.0.0)
   vs (0.1.0)
     ec2helper (>= 0.0.0)
+  windows (1.39.1)
+    chef_handler (>= 0.0.0)

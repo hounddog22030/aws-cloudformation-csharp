@@ -1,0 +1,12 @@
+DEPENDENCIES
+  PsTools
+    path: .
+    metadata: true
+  windows
+
+GRAPH
+  PsTools (0.1.0)
+    windows (>= 0.0.0)
+  chef_handler (1.2.0)
+  windows (1.39.1)
+    chef_handler (>= 0.0.0)
