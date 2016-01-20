@@ -708,7 +708,7 @@ Set-Disk $d.Number -IsOffline $False
             domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             tfsServer.SecurityGroupIds.Add(tfsServerSecurityGroup);
-            tfsServer.AddChefExec(SoftwareS3BucketName, "tfs.tar", "tfs::install");
+            tfsServer.AddChefExec(SoftwareS3BucketName, "tfs.tar.gz", "tfs::install");
             
             
             dc1.AddToDomain(tfsServer, ThreeHoursSpan);
