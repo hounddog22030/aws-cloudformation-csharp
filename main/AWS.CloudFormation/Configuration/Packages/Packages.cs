@@ -59,7 +59,14 @@ namespace AWS.CloudFormation.Configuration.Packages
     {
         public TeamFoundationServerApplicationTier() : base("applicationtier")
         {
-            
+
+        }
+    }
+    public class TeamFoundationServerBuildServer : TeamFoundationServer
+    {
+        public TeamFoundationServerBuildServer() : base("build")
+        {
+
         }
     }
 

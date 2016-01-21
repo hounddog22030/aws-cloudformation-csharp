@@ -107,7 +107,7 @@ namespace AWS.CloudFormation.Test
             SecurityGroup buildServerSecurityGroup = template.GetSecurityGroup("BuildServerSecurityGroup", vpc, "Allows build controller to build agent communication");
             buildServerSecurityGroup.AddIngress((ICidrBlock) DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             buildServerSecurityGroup.AddIngress((ICidrBlock) DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            buildServerSecurityGroup.AddIngress(tfsServerSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerBuild);
+            //buildServerSecurityGroup.AddIngress(tfsServerSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerBuild);
 
             SecurityGroup sqlServerSecurityGroup = template.GetSecurityGroup("SqlServer4TfsSecurityGroup", vpc, "Allows communication to SQLServer Service");
             sqlServerSecurityGroup.AddIngress((ICidrBlock) DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -170,14 +170,9 @@ namespace AWS.CloudFormation.Test
             sqlAccessForTfsServer.AddIngress(tfsServer as ILogicalId, Protocol.Tcp, Ports.MsSqlServer);
             tfsSqlServer.SecurityGroupIds.Add(sqlAccessForTfsServer);
 
-
-
-
-
-            //// uses 24gb
-            //var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup, IPNetwork.Parse(BuildServerIpAddress + "/32"));
-            //buildServer.AddFinalizer(ThreeHoursSpan);
-            //tfsServerSecurityGroup.AddIngress(buildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            // uses 24gb
+            var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup);
+            tfsServerSecurityGroup.AddIngress((ILogicalId)buildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             //buildServer.SecurityGroupIds.Add(tfsServerUsers);
 
 
@@ -426,7 +421,7 @@ Set-Disk $d.Number -IsOffline $False
             var dc1 = AddDomainController(template, DMZSubnet);
             dc1.AddElasticIp();
             dc1.SecurityGroupIds.Add(rdp);
-            WindowsInstance w = AddBuildServer(template, DMZSubnet, null, dc1, rdp, null);
+            WindowsInstance w = AddBuildServer(template, DMZSubnet, null, dc1, rdp);
             w.AddElasticIp();
 
             CreateTestStack(template, this.TestContext);
@@ -608,13 +603,14 @@ Set-Disk $d.Number -IsOffline $False
 
 
 
-        private static WindowsInstance AddBuildServer(Template template, Subnet subnet, WindowsInstance tfsServer, DomainController DomainController, SecurityGroup buildServerSecurityGroup, IPNetwork staticIpAddress)
+        private static WindowsInstance AddBuildServer(Template template, Subnet subnet, WindowsInstance tfsServer, DomainController DomainController, SecurityGroup buildServerSecurityGroup)
         {
 
             var buildServer = new WindowsInstance(template, "build", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, subnet, true);
             buildServer.AddBlockDeviceMapping("/dev/sda1", 30, Ebs.VolumeTypes.GeneralPurpose);
 
             buildServer.AddPackage(SoftwareS3BucketName, new VisualStudio());
+            buildServer.AddPackage(SoftwareS3BucketName, new TeamFoundationServerBuildServer());
 
             if (tfsServer != null)
             {
@@ -626,12 +622,8 @@ Set-Disk $d.Number -IsOffline $False
             domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             buildServer.SecurityGroupIds.Add(buildServerSecurityGroup);
-            if (staticIpAddress != null)
-            {
-                buildServer.PrivateIpAddress = staticIpAddress.FirstUsable.ToString();
-            }
-            
             DomainController.AddToDomain(buildServer, ThreeHoursSpan);
+            buildServer.AddFinalizer(ThreeHoursSpan);
             return buildServer;
         }
 
