@@ -109,19 +109,6 @@
     <None Include="cookbooks\Resharper\spec\unit\recipes\default_spec.rb" />
     <None Include="cookbooks\Resharper\test\integration\default\serverspec\default_spec.rb" />
     <None Include="cookbooks\Resharper\test\integration\default\serverspec\spec_helper.rb" />
-    <None Include="cookbooks\SQL2014\.kitchen.yml" />
-    <None Include="cookbooks\SQL2014\attributes\default.rb" />
-    <None Include="cookbooks\SQL2014\Berksfile" />
-    <None Include="cookbooks\SQL2014\chefignore" />
-    <None Include="cookbooks\SQL2014\metadata.json" />
-    <None Include="cookbooks\SQL2014\metadata.rb" />
-    <None Include="cookbooks\SQL2014\README.md" />
-    <None Include="cookbooks\SQL2014\recipes\default.rb" />
-    <None Include="cookbooks\SQL2014\recipes\express.rb" />
-    <None Include="cookbooks\SQL2014\spec\spec_helper.rb" />
-    <None Include="cookbooks\SQL2014\spec\unit\recipes\default_spec.rb" />
-    <None Include="cookbooks\SQL2014\test\integration\default\serverspec\default_spec.rb" />
-    <None Include="cookbooks\SQL2014\test\integration\default\serverspec\spec_helper.rb" />
     <None Include="cookbooks\sqlserver\.kitchen.yml" />
     <None Include="cookbooks\sqlserver\attributes\default.rb" />
     <None Include="cookbooks\sqlserver\Berksfile" />
@@ -183,7 +170,6 @@
     <Folder Include="cookbooks\msdotnet35\resources\" />
     <Folder Include="cookbooks\msdotnet35\templates\" />
     <Folder Include="cookbooks\msdotnet35\test\" />
-    <Folder Include="cookbooks\NewFolder1\" />
     <Folder Include="cookbooks\sqlserver\files\" />
     <Folder Include="cookbooks\sqlserver\libraries\" />
     <Folder Include="cookbooks\sqlserver\providers\" />
