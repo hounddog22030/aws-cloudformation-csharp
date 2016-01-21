@@ -8,30 +8,22 @@ include_recipe 'ec2helper'
 include_recipe 'PsTools'
 include_recipe 'tfs::install'
 
-
-
-
 # Declaring Variables
-TFS_svc_act       = "NT AUTHORITY\\NETWORK SERVICE"
-TFS_agent_svc_act = "NT Service\\TFSSERVERAGENT"
-volume_name = "VS2013_4_TFS_EXP_ENU"
-TFS_DomainAdminUserName = "#{node[:domainAdmin][:name]}"
-TFS_DomainAdminPassword = "#{node[:domainAdmin][:password]}"
 LogFile = "#{Chef::Config['file_cache_path']}\\Configure-Team-Foundation-Server-STD.log"
 
 
 tfsconfigure_exe_file = "C:\\Program Files\\Microsoft Team Foundation Server 14.0\\Tools\\TFSConfig.exe"
 
+configurationFile = "#{Chef::Config['file_cache_path']}\\configbasic.ini"
 
-
-cookbook_file "configbasic.ini" do
+cookbook_file "#{configurationFile}" do
 	path "#{Chef::Config['file_cache_path']}\\configbasic.ini"
 	action :create_if_missing	
 end
 
 # Installing Team Foundation Server Standard.
 execute 'Configure Team Foundation Server STD' do
-	command "#{node[:PsTools][:exe_path]} -accepteula -h -u #{node[:domainAdmin][:name]} -p #{node[:domainAdmin][:password]} \"C:\\Program Files\\Microsoft Team Foundation Server 14.0\\Tools\\TFSConfig.exe\" unattend /configure /unattendfile:#{Chef::Config['file_cache_path']}\\configbasic.ini>#{LogFile}"
+	command "#{node[:PsTools][:exe_path]} -accepteula -h -u #{node[:domainAdmin][:name]} -p #{node[:domainAdmin][:password]} \"C:\\Program Files\\Microsoft Team Foundation Server 14.0\\Tools\\TFSConfig.exe\" unattend /configure /unattendfile:#{configurationFile}>#{LogFile}"
 	not_if { File.exist?( LogFile ) }
 end
 
