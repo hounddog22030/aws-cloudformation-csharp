@@ -198,16 +198,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
             dependsOn.AddFinalizer(timeout);
 
-            var tempDependsOn = new List<string>();
+            this.DependsOn2.Add(dependsOn.WaitConditionName);
 
-            if (this.DependsOn != null)
-            {
-                tempDependsOn.AddRange(this.DependsOn);
-            }
-
-            tempDependsOn.Add(dependsOn.WaitConditionName);
-
-            this.DependsOn = tempDependsOn.ToArray();
         }
 
         public void AddFinalizer(TimeSpan timeout)

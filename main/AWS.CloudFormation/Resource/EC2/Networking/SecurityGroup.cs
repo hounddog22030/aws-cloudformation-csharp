@@ -86,7 +86,6 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 
         private SecurityGroupIngress AddIngress(string cidr, string protocol, int fromPort, int toPort)
         {
-
             SecurityGroupIngress newIngressEgress;
             newIngressEgress = new SecurityGroupIngress(fromPort, toPort, protocol.ToString().ToLower(), cidr) as SecurityGroupIngress;
             List<SecurityGroupIngress> temp = new List<SecurityGroupIngress>();
@@ -182,5 +181,16 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             return AddIngress(cidrObject.CidrBlock, protocol, portBegin, portEnd);
         }
 
+        public SecurityGroupIngress AddIngress(ILogicalId logicalId, Protocol protocol, Ports port)
+        {
+            SecurityGroupIngress newIngressEgress;
+            newIngressEgress = new SecurityGroupIngress(logicalId, protocol, port);
+            List<SecurityGroupIngress> temp = new List<SecurityGroupIngress>();
+            temp.AddRange(this.SecurityGroupIngress.Cast<SecurityGroupIngress>());
+            temp.Add(newIngressEgress);
+            SecurityGroupIngress[] myArray = temp.ToArray();
+            this.SecurityGroupIngress = myArray;
+            return newIngressEgress;
+        }
     }
 }

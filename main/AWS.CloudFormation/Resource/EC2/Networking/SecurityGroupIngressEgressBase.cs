@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using AWS.CloudFormation.Common;
 
 namespace AWS.CloudFormation.Resource.EC2.Networking
 {
@@ -34,7 +36,8 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         MsSqlServer = 1433,
         BuildController = 9191,
         TeamFoundationServerHttp = 8080,
-        TeamFoundationServerBuild = 9191
+        TeamFoundationServerBuild = 9191,
+        Ping = 1
     }
 
     [Flags]
@@ -71,8 +74,18 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             IpProtocol = protocol;
         }
 
+        protected SecurityGroupIngressEgressBase(ILogicalId logicalId, Protocol protocol, Ports fromPort, Ports toPort) : this((int)fromPort, (int)toPort,protocol.ToString())
+        {
+            var fnJoinDictionary = new CloudFormationDictionary();
+            var fnGetAttDictionary = new CloudFormationDictionary();
+            var privateIp = new string[] { logicalId.LogicalId, "PrivateIp" };
+            fnGetAttDictionary.Add("Fn::GetAtt", privateIp);
+            fnJoinDictionary.SetFnJoin(fnGetAttDictionary,"/32");
+            CidrIp = fnJoinDictionary;
+        }
 
-        public string CidrIp { get; private set; }
+
+        public object CidrIp { get; private set; }
         public int FromPort { get; private set; }
         public string IpProtocol { get; private set; }
         public int ToPort { get; private set; }

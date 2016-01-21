@@ -97,7 +97,6 @@ namespace AWS.CloudFormation.Test.Route53
         public void RecordSetMappedToEipTest()
         {
             Template template = StackTest.GetNewBlankTemplateWithVpc(this.TestContext);
-            InternetGateway gateway = template.AddInternetGateway("InternetGateway", template.Vpcs.First());
             var DMZSubnet = template.AddSubnet("DMZSubnet", template.Vpcs.First(), "10.0.0.0/20", Template.AvailabilityZone.UsEast1A);
             Instance testBox = new Instance(template, "testbox", InstanceTypes.T2Micro, "ami-60b6c60a", OperatingSystem.Linux, false);
             testBox.Subnet = DMZSubnet;

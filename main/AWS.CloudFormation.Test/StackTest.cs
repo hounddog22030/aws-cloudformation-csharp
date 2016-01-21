@@ -9,10 +9,12 @@ using System.Threading;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Configuration.Packages;
 using AWS.CloudFormation.Property;
+using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
+using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OperatingSystem = AWS.CloudFormation.Resource.EC2.Instancing.OperatingSystem;
@@ -97,26 +99,25 @@ namespace AWS.CloudFormation.Test
             SecurityGroup tfsServerUsers = template.GetSecurityGroup("TFSUsers", vpc, "Security Group To Contain Users of the TFS Services");
 
             SecurityGroup tfsServerSecurityGroup = template.GetSecurityGroup("TFSServerSecurityGroup", vpc, "Allows various TFS communication");
-            tfsServerSecurityGroup.AddIngress(DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            tfsServerSecurityGroup.AddIngress(DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            tfsServerSecurityGroup.AddIngress((ICidrBlock)DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            tfsServerSecurityGroup.AddIngress((ICidrBlock)DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             tfsServerSecurityGroup.AddIngress(tfsServerUsers, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
             SecurityGroup buildServerSecurityGroup = template.GetSecurityGroup("BuildServerSecurityGroup", vpc, "Allows build controller to build agent communication");
-            buildServerSecurityGroup.AddIngress(DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            buildServerSecurityGroup.AddIngress(DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            buildServerSecurityGroup.AddIngress((ICidrBlock) DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            buildServerSecurityGroup.AddIngress((ICidrBlock) DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             buildServerSecurityGroup.AddIngress(tfsServerSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerBuild);
 
             SecurityGroup sqlServerSecurityGroup = template.GetSecurityGroup("SqlServer4TfsSecurityGroup", vpc, "Allows communication to SQLServer Service");
-            sqlServerSecurityGroup.AddIngress(DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            sqlServerSecurityGroup.AddIngress(DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            sqlServerSecurityGroup.AddIngress((ICidrBlock) DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            sqlServerSecurityGroup.AddIngress((ICidrBlock) DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
 
 
             SecurityGroup workstationSecurityGroup = template.GetSecurityGroup("WorkstationSecurityGroup", vpc, "Security Group To Contain Workstations");
             tfsServerSecurityGroup.AddIngress(workstationSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
-            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
-            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
+            AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
 
             // ReSharper disable once InconsistentNaming
             RouteTable PrivateRouteTable = template.AddRouteTable("PrivateRouteTable", vpc);
@@ -137,8 +138,8 @@ namespace AWS.CloudFormation.Test
 
             foreach (var subnet in subnetsToAddToNatSecurityGroup)
             {
-                natSecurityGroup.AddIngress(subnet, Protocol.All, Ports.Min, Ports.Max);
-                natSecurityGroup.AddIngress(subnet, Protocol.Icmp, Ports.All);
+                natSecurityGroup.AddIngress((ICidrBlock)subnet, Protocol.All, Ports.Min, Ports.Max);
+                natSecurityGroup.AddIngress((ICidrBlock)subnet, Protocol.Icmp, Ports.All);
             }
 
             var nat1 = AddNat1(template, DMZSubnet, natSecurityGroup);
@@ -147,6 +148,8 @@ namespace AWS.CloudFormation.Test
             // ReSharper disable once InconsistentNaming
             // uses 21gb
             var DomainController = AddDomainController(template, PrivateSubnet1);
+            //
+                //
             DomainController.CreateAdReplicationSubnet(DMZSubnet);
             DomainController.CreateAdReplicationSubnet(DMZ2Subnet);
 
@@ -163,8 +166,9 @@ namespace AWS.CloudFormation.Test
             var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
 
             // create security group for access to sql port from tfs to sql1;
-            SecurityGroup sqlAccessForTfsServer = new SecurityGroup(template,"SqlAccess", "Sql Access For Tfs server", vpc);
-            sqlAccessForTfsServer.AddIngress(tfsServer, Protocol.Tcp, Ports.MsSqlServer);
+            SecurityGroup sqlAccessForTfsServer = new SecurityGroup(template, "SqlAccess", "Sql Access For Tfs server", vpc);
+            sqlAccessForTfsServer.AddIngress(tfsServer as ILogicalId, Protocol.Tcp, Ports.MsSqlServer);
+            tfsSqlServer.SecurityGroupIds.Add(sqlAccessForTfsServer);
 
 
 
@@ -257,8 +261,7 @@ namespace AWS.CloudFormation.Test
             template.AddResource(rdp);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
-            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
-            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
+            AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
             WindowsInstance w = new WindowsInstance(template,"Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
             w.SecurityGroupIds.Add(rdp);
             w.AddElasticIp();
@@ -277,8 +280,7 @@ namespace AWS.CloudFormation.Test
             template.AddResource(rdp);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
-            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
-            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
+            AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
             WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "/dev/xvdf");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
@@ -314,8 +316,7 @@ Set-Disk $d.Number -IsOffline $False
             template.AddResource(rdp);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
-            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
-            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
+            AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
             WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "xvdf");
             blockDeviceMapping.Ebs.SnapshotId = "snap-87e3eb87";
@@ -360,8 +361,7 @@ Set-Disk $d.Number -IsOffline $False
             template.AddResource(rdp);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
-            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
-            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
+            AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
             WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
 
             w.AddPackage(SoftwareS3BucketName, new SqlServerExpress(w));
@@ -384,14 +384,13 @@ Set-Disk $d.Number -IsOffline $False
             template.AddResource(rdp);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
-            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
-            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
+            AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
             var PrivateSubnet1 = template.AddSubnet("PrivateSubnet1", vpc, PrivSub1CIDR, Template.AvailabilityZone.UsEast1A);
             var dc1 = AddDomainController(template, PrivateSubnet1);
-            WindowsInstance w = AddWorkstation(template, "Windows1",DMZSubnet, null,dc1, rdp, null, false);
+            WindowsInstance w = AddWorkstation(template, "Windows1", DMZSubnet, null, dc1, rdp, null, false);
             w.AddElasticIp();
 
-            CreateTestStack(template,this.TestContext);
+            CreateTestStack(template, this.TestContext);
 
         }
 
@@ -404,9 +403,8 @@ Set-Disk $d.Number -IsOffline $False
             template.AddResource(rdp);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
-            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
-            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
-            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI,false);
+            AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
+            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, false);
             w.Subnet = DMZSubnet;
             w.SecurityGroupIds.Add(rdp);
             w.AddElasticIp();
@@ -424,12 +422,11 @@ Set-Disk $d.Number -IsOffline $False
             template.AddResource(rdp);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
-            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
-            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
+            AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
             var dc1 = AddDomainController(template, DMZSubnet);
             dc1.AddElasticIp();
             dc1.SecurityGroupIds.Add(rdp);
-            WindowsInstance w = AddBuildServer(template, DMZSubnet, null, dc1, rdp,null);
+            WindowsInstance w = AddBuildServer(template, DMZSubnet, null, dc1, rdp, null);
             w.AddElasticIp();
 
             CreateTestStack(template, this.TestContext);
@@ -445,8 +442,7 @@ Set-Disk $d.Number -IsOffline $False
             template.AddResource(rdp);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("PrivateSubnet", vpc, PrivSub1CIDR, Template.AvailabilityZone.UsEast1A);
-            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
-            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
+            AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
 
             WindowsInstance w = AddDomainController(template, DMZSubnet);
             w.SecurityGroupIds.Add(rdp);
@@ -465,8 +461,7 @@ Set-Disk $d.Number -IsOffline $False
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
-            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
-            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
+            AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
 
             WindowsInstance workstation = new WindowsInstance(template, "ISOMaker", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
@@ -477,7 +472,7 @@ Set-Disk $d.Number -IsOffline $False
 
 
             workstation.SecurityGroupIds.Add(rdp);
-            
+
 
 
             workstation.AddElasticIp();
@@ -495,8 +490,7 @@ Set-Disk $d.Number -IsOffline $False
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
-            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
-            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
+            AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
 
             WindowsInstance workstation = new WindowsInstance(template, "ISOMaker", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
             workstation.SecurityGroupIds.Add(rdp);
@@ -507,7 +501,7 @@ Set-Disk $d.Number -IsOffline $False
 
             CreateTestStack(template, this.TestContext, name);
 
-            workstation.Metadata.Init.ConfigSets.GetConfigSet("x").GetConfig("y").Commands.AddCommand<Command>("z").Command.AddCommandLine(true,"dir");
+            workstation.Metadata.Init.ConfigSets.GetConfigSet("x").GetConfig("y").Commands.AddCommand<Command>("z").Command.AddCommandLine(true, "dir");
 
             Thread.Sleep(new TimeSpan(0, 60, 0));
 
@@ -516,14 +510,14 @@ Set-Disk $d.Number -IsOffline $False
             //{
             //    try
             //    {
-                    Stack.Stack.UpdateStack(name, template);
+            Stack.Stack.UpdateStack(name, template);
             //        break;
             //    }
             //    catch (Exception)
             //    {
             //        Thread.Sleep(new TimeSpan(0,5,0));
             //    }
-                
+
             //} while (true);
         }
 
@@ -538,9 +532,8 @@ Set-Disk $d.Number -IsOffline $False
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             
             Subnet DMZSubnet = new Subnet(template, "DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
-            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
-            RouteTable dmzRouteTable = new RouteTable(template,"DMZRouteTable", vpc);
-            Route dmzRoute = new Route(template, "DMZRoute", gateway, "0.0.0.0/0", dmzRouteTable);
+            RouteTable dmzRouteTable = new RouteTable(template, "DMZRouteTable", vpc);
+            Route dmzRoute = new Route(template, "DMZRoute", vpc.InternetGateway, "0.0.0.0/0", dmzRouteTable);
             SubnetRouteTableAssociation DMZSubnetRouteTableAssociation = new SubnetRouteTableAssociation(template, DMZSubnet, dmzRouteTable);
             WindowsInstance workstation = new WindowsInstance(template, "SerializerTest", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
             workstation.SecurityGroupIds.Add(rdp);
@@ -580,8 +573,7 @@ Set-Disk $d.Number -IsOffline $False
             template.AddResource(rdp);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
-            InternetGateway gateway = template.AddInternetGateway("InternetGateway", vpc);
-            AddInternetGatewayRouteTable(template, vpc, gateway, DMZSubnet);
+            AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
             WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "xvdf");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
@@ -709,15 +701,7 @@ Set-Disk $d.Number -IsOffline $False
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             tfsServer.SecurityGroupIds.Add(tfsServerSecurityGroup);
             tfsServer.AddPackage(SoftwareS3BucketName, new TeamFoundationServerApplicationTier());
-            
-            
             dc1.AddToDomain(tfsServer, ThreeHoursSpan);
-            var disableFirewallConfigSet = tfsServer.Metadata.Init.ConfigSets.GetConfigSet("disable-win-fw-configSet");
-            var disableFirewallConfig = disableFirewallConfigSet.GetConfig("disable-win-fw-configSet");
-
-            var disableFirewallCommand = disableFirewallConfig.Commands.AddCommand<PowerShellCommand>("disable-win-fw-command");
-            disableFirewallCommand.WaitAfterCompletion = 0.ToString();
-            disableFirewallCommand.Command.AddCommandLine(new object[] { "-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\"" });
             return tfsServer;
         }
 
@@ -950,30 +934,30 @@ Set-Disk $d.Number -IsOffline $False
 
         private static void SetupDomainController1SecurityGround(SecurityGroup domainControllerSg1, Vpc vpc, Subnet az2Subnet, SecurityGroup domainMemberSg, Subnet DMZSubnet, Subnet dmzaz2Subnet)
         {
-            domainControllerSg1.AddIngress(vpc, Protocol.Tcp, Ports.WsManagementPowerShell);
-            domainControllerSg1.AddIngress(az2Subnet, Protocol.Udp,Ports.Ntp);
-            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp, Ports.WinsManager);
-            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryManagement);
-            domainControllerSg1.AddIngress(az2Subnet, Protocol.Udp, Ports.NetBios);
+            domainControllerSg1.AddIngress((ICidrBlock)vpc, Protocol.Tcp, Ports.WsManagementPowerShell);
+            domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Udp,Ports.Ntp);
+            domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Tcp, Ports.WinsManager);
+            domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryManagement);
+            domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Udp, Ports.NetBios);
 
-            domainControllerSg1.AddIngress(az2Subnet,Protocol.Tcp|Protocol.Udp, Ports.Smb);
-            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp|Protocol.Udp, Ports.ActiveDirectoryManagement2);
-            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp|Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
-            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp|Protocol.Udp, Ports.Ldap);
+            domainControllerSg1.AddIngress((ICidrBlock)az2Subnet,Protocol.Tcp|Protocol.Udp, Ports.Smb);
+            domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Tcp|Protocol.Udp, Ports.ActiveDirectoryManagement2);
+            domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Tcp|Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
+            domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Tcp|Protocol.Udp, Ports.Ldap);
 
-            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp, Ports.Ldaps);
-            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp, Ports.Ldap2Begin, Ports.Ldap2End);
+            domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Tcp, Ports.Ldaps);
+            domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Tcp, Ports.Ldap2Begin, Ports.Ldap2End);
 
-            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp|Protocol.Udp, Ports.DnsQuery);
+            domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Tcp|Protocol.Udp, Ports.DnsQuery);
 
-            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryManagement);
+            domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryManagement);
 
-            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp|Protocol.Udp, Ports.KerberosKeyDistribution);
+            domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Tcp|Protocol.Udp, Ports.KerberosKeyDistribution);
 
-            domainControllerSg1.AddIngress(az2Subnet, Protocol.Udp, Ports.DnsLlmnr);
-            domainControllerSg1.AddIngress(az2Subnet, Protocol.Udp, Ports.NetBt);
-            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp, Ports.NetBiosNameServices);
-            domainControllerSg1.AddIngress(az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryFileReplication);
+            domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Udp, Ports.DnsLlmnr);
+            domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Udp, Ports.NetBt);
+            domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Tcp, Ports.NetBiosNameServices);
+            domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryFileReplication);
             domainControllerSg1.AddIngress(domainMemberSg, Protocol.Udp,Ports.Ntp);
             domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp,Ports.WinsManager);
             domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp,Ports.ActiveDirectoryManagement);
@@ -991,10 +975,10 @@ Set-Disk $d.Number -IsOffline $False
 
             domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp|Protocol.Udp,Ports.KerberosKeyDistribution);
 
-            domainControllerSg1.AddIngress(DMZSubnet, Protocol.Tcp|Protocol.Udp, Ports.RemoteDesktopProtocol);
+            domainControllerSg1.AddIngress((ICidrBlock)DMZSubnet, Protocol.Tcp|Protocol.Udp, Ports.RemoteDesktopProtocol);
 
-            domainControllerSg1.AddIngress(DMZSubnet, Protocol.Icmp, Ports.All);
-            domainControllerSg1.AddIngress(dmzaz2Subnet, Protocol.Icmp, Ports.All);
+            domainControllerSg1.AddIngress((ICidrBlock)DMZSubnet, Protocol.Icmp, Ports.All);
+            domainControllerSg1.AddIngress((ICidrBlock)dmzaz2Subnet, Protocol.Icmp, Ports.All);
         }
 
         //private static void AddNatSecurityGroupIngressRules(SecurityGroup natSecurityGroup, Subnet az1Subnet, Subnet az2Subnet,
@@ -1032,7 +1016,7 @@ Set-Disk $d.Number -IsOffline $False
         [TestMethod]
         public void UpdatePrimeTest()
         {
-            var stackName = "prime-manual";
+            var stackName = "CreatePrimeTest-2016-01-20T2021253280322-0500";
             
             Stack.Stack.UpdateStack(stackName, GetTemplateFullStack(this.TestContext, "VpcCreatePrimeTest"));
         }

@@ -13,6 +13,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             : this(template, routeName, destinationCidrBlock, routeTable)
         {
             Gateway = gateway;
+            this.DependsOn2.Add(Gateway.LogicalId);
         }
 
         public Route(Template template, string routeName, string destinationCidrBlock, RouteTable routeTable) : base(template, "AWS::EC2::Route", routeName, false)

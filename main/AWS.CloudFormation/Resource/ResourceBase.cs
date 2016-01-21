@@ -21,6 +21,7 @@ namespace AWS.CloudFormation.Resource
             Type = type;
             Template = template;
             LogicalId = name;
+            DependsOn2 = new List<string>();
 
             this.Template.AddResource(this);
 
@@ -44,7 +45,11 @@ namespace AWS.CloudFormation.Resource
         [JsonIgnore]
         public string LogicalId { get ; private set; }
 
-        public string[] DependsOn { get; protected set; }
+
+        [JsonIgnore]
+        public List<string> DependsOn2 { get; }
+
+        public string[] DependsOn { get { return this.DependsOn2.ToArray(); } }
 
         public CloudFormationDictionary Properties { get; }
 

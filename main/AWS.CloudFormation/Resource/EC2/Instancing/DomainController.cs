@@ -3,6 +3,7 @@ using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
+using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
@@ -207,9 +208,9 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             // ReSharper disable once InconsistentNaming
             SecurityGroup DomainControllerSG1 = Template.GetSecurityGroup("DomainControllerSG1", this.Subnet.Vpc,
                 "Domain Controller");
-            DomainControllerSG1.AddIngress(this.Subnet.Vpc, Protocol.Tcp,
+            DomainControllerSG1.AddIngress(this.Subnet.Vpc as ICidrBlock, Protocol.Tcp,
                 Ports.WsManagementPowerShell);
-            DomainControllerSG1.AddIngress(this.Subnet.Vpc, Protocol.Tcp, Ports.Http);
+            DomainControllerSG1.AddIngress(this.Subnet.Vpc as ICidrBlock, Protocol.Tcp, Ports.Http);
             //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Udp, Ports.Ntp);
             //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp, Ports.WinsManager);
             //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryManagement);
@@ -295,15 +296,15 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public void AddToDomainMemberSecurityGroup(Instance domainMember)
         {
             //az1Subnet
-            DomainMemberSecurityGroup.AddIngress(domainMember.Subnet,
+            DomainMemberSecurityGroup.AddIngress(domainMember.Subnet as ICidrBlock,
                 Protocol.Tcp | Protocol.Udp, Ports.DnsQuery);
             DomainMemberSecurityGroup.AddIngress(domainMember.Subnet,
                 Protocol.Tcp | Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
             //DMZSubnet
             // this is questionable overkill
-            DomainMemberSecurityGroup.AddIngress(domainMember.Subnet, Protocol.Tcp,
+            DomainMemberSecurityGroup.AddIngress(domainMember.Subnet as ICidrBlock, Protocol.Tcp,
                 Ports.RemoteDesktopProtocol);
-            DomainMemberSecurityGroup.AddIngress(domainMember.Subnet, Protocol.Tcp,
+            DomainMemberSecurityGroup.AddIngress(domainMember.Subnet as ICidrBlock, Protocol.Tcp,
                 Ports.RemoteDesktopProtocol);
 
             domainMember.SecurityGroupIds.Add(DomainMemberSecurityGroup);

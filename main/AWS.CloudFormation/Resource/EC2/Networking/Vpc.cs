@@ -11,7 +11,12 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         public Vpc(Template template, string name, string cidrBlock) : base(template, "AWS::EC2::VPC", name, true)
         {
             CidrBlock = cidrBlock;
+            InternetGateway = new InternetGateway(template, $"{this.LogicalId}InternetGateway");
+            VpcGatewayAttachment attachment = new VpcGatewayAttachment(template, $"{InternetGateway.LogicalId}Attachment", InternetGateway, this);
         }
+
+        [JsonIgnore]
+        public InternetGateway InternetGateway { get; }
 
         [JsonIgnore]
         public string CidrBlock {
@@ -28,6 +33,12 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 
             }
 
+            public VpcGatewayAttachment(Template template, string name, InternetGateway internetGateway, Vpc vpc) : this(template,name)
+            {
+                InternetGateway = internetGateway;
+                Vpc = vpc;
+            }
+
 
             [JsonIgnore]
             public InternetGateway InternetGateway
@@ -36,7 +47,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
                 {
                     return this.Properties.GetValue<InternetGateway>();
                 }
-                set
+                private set
                 {
                     this.Properties.SetValue(value);
                 }
@@ -49,7 +60,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
                 {
                     return this.Properties.GetValue<Vpc>();
                 }
-                set
+                private set
                 {
                     this.Properties.SetValue(value);
                 }

@@ -82,16 +82,16 @@ namespace AWS.CloudFormation.Stack
             return eip;
         }
 
-        public InternetGateway AddInternetGateway(string name, Vpc vpc)
-        {
-            InternetGateway gateway = new InternetGateway(this, name);
-            VpcGatewayAttachment attachment = new VpcGatewayAttachment(this, name + "Attachment")
-            {
-                InternetGateway = gateway,
-                Vpc = vpc
-            };
-            return gateway;
-        }
+        //public InternetGateway AddInternetGateway(string name, Vpc vpc)
+        //{
+        //    InternetGateway gateway = new InternetGateway(this, name);
+        //    VpcGatewayAttachment attachment = new VpcGatewayAttachment(this, name + "Attachment")
+        //    {
+        //        InternetGateway = gateway,
+        //        Vpc = vpc
+        //    };
+        //    return gateway;
+        //}
 
         public RouteTable AddRouteTable(string key, Vpc vpc)
         {

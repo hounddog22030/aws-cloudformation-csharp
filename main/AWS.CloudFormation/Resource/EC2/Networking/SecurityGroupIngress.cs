@@ -20,6 +20,10 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         {
         }
 
+        public SecurityGroupIngress(ILogicalId logicalId, Protocol protocol, Ports port) : base(logicalId,protocol,port,port)
+        {
+        }
+
 
         //public string SourceSecurityGroupId { get; set; }
         public string SourceSecurityGroupName { get; set; }
