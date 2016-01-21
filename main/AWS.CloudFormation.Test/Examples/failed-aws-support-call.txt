@@ -190,25 +190,6 @@
             "FromPort": -1,
             "IpProtocol": "Icmp",
             "ToPort": -1
-          },
-          {
-            "CidrIp": {
-              "Fn::Join": [
-                "",
-                [
-                  {
-                    "Fn::GetAtt": [
-                      "dc1",
-                      "PrivateIp"
-                    ]
-                  },
-                  "/32"
-                ]
-              ]
-            },
-            "FromPort": 1,
-            "IpProtocol": "Icmp",
-            "ToPort": 1
           }
         ],
         "SecurityGroupEgress": []
@@ -284,6 +265,25 @@
             "FromPort": 8080,
             "IpProtocol": "tcp",
             "ToPort": 8080
+          },
+          {
+            "CidrIp": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Fn::GetAtt": [
+                      "build",
+                      "PrivateIp"
+                    ]
+                  },
+                  "/32"
+                ]
+              ]
+            },
+            "FromPort": 8080,
+            "IpProtocol": "Tcp",
+            "ToPort": 8080
           }
         ],
         "SecurityGroupEgress": []
@@ -316,14 +316,6 @@
             "FromPort": 3389,
             "IpProtocol": "Tcp",
             "ToPort": 3389
-          },
-          {
-            "SourceSecurityGroupId": {
-              "Ref": "TFSServerSecurityGroup"
-            },
-            "FromPort": 9191,
-            "IpProtocol": "tcp",
-            "ToPort": 9191
           }
         ],
         "SecurityGroupEgress": []
@@ -1086,6 +1078,42 @@
             "FromPort": 3389,
             "IpProtocol": "Tcp",
             "ToPort": 3389
+          },
+          {
+            "CidrIp": "10.0.0.0/19",
+            "FromPort": 53,
+            "IpProtocol": "Tcp",
+            "ToPort": 53
+          },
+          {
+            "CidrIp": "10.0.0.0/19",
+            "FromPort": 53,
+            "IpProtocol": "Udp",
+            "ToPort": 53
+          },
+          {
+            "CidrIp": "10.0.0.0/19",
+            "FromPort": 49152,
+            "IpProtocol": "Tcp",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.0.0/19",
+            "FromPort": 49152,
+            "IpProtocol": "Udp",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.0.0/19",
+            "FromPort": 3389,
+            "IpProtocol": "Tcp",
+            "ToPort": 3389
+          },
+          {
+            "CidrIp": "10.0.0.0/19",
+            "FromPort": 3389,
+            "IpProtocol": "Tcp",
+            "ToPort": 3389
           }
         ],
         "SecurityGroupEgress": []
@@ -1740,7 +1768,7 @@
           }
         ],
         "HostedZoneName": "getthebuybox.com.",
-        "Name": "rdp40.prime.getthebuybox.com."
+        "Name": "rdp58.prime.getthebuybox.com."
       }
     },
     "sql1": {
@@ -2073,6 +2101,9 @@
           },
           {
             "Ref": "SqlServer4TfsSecurityGroup"
+          },
+          {
+            "Ref": "SqlAccess"
           }
         ],
         "InstanceType": "t2.micro",
@@ -2150,8 +2181,8 @@
             "tfs.tar.gz": [
               "tfs.tar.gz"
             ],
-            "disable-win-fw-configSet": [
-              "disable-win-fw-configSet"
+            "finalizeConfigSet": [
+              "finalizeConfig"
             ]
           },
           "setup": {
@@ -2213,7 +2244,7 @@
                       "triggers=post.update\n",
                       "path=Resources.tfsserver1.Metadata.AWS::CloudFormation::Init\n",
                       "action=cfn-init.exe -v -c ",
-                      "config,InstallChefConfigSet,tfs.tar.gz,disable-win-fw-configSet",
+                      "config,InstallChefConfigSet,tfs.tar.gz,finalizeConfigSet",
                       " -s ",
                       {
                         "Ref": "AWS::StackName"
@@ -2410,21 +2441,23 @@
             },
             "ignoreErrors": true
           },
-          "disable-win-fw-configSet": {
+          "finalizeConfig": {
             "commands": {
-              "disable-win-fw-command": {
+              "a-signal-success": {
                 "waitAfterCompletion": "0",
                 "command": {
                   "Fn::Join": [
                     "",
                     [
-                      "powershell.exe ",
-                      "-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\"",
-                      " > \"c:\\cfn\\log\\disable-win-fw-command.log\""
+                      "cfn-signal.exe -e 0 \"",
+                      {
+                        "Ref": "tfsserver1WaitConditionHandle"
+                      },
+                      "\"",
+                      " > \"c:\\cfn\\log\\a-signal-success.log\""
                     ]
                   ]
-                },
-                "test": "IF EXIST \"c:\\cfn\\log\\disable-win-fw-command.log\" EXIT 1"
+                }
               }
             },
             "files": {},
@@ -2474,7 +2507,7 @@
               "",
               [
                 "<script>cfn-init.exe -v -c ",
-                "config,InstallChefConfigSet,tfs.tar.gz,disable-win-fw-configSet",
+                "config,InstallChefConfigSet,tfs.tar.gz,finalizeConfigSet",
                 " -s ",
                 {
                   "Ref": "AWS::StackId"
@@ -2564,6 +2597,463 @@
         ],
         "SecurityGroupEgress": []
       }
+    },
+    "build": {
+      "Type": "AWS::EC2::Instance",
+      "Metadata": {
+        "AWS::CloudFormation::Init": {
+          "configSets": {
+            "config": [
+              "setup",
+              "rename",
+              "join"
+            ],
+            "InstallChefConfigSet": [
+              "InstallChefConfigSet"
+            ],
+            "vs.tar.gz": [
+              "vs.tar.gz"
+            ],
+            "tfs.tar.gz": [
+              "tfs.tar.gz"
+            ],
+            "finalizeConfigSet": [
+              "finalizeConfig"
+            ]
+          },
+          "setup": {
+            "commands": {
+              "a-set-static-ip": {
+                "waitAfterCompletion": "15",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-ExecutionPolicy RemoteSigned -Command \"c:\\cfn\\scripts\\Set-StaticIP.ps1\"",
+                      " > \"c:\\cfn\\log\\a-set-static-ip.log\""
+                    ]
+                  ]
+                },
+                "test": "IF EXIST \"c:\\cfn\\log\\a-set-static-ip.log\" EXIT 1"
+              },
+              "a-disable-win-fw": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\"",
+                      " > \"c:\\cfn\\log\\a-disable-win-fw.log\""
+                    ]
+                  ]
+                },
+                "test": "IF EXIST \"c:\\cfn\\log\\a-disable-win-fw.log\" EXIT 1"
+              }
+            },
+            "files": {
+              "c:\\cfn\\cfn-hup.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[main]\nstack=",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      "\nregion=",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\ninterval=1\nverbose=true"
+                    ]
+                  ]
+                }
+              },
+              "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[cfn-auto-reloader-hook]\n",
+                      "triggers=post.update\n",
+                      "path=Resources.build.Metadata.AWS::CloudFormation::Init\n",
+                      "action=cfn-init.exe -v -c ",
+                      "config,InstallChefConfigSet,vs.tar.gz,tfs.tar.gz,finalizeConfigSet",
+                      " -s ",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      " -r ",
+                      "build",
+                      " --region ",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\n"
+                    ]
+                  ]
+                }
+              },
+              "c:\\cfn\\scripts\\Set-StaticIP.ps1": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "$netip = Get-NetIPConfiguration;",
+                      "$ipconfig = Get-NetIPAddress | ?{$_.IpAddress -eq $netip.IPv4Address.IpAddress};",
+                      "Get-NetAdapter | Set-NetIPInterface -DHCP Disabled;",
+                      "Get-NetAdapter | New-NetIPAddress -AddressFamily IPv4 -IPAddress $netip.IPv4Address.IpAddress -PrefixLength $ipconfig.PrefixLength -DefaultGateway $netip.IPv4DefaultGateway.NextHop;",
+                      "Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses $netip.DNSServer.ServerAddresses;",
+                      "\n"
+                    ]
+                  ]
+                }
+              }
+            },
+            "services": {
+              "windows": {
+                "cfn-hup": {
+                  "enabled": true,
+                  "ensureRunning": true,
+                  "files": [
+                    "c:\\cfn\\cfn-hup.conf",
+                    "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf"
+                  ]
+                }
+              }
+            },
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": true
+          },
+          "rename": {
+            "commands": {
+              "1-execute-powershell-script-RenameComputer": {
+                "waitAfterCompletion": "forever",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "\"Rename-Computer -NewName ",
+                      "build",
+                      " -Restart\"",
+                      " > \"c:\\cfn\\log\\1-execute-powershell-script-RenameComputer.log\""
+                    ]
+                  ]
+                },
+                "test": "IF EXIST \"c:\\cfn\\log\\1-execute-powershell-script-RenameComputer.log\" EXIT 1"
+              }
+            },
+            "files": {},
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": true
+          },
+          "join": {
+            "commands": {
+              "b-join-domain": {
+                "waitAfterCompletion": "forever",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"",
+                      " Add-Computer -DomainName ",
+                      {
+                        "Ref": "DomainDNSName"
+                      },
+                      " -Credential ",
+                      "(New-Object System.Management.Automation.PSCredential('",
+                      {
+                        "Ref": "DomainNetBIOSName"
+                      },
+                      "\\",
+                      {
+                        "Ref": "DomainAdminUser"
+                      },
+                      "',",
+                      "(ConvertTo-SecureString ",
+                      {
+                        "Ref": "DomainAdminPassword"
+                      },
+                      " -AsPlainText -Force))) ",
+                      "-Restart\"",
+                      " > \"c:\\cfn\\log\\b-join-domain.log\""
+                    ]
+                  ]
+                },
+                "test": "IF EXIST \"c:\\cfn\\log\\b-join-domain.log\" EXIT 1"
+              },
+              "a-set-dns-servers": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses ",
+                      {
+                        "Fn::GetAtt": [
+                          "dc1",
+                          "PrivateIp"
+                        ]
+                      },
+                      "\"",
+                      " > \"c:\\cfn\\log\\a-set-dns-servers.log\""
+                    ]
+                  ]
+                },
+                "test": "IF EXIST \"c:\\cfn\\log\\a-set-dns-servers.log\" EXIT 1"
+              }
+            },
+            "files": {},
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": true
+          },
+          "InstallChefConfigSet": {
+            "commands": {},
+            "files": {
+              "c:/chef/node.json": {
+                "content": {
+                  "nothing": "nothing",
+                  "s3_file": {
+                    "key": "AKIAJMUQ7GPWQNKSODIA",
+                    "secret": "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"
+                  },
+                  "domainAdmin": {
+                    "name": "prime\\johnny",
+                    "password": "kasdfiajs!!9"
+                  },
+                  "domain": "prime"
+                }
+              }
+            },
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": true
+          },
+          "vs.tar.gz": {
+            "commands": {
+              "vs--default": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "C:/opscode/chef/bin/chef-client.bat -z -o vs::default -c c:/chef/vs.tar.gz/client.rb"
+                    ]
+                  ]
+                }
+              }
+            },
+            "files": {
+              "c:/chef/vs.tar.gz/client.rb": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "cache_path 'c:/chef'\ncookbook_path 'c:/chef/vs.tar.gz/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n"
+                    ]
+                  ]
+                }
+              }
+            },
+            "services": {},
+            "sources": {
+              "c:/chef/vs.tar.gz/": "https://gtbb.s3.amazonaws.com/vs.tar.gz"
+            },
+            "packages": {
+              "msi": {
+                "chef": "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi"
+              }
+            },
+            "ignoreErrors": true
+          },
+          "tfs.tar.gz": {
+            "commands": {
+              "tfs--build": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "C:/opscode/chef/bin/chef-client.bat -z -o tfs::build -c c:/chef/tfs.tar.gz/client.rb"
+                    ]
+                  ]
+                }
+              }
+            },
+            "files": {
+              "c:/chef/tfs.tar.gz/client.rb": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "cache_path 'c:/chef'\ncookbook_path 'c:/chef/tfs.tar.gz/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n"
+                    ]
+                  ]
+                }
+              }
+            },
+            "services": {},
+            "sources": {
+              "c:/chef/tfs.tar.gz/": "https://gtbb.s3.amazonaws.com/tfs.tar.gz"
+            },
+            "packages": {
+              "msi": {
+                "chef": "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi"
+              }
+            },
+            "ignoreErrors": true
+          },
+          "finalizeConfig": {
+            "commands": {
+              "a-signal-success": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "cfn-signal.exe -e 0 \"",
+                      {
+                        "Ref": "buildWaitConditionHandle"
+                      },
+                      "\"",
+                      " > \"c:\\cfn\\log\\a-signal-success.log\""
+                    ]
+                  ]
+                }
+              }
+            },
+            "files": {},
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": true
+          }
+        },
+        "AWS::CloudFormation::Authentication": {
+          "S3AccessCreds": {
+            "accessKeyId": "AKIAJMUQ7GPWQNKSODIA",
+            "secretKey": "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",
+            "buckets": [
+              "gtbb"
+            ],
+            "type": "S3"
+          }
+        }
+      },
+      "DependsOn": [
+        "tfsserver1WaitCondition",
+        "dc1WaitCondition"
+      ],
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "build"
+          }
+        ],
+        "SecurityGroupIds": [
+          {
+            "Ref": "BuildServerSecurityGroup"
+          },
+          {
+            "Ref": "DomainMemberSG"
+          }
+        ],
+        "InstanceType": "t2.small",
+        "ImageId": "ami-e4034a8e",
+        "NetworkInterfaces": [],
+        "KeyName": "corp.getthebuybox.com",
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "<script>cfn-init.exe -v -c ",
+                "config,InstallChefConfigSet,vs.tar.gz,tfs.tar.gz,finalizeConfigSet",
+                " -s ",
+                {
+                  "Ref": "AWS::StackId"
+                },
+                " -r build --region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "</script>"
+              ]
+            ]
+          }
+        },
+        "SourceDestCheck": true,
+        "SubnetId": {
+          "Ref": "PrivateSubnet1"
+        },
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/sda1",
+            "Ebs": {
+              "VolumeSize": "30",
+              "VolumeType": "gp2"
+            }
+          },
+          {
+            "Ebs": {
+              "SnapshotId": "snap-5e27a85a"
+            },
+            "DeviceName": "xvdf"
+          },
+          {
+            "Ebs": {
+              "SnapshotId": "snap-4e69d94b"
+            },
+            "DeviceName": "xvdg"
+          }
+        ]
+      }
+    },
+    "tfsserver1WaitCondition": {
+      "Type": "AWS::CloudFormation::WaitCondition",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "Timeout": 10800,
+        "Handle": {
+          "Ref": "tfsserver1WaitConditionHandle"
+        }
+      }
+    },
+    "tfsserver1WaitConditionHandle": {
+      "Type": "AWS::CloudFormation::WaitConditionHandle",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {}
+    },
+    "buildWaitCondition": {
+      "Type": "AWS::CloudFormation::WaitCondition",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "Timeout": 10800,
+        "Handle": {
+          "Ref": "buildWaitConditionHandle"
+        }
+      }
+    },
+    "buildWaitConditionHandle": {
+      "Type": "AWS::CloudFormation::WaitConditionHandle",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {}
     }
   },
   "Parameters": {

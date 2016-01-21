@@ -160,19 +160,19 @@ namespace AWS.CloudFormation.Test
             DomainController.AddToDomain(RDGateway, ThreeHoursSpan);
 
             //// uses 25gb
-            var tfsSqlServer = AddSql4Tfs(template, PrivateSubnet1, DomainController, sqlServerSecurityGroup);
-
-            ////// uses 24gb
-            //var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
-
-            //// create security group for access to sql port from tfs to sql1;
-            //SecurityGroup sqlAccessForTfsServer = new SecurityGroup(template, "SqlAccess", "Sql Access For Tfs server", vpc);
-            //sqlAccessForTfsServer.AddIngress(tfsServer as ILogicalId, Protocol.Tcp, Ports.MsSqlServer);
-            //tfsSqlServer.SecurityGroupIds.Add(sqlAccessForTfsServer);
+            var sqlServerForTfs = AddSql4Tfs(template, PrivateSubnet1, DomainController, sqlServerSecurityGroup);
 
             //// uses 24gb
-            //var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup);
-            //tfsServerSecurityGroup.AddIngress((ILogicalId)buildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            var tfsServer = AddTfsServer(template, PrivateSubnet1, sqlServerForTfs, DomainController, tfsServerSecurityGroup);
+
+            // create security group for access to sql port from tfs to sql1;
+            SecurityGroup sqlAccessForTfsServer = new SecurityGroup(template, "SqlAccess", "Sql Access For Tfs server", vpc);
+            sqlServerForTfs.SecurityGroupIds.Add(sqlAccessForTfsServer);
+            tfsServer.SecurityGroupIds.Add(sqlAccessForTfsServer);
+
+            // uses 24gb
+            var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup);
+            tfsServerSecurityGroup.AddIngress((ILogicalId)buildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
 
 

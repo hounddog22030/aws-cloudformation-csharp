@@ -94,6 +94,7 @@
     <Analyzer Include="..\packages\AWSSDK.CloudFormation.3.1.1.2\analyzers\dotnet\cs\AWSSDK.CloudFormation.CodeAnalysis.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Examples\failed-aws-support-call.txt" />
     <Content Include="Examples\working.txt" />
   </ItemGroup>
   <Choose>
