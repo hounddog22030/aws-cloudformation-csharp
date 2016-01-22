@@ -29,9 +29,9 @@ namespace AWS.CloudFormation.Test
         // ReSharper disable once InconsistentNaming
         const string DomainAdminPassword = "kasdfiajs!!9";
         // ReSharper disable once InconsistentNaming
-        const string DMZ1CIDR = "10.0.32.0/20";
+        const string DMZ1CIDR = "10.0.32.0/28";
         // ReSharper disable once InconsistentNaming
-        const string DMZ2CIDR = "10.0.96.0/20";
+        const string DMZ2CIDR = "10.0.96.0/28";
         // ReSharper disable once InconsistentNaming
         const string PrivSub1CIDR = "10.0.0.0/19";
         // ReSharper disable once InconsistentNaming
@@ -468,6 +468,20 @@ Set-Disk $d.Number -IsOffline $False
 
 
             workstation.AddElasticIp();
+
+            CreateTestStack(template, this.TestContext);
+
+        }
+
+        [TestMethod]
+        public void CreateSubnetTest()
+        {
+            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var vpc = template.Vpcs.First();
+            var subnet1 = template.AddSubnet("subnet1", vpc, "10.0.1.0/24", Template.AvailabilityZone.UsEast1A);
+            var subnet2 = template.AddSubnet("subnet2", vpc, "10.0.2.0/24", Template.AvailabilityZone.UsEast1A);
+            var subnet3 = template.AddSubnet("subnet3", vpc, "10.0.3.0/24", Template.AvailabilityZone.UsEast1A);
+            var subnet4 = template.AddSubnet("subnet4", vpc, "10.0.4.0/24", Template.AvailabilityZone.UsEast1A);
 
             CreateTestStack(template, this.TestContext);
 
