@@ -42,10 +42,6 @@ namespace AWS.CloudFormation.Stack
             get { return this.Resources.Where(r => r.Value is Vpc).Select(r=>r.Value).OfType<Vpc>(); }
         }
 
-        public Subnet AddSubnet(string name, Vpc vpc, string cidrBlock, AvailabilityZone availabilityZone)
-        {
-            return new Subnet(this, name, vpc, cidrBlock, availabilityZone);
-        }
 
         public SecurityGroup GetSecurityGroup(string name, Vpc vpc, string description)
         {
