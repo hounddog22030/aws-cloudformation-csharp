@@ -77,7 +77,7 @@ namespace AWS.CloudFormation.Test
                 vpcName = $"Vpc{testContext.TestName}";
             }
 
-            var template = GetNewBlankTemplateWithVpc(testContext,vpcName);
+            var template = GetNewBlankTemplateWithVpc(testContext, vpcName);
             Vpc vpc = template.Vpcs.First();
 
             // ReSharper disable once InconsistentNaming
@@ -105,18 +105,18 @@ namespace AWS.CloudFormation.Test
             tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
             SecurityGroup buildServerSecurityGroup = template.GetSecurityGroup("BuildServerSecurityGroup", vpc, "Allows build controller to build agent communication");
-            buildServerSecurityGroup.AddIngress((ICidrBlock) DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            buildServerSecurityGroup.AddIngress((ICidrBlock) DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            buildServerSecurityGroup.AddIngress((ICidrBlock)DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            buildServerSecurityGroup.AddIngress((ICidrBlock)DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             //buildServerSecurityGroup.AddIngress(tfsServerSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerBuild);
 
-            SecurityGroup sqlServerSecurityGroup = template.GetSecurityGroup("SqlServer4TfsSecurityGroup", vpc, "Allows communication to SQLServer Service");
-            sqlServerSecurityGroup.AddIngress((ICidrBlock) DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            sqlServerSecurityGroup.AddIngress((ICidrBlock) DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            SecurityGroup rdpAccessToSqlServerSecurityGroup = template.GetSecurityGroup("SqlServer4TfsSecurityGroup", vpc, "Allows communication to SQLServer Service");
+            rdpAccessToSqlServerSecurityGroup.AddIngress((ICidrBlock)DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            rdpAccessToSqlServerSecurityGroup.AddIngress((ICidrBlock)DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
 
             // create security group for access to sql port from tfs to sql1;
             SecurityGroup sqlAccessForTfsServer = new SecurityGroup(template, "SqlAccess", "Sql Access For Tfs server", vpc);
-            sqlAccessForTfsServer.AddIngress((ICidrBlock) DMZSubnet, Protocol.Tcp, Ports.MsSqlServer);
-            
+            sqlAccessForTfsServer.AddIngress((ICidrBlock)DMZSubnet, Protocol.Tcp, Ports.MsSqlServer);
+
             SecurityGroup workstationSecurityGroup = template.GetSecurityGroup("WorkstationSecurityGroup", vpc, "Security Group To Contain Workstations");
             tfsServerSecurityGroup.AddIngress(workstationSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
@@ -129,15 +129,15 @@ namespace AWS.CloudFormation.Test
             // ReSharper disable once InconsistentNaming
             Route PrivateRoute = template.AddRoute("PrivateRoute", Template.CIDR_IP_THE_WORLD, PrivateRouteTable);
 
-            SubnetRouteTableAssociation PrivateSubnetRouteTableAssociation1 = new SubnetRouteTableAssociation(    
+            SubnetRouteTableAssociation PrivateSubnetRouteTableAssociation1 = new SubnetRouteTableAssociation(
                 template,
-                PrivateSubnet1, 
+                PrivateSubnet1,
                 PrivateRouteTable);
 
             template.Resources.Add("PrivateSubnetRouteTableAssociation1", PrivateSubnetRouteTableAssociation1);
 
 
-            Subnet[] subnetsToAddToNatSecurityGroup = new Subnet[] {PrivateSubnet1, PrivateSubnet2};
+            Subnet[] subnetsToAddToNatSecurityGroup = new Subnet[] { PrivateSubnet1, PrivateSubnet2 };
 
             foreach (var subnet in subnetsToAddToNatSecurityGroup)
             {
@@ -164,10 +164,10 @@ namespace AWS.CloudFormation.Test
             DomainController.AddToDomain(RDGateway, ThreeHoursSpan);
 
             //// uses 25gb
-            var sqlServerForTfs = AddSql4Tfs(template, PrivateSubnet1, DomainController, sqlServerSecurityGroup);
+            var sqlServerForTfs = AddSql4Tfs(template, PrivateSubnet1, DomainController, rdpAccessToSqlServerSecurityGroup, sqlAccessForTfsServer);
 
             //// uses 24gb
-            var tfsServer = AddTfsServer(template, PrivateSubnet1, sqlServerForTfs, DomainController, tfsServerSecurityGroup, sqlAccessForTfsServer);
+            var tfsServer = AddTfsServer(template, PrivateSubnet1, sqlServerForTfs, DomainController, tfsServerSecurityGroup);
 
 
             // uses 24gb
@@ -198,14 +198,78 @@ namespace AWS.CloudFormation.Test
             return template;
         }
 
+        private static Template GetTemplateNatOnly(TestContext testContext, string vpcName)
+        {
+            if (string.IsNullOrEmpty(vpcName))
+            {
+                vpcName = $"Vpc{testContext.TestName}";
+            }
+
+            var template = GetNewBlankTemplateWithVpc(testContext,vpcName);
+            Vpc vpc = template.Vpcs.First();
+
+            // ReSharper disable once InconsistentNaming
+            var DMZSubnet = template.AddSubnet("DMZSubnet", vpc, DMZ1CIDR, Template.AvailabilityZone.UsEast1A);
+            // ReSharper disable once InconsistentNaming
+            var DMZ2Subnet = template.AddSubnet("DMZ2Subnet", vpc, DMZ2CIDR, Template.AvailabilityZone.UsEast1A);
+            // ReSharper disable once InconsistentNaming
+            var PrivateSubnet1 = template.AddSubnet("PrivateSubnet1", vpc, PrivSub1CIDR, Template.AvailabilityZone.UsEast1A);
+            // ReSharper disable once InconsistentNaming
+            var PrivateSubnet2 = template.AddSubnet("PrivateSubnet2", vpc, PrivSub2CIDR, Template.AvailabilityZone.UsEast1A);
+
+            SecurityGroup natSecurityGroup = template.GetSecurityGroup("natSecurityGroup", vpc, "Enables Ssh access to NAT1 in AZ1 via port 22 and outbound internet access via private subnets");
+            natSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Ssh);
+            natSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
+
+            AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
+
+            // ReSharper disable once InconsistentNaming
+            RouteTable PrivateRouteTable = template.AddRouteTable("PrivateRouteTable", vpc);
+            PrivateRouteTable.Tags.Add("Network", "AZ1 Private");
+
+            // ReSharper disable once InconsistentNaming
+            Route PrivateRoute = template.AddRoute("PrivateRoute", Template.CIDR_IP_THE_WORLD, PrivateRouteTable);
+
+            SubnetRouteTableAssociation PrivateSubnetRouteTableAssociation1 = new SubnetRouteTableAssociation(    
+                template,
+                PrivateSubnet1, 
+                PrivateRouteTable);
+
+            template.Resources.Add("PrivateSubnetRouteTableAssociation1", PrivateSubnetRouteTableAssociation1);
+
+
+            Subnet[] subnetsToAddToNatSecurityGroup = new Subnet[] {PrivateSubnet1, PrivateSubnet2};
+
+            foreach (var subnet in subnetsToAddToNatSecurityGroup)
+            {
+                natSecurityGroup.AddIngress((ICidrBlock)subnet, Protocol.All, Ports.Min, Ports.Max);
+                natSecurityGroup.AddIngress((ICidrBlock)subnet, Protocol.Icmp, Ports.All);
+            }
+
+            var nat1 = AddNat1(template, DMZSubnet, natSecurityGroup);
+            PrivateRoute.Instance = nat1;
+
+
+            return template;
+        }
+
+        [TestMethod]
+        public void CreateNatTest()
+        {
+            CreateTestStack(GetTemplateNatOnly(this.TestContext,null), this.TestContext);
+        }
+
+
+
         private static WindowsInstance AddSql4Tfs(Template template, Subnet PrivateSubnet1, DomainController DomainController,
-            SecurityGroup sqlServerSecurityGroup)
+            SecurityGroup sqlServerSecurityGroup, SecurityGroup sqlAccessForTfsServer)
         {
             var tfsSqlServer = new WindowsInstance(template, "sql1", InstanceTypes.T2Micro,
                 StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1, true);
             DomainController.AddToDomain(tfsSqlServer, ThreeHoursSpan);
             tfsSqlServer.AddPackage(SoftwareS3BucketName, new SqlServerExpress(tfsSqlServer));
             tfsSqlServer.SecurityGroupIds.Add(sqlServerSecurityGroup);
+            tfsSqlServer.SecurityGroupIds.Add(sqlAccessForTfsServer);
             return tfsSqlServer;
         }
 
@@ -673,7 +737,7 @@ Set-Disk $d.Number -IsOffline $False
             return workstation;
         }
 
-        private static WindowsInstance AddTfsServer(Template template, Subnet privateSubnet1, WindowsInstance tfsSqlServer, DomainController dc1, SecurityGroup tfsServerSecurityGroup, SecurityGroup sqlAccessForTfsServer)
+        private static WindowsInstance AddTfsServer(Template template, Subnet privateSubnet1, WindowsInstance tfsSqlServer, DomainController dc1, SecurityGroup tfsServerSecurityGroup)
         {
             var tfsServer = new WindowsInstance(    template, 
                                                     "tfsserver1", 
@@ -691,7 +755,6 @@ Set-Disk $d.Number -IsOffline $False
             domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             tfsServer.SecurityGroupIds.Add(tfsServerSecurityGroup);
-            tfsServer.SecurityGroupIds.Add(sqlAccessForTfsServer);
             tfsServer.AddPackage(SoftwareS3BucketName, new TeamFoundationServerApplicationTier());
             dc1.AddToDomain(tfsServer, ThreeHoursSpan);
             return tfsServer;
@@ -743,14 +806,24 @@ Set-Disk $d.Number -IsOffline $False
                 SourceDestCheck = false
             };
 
-            var natNetworkInterface = new NetworkInterface(DMZSubnet)
-            {
-                AssociatePublicIpAddress = true,
-                DeviceIndex = 0,
-                DeleteOnTermination = true
-            };
-            natNetworkInterface.GroupSet.Add(natSecurityGroup);
-            nat1.NetworkInterfaces.Add(natNetworkInterface);
+            var natNetworkInterfaceAsResource = new NetworkInterfaceResource(template,"nat1networkinterface",DMZSubnet);
+            natNetworkInterfaceAsResource.Subnet = DMZSubnet;
+            //var natNetworkInterfaceAttached = new NetworkInterfaceAttachment(template, "xyz", nat1, natNetworkInterfaceAsResource) {DeviceIndex = 0.ToString()};
+            ElasticIp eip = new ElasticIp(template, "EipForNatNetworkInterface");
+            EipAssociation eipAssociation = new EipAssociation(template, "abc", natNetworkInterfaceAsResource, eip,nat1);
+            nat1.DependsOn2.Add(eip.LogicalId);
+            //nat1.DependsOn2.Add(eipAssociation.LogicalId);
+            //nat1.AddNetworkInterface(natNetworkInterfaceAsResource);
+
+            //var natNetworkInterface = new NetworkInterface(DMZSubnet)
+            //{
+            //    AssociatePublicIpAddress = true,
+            //    DeviceIndex = 0,
+            //    DeleteOnTermination = true
+            //};
+            //natNetworkInterface.GroupSet.Add(natSecurityGroup);
+            //nat1.AddNetworkInterface(natNetworkInterface);
+            //nat1.NetworkInterfaces.Add(natNetworkInterface);
             return nat1;
         }
 
