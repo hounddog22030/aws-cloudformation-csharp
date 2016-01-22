@@ -62,7 +62,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             DomainMemberSecurityGroup = this.CreateDomainMemberSecurityGroup();
             this.CreateDomainControllerSecurityGroup();
             this.MakeDomainController();
-
+            ConfigureDefaultSite(subnet);
         }
 
         [JsonIgnore]
@@ -142,29 +142,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                     "\""
                 });
 
-
-            currentConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("configureSites");
-            currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("a-rename-default-site");
-            currentCommand.WaitAfterCompletion = 0.ToString();
-
-            currentCommand.Command.AddCommandLine(" ",
-                "\"",
-                "Get-ADObject -SearchBase (Get-ADRootDSE).ConfigurationNamingContext -filter {Name -eq 'Default-First-Site-Name'} | Rename-ADObject -NewName DMZSubnet",
-                "\"");
-
-            currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("b-create-site-2");
-            currentCommand.WaitAfterCompletion = 0.ToString();
-            currentCommand.Command.AddCommandLine("\"",
-                "New-ADReplicationSite DMZ2Subnet",
-                "\"");
-
-
-            //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("c-create-DMZSubnet-1");
-            //currentCommand.WaitAfterCompletion = 0.ToString();
-            //currentCommand.Command.AddCommandLine("-Command New-ADReplicationSubnet -Name ",
-            //                                        DmzAz1Cidr,
-            //                                        " -Site AZ1");
-
             //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("d-create-DMZSubnet-2");
             //currentCommand.WaitAfterCompletion = 0.ToString();
             //currentCommand.Command.AddCommandLine("-Command New-ADReplicationSubnet -Name ",
@@ -183,13 +160,44 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             //                                        Az2SubnetCidr,
             //                                        " -Site AZ2");
 
-            currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("m-set-site-link");
-            currentCommand.WaitAfterCompletion = 0.ToString();
-            currentCommand.Command.AddCommandLine("-Command \"",
-                "Get-ADReplicationSiteLink -Filter * | Set-ADReplicationSiteLink -SitesIncluded @{add='DMZ2Subnet'} -ReplicationFrequencyInMinutes 15\"");
+            //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("m-set-site-link");
+            //currentCommand.WaitAfterCompletion = 0.ToString();
+            //currentCommand.Command.AddCommandLine("-Command \"",
+            //    "Get-ADReplicationSiteLink -Filter * | Set-ADReplicationSiteLink -SitesIncluded @{add='DMZ2Subnet'} -ReplicationFrequencyInMinutes 15\"");
 
             this.OnAddedToDomain(this.DomainNetBiosName.Default.ToString());
         }
+
+        public void AddReplicationSite(Subnet subnet)
+        {
+            var currentConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("configureSites");
+            ConfigCommand currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>($"create-site-{subnet.LogicalId}");
+            currentCommand.WaitAfterCompletion = 0.ToString();
+            currentCommand.Command.AddCommandLine("-Command \"", $"New-ADReplicationSite  {subnet.LogicalId}\"");
+
+            currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>($"create-subnet-{subnet.LogicalId}");
+            currentCommand.WaitAfterCompletion = 0.ToString();
+            currentCommand.Command.AddCommandLine("-Command New-ADReplicationSubnet -Name ", subnet.CidrBlock, $" -Site {subnet.LogicalId}");
+        }
+
+        private Config ConfigureDefaultSite(Subnet defaultSubnet)
+        {
+            var currentConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("configureSites");
+            ConfigCommand currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("a-rename-default-site");
+            currentCommand.WaitAfterCompletion = 0.ToString();
+            currentCommand.Command.AddCommandLine(" ", "\"", $"Get-ADObject -SearchBase (Get-ADRootDSE).ConfigurationNamingContext -filter {{Name -eq 'Default-First-Site-Name'}} | Rename-ADObject -NewName {defaultSubnet.LogicalId}", "\"");
+
+            return currentConfig;
+        }
+
+        //public void AddActiveDirectoryReplicationSite(Subnet subnet)
+        //{
+        //    var currentConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("configureSites");
+        //    ConfigCommand currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("b-create-site-2");
+        //    currentCommand.WaitAfterCompletion = 0.ToString();
+        //    currentCommand.Command.AddCommandLine("\"", $"New-ADReplicationSite {subnet.LogicalId}", "\"");
+
+        //}
 
 
         public void CreateAdReplicationSubnet(Subnet subnet)

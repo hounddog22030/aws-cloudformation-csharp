@@ -140,6 +140,7 @@ namespace AWS.CloudFormation.Test
                 //
             DomainController.CreateAdReplicationSubnet(subnetDmz1);
             DomainController.CreateAdReplicationSubnet(subnetDmz2);
+            DomainController.AddReplicationSite(sqlServer4TfsSubnet);
 
             // uses 19gb
             // ReSharper disable once InconsistentNaming
