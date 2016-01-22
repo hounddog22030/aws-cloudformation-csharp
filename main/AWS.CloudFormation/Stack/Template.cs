@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.Serialization;
+using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing;
@@ -20,14 +21,6 @@ namespace AWS.CloudFormation.Stack
         public const string AwsTemplateFormatVersion20100909 = "2010-09-09";
         public const string CIDR_IP_THE_WORLD = "0.0.0.0/0";
 
-        [JsonConverter(typeof(EnumConverter))]
-        public enum AvailabilityZone
-        {
-            [EnumMember(Value = "invalid")]
-            None,
-            [EnumMember(Value="us-east-1a")]
-            UsEast1A
-        }
 
         public Template(string defaultKeyName, string vpcName, string vpcCidrBlock)
         {

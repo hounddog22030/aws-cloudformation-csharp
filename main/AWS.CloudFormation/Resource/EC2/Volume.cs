@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
@@ -23,9 +23,9 @@ namespace AWS.CloudFormation.Resource.EC2
         }
 
         [JsonIgnore]
-        public Template.AvailabilityZone AvailabilityZone
+        public AvailabilityZone AvailabilityZone
         {
-            get { return this.Properties.GetValue<Template.AvailabilityZone>(); }
+            get { return this.Properties.GetValue<AvailabilityZone>(); }
             set { this.Properties.SetValue(value); }
         }
     }

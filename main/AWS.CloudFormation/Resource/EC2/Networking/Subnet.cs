@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Runtime.Serialization;
 using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.Networking;
 
 using AWS.CloudFormation.Stack;
@@ -16,7 +17,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         public const string SUBNET_TYPE = "AWS::EC2::Subnet";
 
 
-        public Subnet(Template template, string logicalId, Vpc vpc, string cidr, Template.AvailabilityZone availabilityZone) : base(template, SUBNET_TYPE,logicalId,true)
+        public Subnet(Template template, string logicalId, Vpc vpc, string cidr, AvailabilityZone availabilityZone) : base(template, SUBNET_TYPE,logicalId,true)
         {
             Vpc = vpc;
             CidrBlock = cidr;
@@ -45,12 +46,12 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         }
 
         [JsonIgnore]
-        public Template.AvailabilityZone AvailabilityZone
+        public AvailabilityZone AvailabilityZone
         {
-            get { return this.Properties.GetValue<Template.AvailabilityZone>(); }
+            get { return this.Properties.GetValue<AvailabilityZone>(); }
             set
             {
-                var enumType = typeof(Template.AvailabilityZone);
+                var enumType = typeof(AvailabilityZone);
                 var name = Enum.GetName(enumType, value);
                 var enumMemberAttribute = ((EnumMemberAttribute[])enumType.GetField(name).GetCustomAttributes(typeof(EnumMemberAttribute), true)).Single();
                 this.Properties.SetValue(enumMemberAttribute.Value);
