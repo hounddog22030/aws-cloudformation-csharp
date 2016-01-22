@@ -112,6 +112,7 @@ namespace AWS.CloudFormation.Test
             SecurityGroup sqlServerSecurityGroup = template.GetSecurityGroup("SqlServer4TfsSecurityGroup", vpc, "Allows communication to SQLServer Service");
             sqlServerSecurityGroup.AddIngress((ICidrBlock) DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             sqlServerSecurityGroup.AddIngress((ICidrBlock) DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            sqlServerSecurityGroup.AddIngress((ICidrBlock) DMZSubnet, Protocol.Tcp, Ports.MsSqlServer);
 
 
             SecurityGroup workstationSecurityGroup = template.GetSecurityGroup("WorkstationSecurityGroup", vpc, "Security Group To Contain Workstations");
@@ -130,6 +131,7 @@ namespace AWS.CloudFormation.Test
                 template,
                 PrivateSubnet1, 
                 PrivateRouteTable);
+            
 
             template.Resources.Add("PrivateSubnetRouteTableAssociation1", PrivateSubnetRouteTableAssociation1);
 
@@ -165,10 +167,6 @@ namespace AWS.CloudFormation.Test
             ////// uses 24gb
             //var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
 
-            //// create security group for access to sql port from tfs to sql1;
-            //SecurityGroup sqlAccessForTfsServer = new SecurityGroup(template, "SqlAccess", "Sql Access For Tfs server", vpc);
-            //sqlAccessForTfsServer.AddIngress(tfsServer as ILogicalId, Protocol.Tcp, Ports.MsSqlServer);
-            //tfsSqlServer.SecurityGroupIds.Add(sqlAccessForTfsServer);
 
             //// uses 24gb
             //var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup);

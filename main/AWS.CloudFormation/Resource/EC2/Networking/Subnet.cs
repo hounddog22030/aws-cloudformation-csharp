@@ -13,7 +13,6 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 
     public class Subnet : ResourceBase, ICidrBlock
     {
-        public const string AVAILIBILITY_ZONE_US_EAST_1A = "us-east-1a";
         public const string SUBNET_TYPE = "AWS::EC2::Subnet";
 
 
