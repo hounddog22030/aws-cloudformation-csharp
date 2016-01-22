@@ -113,7 +113,10 @@ namespace AWS.CloudFormation.Test
             sqlServerSecurityGroup.AddIngress((ICidrBlock) DMZSubnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             sqlServerSecurityGroup.AddIngress((ICidrBlock) DMZ2Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
 
-
+            // create security group for access to sql port from tfs to sql1;
+            SecurityGroup sqlAccessForTfsServer = new SecurityGroup(template, "SqlAccess", "Sql Access For Tfs server", vpc);
+            sqlAccessForTfsServer.AddIngress((ICidrBlock) DMZSubnet, Protocol.Tcp, Ports.MsSqlServer);
+            
             SecurityGroup workstationSecurityGroup = template.GetSecurityGroup("WorkstationSecurityGroup", vpc, "Security Group To Contain Workstations");
             tfsServerSecurityGroup.AddIngress(workstationSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
@@ -148,8 +151,9 @@ namespace AWS.CloudFormation.Test
             // ReSharper disable once InconsistentNaming
             // uses 21gb
             var DomainController = AddDomainController(template, PrivateSubnet1);
+            DomainController.DependsOn2.Add(nat1.LogicalId);
             //
-                //
+            //
             DomainController.CreateAdReplicationSubnet(DMZSubnet);
             DomainController.CreateAdReplicationSubnet(DMZ2Subnet);
 
@@ -163,12 +167,8 @@ namespace AWS.CloudFormation.Test
             var sqlServerForTfs = AddSql4Tfs(template, PrivateSubnet1, DomainController, sqlServerSecurityGroup);
 
             //// uses 24gb
-            var tfsServer = AddTfsServer(template, PrivateSubnet1, sqlServerForTfs, DomainController, tfsServerSecurityGroup);
+            var tfsServer = AddTfsServer(template, PrivateSubnet1, sqlServerForTfs, DomainController, tfsServerSecurityGroup, sqlAccessForTfsServer);
 
-            // create security group for access to sql port from tfs to sql1;
-            SecurityGroup sqlAccessForTfsServer = new SecurityGroup(template, "SqlAccess", "Sql Access For Tfs server", vpc);
-            sqlServerForTfs.SecurityGroupIds.Add(sqlAccessForTfsServer);
-            tfsServer.SecurityGroupIds.Add(sqlAccessForTfsServer);
 
             // uses 24gb
             var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup);
@@ -673,7 +673,7 @@ Set-Disk $d.Number -IsOffline $False
             return workstation;
         }
 
-        private static WindowsInstance AddTfsServer(Template template, Subnet privateSubnet1, WindowsInstance tfsSqlServer, DomainController dc1, SecurityGroup tfsServerSecurityGroup)
+        private static WindowsInstance AddTfsServer(Template template, Subnet privateSubnet1, WindowsInstance tfsSqlServer, DomainController dc1, SecurityGroup tfsServerSecurityGroup, SecurityGroup sqlAccessForTfsServer)
         {
             var tfsServer = new WindowsInstance(    template, 
                                                     "tfsserver1", 
@@ -691,6 +691,7 @@ Set-Disk $d.Number -IsOffline $False
             domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             tfsServer.SecurityGroupIds.Add(tfsServerSecurityGroup);
+            tfsServer.SecurityGroupIds.Add(sqlAccessForTfsServer);
             tfsServer.AddPackage(SoftwareS3BucketName, new TeamFoundationServerApplicationTier());
             dc1.AddToDomain(tfsServer, ThreeHoursSpan);
             return tfsServer;
