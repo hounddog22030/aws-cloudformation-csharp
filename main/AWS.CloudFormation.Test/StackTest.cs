@@ -26,32 +26,26 @@ namespace AWS.CloudFormation.Test
     [TestClass]
     public class StackTest
     {
-        const string DomainAdminPassword = "kasdfiajs!!9";
-        const string CidrDmz1 = "10.0.127.0/28";
-        const string CidrDmz2 = "10.0.255.0/28";
-        const string CidrDomainController1Subnet = "10.0.0.0/24";
-        const string CidrDomainController2Subnet = "10.0.128.0/24";
-        const string CidrSqlServer4TfsSubnet = "10.0.1.0/24";
-        const string CidrTfsServerSubnet = "10.0.2.0/24";
-        const string KeyPairName = "corp.getthebuybox.com";
-        // ReSharper disable once InconsistentNaming
-        const string VPCCIDR = "10.0.0.0/16";
-        // ReSharper disable once InconsistentNaming
-        const string DomainDNSName = "prime.getthebuybox.com";
-        // ReSharper disable once InconsistentNaming
+        private const string DomainAdminPassword = "kasdfiajs!!9";
+        private const string CidrDmz1 = "10.0.127.0/28";
+        private const string CidrDmz2 = "10.0.255.0/28";
+        private const string CidrDomainController1Subnet = "10.0.0.0/24";
+        private const string CidrDomainController2Subnet = "10.0.128.0/24";
+        private const string CidrSqlServer4TfsSubnet = "10.0.1.0/24";
+        private const string CidrTfsServerSubnet = "10.0.2.0/24";
+        private const string CidrBuildServerSubnet = "10.0.3.0/24";
+        private const string KeyPairName = "corp.getthebuybox.com";
+        private const string CidrVpc = "10.0.0.0/16";
+        private const string DomainDnsName = "prime.getthebuybox.com";
         private const string DomainAdminUser = "johnny";
-        // ReSharper disable once InconsistentNaming
-        const string DomainNetBIOSName = "prime";
-        // ReSharper disable once InconsistentNaming
-        const string USEAST1AWINDOWS2012R2AMI = "ami-e4034a8e";
-        // ReSharper disable once InconsistentNaming
-        const string ADServerNetBIOSName1 = "dc1";
-        const string SoftwareS3BucketName = "gtbb";
-        static readonly TimeSpan ThreeHoursSpan = new TimeSpan(3, 0, 0);
-        static readonly TimeSpan TwoHoursSpan = new TimeSpan(2, 0, 0);
-        static readonly TimeSpan MaxTimeOut = new TimeSpan(0, 0, 43200);
+        private const string DomainNetBiosName = "prime";
+        const string UsEast1aWindows2012R2Ami = "ami-e4034a8e";
+        private const string NetBiosNameDomainController1 = "dc1";
+        private const string bucketNameSoftware = "gtbb";
+        static readonly TimeSpan Timeout3Hours = new TimeSpan(3, 0, 0);
+        static readonly TimeSpan Timeout2Hours = new TimeSpan(2, 0, 0);
+        static readonly TimeSpan TimeoutMax = new TimeSpan(0, 0, 12*60*60);
 
-        const string BuildServerIpAddress = "10.0.12.85";
 
         public static Template GetTemplateFullStack(TestContext testContext)
         {
@@ -74,6 +68,7 @@ namespace AWS.CloudFormation.Test
             var subnetSqlServer4Tfs = new Subnet(template, "subnetSqlServer4Tfs", vpc, CidrSqlServer4TfsSubnet,AvailabilityZone.UsEast1A);
             var subnetDomainController2 = new Subnet(template, "subnetDomainController2", vpc, CidrDomainController2Subnet, AvailabilityZone.UsEast1A);
             var subnetTfsServer = new Subnet(template, "subnetTfsServer", vpc, CidrTfsServerSubnet, AvailabilityZone.UsEast1A);
+            var subnetBuildServer = new Subnet(template, "subnetBuildServer", vpc, CidrBuildServerSubnet, AvailabilityZone.UsEast1A);
 
             SecurityGroup elbSecurityGroup = template.GetSecurityGroup("ElbSecurityGroup", vpc, "Enables access to the ELB");
             elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
@@ -90,61 +85,50 @@ namespace AWS.CloudFormation.Test
             tfsServerSecurityGroup.AddIngress(tfsServerUsers, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
-            SecurityGroup buildServerSecurityGroup = template.GetSecurityGroup("BuildServerSecurityGroup", vpc, "Allows build controller to build agent communication");
-            buildServerSecurityGroup.AddIngress((ICidrBlock) subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            buildServerSecurityGroup.AddIngress((ICidrBlock) subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            //buildServerSecurityGroup.AddIngress(tfsServerSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerBuild);
+            SecurityGroup securityGroupBuildServer = template.GetSecurityGroup("BuildServerSecurityGroup", vpc, "Allows build controller to build agent communication");
+            securityGroupBuildServer.AddIngress((ICidrBlock) subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            securityGroupBuildServer.AddIngress((ICidrBlock) subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            securityGroupBuildServer.AddIngress((ICidrBlock) subnetTfsServer, Protocol.Tcp, Ports.TeamFoundationServerBuild);
 
             SecurityGroup sqlServerSecurityGroup = template.GetSecurityGroup("SqlServer4TfsSecurityGroup", vpc, "Allows communication to SQLServer Service");
             sqlServerSecurityGroup.AddIngress((ICidrBlock) subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             sqlServerSecurityGroup.AddIngress((ICidrBlock) subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            sqlServerSecurityGroup.AddIngress((ICidrBlock) subnetSqlServer4Tfs, Protocol.Tcp, Ports.MsSqlServer);
-
+            sqlServerSecurityGroup.AddIngress((ICidrBlock) subnetTfsServer, Protocol.Tcp, Ports.MsSqlServer);
 
             SecurityGroup workstationSecurityGroup = template.GetSecurityGroup("WorkstationSecurityGroup", vpc, "Security Group To Contain Workstations");
             tfsServerSecurityGroup.AddIngress(workstationSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
             AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, subnetDmz1);
 
-            //Subnet[] subnetsToAddToNatSecurityGroup = new Subnet[] {subnetDomainController1, subnetDomainController2, subnetSqlServer4Tfs, subnetTfsServer};
-
-            //foreach (var subnet in subnetsToAddToNatSecurityGroup)
-            //{
-            //    natSecurityGroup.AddIngress((ICidrBlock)subnet, Protocol.All, Ports.Min, Ports.Max);
-            //    natSecurityGroup.AddIngress((ICidrBlock)subnet, Protocol.Icmp, Ports.All);
-            //}
-
             var nat1 = AddNat1(template, subnetDmz1, natSecurityGroup);
 
             subnetDomainController1.AddNatGateway(nat1, natSecurityGroup);
             subnetSqlServer4Tfs.AddNatGateway(nat1, natSecurityGroup);
             subnetTfsServer.AddNatGateway(nat1, natSecurityGroup);
+            subnetBuildServer.AddNatGateway(nat1, natSecurityGroup);
 
             // ReSharper disable once InconsistentNaming
             // uses 21gb
-            var DomainController = AddDomainController(template, subnetDomainController1);
-            //
-                //
-            DomainController.AddReplicationSite(subnetDmz1);
-            DomainController.AddReplicationSite(subnetDmz2);
-            DomainController.AddReplicationSite(subnetSqlServer4Tfs);
+            var domainInfo = new DomainController.DomainInfo(DomainDnsName, DomainNetBiosName, DomainAdminUser, DomainAdminPassword);
+            var instanceDomainController = new DomainController(template, NetBiosNameDomainController1, InstanceTypes.T2Micro, UsEast1aWindows2012R2Ami, subnetDomainController1, domainInfo);
+
 
             // uses 19gb
             // ReSharper disable once InconsistentNaming
-            var RDGateway = new RemoteDesktopGateway(template, "RDGateway", InstanceTypes.T2Micro, StackTest.USEAST1AWINDOWS2012R2AMI, subnetDmz1);
-            RDGateway.AddFinalizer(TwoHoursSpan);
-            DomainController.AddToDomain(RDGateway, ThreeHoursSpan);
+            var RDGateway = new RemoteDesktopGateway(template, "RDGateway", InstanceTypes.T2Micro, UsEast1aWindows2012R2Ami, subnetDmz1);
+            RDGateway.AddFinalizer(Timeout2Hours);
+            instanceDomainController.AddToDomain(RDGateway, Timeout3Hours);
 
             //// uses 25gb
-            var tfsSqlServer = AddSql4Tfs(template, subnetSqlServer4Tfs, DomainController, sqlServerSecurityGroup);
+            var tfsSqlServer = AddSql4Tfs(template, subnetSqlServer4Tfs, instanceDomainController, sqlServerSecurityGroup);
 
             ////// uses 24gb
-            //var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
+            var tfsServer = AddTfsServer(template, subnetTfsServer, tfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
 
 
             //// uses 24gb
-            //var buildServer = AddBuildServer(template, PrivateSubnet1, tfsServer, DomainController, buildServerSecurityGroup);
-            //tfsServerSecurityGroup.AddIngress((ILogicalId)buildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            var buildServer = AddBuildServer(template, subnetBuildServer, tfsServer, instanceDomainController, securityGroupBuildServer);
+            buildServer.AddFinalizer(Timeout3Hours);
 
 
 
@@ -155,8 +139,8 @@ namespace AWS.CloudFormation.Test
 
             // the below is a remote desktop gateway server that can
             // be uncommented to debug domain setup problems
-            var RDGateway2 = new RemoteDesktopGateway(template, "RDGateway2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
-            DomainController.AddToDomainMemberSecurityGroup(RDGateway2);
+            //var RDGateway2 = new RemoteDesktopGateway(template, "RDGateway2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
+            //DomainController.AddToDomainMemberSecurityGroup(RDGateway2);
 
             //LoadBalancer elb = new LoadBalancer(template, "elb1");
             //elb.AddInstance(tfsServer);
@@ -185,10 +169,9 @@ namespace AWS.CloudFormation.Test
         private static WindowsInstance AddSql4Tfs(Template template, Subnet PrivateSubnet1, DomainController DomainController,
             SecurityGroup sqlServerSecurityGroup)
         {
-            var tfsSqlServer = new WindowsInstance(template, "sql1", InstanceTypes.T2Micro,
-                StackTest.USEAST1AWINDOWS2012R2AMI, PrivateSubnet1, true);
-            DomainController.AddToDomain(tfsSqlServer, ThreeHoursSpan);
-            tfsSqlServer.AddPackage(SoftwareS3BucketName, new SqlServerExpress(tfsSqlServer));
+            var tfsSqlServer = new WindowsInstance(template, "sql1", InstanceTypes.T2Micro, UsEast1aWindows2012R2Ami, PrivateSubnet1, true);
+            DomainController.AddToDomain(tfsSqlServer, Timeout3Hours);
+            tfsSqlServer.AddPackage(bucketNameSoftware, new SqlServerExpress(tfsSqlServer));
             tfsSqlServer.SecurityGroupIds.Add(sqlServerSecurityGroup);
             return tfsSqlServer;
         }
@@ -197,12 +180,12 @@ namespace AWS.CloudFormation.Test
         {
             //"ami-805d79ea",
             var DomainController = new DomainController(template,
-                ADServerNetBIOSName1,
+                NetBiosNameDomainController1,
                 InstanceTypes.T2Micro,
-                USEAST1AWINDOWS2012R2AMI,
+                UsEast1aWindows2012R2Ami,
                 subnet,
-                new DomainController.DomainInfo(StackTest.DomainDNSName, StackTest.DomainNetBIOSName, StackTest.DomainAdminUser,
-                    StackTest.DomainAdminPassword));
+                new DomainController.DomainInfo(DomainDnsName, DomainNetBiosName, DomainAdminUser,
+                    DomainAdminPassword));
             return DomainController;
         }
 
@@ -240,7 +223,7 @@ namespace AWS.CloudFormation.Test
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A);
             AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
-            WindowsInstance w = new WindowsInstance(template,"Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
+            WindowsInstance w = new WindowsInstance(template,"Windows1", InstanceTypes.T2Nano, UsEast1aWindows2012R2Ami, DMZSubnet, false);
             w.SecurityGroupIds.Add(rdp);
             w.AddElasticIp();
             template.AddResource(w);
@@ -259,7 +242,7 @@ namespace AWS.CloudFormation.Test
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A);
             AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
-            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
+            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, UsEast1aWindows2012R2Ami, DMZSubnet, false);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "/dev/xvdf");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
             w.AddBlockDeviceMapping(blockDeviceMapping);
@@ -295,7 +278,7 @@ Set-Disk $d.Number -IsOffline $False
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A);
             AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
-            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
+            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, UsEast1aWindows2012R2Ami, DMZSubnet, false);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "xvdf");
             blockDeviceMapping.Ebs.SnapshotId = "snap-87e3eb87";
             w.AddBlockDeviceMapping(blockDeviceMapping);
@@ -319,7 +302,7 @@ $d.Number
 Set-Disk $d.Number -IsOffline $False
             **/
 
-            w.AddChefExec(SoftwareS3BucketName, "MountDrives.tar.gz", "MountDrives");
+            w.AddChefExec(bucketNameSoftware, "MountDrives.tar.gz", "MountDrives");
 
 
             w.SecurityGroupIds.Add(rdp);
@@ -340,10 +323,10 @@ Set-Disk $d.Number -IsOffline $False
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A);
             AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
-            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
+            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, UsEast1aWindows2012R2Ami, DMZSubnet, false);
 
-            w.AddPackage(SoftwareS3BucketName, new SqlServerExpress(w));
-            w.AddPackage(SoftwareS3BucketName, new VisualStudio());
+            w.AddPackage(bucketNameSoftware, new SqlServerExpress(w));
+            w.AddPackage(bucketNameSoftware, new VisualStudio());
 
 
             w.SecurityGroupIds.Add(rdp);
@@ -382,7 +365,7 @@ Set-Disk $d.Number -IsOffline $False
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A);
             AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
-            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, false);
+            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, UsEast1aWindows2012R2Ami, false);
             w.Subnet = DMZSubnet;
             w.SecurityGroupIds.Add(rdp);
             w.AddElasticIp();
@@ -441,7 +424,7 @@ Set-Disk $d.Number -IsOffline $False
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A);
             AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
 
-            WindowsInstance workstation = new WindowsInstance(template, "ISOMaker", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
+            WindowsInstance workstation = new WindowsInstance(template, "ISOMaker", InstanceTypes.T2Nano, UsEast1aWindows2012R2Ami, DMZSubnet, false);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
             blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.GeneralPurpose;
             blockDeviceMapping.Ebs.VolumeSize = 30;
@@ -484,7 +467,7 @@ Set-Disk $d.Number -IsOffline $False
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A);
             AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
 
-            WindowsInstance workstation = new WindowsInstance(template, "ISOMaker", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
+            WindowsInstance workstation = new WindowsInstance(template, "ISOMaker", InstanceTypes.T2Nano, UsEast1aWindows2012R2Ami, DMZSubnet, false);
             workstation.SecurityGroupIds.Add(rdp);
             workstation.AddElasticIp();
 
@@ -527,7 +510,7 @@ Set-Disk $d.Number -IsOffline $False
             RouteTable dmzRouteTable = new RouteTable(template, "DMZRouteTable", vpc);
             Route dmzRoute = new Route(template, "DMZRoute", vpc.InternetGateway, "0.0.0.0/0", dmzRouteTable);
             SubnetRouteTableAssociation DMZSubnetRouteTableAssociation = new SubnetRouteTableAssociation(template, DMZSubnet, dmzRouteTable);
-            WindowsInstance workstation = new WindowsInstance(template, "SerializerTest", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
+            WindowsInstance workstation = new WindowsInstance(template, "SerializerTest", InstanceTypes.T2Nano, UsEast1aWindows2012R2Ami, DMZSubnet, false);
             workstation.SecurityGroupIds.Add(rdp);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
             blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.GeneralPurpose;
@@ -566,7 +549,7 @@ Set-Disk $d.Number -IsOffline $False
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A);
             AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
-            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, DMZSubnet, false);
+            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, UsEast1aWindows2012R2Ami, DMZSubnet, false);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "xvdf");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
             w.AddBlockDeviceMapping(blockDeviceMapping);
@@ -588,7 +571,7 @@ $d.Number
 Set-Disk $d.Number -IsOffline $False
             **/
 
-            w.AddChefExec(SoftwareS3BucketName, "MountDrives.tar.gz", "MountDrives");
+            w.AddChefExec(bucketNameSoftware, "MountDrives.tar.gz", "MountDrives");
 
 
             w.SecurityGroupIds.Add(rdp);
@@ -603,24 +586,24 @@ Set-Disk $d.Number -IsOffline $False
         private static WindowsInstance AddBuildServer(Template template, Subnet subnet, WindowsInstance tfsServer, DomainController DomainController, SecurityGroup buildServerSecurityGroup)
         {
 
-            var buildServer = new WindowsInstance(template, "build", InstanceTypes.T2Small, StackTest.USEAST1AWINDOWS2012R2AMI, subnet, true);
+            var buildServer = new WindowsInstance(template, "build", InstanceTypes.T2Small, UsEast1aWindows2012R2Ami, subnet, true);
             buildServer.AddBlockDeviceMapping("/dev/sda1", 30, Ebs.VolumeTypes.GeneralPurpose);
 
-            buildServer.AddPackage(SoftwareS3BucketName, new VisualStudio());
-            buildServer.AddPackage(SoftwareS3BucketName, new TeamFoundationServerBuildServer());
+            buildServer.AddPackage(bucketNameSoftware, new VisualStudio());
+            buildServer.AddPackage(bucketNameSoftware, new TeamFoundationServerBuildServer());
 
             if (tfsServer != null)
             {
-                buildServer.AddDependsOn(tfsServer, ThreeHoursSpan);
+                buildServer.AddDependsOn(tfsServer, Timeout3Hours);
             }
 
             var chefNode = buildServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
-            domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
+            domainAdminUserInfoNode.Add("name", DomainNetBiosName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             buildServer.SecurityGroupIds.Add(buildServerSecurityGroup);
-            DomainController.AddToDomain(buildServer, ThreeHoursSpan);
-            buildServer.AddFinalizer(ThreeHoursSpan);
+            DomainController.AddToDomain(buildServer, Timeout3Hours);
+            buildServer.AddFinalizer(Timeout3Hours);
             return buildServer;
         }
 
@@ -635,19 +618,19 @@ Set-Disk $d.Number -IsOffline $False
         {
             if (subnet == null) throw new ArgumentNullException(nameof(subnet));
 
-            WindowsInstance workstation = new WindowsInstance(template, name, InstanceTypes.T2Nano, USEAST1AWINDOWS2012R2AMI, subnet, rename);
+            WindowsInstance workstation = new WindowsInstance(template, name, InstanceTypes.T2Nano, UsEast1aWindows2012R2Ami, subnet, rename);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
             blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.GeneralPurpose;
             blockDeviceMapping.Ebs.VolumeSize = 214;
             workstation.AddBlockDeviceMapping(blockDeviceMapping);
             workstation.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 10);
             workstation.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 5);
-            workstation.AddPackage(SoftwareS3BucketName, new SqlServerExpress(workstation));
-            workstation.AddPackage(SoftwareS3BucketName, new VisualStudio());
+            workstation.AddPackage(bucketNameSoftware, new SqlServerExpress(workstation));
+            workstation.AddPackage(bucketNameSoftware, new VisualStudio());
 
             if (dependsOn != null)
             {
-                workstation.AddDependsOn(dependsOn, ThreeHoursSpan);
+                workstation.AddDependsOn(dependsOn, Timeout3Hours);
             }
 
             if (workstationSecurityGroup != null)
@@ -660,12 +643,12 @@ Set-Disk $d.Number -IsOffline $False
                 workstation.SecurityGroupIds.Add(tfsUsers);
             }
 
-            workstation.AddFinalizer(MaxTimeOut);
+            workstation.AddFinalizer(TimeoutMax);
 
 
             if (dc1 != null)
             {
-                dc1.AddToDomain(workstation, ThreeHoursSpan);
+                dc1.AddToDomain(workstation, Timeout3Hours);
             }
 
             return workstation;
@@ -676,21 +659,21 @@ Set-Disk $d.Number -IsOffline $False
             var tfsServer = new WindowsInstance(    template, 
                                                     "tfsserver1", 
                                                     InstanceTypes.T2Small, 
-                                                    StackTest.USEAST1AWINDOWS2012R2AMI, 
+                                                    UsEast1aWindows2012R2Ami, 
                                                     privateSubnet1, 
                                                     true, 
                                                     Ebs.VolumeTypes.GeneralPurpose,
                                                     214);
 
             
-            tfsServer.AddDependsOn(tfsSqlServer, MaxTimeOut);
+            tfsServer.AddDependsOn(tfsSqlServer, TimeoutMax);
             var chefNode = tfsServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
-            domainAdminUserInfoNode.Add("name", DomainNetBIOSName + "\\" + DomainAdminUser);
+            domainAdminUserInfoNode.Add("name", DomainNetBiosName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             tfsServer.SecurityGroupIds.Add(tfsServerSecurityGroup);
-            tfsServer.AddPackage(SoftwareS3BucketName, new TeamFoundationServerApplicationTier());
-            dc1.AddToDomain(tfsServer, ThreeHoursSpan);
+            tfsServer.AddPackage(bucketNameSoftware, new TeamFoundationServerApplicationTier());
+            dc1.AddToDomain(tfsServer, Timeout3Hours);
             return tfsServer;
         }
 
@@ -853,7 +836,7 @@ Set-Disk $d.Number -IsOffline $False
         //    //    //},
         //    //    "@XXXX.XXXXX.com",
         //    //    //{
-        //    //    //    "Ref" : "DomainDNSName"
+        //    //    //    "Ref" : "DomainDnsName"
         //    //    //},
         //    //    " ",
         //    //    "-AccountPassword (ConvertTo-SecureString oldpassword123",
@@ -1004,7 +987,7 @@ Set-Disk $d.Number -IsOffline $False
         [TestMethod]
         public void UpdatePrimeTest()
         {
-            var stackName = "CreatePrimeTest-2016-01-22T2009549488472-0500";
+            var stackName = "CreatePrimeTest-2016-01-22T2236238633003-0500";
             
             Stack.Stack.UpdateStack(stackName, GetTemplateFullStack(this.TestContext, "VpcCreatePrimeTest"));
         }
@@ -1037,7 +1020,7 @@ Set-Disk $d.Number -IsOffline $False
             {
                 vpcName = $"Vpc{testContext.TestName}";
             }
-            return new Template(KeyPairName, vpcName, VPCCIDR);
+            return new Template(KeyPairName, vpcName, CidrVpc);
 
         }
         internal static Template GetNewBlankTemplateWithVpc(TestContext testContext)

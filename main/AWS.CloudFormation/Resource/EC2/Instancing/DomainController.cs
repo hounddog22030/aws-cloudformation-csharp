@@ -321,10 +321,11 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         [JsonIgnore]
         public SecurityGroup DomainMemberSecurityGroup { get; }
 
-        public void AddToDomain(WindowsInstance instanceToAddToDomain, TimeSpan timeToWait)
+        public void AddToDomain(WindowsInstance instance, TimeSpan timeToWait)
         {
+            
             var joinCommandConfig =
-                instanceToAddToDomain.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName)
+                instance.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName)
                     .GetConfig(DefaultConfigSetJoinConfig);
             var joinCommand =
                 joinCommandConfig.Commands.AddCommand<PowerShellCommand>(DefaultConfigSetRenameConfigJoinDomain);
@@ -343,14 +344,13 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 "-Restart\"");
             joinCommand.WaitAfterCompletion = "forever";
 
-            instanceToAddToDomain.AddDependsOn(this, timeToWait);
-            this.SetDnsServers(instanceToAddToDomain);
-            this.AddToDomainMemberSecurityGroup(instanceToAddToDomain);
-            instanceToAddToDomain.DomainNetBiosName = this.DomainNetBiosName;
-            instanceToAddToDomain.DomainDnsName = this.DomainDnsName;
-
-
-            instanceToAddToDomain.OnAddedToDomain(this.DomainNetBiosName.Default.ToString());
+            instance.AddDependsOn(this, timeToWait);
+            this.SetDnsServers(instance);
+            this.AddToDomainMemberSecurityGroup(instance);
+            instance.DomainNetBiosName = this.DomainNetBiosName;
+            instance.DomainDnsName = this.DomainDnsName;
+            this.AddReplicationSite(instance.Subnet);
+            instance.OnAddedToDomain(this.DomainNetBiosName.Default.ToString());
         }
 
         private void SetDnsServers(WindowsInstance instanceToAddToDomain)
