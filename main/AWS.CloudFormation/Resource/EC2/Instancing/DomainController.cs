@@ -62,7 +62,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             DomainMemberSecurityGroup = this.CreateDomainMemberSecurityGroup();
             this.CreateDomainControllerSecurityGroup();
             this.MakeDomainController();
-
+            ConfigureDefaultSite(subnet);
         }
 
         [JsonIgnore]
@@ -79,10 +79,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
             ConfigFile file = setupFiles.GetFile("c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1");
 
-            file.Source =
-                "https://s3.amazonaws.com/quickstart-reference/microsoft/activedirectory/latest/scripts/ConvertTo-EnterpriseAdmin.ps1";
-
-            //powershell - Command "Get-NetFirewallProfile | Set-NetFirewallProfile - Enabled False" > c:\cfn\log\a-disable-win-fw.log
+            file.Source = "https://s3.amazonaws.com/quickstart-reference/microsoft/activedirectory/latest/scripts/ConvertTo-EnterpriseAdmin.ps1";
 
             var currentConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("installADDS");
             var currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("1-install-prereqsz");
@@ -142,98 +139,39 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                     "\""
                 });
 
-
-            currentConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("configureSites");
-            currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("a-rename-default-site");
-            currentCommand.WaitAfterCompletion = 0.ToString();
-
-            currentCommand.Command.AddCommandLine(" ",
-                "\"",
-                "Get-ADObject -SearchBase (Get-ADRootDSE).ConfigurationNamingContext -filter {Name -eq 'Default-First-Site-Name'} | Rename-ADObject -NewName DMZSubnet",
-                "\"");
-
-            currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("b-create-site-2");
-            currentCommand.WaitAfterCompletion = 0.ToString();
-            currentCommand.Command.AddCommandLine("\"",
-                "New-ADReplicationSite DMZ2Subnet",
-                "\"");
-
-
-            //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("c-create-DMZSubnet-1");
-            //currentCommand.WaitAfterCompletion = 0.ToString();
-            //currentCommand.Command.AddCommandLine("-Command New-ADReplicationSubnet -Name ",
-            //                                        DmzAz1Cidr,
-            //                                        " -Site AZ1");
-
-            //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("d-create-DMZSubnet-2");
-            //currentCommand.WaitAfterCompletion = 0.ToString();
-            //currentCommand.Command.AddCommandLine("-Command New-ADReplicationSubnet -Name ",
-            //                                        DmzAz2Cidr,
-            //                                        " -Site AZ2");
-
-            //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("e-create-subnet-1");
-            //currentCommand.WaitAfterCompletion = 0.ToString();
-            //currentCommand.Command.AddCommandLine("-Command New-ADReplicationSubnet -Name ",
-            //                                        Az1SubnetCidr,
-            //                                        " -Site AZ1");
-
-            //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("f-create-subnet-2");
-            //currentCommand.WaitAfterCompletion = 0.ToString();
-            //currentCommand.Command.AddCommandLine("-Command New-ADReplicationSubnet -Name ",
-            //                                        Az2SubnetCidr,
-            //                                        " -Site AZ2");
-
-            currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("m-set-site-link");
-            currentCommand.WaitAfterCompletion = 0.ToString();
-            currentCommand.Command.AddCommandLine("-Command \"",
-                "Get-ADReplicationSiteLink -Filter * | Set-ADReplicationSiteLink -SitesIncluded @{add='DMZ2Subnet'} -ReplicationFrequencyInMinutes 15\"");
-
             this.OnAddedToDomain(this.DomainNetBiosName.Default.ToString());
         }
 
-
-        public void CreateAdReplicationSubnet(Subnet subnet)
+        public void AddReplicationSite(Subnet subnet)
         {
             var currentConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("configureSites");
-            var currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>($"create-subnet-{subnet.LogicalId}");
+            ConfigCommand currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>($"create-site-{subnet.LogicalId}");
             currentCommand.WaitAfterCompletion = 0.ToString();
-            currentCommand.Command.AddCommandLine("-Command New-ADReplicationSubnet -Name ",
-                subnet.CidrBlock,
-                " -Site ",
-                subnet.LogicalId);
+            currentCommand.Command.AddCommandLine("-Command \"", $"New-ADReplicationSite  {subnet.LogicalId}\"");
+
+            currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>($"create-subnet-{subnet.LogicalId}");
+            currentCommand.WaitAfterCompletion = 0.ToString();
+            currentCommand.Command.AddCommandLine("-Command New-ADReplicationSubnet -Name ", subnet.CidrBlock, $" -Site {subnet.LogicalId}");
+        }
+
+        private Config ConfigureDefaultSite(Subnet defaultSubnet)
+        {
+            var currentConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("configureSites");
+            ConfigCommand currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("a-rename-default-site");
+            currentCommand.WaitAfterCompletion = 0.ToString();
+            currentCommand.Command.AddCommandLine(" ", "\"", $"Get-ADObject -SearchBase (Get-ADRootDSE).ConfigurationNamingContext -filter {{Name -eq 'Default-First-Site-Name'}} | Rename-ADObject -NewName {defaultSubnet.LogicalId}", "\"");
+
+            return currentConfig;
         }
 
         private void CreateDomainControllerSecurityGroup()
         {
             // ReSharper disable once InconsistentNaming
-            SecurityGroup DomainControllerSG1 = Template.GetSecurityGroup("DomainControllerSG1", this.Subnet.Vpc,
-                "Domain Controller");
+            SecurityGroup DomainControllerSG1 = new SecurityGroup(Template, "DomainControllerSG1", "Domain Controller", this.Subnet.Vpc);
             DomainControllerSG1.AddIngress(this.Subnet.Vpc as ICidrBlock, Protocol.Tcp,
                 Ports.WsManagementPowerShell);
             DomainControllerSG1.AddIngress(this.Subnet.Vpc as ICidrBlock, Protocol.Tcp, Ports.Http);
-            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Udp, Ports.Ntp);
-            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp, Ports.WinsManager);
-            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryManagement);
-            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Udp, Ports.NetBios);
 
-            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp | Protocol.Udp, Ports.Smb);
-            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp | Protocol.Udp, Ports.ActiveDirectoryManagement2);
-            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp | Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
-            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp | Protocol.Udp, Ports.Ldap);
-
-            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp, Ports.Ldaps);
-            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp, Ports.Ldap2Begin, Ports.Ldap2End);
-
-            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp | Protocol.Udp, Ports.DnsQuery);
-
-            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryManagement);
-
-            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp | Protocol.Udp, Ports.KerberosKeyDistribution);
-
-            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Udp, Ports.DnsLlmnr);
-            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Udp, Ports.NetBt);
-            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp, Ports.NetBiosNameServices);
-            //DomainControllerSG1.AddIngress(az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryFileReplication);
             DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Udp,
                 Ports.Ntp);
             DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
@@ -261,35 +199,14 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.RemoteDesktopProtocol);
 
-            //DomainControllerSG1.AddIngress(DMZSubnet, Protocol.Tcp | Protocol.Udp, Ports.Rdp);
-
-            //DomainControllerSG1.AddIngress(DMZSubnet, Protocol.Icmp, Ports.All);
-            //DomainControllerSG1.AddIngress(dmzaz2Subnet, Protocol.Icmp, Ports.All);
             this.SecurityGroupIds.Add(DomainControllerSG1);
 
         }
 
         private SecurityGroup CreateDomainMemberSecurityGroup()
         {
-            //ParameterBase domain = Template.Parameters["DomainDNSName"];
-            //SecurityGroup returnValue = Template.AddSecurityGroup(domain.Default.Replace(".",string.Empty) + "SecurityGroup", this.Vpc,"Domain Member Security Group");
-            //return returnValue;
-            SecurityGroup domainMemberSg = Template.GetSecurityGroup("DomainMemberSG", this.Subnet.Vpc,
-                "For All Domain Members");
+            SecurityGroup domainMemberSg = new SecurityGroup(this.Template, "DomainMemberSG", "For All Domain Members", this.Subnet.Vpc);
             domainMemberSg.GroupDescription = "Domain Member Security Group";
-            ////az1Subnet
-            //domainMemberSg.AddIngress(domainMemberSg, Protocol.Tcp | Protocol.Udp, Ports.DnsQuery);
-            //domainMemberSg.AddIngress(domainMemberSg, Protocol.Tcp | Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
-
-
-            //SubnetRouteTableAssociation az1PrivateSubnetRouteTableAssociation = new SubnetRouteTableAssociation(
-            //    this.Template,
-            //    "AZ1PrivateSubnetRouteTableAssociation", 
-            //    az1Subnet, 
-            //    az1PrivateRouteTable);
-
-            //this.Template.Resources.Add("AZ1PrivateSubnetRouteTableAssociation", az1PrivateSubnetRouteTableAssociation);
-
             return domainMemberSg;
         }
 
@@ -313,10 +230,11 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         [JsonIgnore]
         public SecurityGroup DomainMemberSecurityGroup { get; }
 
-        public void AddToDomain(WindowsInstance instanceToAddToDomain, TimeSpan timeToWait)
+        public void AddToDomain(WindowsInstance instance, TimeSpan timeToWait)
         {
+            
             var joinCommandConfig =
-                instanceToAddToDomain.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName)
+                instance.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName)
                     .GetConfig(DefaultConfigSetJoinConfig);
             var joinCommand =
                 joinCommandConfig.Commands.AddCommand<PowerShellCommand>(DefaultConfigSetRenameConfigJoinDomain);
@@ -335,14 +253,13 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 "-Restart\"");
             joinCommand.WaitAfterCompletion = "forever";
 
-            instanceToAddToDomain.AddDependsOn(this, timeToWait);
-            this.SetDnsServers(instanceToAddToDomain);
-            this.AddToDomainMemberSecurityGroup(instanceToAddToDomain);
-            instanceToAddToDomain.DomainNetBiosName = this.DomainNetBiosName;
-            instanceToAddToDomain.DomainDnsName = this.DomainDnsName;
-
-
-            instanceToAddToDomain.OnAddedToDomain(this.DomainNetBiosName.Default.ToString());
+            instance.AddDependsOn(this, timeToWait);
+            this.SetDnsServers(instance);
+            this.AddToDomainMemberSecurityGroup(instance);
+            instance.DomainNetBiosName = this.DomainNetBiosName;
+            instance.DomainDnsName = this.DomainDnsName;
+            this.AddReplicationSite(instance.Subnet);
+            instance.OnAddedToDomain(this.DomainNetBiosName.Default.ToString());
         }
 
         private void SetDnsServers(WindowsInstance instanceToAddToDomain)

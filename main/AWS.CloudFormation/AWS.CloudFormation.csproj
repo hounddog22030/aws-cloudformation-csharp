@@ -61,6 +61,7 @@
     <Compile Include="Common\CloudFormationDictionary.cs" />
     <Compile Include="Common\CollectionAsIdsConverter.cs" />
     <Compile Include="Configuration\Packages\Packages.cs" />
+    <Compile Include="Property\AvailabilityZone.cs" />
     <Compile Include="Resource\EC2\Instancing\BlockDeviceMapping.cs" />
     <Compile Include="Resource\EC2\Instancing\DomainController.cs" />
     <Compile Include="Resource\EC2\Networking\EipAssociation.cs" />

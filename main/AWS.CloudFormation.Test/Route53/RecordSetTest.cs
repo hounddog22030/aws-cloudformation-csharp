@@ -75,7 +75,6 @@ namespace AWS.CloudFormation.Test.Route53
             var target = RecordSet.AddByHostedZoneId(template, recordSetName, "Z1H285MI71YUD0", recordSetName + ".sircupsalot.com.", RecordSet.RecordSetTypeEnum.A);
             target.RecordSetType = RecordSet.RecordSetTypeEnum.A.ToString();
             target.ResourceRecords.Add("206.190.36.45");
-            template.AddResource(target);
             StackTest.CreateTestStack(template, this.TestContext);
         }
 
@@ -89,7 +88,6 @@ namespace AWS.CloudFormation.Test.Route53
             target.RecordSetType = RecordSet.RecordSetTypeEnum.A.ToString();
             target.ResourceRecords.Add("192.168.0.1");
             target.ResourceRecords.Add("192.168.0.2");
-            template.AddResource(target);
             StackTest.CreateTestStack(template, this.TestContext);
         }
 
@@ -97,18 +95,14 @@ namespace AWS.CloudFormation.Test.Route53
         public void RecordSetMappedToEipTest()
         {
             Template template = StackTest.GetNewBlankTemplateWithVpc(this.TestContext);
-            var DMZSubnet = template.AddSubnet("DMZSubnet", template.Vpcs.First(), "10.0.0.0/20", Template.AvailabilityZone.UsEast1A);
+            var DMZSubnet = new Subnet(template,"DMZSubnet", template.Vpcs.First(), "10.0.0.0/20", AvailabilityZone.UsEast1A);
             Instance testBox = new Instance(template, "testbox", InstanceTypes.T2Micro, "ami-60b6c60a", OperatingSystem.Linux, false);
             testBox.Subnet = DMZSubnet;
-
-
-            template.AddResource(testBox);
             var eip = testBox.AddElasticIp();
             var target = RecordSet.AddByHostedZoneName(template, "testprime", "getthebuybox.com.", "test.prime.getthebuybox.com.", RecordSet.RecordSetTypeEnum.A);
             target.TTL = "60";
             target.RecordSetType = RecordSet.RecordSetTypeEnum.A.ToString();
             target.ResourceRecords.Add(eip);
-            template.AddResource(target);
             StackTest.CreateTestStack(template, this.TestContext);
         }
     }

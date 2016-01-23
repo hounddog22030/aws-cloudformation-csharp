@@ -22,9 +22,9 @@ namespace AWS.CloudFormation
             return JsonConvert.SerializeObject(template, Formatting.Indented, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
         }
 
-        public static FileInfo CreateTemplateFile(Template template, string name)
+        public static FileInfo CreateTemplateFile(Template template)
         {
-            FileInfo info = new FileInfo(Path.Combine(Directory.GetCurrentDirectory(), name + ".template"));
+            FileInfo info = new FileInfo(Path.Combine(Directory.GetCurrentDirectory(), Guid.NewGuid().ToString() + ".template,"));
             using (var file = new System.IO.StreamWriter(info.FullName))
             {
                 var serialized = CreateTemplateString(template);
@@ -33,9 +33,10 @@ namespace AWS.CloudFormation
             return info;
         }
 
-        public static Uri UploadTemplate(Template template, string name, string path)
+        public static Uri UploadTemplate(Template template, string path)
         {
-            var file = CreateTemplateFile(template, name);
+            //string existingBucketName = "gtbb/software/cf";
+            var file = CreateTemplateFile(template);
             string filePath = file.FullName;
 
             TransferUtility fileTransferUtility = new
