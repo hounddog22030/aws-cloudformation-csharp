@@ -3,6 +3,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
+using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Resource.Networking;
 
 using AWS.CloudFormation.Stack;
@@ -56,6 +57,17 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
                 var enumMemberAttribute = ((EnumMemberAttribute[])enumType.GetField(name).GetCustomAttributes(typeof(EnumMemberAttribute), true)).Single();
                 this.Properties.SetValue(enumMemberAttribute.Value);
             }
+        }
+
+        public void AddNatGateway(Instance nat, SecurityGroup natSecurityGroup)
+        {
+            RouteTable routeTable = new RouteTable(this.Template, $"routeTableFor{this.LogicalId}", this.Vpc);
+            Route route = new Route(this.Template, $"routeFor{this.LogicalId}", Template.CIDR_IP_THE_WORLD, routeTable);
+            SubnetRouteTableAssociation routeTableAssociation = new SubnetRouteTableAssociation(this.Template, this, routeTable);
+            route.Instance = nat;
+            
+            natSecurityGroup.AddIngress((ICidrBlock)this, Protocol.All, Ports.Min, Ports.Max);
+            natSecurityGroup.AddIngress((ICidrBlock)this, Protocol.Icmp, Ports.All);
         }
     }
 }

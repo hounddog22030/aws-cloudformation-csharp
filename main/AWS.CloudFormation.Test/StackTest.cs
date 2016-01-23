@@ -98,7 +98,7 @@ namespace AWS.CloudFormation.Test
             SecurityGroup sqlServerSecurityGroup = template.GetSecurityGroup("SqlServer4TfsSecurityGroup", vpc, "Allows communication to SQLServer Service");
             sqlServerSecurityGroup.AddIngress((ICidrBlock) subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             sqlServerSecurityGroup.AddIngress((ICidrBlock) subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            sqlServerSecurityGroup.AddIngress((ICidrBlock) subnetDmz1, Protocol.Tcp, Ports.MsSqlServer);
+            sqlServerSecurityGroup.AddIngress((ICidrBlock) subnetSqlServer4Tfs, Protocol.Tcp, Ports.MsSqlServer);
 
 
             SecurityGroup workstationSecurityGroup = template.GetSecurityGroup("WorkstationSecurityGroup", vpc, "Security Group To Contain Workstations");
@@ -106,19 +106,19 @@ namespace AWS.CloudFormation.Test
 
             AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, subnetDmz1);
 
-            Subnet[] subnetsToAddToNatSecurityGroup = new Subnet[] {subnetDomainController1, subnetDomainController2};
+            //Subnet[] subnetsToAddToNatSecurityGroup = new Subnet[] {subnetDomainController1, subnetDomainController2, subnetSqlServer4Tfs, subnetTfsServer};
 
-            foreach (var subnet in subnetsToAddToNatSecurityGroup)
-            {
-                natSecurityGroup.AddIngress((ICidrBlock)subnet, Protocol.All, Ports.Min, Ports.Max);
-                natSecurityGroup.AddIngress((ICidrBlock)subnet, Protocol.Icmp, Ports.All);
-            }
+            //foreach (var subnet in subnetsToAddToNatSecurityGroup)
+            //{
+            //    natSecurityGroup.AddIngress((ICidrBlock)subnet, Protocol.All, Ports.Min, Ports.Max);
+            //    natSecurityGroup.AddIngress((ICidrBlock)subnet, Protocol.Icmp, Ports.All);
+            //}
 
             var nat1 = AddNat1(template, subnetDmz1, natSecurityGroup);
 
-            var routeForDomainController1Subnet = AddRouteForSubnetToNat(template, vpc, subnetDomainController1, nat1);
-            var routeForSqlServer4TfsSubnet = AddRouteForSubnetToNat(template, vpc, subnetSqlServer4Tfs, nat1);
-            var routeForTfsServerSubnet = AddRouteForSubnetToNat(template, vpc, subnetTfsServer, nat1);
+            subnetDomainController1.AddNatGateway(nat1, natSecurityGroup);
+            subnetSqlServer4Tfs.AddNatGateway(nat1, natSecurityGroup);
+            subnetTfsServer.AddNatGateway(nat1, natSecurityGroup);
 
             // ReSharper disable once InconsistentNaming
             // uses 21gb
@@ -169,18 +169,18 @@ namespace AWS.CloudFormation.Test
             return template;
         }
 
-        private static Route AddRouteForSubnetToNat(Template template, Vpc vpc, Subnet subnetToAddRouteFor, Instance nat)
-        {
-            RouteTable routeTableForDomainController1Subnet = template.AddRouteTable($"routeTableFor{subnetToAddRouteFor.LogicalId}", vpc);
-            Route routeForDomainController1Subnet = template.AddRoute($"routeFor{subnetToAddRouteFor.LogicalId}",
-                Template.CIDR_IP_THE_WORLD, routeTableForDomainController1Subnet);
-            SubnetRouteTableAssociation routeTableAssociationDomainController1 = new SubnetRouteTableAssociation(template,
-                subnetToAddRouteFor, routeTableForDomainController1Subnet);
-            routeForDomainController1Subnet.Instance = nat;
+        //private static Route AddRouteForSubnetToNat(Template template, Vpc vpc, Subnet subnetToAddRouteFor, Instance nat)
+        //{
+        //    RouteTable routeTableForDomainController1Subnet = template.AddRouteTable($"routeTableFor{subnetToAddRouteFor.LogicalId}", vpc);
+        //    Route routeForDomainController1Subnet = template.AddRoute($"routeFor{subnetToAddRouteFor.LogicalId}",
+        //        Template.CIDR_IP_THE_WORLD, routeTableForDomainController1Subnet);
+        //    SubnetRouteTableAssociation routeTableAssociationDomainController1 = new SubnetRouteTableAssociation(template,
+        //        subnetToAddRouteFor, routeTableForDomainController1Subnet);
+        //    routeForDomainController1Subnet.Instance = nat;
 
 
-            return routeForDomainController1Subnet;
-        }
+        //    return routeForDomainController1Subnet;
+        //}
 
         private static WindowsInstance AddSql4Tfs(Template template, Subnet PrivateSubnet1, DomainController DomainController,
             SecurityGroup sqlServerSecurityGroup)
@@ -696,10 +696,9 @@ Set-Disk $d.Number -IsOffline $False
 
         private static void AddInternetGatewayRouteTable(Template template, Vpc vpc, InternetGateway gateway, Subnet subnet)
         {
-            RouteTable dmzRouteTable = template.AddRouteTable($"{subnet.LogicalId}RouteTable", vpc);
-            template.AddRoute($"{subnet.LogicalId}Route", gateway, "0.0.0.0/0", dmzRouteTable);
-            SubnetRouteTableAssociation DMZSubnetRouteTableAssociation = new SubnetRouteTableAssociation(template,
-                subnet, dmzRouteTable);
+            RouteTable routeTable = new RouteTable(template, $"{subnet.LogicalId}RouteTable", vpc);
+            Route route = new Route(template,$"{subnet.LogicalId}Route", gateway, "0.0.0.0/0", routeTable);
+            SubnetRouteTableAssociation routeTableAssociation = new SubnetRouteTableAssociation(template, subnet, routeTable);
         }
 
         private static Instance AddNat1(   Template template, 

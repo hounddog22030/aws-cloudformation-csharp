@@ -82,38 +82,38 @@ namespace AWS.CloudFormation.Stack
         //    return gateway;
         //}
 
-        public RouteTable AddRouteTable(string key, Vpc vpc)
-        {
-            RouteTable returnValue = null;
+        //public RouteTable AddRouteTable(string key, Vpc vpc)
+        //{
+        //    RouteTable returnValue = null;
 
-            if (this.Resources.ContainsKey(key))
-            {
-                returnValue = (RouteTable)this.Resources[key];
-            }
-            else
-            {
-                returnValue = new RouteTable(this, key, vpc);
-                return returnValue;
+        //    if (this.Resources.ContainsKey(key))
+        //    {
+        //        returnValue = (RouteTable)this.Resources[key];
+        //    }
+        //    else
+        //    {
+        //        returnValue = new RouteTable(this, key, vpc);
+        //        return returnValue;
 
-            }
-            return returnValue;
+        //    }
+        //    return returnValue;
 
-        }
+        //}
 
-        public Route AddRoute(string routeName, InternetGateway gateway, string destinationCidrBlock, RouteTable routeTable)
-        {
+        //public Route AddRoute(string routeName, InternetGateway gateway, string destinationCidrBlock, RouteTable routeTable)
+        //{
 
-            Route route = null;
-            if (this.Resources.ContainsKey(routeName))
-            {
-                route = (Route) this.Resources[routeName];
-            }
-            else
-            {
-                route = new Route(this, routeName, gateway, destinationCidrBlock, routeTable);
-            }
-            return route;
-        }
+        //    Route route = null;
+        //    if (this.Resources.ContainsKey(routeName))
+        //    {
+        //        route = (Route) this.Resources[routeName];
+        //    }
+        //    else
+        //    {
+        //        route = new Route(this, routeName, gateway, destinationCidrBlock, routeTable);
+        //    }
+        //    return route;
+        //}
 
         public Vpc AddVpc(string name, string cidrBlock)
         {
