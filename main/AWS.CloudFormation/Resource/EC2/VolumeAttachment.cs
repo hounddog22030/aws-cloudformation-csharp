@@ -18,7 +18,6 @@ namespace AWS.CloudFormation.Resource.EC2
                                     Instance instance, 
                                     string volumeId) : base(template, "AWS::EC2::VolumeAttachment", name, false)
         {
-            template.AddResource(this);
             Device = device;
             Instance = instance;
             VolumeId = volumeId;

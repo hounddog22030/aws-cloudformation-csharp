@@ -68,7 +68,6 @@ namespace AWS.CloudFormation.Test.Route53
             //Z313ZDEZ2F8F0F
             string hostedZoneName = $"{this.TestContext.TestName}{Guid.NewGuid().ToString().Replace("-", string.Empty)}.com";
             HostedZone hz = new HostedZone(template, hostedZoneName, hostedZoneName);
-            template.AddResource(hz);
             StackTest.CreateTestStack(template, this.TestContext);
             //
             // TODO: Add test logic here

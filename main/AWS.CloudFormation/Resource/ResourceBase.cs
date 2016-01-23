@@ -23,7 +23,7 @@ namespace AWS.CloudFormation.Resource
             LogicalId = name;
             DependsOn2 = new List<string>();
 
-            this.Template.AddResource(this);
+            this.Template.Resources.Add(name,this);
 
             Properties = new CloudFormationDictionary();
             Metadata = new Metadata(this);

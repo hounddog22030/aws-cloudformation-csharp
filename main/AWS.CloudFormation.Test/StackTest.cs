@@ -180,7 +180,6 @@ namespace AWS.CloudFormation.Test
             Volume v = new Volume(t,"Volume1");
             v.SnapshotId = "snap-c4d7f7c3";
             v.AvailabilityZone = AvailabilityZone.UsEast1A;
-            t.AddResource(v);
             return t;
         }
 
@@ -204,16 +203,13 @@ namespace AWS.CloudFormation.Test
             var template = GetNewBlankTemplateWithVpc(this.TestContext);
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
-            template.AddResource(rdp);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A);
             AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
             WindowsInstance w = new WindowsInstance(template,"Windows1", InstanceTypes.T2Nano, UsEast1aWindows2012R2Ami, DMZSubnet, false);
             w.SecurityGroupIds.Add(rdp);
             w.AddElasticIp();
-            template.AddResource(w);
             VolumeAttachment va = new VolumeAttachment(template,"VolumeAttachment1","/dev/sdh", w, "vol-ec768410");
-            template.AddResource(va);
             Stack.Stack.CreateStack(template);
         }
 
@@ -223,7 +219,6 @@ namespace AWS.CloudFormation.Test
             var template = GetNewBlankTemplateWithVpc(this.TestContext);
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
-            template.AddResource(rdp);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A);
             AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
@@ -242,7 +237,6 @@ namespace AWS.CloudFormation.Test
             w.SecurityGroupIds.Add(rdp);
 
             w.AddElasticIp();
-            template.AddResource(w);
             Stack.Stack.CreateStack(template);
         }
 
@@ -252,7 +246,6 @@ namespace AWS.CloudFormation.Test
             var template = GetNewBlankTemplateWithVpc(this.TestContext);
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
-            template.AddResource(rdp);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A);
             AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
@@ -271,7 +264,6 @@ namespace AWS.CloudFormation.Test
             w.AddChefExec(bucketNameSoftware, "MountDrives.tar.gz", "MountDrives");
             w.SecurityGroupIds.Add(rdp);
             w.AddElasticIp();
-            template.AddResource(w);
             var name = this.TestContext.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".",string.Empty) ;
             Stack.Stack.CreateStack(template, name);
         }
@@ -283,7 +275,6 @@ namespace AWS.CloudFormation.Test
             var template = GetNewBlankTemplateWithVpc(this.TestContext);
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
-            template.AddResource(rdp);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A);
             AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
@@ -295,7 +286,6 @@ namespace AWS.CloudFormation.Test
 
             w.SecurityGroupIds.Add(rdp);
             w.AddElasticIp();
-            template.AddResource(w);
             var name = this.TestContext.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty);
             Stack.Stack.CreateStack(template, name);
         }
@@ -306,7 +296,6 @@ namespace AWS.CloudFormation.Test
             var template = GetNewBlankTemplateWithVpc(this.TestContext);
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
-            template.AddResource(rdp);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A);
             AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
@@ -325,7 +314,6 @@ namespace AWS.CloudFormation.Test
             var template = GetNewBlankTemplateWithVpc(this.TestContext);
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
-            template.AddResource(rdp);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A);
             AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
@@ -344,7 +332,6 @@ namespace AWS.CloudFormation.Test
             var template = GetNewBlankTemplateWithVpc(this.TestContext);
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
-            template.AddResource(rdp);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A);
             AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
@@ -364,7 +351,6 @@ namespace AWS.CloudFormation.Test
             var template = GetNewBlankTemplateWithVpc(this.TestContext);
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
-            template.AddResource(rdp);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template,"PrivateSubnet", vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A);
             AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
@@ -509,7 +495,6 @@ namespace AWS.CloudFormation.Test
             var template = GetNewBlankTemplateWithVpc(this.TestContext);
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
-            template.AddResource(rdp);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A);
             AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, DMZSubnet);
@@ -530,7 +515,6 @@ namespace AWS.CloudFormation.Test
 
             w.SecurityGroupIds.Add(rdp);
             w.AddElasticIp();
-            template.AddResource(w);
             var name = "CreateStackWithMounterTest-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty);
             Stack.Stack.CreateStack(template, name);
         }

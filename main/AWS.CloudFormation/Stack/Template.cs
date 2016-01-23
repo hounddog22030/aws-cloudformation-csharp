@@ -28,7 +28,7 @@ namespace AWS.CloudFormation.Stack
             this.Resources = new Dictionary<string, ResourceBase>();
             this.Parameters = new Dictionary<string, ParameterBase>();
             this.Parameters.Add(Instance.ParameterNameDefaultKeyPairKeyName, new ParameterBase(Instance.ParameterNameDefaultKeyPairKeyName, "AWS::EC2::KeyPair::KeyName", defaultKeyName));
-            this.AddVpc(vpcName, vpcCidrBlock);
+            Vpc vpc = new Vpc(this,vpcName,vpcCidrBlock);
         }
 
         [JsonProperty(PropertyName = "AWSTemplateFormatVersion")]
@@ -43,28 +43,12 @@ namespace AWS.CloudFormation.Stack
             get { return this.Resources.Where(r => r.Value is Vpc).Select(r=>r.Value).OfType<Vpc>(); }
         }
 
-        public void AddResource(ResourceBase resource)
-        {
-            this.Resources.Add(resource.LogicalId, resource);
-        }
+        //public void AddResource(ResourceBase resource)
+        //{
+        //    this.Resources.Add(resource.LogicalId, resource);
+        //}
 
-        public ElasticIp AddElasticIp(Template template, string name, Instance instance)
-        {
-            ElasticIp eip = new ElasticIp(instance, name);
-            this.Resources.Add(name, eip);
-            return eip;
-        }
 
-        public Vpc AddVpc(string name, string cidrBlock)
-        {
-            return new Vpc(this,name,cidrBlock);
-        }
-
-        public Route AddRoute(string routeName, string cidr, RouteTable routeTable)
-        {
-            Route route = new Route(this, routeName, cidr, routeTable);
-            return route;
-        }
 
         public void AddParameter(ParameterBase parameter)
         {
