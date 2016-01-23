@@ -117,7 +117,7 @@ namespace AWS.CloudFormation.Test
 
             // uses 19gb
             // ReSharper disable once InconsistentNaming
-            var RDGateway = new RemoteDesktopGateway(template, "RDGateway", InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, subnetDmz1);
+            var RDGateway = new RemoteDesktopGateway(template, "RDGateway", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnetDmz1);
             RDGateway.AddFinalizer(Timeout2Hours);
             instanceDomainController.AddToDomain(RDGateway, Timeout3Hours);
 
@@ -136,7 +136,7 @@ namespace AWS.CloudFormation.Test
 
 
             // uses 33gb
-            var workstation = AddWorkstation(template, "workstation3", subnetWorkstation, buildServer, instanceDomainController, workstationSecurityGroup, true);
+            var workstation = AddWorkstation(template, "workstation3", subnetWorkstation, tfsServer, instanceDomainController, workstationSecurityGroup, true);
             //var workstation2 = AddWorkstation(template, "workstation2", PrivateSubnet1, buildServer, domainController, workstationSecurityGroup, tfsServerUsers);
 
 
@@ -582,7 +582,7 @@ namespace AWS.CloudFormation.Test
         {
             var tfsServer = new WindowsInstance(    template, 
                                                     "tfsserver1", 
-                                                    InstanceTypes.T2Small, 
+                                                    InstanceTypes.T2Micro, 
                                                     UsEast1AWindows2012R2Ami, 
                                                     privateSubnet1, 
                                                     true, 
