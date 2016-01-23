@@ -52,7 +52,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         private void AddSecurityGroup()
         {
-            var rdgwSecurityGroup = this.Template.GetSecurityGroup("RDGWSecurityGroup", this.Subnet.Vpc, "Remote Desktop Security Group");
+            var rdgwSecurityGroup = new SecurityGroup(Template, "RDGWSecurityGroup", "Remote Desktop Security Group", this.Subnet.Vpc);
 
             rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol, Ports.Ssl);
             rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Udp, Ports.RdpAdmin);

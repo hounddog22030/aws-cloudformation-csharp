@@ -36,28 +36,12 @@ namespace AWS.CloudFormation.Stack
 
         public Dictionary<string, ResourceBase> Resources { get; private set; }
         public Dictionary<string, ParameterBase> Parameters { get; private set; }
+
         [JsonIgnore]
         public IEnumerable<Vpc> Vpcs
         {
             get { return this.Resources.Where(r => r.Value is Vpc).Select(r=>r.Value).OfType<Vpc>(); }
         }
-
-
-        public SecurityGroup GetSecurityGroup(string name, Vpc vpc, string description)
-        {
-            SecurityGroup securityGroup = null;
-            if (this.Resources.ContainsKey(name))
-            {
-                securityGroup = this.Resources[name] as SecurityGroup;
-            }
-            else
-            {
-                securityGroup = new SecurityGroup(this, name, description, vpc);
-            }
-            return securityGroup;
-
-        }
-
 
         public void AddResource(ResourceBase resource)
         {
@@ -70,50 +54,6 @@ namespace AWS.CloudFormation.Stack
             this.Resources.Add(name, eip);
             return eip;
         }
-
-        //public InternetGateway AddInternetGateway(string name, Vpc vpc)
-        //{
-        //    InternetGateway gateway = new InternetGateway(this, name);
-        //    VpcGatewayAttachment attachment = new VpcGatewayAttachment(this, name + "Attachment")
-        //    {
-        //        InternetGateway = gateway,
-        //        Vpc = vpc
-        //    };
-        //    return gateway;
-        //}
-
-        //public RouteTable AddRouteTable(string key, Vpc vpc)
-        //{
-        //    RouteTable returnValue = null;
-
-        //    if (this.Resources.ContainsKey(key))
-        //    {
-        //        returnValue = (RouteTable)this.Resources[key];
-        //    }
-        //    else
-        //    {
-        //        returnValue = new RouteTable(this, key, vpc);
-        //        return returnValue;
-
-        //    }
-        //    return returnValue;
-
-        //}
-
-        //public Route AddRoute(string routeName, InternetGateway gateway, string destinationCidrBlock, RouteTable routeTable)
-        //{
-
-        //    Route route = null;
-        //    if (this.Resources.ContainsKey(routeName))
-        //    {
-        //        route = (Route) this.Resources[routeName];
-        //    }
-        //    else
-        //    {
-        //        route = new Route(this, routeName, gateway, destinationCidrBlock, routeTable);
-        //    }
-        //    return route;
-        //}
 
         public Vpc AddVpc(string name, string cidrBlock)
         {

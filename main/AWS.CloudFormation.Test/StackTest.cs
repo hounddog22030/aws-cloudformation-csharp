@@ -19,8 +19,6 @@ using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OperatingSystem = AWS.CloudFormation.Resource.EC2.Instancing.OperatingSystem;
 
-// created Stackd87ef590-0220-42e8-8e2d-880c9678d181
-
 namespace AWS.CloudFormation.Test
 {
     [TestClass]
@@ -70,32 +68,32 @@ namespace AWS.CloudFormation.Test
             var subnetTfsServer = new Subnet(template, "subnetTfsServer", vpc, CidrTfsServerSubnet, AvailabilityZone.UsEast1A);
             var subnetBuildServer = new Subnet(template, "subnetBuildServer", vpc, CidrBuildServerSubnet, AvailabilityZone.UsEast1A);
 
-            SecurityGroup elbSecurityGroup = template.GetSecurityGroup("ElbSecurityGroup", vpc, "Enables access to the ELB");
+            SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
             elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
-            SecurityGroup natSecurityGroup = template.GetSecurityGroup("natSecurityGroup", vpc, "Enables Ssh access to NAT1 in AZ1 via port 22 and outbound internet access via private subnets");
+            SecurityGroup natSecurityGroup = new SecurityGroup(template,"natSecurityGroup", "Enables Ssh access to NAT1 in AZ1 via port 22 and outbound internet access via private subnets", vpc);
             natSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Ssh);
             natSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
 
-            SecurityGroup tfsServerUsers = template.GetSecurityGroup("TFSUsers", vpc, "Security Group To Contain Users of the TFS Services");
+            SecurityGroup tfsServerUsers = new SecurityGroup(template, "TFSUsers", "Security Group To Contain Users of the TFS Services", vpc);
 
-            SecurityGroup tfsServerSecurityGroup = template.GetSecurityGroup("TFSServerSecurityGroup", vpc, "Allows various TFS communication");
+            SecurityGroup tfsServerSecurityGroup = new SecurityGroup(template, "TFSServerSecurityGroup", "Allows various TFS communication", vpc);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             tfsServerSecurityGroup.AddIngress(tfsServerUsers, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
-            SecurityGroup securityGroupBuildServer = template.GetSecurityGroup("BuildServerSecurityGroup", vpc, "Allows build controller to build agent communication");
+            SecurityGroup securityGroupBuildServer = new SecurityGroup(template, "BuildServerSecurityGroup", "Allows build controller to build agent communication", vpc);
             securityGroupBuildServer.AddIngress((ICidrBlock) subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             securityGroupBuildServer.AddIngress((ICidrBlock) subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             securityGroupBuildServer.AddIngress((ICidrBlock) subnetTfsServer, Protocol.Tcp, Ports.TeamFoundationServerBuild);
 
-            SecurityGroup sqlServerSecurityGroup = template.GetSecurityGroup("SqlServer4TfsSecurityGroup", vpc, "Allows communication to SQLServer Service");
+            SecurityGroup sqlServerSecurityGroup = new SecurityGroup(template, "SqlServer4TfsSecurityGroup", "Allows communication to SQLServer Service", vpc);
             sqlServerSecurityGroup.AddIngress((ICidrBlock) subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             sqlServerSecurityGroup.AddIngress((ICidrBlock) subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             sqlServerSecurityGroup.AddIngress((ICidrBlock) subnetTfsServer, Protocol.Tcp, Ports.MsSqlServer);
 
-            SecurityGroup workstationSecurityGroup = template.GetSecurityGroup("WorkstationSecurityGroup", vpc, "Security Group To Contain Workstations");
+            SecurityGroup workstationSecurityGroup = new SecurityGroup(template,"WorkstationSecurityGroup", "Security Group To Contain Workstations", vpc);
             tfsServerSecurityGroup.AddIngress(workstationSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
             AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, subnetDmz1);
@@ -152,19 +150,6 @@ namespace AWS.CloudFormation.Test
 
             return template;
         }
-
-        //private static Route AddRouteForSubnetToNat(Template template, Vpc vpc, Subnet subnetToAddRouteFor, Instance nat)
-        //{
-        //    RouteTable routeTableForDomainController1Subnet = template.AddRouteTable($"routeTableFor{subnetToAddRouteFor.LogicalId}", vpc);
-        //    Route routeForDomainController1Subnet = template.AddRoute($"routeFor{subnetToAddRouteFor.LogicalId}",
-        //        Template.CIDR_IP_THE_WORLD, routeTableForDomainController1Subnet);
-        //    SubnetRouteTableAssociation routeTableAssociationDomainController1 = new SubnetRouteTableAssociation(template,
-        //        subnetToAddRouteFor, routeTableForDomainController1Subnet);
-        //    routeForDomainController1Subnet.Instance = nat;
-
-
-        //    return routeForDomainController1Subnet;
-        //}
 
         private static WindowsInstance AddSql4Tfs(Template template, Subnet PrivateSubnet1, DomainController DomainController,
             SecurityGroup sqlServerSecurityGroup)
@@ -254,15 +239,8 @@ namespace AWS.CloudFormation.Test
             blockDeviceMapping = new BlockDeviceMapping(w, "/dev/xvdh");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
             w.AddBlockDeviceMapping(blockDeviceMapping);
-
-            /**
-$d = Get-Disk  | Where OperationalStatus -eq 'Offline'
-$d.ToString();
-$d.Number
-Set-Disk $d.Number -IsOffline $False
-            **/
-
             w.SecurityGroupIds.Add(rdp);
+
             w.AddElasticIp();
             template.AddResource(w);
             Stack.Stack.CreateStack(template);
@@ -290,21 +268,7 @@ Set-Disk $d.Number -IsOffline $False
             blockDeviceMapping = new BlockDeviceMapping(w, "xvdh");
             blockDeviceMapping.Ebs.SnapshotId = "snap-4e69d94b";
             w.AddBlockDeviceMapping(blockDeviceMapping);
-
-            
-
-
-
-            /**
-$d = Get-Disk  | Where OperationalStatus -eq 'Offline'
-$d.ToString();
-$d.Number
-Set-Disk $d.Number -IsOffline $False
-            **/
-
             w.AddChefExec(bucketNameSoftware, "MountDrives.tar.gz", "MountDrives");
-
-
             w.SecurityGroupIds.Add(rdp);
             w.AddElasticIp();
             template.AddResource(w);
@@ -561,16 +525,6 @@ Set-Disk $d.Number -IsOffline $False
             blockDeviceMapping = new BlockDeviceMapping(w, "xvdh");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
             w.AddBlockDeviceMapping(blockDeviceMapping);
-
-
-
-            /**
-$d = Get-Disk  | Where OperationalStatus -eq 'Offline'
-$d.ToString();
-$d.Number
-Set-Disk $d.Number -IsOffline $False
-            **/
-
             w.AddChefExec(bucketNameSoftware, "MountDrives.tar.gz", "MountDrives");
 
 
@@ -688,30 +642,6 @@ Set-Disk $d.Number -IsOffline $False
                                                     Subnet DMZSubnet,
                                                     SecurityGroup natSecurityGroup)
         {
-            //SecurityGroup natSecurityGroup = template.GetSecurityGroup("natSecurityGroup", vpc,
-            //    "Enables Ssh access to NAT1 in AZ1 via port 22 and outbound internet access via private subnets");
-
-            //natSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Ssh);
-            //natSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
-
-            //natSecurityGroup.AddIngress(az1Subnet, Protocol.All, Ports.Min, Ports.Max);
-            //natSecurityGroup.AddIngress(az1Subnet, Protocol.Icmp, Ports.All);
-
-            //natSecurityGroup.AddIngress(az2Subnet, Protocol.All, Ports.Min, Ports.Max);
-            //natSecurityGroup.AddIngress(az2Subnet, Protocol.Icmp, Ports.All);
-
-            //natSecurityGroup.AddIngress(SQL4TFSSubnet, Protocol.All, Ports.Min, Ports.Max);
-            //natSecurityGroup.AddIngress(SQL4TFSSubnet, Protocol.Icmp, Ports.All);
-
-            //natSecurityGroup.AddIngress(tfsServer1Subnet, Protocol.All, Ports.Min, Ports.Max);
-            //natSecurityGroup.AddIngress(tfsServer1Subnet, Protocol.Icmp, Ports.All);
-
-            //natSecurityGroup.AddIngress(buildServer1Subnet, Protocol.All, Ports.Min, Ports.Max);
-            //natSecurityGroup.AddIngress(buildServer1Subnet, Protocol.Icmp, Ports.All);
-
-            //natSecurityGroup.AddIngress(workstationSubnet, Protocol.All, Ports.Min, Ports.Max);
-            //natSecurityGroup.AddIngress(workstationSubnet, Protocol.Icmp, Ports.All);
-
             var nat1 = new Instance(template,
                 "NAT1",
                 InstanceTypes.T2Micro,
@@ -732,176 +662,6 @@ Set-Disk $d.Number -IsOffline $False
             nat1.NetworkInterfaces.Add(natNetworkInterface);
             return nat1;
         }
-
-        //private static void AddSecurityGroups(Template template, Vpc vpc, Subnet az1Subnet, Subnet DMZSubnet,
-        //    Subnet dmzaz2Subnet, Subnet az2Subnet, RouteTable az1PrivateRouteTable)
-        //{
-        //    //SecurityGroup domainMemberSg = template.AddSecurityGroup("DomainMemberSG", vpc, "For All Domain Members");
-        //    //domainMemberSg.GroupDescription = "Domain Member Security Group";
-        //    ////az1Subnet
-        //    //domainMemberSg.AddIngress(az1Subnet, Protocol.Tcp | Protocol.Udp, Ports.DnsQuery);
-        //    //domainMemberSg.AddIngress(az1Subnet, Protocol.Tcp | Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
-        //    ////DMZSubnet
-        //    //domainMemberSg.AddIngress(DMZSubnet, Protocol.Tcp, Ports.Rdp);
-        //    //domainMemberSg.AddIngress(dmzaz2Subnet, Protocol.Tcp, Ports.Rdp);
-
-
-        //    SubnetRouteTableAssociation az1PrivateSubnetRouteTableAssociation = new SubnetRouteTableAssociation(template,
-        //        "AZ1PrivateSubnetRouteTableAssociation", az1Subnet, az1PrivateRouteTable);
-        //    template.Resources.Add("AZ1PrivateSubnetRouteTableAssociation", az1PrivateSubnetRouteTableAssociation);
-
-        //    //return domainMemberSg;
-        //}
-
-        //private static SecurityGroup AddDomainControllerSecurityGroup(Template template, Vpc vpc, Subnet DMZSubnet,
-        //    Subnet dmzaz2Subnet, Subnet az2Subnet, SecurityGroup domainMemberSg)
-        //{
-        //    SecurityGroup domainControllerSg1 = template.AddSecurityGroup("domainControllerSg1", vpc,
-        //        "Domain Controller Security Group");
-        //    SetupDomainController1SecurityGround(domainControllerSg1, vpc, az2Subnet, domainMemberSg, DMZSubnet, dmzaz2Subnet);
-        //    return domainControllerSg1;
-        //}
-
-
-        //private static void AddDomainControllerInitAndFinalize(DomainController domainController1)
-        //{
-        //    //var setup = domainController1.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("setup");
-
-        //    //var setupFiles = setup.Files;
-
-        //    //setupFiles.GetFile("c:\\cfn\\scripts\\Set-StaticIP.ps1")
-        //    //    .Content.SetFnJoin(
-        //    //        "$netip = Get-NetIPConfiguration;",
-        //    //        "$ipconfig = Get-NetIPAddress | ?{$_.IpAddress -eq $netip.IPv4Address.IpAddress};",
-        //    //        "Get-NetAdapter | Set-NetIPInterface -DHCP Disabled;",
-        //    //        "Get-NetAdapter | New-NetIPAddress -AddressFamily IPv4 -IPAddress $netip.IPv4Address.IpAddress -PrefixLength $ipconfig.PrefixLength -DefaultGateway $netip.IPv4DefaultGateway.NextHop;",
-        //    //        "Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses $netip.DNSServer.ServerAddresses;",
-        //    //        "\n");
-
-        //    //ConfigFile file = setupFiles.GetFile("c:\\cfn\\scripts\\New-LabADUser.ps1");
-        //    //file.Source = "https://s3.amazonaws.com/CFN_WS2012_Scripts/AD/New-LabADUser.ps1";
-
-        //    //file = setupFiles.GetFile("c:\\cfn\\scripts\\users.csv");
-        //    //file.Source = "https://s3.amazonaws.com/CFN_WS2012_Scripts/AD/users.csv";
-
-        //    //file = setupFiles.GetFile("c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1");
-        //    //file.Source = "https://s3.amazonaws.com/quickstart-reference/microsoft/activedirectory/latest/scripts/ConvertTo-EnterpriseAdmin.ps1";
-
-        //    ////powershell - Command "Get-NetFirewallProfile | Set-NetFirewallProfile - Enabled False" > c:\cfn\log\a-disable-win-fw.log
-
-        //    //var disableFirewallCommand = setup.Commands.AddCommand<PowerShellCommand>("a-disable-win-fw");
-        //    //disableFirewallCommand.WaitAfterCompletion = 0.ToString();
-        //    //disableFirewallCommand.Command.AddCommandLine( new object[] { "-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\"" });
-
-        //    //var setStaticIpCommand = domainController1.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("rename").Commands.AddCommand<PowerShellCommand>("a-set-static-ip");
-        //    //setStaticIpCommand.WaitAfterCompletion = 45.ToString();
-        //    //setStaticIpCommand.Command.AddCommandLine( "-ExecutionPolicy RemoteSigned -Command \"c:\\cfn\\scripts\\Set-StaticIP.ps1\"");
-
-        //    var currentConfig = domainController1.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("installADDS");
-        //    //var currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("1-install-prereqsz");
-
-        //    //currentCommand.WaitAfterCompletion = 0.ToString();
-        //    //currentCommand.Command.AddCommandLine( "-Command \"Install-WindowsFeature AD-Domain-Services, rsat-adds -IncludeAllSubFeature\"");
-
-        //    //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("2-install-adds");
-        //    //currentCommand.WaitAfterCompletion = "forever";
-        //    //currentCommand.Command.AddCommandLine(
-        //    //    "-Command \"Install-ADDSForest -DomainName XXXXXXXXXXXXXXXXXXXXXXX -SafeModeAdministratorPassword (convertto-securestring jhkjhsdf338! -asplaintext -force) -DomainMode Win2012 -DomainNetbiosName XXXXXXXXXXXXXXXXXXXXXX -ForestMode Win2012 -Confirm:$false -Force\"");
-
-
-        //    //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("3-restart-service");
-        //    //currentCommand.WaitAfterCompletion = 20.ToString();
-        //    //currentCommand.Command.AddCommandLine(
-        //    //    new object[]
-        //    //    {
-        //    //        "-Command \"Restart-Service NetLogon -EA 0\""
-        //    //    }
-        //    //    );
-
-        //    //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("4 - create - adminuser");
-        //    //currentCommand.WaitAfterCompletion = "0";
-        //    //currentCommand.Command.AddCommandLine(
-        //    //    new object[]
-        //    //    {
-        //    //    "-Command \"",
-        //    //    "New-ADUser ",
-        //    //    "-Name domainadminXXXXXXXXXXXXXXXX",
-        //    //    //{
-        //    //    //    "Ref" : "DomainAdminUser"
-        //    //    //},
-        //    //    " -UserPrincipalName ",
-        //    //    " domainadminXXXXXXXXXXXXXXXX",
-        //    //    //{
-        //    //    //    "Ref" : "DomainAdminUser"
-        //    //    //},
-        //    //    "@XXXX.XXXXX.com",
-        //    //    //{
-        //    //    //    "Ref" : "DomainDnsName"
-        //    //    //},
-        //    //    " ",
-        //    //    "-AccountPassword (ConvertTo-SecureString oldpassword123",
-        //    //    //{
-        //    //    //    "Ref" : "DomainAdminPassword"
-        //    //    //},
-        //    //    " -AsPlainText -Force) ",
-        //    //    "-Enabled $true ",
-        //    //    "-PasswordNeverExpires $true\""});
-
-        //    //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("5 - update - adminuser");
-        //    //currentCommand.WaitAfterCompletion = "0";
-        //    //currentCommand.Command.AddCommandLine(
-        //    //    new object[]
-        //    //    {
-        //    //        "-ExecutionPolicy RemoteSigned -Command \"c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1 -Members domainadminXXXXXXXXXXX\""
-        //    //    });
-
-
-        //    //currentConfig = domainController1.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("configureSites");
-        //    //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("a-rename-default-site");
-        //    //currentCommand.WaitAfterCompletion = 0.ToString();
-        //    //currentCommand.Command.AddCommandLine(  " ",
-        //    //                                        "\"",
-        //    //                                        "Get-ADObject -SearchBase (Get-ADRootDSE).ConfigurationNamingContext -filter {Name -eq 'Default-First-Site-Name'} | Rename-ADObject -NewName AZ1",
-        //    //                                        "\"" );
-
-        //    //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("b-create-site-2");
-        //    //currentCommand.WaitAfterCompletion = 0.ToString();
-        //    //currentCommand.Command.AddCommandLine(  "\"",
-        //    //                                        "New-ADReplicationSite AZ2",
-        //    //                                        "\"");
-
-
-        //    //var currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("c-create-DMZSubnet-1");
-        //    //currentCommand.WaitAfterCompletion = 0.ToString();
-        //    //currentCommand.Command.AddCommandLine(  "-Command New-ADReplicationSubnet -Name ",
-        //    //                                        DMZSubnet,
-        //    //                                        " -Site AZ1");
-
-        //    //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("d-create-DMZSubnet-2");
-        //    //currentCommand.WaitAfterCompletion = 0.ToString();
-        //    //currentCommand.Command.AddCommandLine("-Command New-ADReplicationSubnet -Name ",
-        //    //                                        DmzAz2Cidr,
-        //    //                                        " -Site AZ2");
-
-        //    //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("e-create-subnet-1");
-        //    //currentCommand.WaitAfterCompletion = 0.ToString();
-        //    //currentCommand.Command.AddCommandLine("-Command New-ADReplicationSubnet -Name ",
-        //    //                                        Az1SubnetCidr,
-        //    //                                        " -Site AZ1");
-
-        //    //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("f-create-subnet-2");
-        //    //currentCommand.WaitAfterCompletion = 0.ToString();
-        //    //currentCommand.Command.AddCommandLine("-Command New-ADReplicationSubnet -Name ",
-        //    //                                        Az2SubnetCidr,
-        //    //                                        " -Site AZ2");
-
-        //    //var currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("m-set-site-link");
-        //    //currentCommand.WaitAfterCompletion = 0.ToString();
-        //    //currentCommand.Command.AddCommandLine(  "-Command \"",
-        //    //                                        "Get-ADReplicationSiteLink -Filter * | Set-ADReplicationSiteLink -SitesIncluded @{add='DMZ2Subnet'} -ReplicationFrequencyInMinutes 15\"");
-
-        //}
-
 
         private static void SetupDomainController1SecurityGround(SecurityGroup domainControllerSg1, Vpc vpc, Subnet az2Subnet, SecurityGroup domainMemberSg, Subnet DMZSubnet, Subnet dmzaz2Subnet)
         {
@@ -952,32 +712,6 @@ Set-Disk $d.Number -IsOffline $False
             domainControllerSg1.AddIngress((ICidrBlock)dmzaz2Subnet, Protocol.Icmp, Ports.All);
         }
 
-        //private static void AddNatSecurityGroupIngressRules(SecurityGroup natSecurityGroup, Subnet az1Subnet, Subnet az2Subnet,
-        //    Subnet SQL4TFSSubnet, Subnet tfsServer1Subnet, Subnet buildServer1Subnet, Subnet workstationSubnet)
-        //{
-
-        //    natSecurityGroup.AddIngress(PredefinedCidr.TheWorld,Protocol.Tcp, Ports.Ssh);
-        //    natSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
-
-        //    natSecurityGroup.AddIngress(az1Subnet, Protocol.All, Ports.Min,Ports.Max);
-        //    natSecurityGroup.AddIngress(az1Subnet, Protocol.Icmp, Ports.All);
-
-        //    natSecurityGroup.AddIngress(az2Subnet,Protocol.All, Ports.Min, Ports.Max);
-        //    natSecurityGroup.AddIngress(az2Subnet, Protocol.Icmp, Ports.All);
-
-        //    natSecurityGroup.AddIngress(SQL4TFSSubnet, Protocol.All, Ports.Min,Ports.Max);
-        //    natSecurityGroup.AddIngress(SQL4TFSSubnet,Protocol.Icmp, Ports.All);
-
-        //    natSecurityGroup.AddIngress(tfsServer1Subnet, Protocol.All, Ports.Min,Ports.Max);
-        //    natSecurityGroup.AddIngress(tfsServer1Subnet, Protocol.Icmp, Ports.All);
-
-        //    natSecurityGroup.AddIngress(buildServer1Subnet, Protocol.All, Ports.Min,Ports.Max);
-        //    natSecurityGroup.AddIngress(buildServer1Subnet,Protocol.Icmp, Ports.All);
-
-        //    natSecurityGroup.AddIngress(workstationSubnet, Protocol.All, Ports.Min,Ports.Max);
-        //    natSecurityGroup.AddIngress(workstationSubnet, Protocol.Icmp, Ports.All);
-        //}
-
         [TestMethod]
         public void CreatePrimeTest()
         {
@@ -987,7 +721,7 @@ Set-Disk $d.Number -IsOffline $False
         [TestMethod]
         public void UpdatePrimeTest()
         {
-            var stackName = "CreatePrimeTest-2016-01-22T2236238633003-0500";
+            var stackName = "CreatePrimeTest-2016-01-23T0048421600675-0500";
             
             Stack.Stack.UpdateStack(stackName, GetTemplateFullStack(this.TestContext, "VpcCreatePrimeTest"));
         }

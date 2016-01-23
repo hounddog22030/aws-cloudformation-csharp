@@ -69,7 +69,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 this.Rename();
             }
 
-            this.MakeIpAddressStatic();
             this.DisableFirewall();
         }
 
@@ -82,26 +81,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             {"-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\""});
         }
 
-        protected void MakeIpAddressStatic()
-        {
-            var configSetConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config");
-            var setup = configSetConfig.GetConfig("setup");
-
-            var setupFiles = setup.Files;
-
-            setupFiles.GetFile("c:\\cfn\\scripts\\Set-StaticIP.ps1")
-                .Content.SetFnJoin(
-                    "$netip = Get-NetIPConfiguration;",
-                    "$ipconfig = Get-NetIPAddress | ?{$_.IpAddress -eq $netip.IPv4Address.IpAddress};",
-                    "Get-NetAdapter | Set-NetIPInterface -DHCP Disabled;",
-                    "Get-NetAdapter | New-NetIPAddress -AddressFamily IPv4 -IPAddress $netip.IPv4Address.IpAddress -PrefixLength $ipconfig.PrefixLength -DefaultGateway $netip.IPv4DefaultGateway.NextHop;",
-                    "Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses $netip.DNSServer.ServerAddresses;",
-                    "\n");
-
-            var setStaticIpCommand = configSetConfig.GetConfig("setup").Commands.AddCommand<PowerShellCommand>("a-set-static-ip");
-            setStaticIpCommand.WaitAfterCompletion = 15.ToString();
-            setStaticIpCommand.Command.AddCommandLine("-ExecutionPolicy RemoteSigned -Command \"c:\\cfn\\scripts\\Set-StaticIP.ps1\"");
-        }
 
         [JsonIgnore]
         public ParameterBase DomainDnsName { get; protected internal set; }
