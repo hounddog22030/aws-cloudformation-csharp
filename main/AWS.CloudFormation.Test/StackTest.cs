@@ -133,14 +133,14 @@ namespace AWS.CloudFormation.Test
 
 
             //// uses 33gb
-            //var workstation = AddWorkstation(template, "workstation3", PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup, tfsServerUsers, true);
-            ////var workstation2 = AddWorkstation(template, "workstation2", PrivateSubnet1, buildServer, DomainController, workstationSecurityGroup, tfsServerUsers);
+            //var workstation = AddWorkstation(template, "workstation3", PrivateSubnet1, buildServer, domainController, workstationSecurityGroup, tfsServerUsers, true);
+            ////var workstation2 = AddWorkstation(template, "workstation2", PrivateSubnet1, buildServer, domainController, workstationSecurityGroup, tfsServerUsers);
 
 
             // the below is a remote desktop gateway server that can
             // be uncommented to debug domain setup problems
             //var RDGateway2 = new RemoteDesktopGateway(template, "RDGateway2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
-            //DomainController.AddToDomainMemberSecurityGroup(RDGateway2);
+            //domainController.AddToDomainMemberSecurityGroup(RDGateway2);
 
             //LoadBalancer elb = new LoadBalancer(template, "elb1");
             //elb.AddInstance(tfsServer);
@@ -523,13 +523,13 @@ namespace AWS.CloudFormation.Test
 
 
 
-        private static WindowsInstance AddBuildServer(Template template, Subnet subnet, WindowsInstance tfsServer, DomainController DomainController, SecurityGroup buildServerSecurityGroup)
+        private static WindowsInstance AddBuildServer(Template template, Subnet subnet, WindowsInstance tfsServer, DomainController domainController, SecurityGroup buildServerSecurityGroup)
         {
 
             var buildServer = new WindowsInstance(template, "build", InstanceTypes.T2Small, UsEast1aWindows2012R2Ami, subnet, true);
             buildServer.AddBlockDeviceMapping("/dev/sda1", 100, Ebs.VolumeTypes.GeneralPurpose);
 
-            buildServer.AddPackage(bucketNameSoftware, new TeamFoundationServerBuildServer());
+            buildServer.AddPackage(bucketNameSoftware, new TeamFoundationServerBuildServer(tfsServer));
             buildServer.AddPackage(bucketNameSoftware, new VisualStudio());
 
             if (tfsServer != null)
@@ -542,7 +542,7 @@ namespace AWS.CloudFormation.Test
             domainAdminUserInfoNode.Add("name", DomainNetBiosName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             buildServer.SecurityGroupIds.Add(buildServerSecurityGroup);
-            DomainController.AddToDomain(buildServer, Timeout3Hours);
+            domainController.AddToDomain(buildServer, Timeout3Hours);
             buildServer.AddFinalizer(Timeout3Hours);
             return buildServer;
         }
@@ -612,7 +612,7 @@ namespace AWS.CloudFormation.Test
             domainAdminUserInfoNode.Add("name", DomainNetBiosName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             tfsServer.SecurityGroupIds.Add(tfsServerSecurityGroup);
-            tfsServer.AddPackage(bucketNameSoftware, new TeamFoundationServerApplicationTier());
+            tfsServer.AddPackage(bucketNameSoftware, new TeamFoundationServerApplicationTier(tfsServer));
             dc1.AddToDomain(tfsServer, Timeout3Hours);
             return tfsServer;
         }

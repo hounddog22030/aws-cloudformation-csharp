@@ -13,7 +13,8 @@ configurationFile = "#{Chef::Config['file_cache_path']}/build.ini"
 
 template "#{configurationFile}" do
   source 'build.ini.erb'
-  variables( :buildserver=> "#{ENV['COMPUTERNAME']}")
+  variables(	:build_server_netbios_name => "#{ENV['COMPUTERNAME']}",
+				:application_server_netbios_name => "#{node[:tfs][:application_server_netbios_name]}")
 end
 
 # Installing Team Foundation Server Standard.

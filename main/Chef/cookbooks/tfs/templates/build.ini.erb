@@ -13,13 +13,13 @@ ConfigurationType=create
 AgentCount=1
 
 ; The name of the new build controller.  This is typically the machine name that the controller runs on.
-NewControllerName=<%= @buildserver %>-Controller
+NewControllerName=<%= @build_server_netbios_name %>-Controller
 
 ; Determines whether to clean up old build controllers and agents when configuring new ones
 CleanResources=False
-
+tfsserver1
 ; The collection URL the build service will be configured for.
-CollectionUrl=http://tfsserver1:8080/tfs/DefaultCollection
+CollectionUrl=http://<%= @application_server_netbios_name %>:8080/tfs/DefaultCollection
 
 ; Boolean to determine whether the account is a built-in account
 IsServiceAccountBuiltIn=True

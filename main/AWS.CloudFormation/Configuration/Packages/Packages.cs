@@ -49,22 +49,24 @@ namespace AWS.CloudFormation.Configuration.Packages
 
     public abstract class TeamFoundationServer : PackageBase
     {
-        public TeamFoundationServer(string recipeName) : base ("tfs", "snap-4e69d94b", recipeName)
+        public TeamFoundationServer(WindowsInstance instance, string recipeName) : base ("tfs", "snap-4e69d94b", recipeName)
         {
-            
+            var node = instance.GetChefNodeJsonContent();
+            var tfsNode = node.Add("tfs");
+            tfsNode.Add("application_server_netbios_name", instance.LogicalId);
         }
     }
 
     public class TeamFoundationServerApplicationTier : TeamFoundationServer
     {
-        public TeamFoundationServerApplicationTier() : base("applicationtier")
+        public TeamFoundationServerApplicationTier(WindowsInstance applicationServer) : base(applicationServer, "applicationtier")
         {
 
         }
     }
     public class TeamFoundationServerBuildServer : TeamFoundationServer
     {
-        public TeamFoundationServerBuildServer() : base("build")
+        public TeamFoundationServerBuildServer(WindowsInstance applicationServer) : base(applicationServer, "build")
         {
 
         }
