@@ -1005,7 +1005,7 @@ Set-Disk $d.Number -IsOffline $False
         [TestMethod]
         public void UpdatePrimeTest()
         {
-            var stackName = "CreatePrimeTest-2016-01-20T2021253280322-0500";
+            var stackName = "CreatePrimeTest-2016-01-22T2009549488472-0500";
             
             Stack.Stack.UpdateStack(stackName, GetTemplateFullStack(this.TestContext, "VpcCreatePrimeTest"));
         }
