@@ -51,7 +51,7 @@ end
 LogFileInstallAgent = "#{Chef::Config['file_cache_path']}/InstallAgent.log"
 
 execute 'InstallAgent' do
-	command "#{node[:tfs][:build_agent_command_file_path]} /ServerUrl:http://tfsserver1:8080/tfs /Configure /Name:build1 /force /RunningAsService /PoolName:default  /WindowsServiceLogonAccount:\"prime\\johnny\" /WindowsServiceLogonPassword:\"kasdfiajs!!9\" /NoPrompt > #{LogFileInstallAgent}"
+	command "#{node[:tfs][:build_agent_command_file_path]} /ServerUrl:http://#{node[:tfs][:application_server_netbios_name]}:8080/tfs /Configure /Name:#{ENV['COMPUTERNAME']} /force /RunningAsService /PoolName:default  /WindowsServiceLogonAccount:\"#{node[:domainAdmin][:name]}\" /WindowsServiceLogonPassword:\"#{node[:domainAdmin][:password]}\" /NoPrompt > #{LogFileInstallAgent}"
 	action :nothing
 	not_if { File.exist?( LogFileInstallAgent ) }
 end

@@ -25,6 +25,15 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             AvailabilityZone = availabilityZone;
         }
 
+        public Subnet(Template template, string logicalId, Vpc vpc, string cidr, AvailabilityZone availabilityZone, bool addInternetGatewayRoute ) : this(template,logicalId,vpc,cidr,availabilityZone)
+        {
+            if (addInternetGatewayRoute)
+            {
+                RouteTable routeTable = new RouteTable(template, $"{this.LogicalId}RouteTable", vpc);
+                Route route = new Route(template, $"{this.LogicalId}Route", vpc.InternetGateway, "0.0.0.0/0", routeTable);
+                SubnetRouteTableAssociation routeTableAssociation = new SubnetRouteTableAssociation(template, this, routeTable);
+            }
+        }
 
         [JsonIgnore]
         public Vpc Vpc
