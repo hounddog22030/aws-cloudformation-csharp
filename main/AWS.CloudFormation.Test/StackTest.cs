@@ -32,13 +32,7 @@ namespace AWS.CloudFormation.Test
         const string CidrDomainController1Subnet = "10.0.0.0/24";
         const string CidrDomainController2Subnet = "10.0.128.0/24";
         const string CidrSqlServer4TfsSubnet = "10.0.1.0/24";
-        // ReSharper disable once InconsistentNaming
-        const string TFSSERVER1SUBNETCIDR = "10.0.6.0/24";
-        // ReSharper disable once InconsistentNaming
-        const string BUILDSERVER1SUBNETCIDR = "10.0.3.0/24";
-        // ReSharper disable once InconsistentNaming
-        const string WORKSTATIONSUBNETCIDR = "10.0.1.0/24";
-        // ReSharper disable once InconsistentNaming
+        const string CidrTfsServerSubnet = "10.0.2.0/24";
         const string KeyPairName = "corp.getthebuybox.com";
         // ReSharper disable once InconsistentNaming
         const string VPCCIDR = "10.0.0.0/16";
@@ -77,14 +71,9 @@ namespace AWS.CloudFormation.Test
             var subnetDmz1 = new Subnet(template, "subnetDmz1", vpc, CidrDmz1, AvailabilityZone.UsEast1A);
             var subnetDmz2 = new Subnet(template,"subnetDmz2", vpc, CidrDmz2, AvailabilityZone.UsEast1A);
             var subnetDomainController1 = new Subnet(template,"subnetDomainController1", vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A);
-
-
-            //SqlServer4TfsSubnetCidr
-            var sqlServer4TfsSubnet = new Subnet(template, "sqlServer4TfsSubnet",vpc, CidrSqlServer4TfsSubnet,AvailabilityZone.UsEast1A);
-            //SubnetRouteTableAssociation routeTableAssociationSqlServer4Tfs = new SubnetRouteTableAssociation(template, sqlServer4TfsSubnet, routeTableForDomainController1Subnet);
-
-
-            var domainController2Subnet = new Subnet(template,"DomainController2Subnet", vpc, CidrDomainController2Subnet, AvailabilityZone.UsEast1A);
+            var subnetSqlServer4Tfs = new Subnet(template, "subnetSqlServer4Tfs", vpc, CidrSqlServer4TfsSubnet,AvailabilityZone.UsEast1A);
+            var subnetDomainController2 = new Subnet(template, "subnetDomainController2", vpc, CidrDomainController2Subnet, AvailabilityZone.UsEast1A);
+            var subnetTfsServer = new Subnet(template, "subnetTfsServer", vpc, CidrTfsServerSubnet, AvailabilityZone.UsEast1A);
 
             SecurityGroup elbSecurityGroup = template.GetSecurityGroup("ElbSecurityGroup", vpc, "Enables access to the ELB");
             elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
@@ -117,7 +106,7 @@ namespace AWS.CloudFormation.Test
 
             AddInternetGatewayRouteTable(template, vpc, vpc.InternetGateway, subnetDmz1);
 
-            Subnet[] subnetsToAddToNatSecurityGroup = new Subnet[] {subnetDomainController1, domainController2Subnet};
+            Subnet[] subnetsToAddToNatSecurityGroup = new Subnet[] {subnetDomainController1, subnetDomainController2};
 
             foreach (var subnet in subnetsToAddToNatSecurityGroup)
             {
@@ -127,19 +116,18 @@ namespace AWS.CloudFormation.Test
 
             var nat1 = AddNat1(template, subnetDmz1, natSecurityGroup);
 
-            var routeForDomainController1Subnet = AddRouteForSubnetToNat(template, vpc, subnetDomainController1);
-            var routeForSqlServer4TfsSubnet = AddRouteForSubnetToNat(template, vpc, sqlServer4TfsSubnet);
-            routeForDomainController1Subnet.Instance = nat1;
-            routeForSqlServer4TfsSubnet.Instance = nat1;
+            var routeForDomainController1Subnet = AddRouteForSubnetToNat(template, vpc, subnetDomainController1, nat1);
+            var routeForSqlServer4TfsSubnet = AddRouteForSubnetToNat(template, vpc, subnetSqlServer4Tfs, nat1);
+            var routeForTfsServerSubnet = AddRouteForSubnetToNat(template, vpc, subnetTfsServer, nat1);
 
             // ReSharper disable once InconsistentNaming
             // uses 21gb
             var DomainController = AddDomainController(template, subnetDomainController1);
             //
                 //
-            DomainController.CreateAdReplicationSubnet(subnetDmz1);
-            DomainController.CreateAdReplicationSubnet(subnetDmz2);
-            DomainController.AddReplicationSite(sqlServer4TfsSubnet);
+            DomainController.AddReplicationSite(subnetDmz1);
+            DomainController.AddReplicationSite(subnetDmz2);
+            DomainController.AddReplicationSite(subnetSqlServer4Tfs);
 
             // uses 19gb
             // ReSharper disable once InconsistentNaming
@@ -148,7 +136,7 @@ namespace AWS.CloudFormation.Test
             DomainController.AddToDomain(RDGateway, ThreeHoursSpan);
 
             //// uses 25gb
-            var tfsSqlServer = AddSql4Tfs(template, sqlServer4TfsSubnet, DomainController, sqlServerSecurityGroup);
+            var tfsSqlServer = AddSql4Tfs(template, subnetSqlServer4Tfs, DomainController, sqlServerSecurityGroup);
 
             ////// uses 24gb
             //var tfsServer = AddTfsServer(template, PrivateSubnet1, tfsSqlServer, DomainController, tfsServerSecurityGroup);
@@ -181,13 +169,16 @@ namespace AWS.CloudFormation.Test
             return template;
         }
 
-        private static Route AddRouteForSubnetToNat(Template template, Vpc vpc, Subnet subnetToAddRouteFor)
+        private static Route AddRouteForSubnetToNat(Template template, Vpc vpc, Subnet subnetToAddRouteFor, Instance nat)
         {
             RouteTable routeTableForDomainController1Subnet = template.AddRouteTable($"routeTableFor{subnetToAddRouteFor.LogicalId}", vpc);
             Route routeForDomainController1Subnet = template.AddRoute($"routeFor{subnetToAddRouteFor.LogicalId}",
                 Template.CIDR_IP_THE_WORLD, routeTableForDomainController1Subnet);
             SubnetRouteTableAssociation routeTableAssociationDomainController1 = new SubnetRouteTableAssociation(template,
                 subnetToAddRouteFor, routeTableForDomainController1Subnet);
+            routeForDomainController1Subnet.Instance = nat;
+
+
             return routeForDomainController1Subnet;
         }
 

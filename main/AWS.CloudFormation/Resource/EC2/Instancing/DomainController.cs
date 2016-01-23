@@ -200,16 +200,16 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         //}
 
 
-        public void CreateAdReplicationSubnet(Subnet subnet)
-        {
-            var currentConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("configureSites");
-            var currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>($"create-subnet-{subnet.LogicalId}");
-            currentCommand.WaitAfterCompletion = 0.ToString();
-            currentCommand.Command.AddCommandLine("-Command New-ADReplicationSubnet -Name ",
-                subnet.CidrBlock,
-                " -Site ",
-                subnet.LogicalId);
-        }
+        //public void CreateAdReplicationSubnet(Subnet subnet)
+        //{
+        //    var currentConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("configureSites");
+        //    var currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>($"create-subnet-{subnet.LogicalId}");
+        //    currentCommand.WaitAfterCompletion = 0.ToString();
+        //    currentCommand.Command.AddCommandLine("-Command New-ADReplicationSubnet -Name ",
+        //        subnet.CidrBlock,
+        //        " -Site ",
+        //        subnet.LogicalId);
+        //}
 
         private void CreateDomainControllerSecurityGroup()
         {
