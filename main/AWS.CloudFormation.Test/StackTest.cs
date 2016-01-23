@@ -126,7 +126,9 @@ namespace AWS.CloudFormation.Test
 
             //// uses 24gb
             var buildServer = AddBuildServer(template, subnetBuildServer, tfsServer, instanceDomainController, securityGroupBuildServer);
-            buildServer.AddFinalizer(Timeout3Hours);
+            //buildServer.AddFinalizer(Timeout3Hours);
+            buildServer.SecurityGroupIds.Add(tfsServerUsers);
+
 
 
 
@@ -525,10 +527,10 @@ namespace AWS.CloudFormation.Test
         {
 
             var buildServer = new WindowsInstance(template, "build", InstanceTypes.T2Small, UsEast1aWindows2012R2Ami, subnet, true);
-            buildServer.AddBlockDeviceMapping("/dev/sda1", 30, Ebs.VolumeTypes.GeneralPurpose);
+            buildServer.AddBlockDeviceMapping("/dev/sda1", 100, Ebs.VolumeTypes.GeneralPurpose);
 
-            buildServer.AddPackage(bucketNameSoftware, new VisualStudio());
             buildServer.AddPackage(bucketNameSoftware, new TeamFoundationServerBuildServer());
+            buildServer.AddPackage(bucketNameSoftware, new VisualStudio());
 
             if (tfsServer != null)
             {
@@ -705,7 +707,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdatePrimeTest()
         {
-            var stackName = "CreatePrimeTest-2016-01-23T0048421600675-0500";
+            var stackName = "CreatePrimeTest-2016-01-23T0712383000413-0500";
             
             Stack.Stack.UpdateStack(stackName, GetTemplateFullStack(this.TestContext, "VpcCreatePrimeTest"));
         }
