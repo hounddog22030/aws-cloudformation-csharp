@@ -2,6 +2,7 @@ include_recipe 'ec2helper'
 include_recipe 'PsTools'
 include_recipe 'tfs::install'
 include_recipe 's3_file'
+include_recipe 'PsTools'
 
 # Declaring Variables
 LogFile = "#{Chef::Config['file_cache_path']}\\Configure-Team-Foundation-Server-STD.log"
@@ -51,7 +52,7 @@ end
 LogFileInstallAgent = "#{Chef::Config['file_cache_path']}/InstallAgent.log"
 
 execute 'InstallAgent' do
-	command "#{node[:tfs][:build_agent_command_file_path]} /ServerUrl:http://#{node[:tfs][:application_server_netbios_name]}:8080/tfs /Configure /Name:#{ENV['COMPUTERNAME']} /force /RunningAsService /PoolName:default  /WindowsServiceLogonAccount:\"#{node[:domainAdmin][:name]}\" /WindowsServiceLogonPassword:\"#{node[:domainAdmin][:password]}\" /NoPrompt > #{LogFileInstallAgent}"
+	command "#{node[:PsTools][:exe_path]} -accepteula -h -u #{node[:domainAdmin][:name]} -p #{node[:domainAdmin][:password]} #{node[:tfs][:build_agent_command_file_path]} /ServerUrl:http://#{node[:tfs][:application_server_netbios_name]}:8080/tfs /Configure /Name:#{ENV['COMPUTERNAME']} /force /RunningAsService /PoolName:default  /WindowsServiceLogonAccount:\"#{node[:domainAdmin][:name]}\" /WindowsServiceLogonPassword:\"#{node[:domainAdmin][:password]}\" /NoPrompt > #{LogFileInstallAgent}"
 	action :nothing
 	not_if { File.exist?( LogFileInstallAgent ) }
 end

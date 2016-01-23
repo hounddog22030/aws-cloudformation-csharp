@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using AWS.CloudFormation.Common;
@@ -21,6 +22,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public const string DefaultConfigSetRenameConfigJoinDomain = "b-join-domain";
         public const string InstallChefConfigSetName = "InstallChefConfigSet";
         public const string InstallChefConfigName = "InstallChefConfig";
+        public const int NetBiosMaxLength = 15;
+
 
         public WindowsInstance(Template template,
                                 string name,
@@ -54,6 +57,10 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                                 bool rename)
             : base(template, name, instanceType, imageId, OperatingSystem.Windows, true)
         {
+            if (name.Length > NetBiosMaxLength)
+            {
+                throw new InvalidOperationException($"Name length is limited to {NetBiosMaxLength} characters.");
+            }
             var nodeJson = this.GetChefNodeJsonContent();
             nodeJson.Add("nothing", "nothing");
             //xvd[f - z]

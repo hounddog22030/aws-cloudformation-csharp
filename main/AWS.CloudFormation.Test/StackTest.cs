@@ -514,11 +514,10 @@ namespace AWS.CloudFormation.Test
         }
 
 
-
         private static WindowsInstance AddBuildServer(Template template, Subnet subnet, WindowsInstance tfsServer, DomainController domainController, SecurityGroup buildServerSecurityGroup)
         {
 
-            var buildServer = new WindowsInstance(template, "build2", InstanceTypes.T2Small, UsEast1AWindows2012R2Ami, subnet, true);
+            var buildServer = new WindowsInstance(template, $"b{DateTime.Now.Ticks.ToString().Substring(DateTime.Now.Ticks.ToString().Length - WindowsInstance.NetBiosMaxLength -1, WindowsInstance.NetBiosMaxLength - 1)}", InstanceTypes.T2Small, UsEast1AWindows2012R2Ami, subnet, true);
             buildServer.AddBlockDeviceMapping("/dev/sda1", 100, Ebs.VolumeTypes.GeneralPurpose);
 
             buildServer.AddPackage(BucketNameSoftware, new TeamFoundationServerBuildServer(buildServer, tfsServer));
