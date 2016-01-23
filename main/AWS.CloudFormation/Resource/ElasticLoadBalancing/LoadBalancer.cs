@@ -6,7 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
-using AWS.CloudFormation.Serializer;
+using AWS.CloudFormation.Resource.EC2;
+using AWS.CloudFormation.Resource.EC2.Networking;
+
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
@@ -14,7 +16,7 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
 {
 
     [JsonConverter(typeof(JsonConverterListThatSerializesAsRef))]
-    public class ListThatSerializesAsRef : List<IName>
+    public class ListThatSerializesAsRef : List<ILogicalId>
     {
         
     }
@@ -28,7 +30,7 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
             {
                 writer.WriteStartObject();
                 writer.WritePropertyName("Ref");
-                writer.WriteValue(item.Name);
+                writer.WriteValue(item.LogicalId);
                 writer.WriteEndObject();
             }
         }
@@ -48,16 +50,18 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
     {
         public LoadBalancer(Template template, string name) : base(template, "AWS::ElasticLoadBalancing::LoadBalancer", name, false)
         {
+            SecurityGroups = new IdCollection<SecurityGroup>();
+
         }
 
-        public void AddInstance(EC2.Instance instance)
+        public void AddInstance(EC2.Instancing.Instance instance)
         {
             List<ReferenceProperty> tempInstances = new List<ReferenceProperty>();
             if (this.Instances != null && this.Instances.Length > 0)
             {
                 tempInstances.AddRange(this.Instances);
             }
-            tempInstances.Add(new ReferenceProperty() { Ref = instance.Name });
+            tempInstances.Add(new ReferenceProperty() { Ref = instance.LogicalId });
             this.Instances = tempInstances.ToArray();
         }
         public void AddSubnet(Subnet Subnet)
@@ -67,7 +71,7 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
             {
                 tempSubnets.AddRange(this.Subnets);
             }
-            tempSubnets.Add(new ReferenceProperty() { Ref = Subnet.Name });
+            tempSubnets.Add(new ReferenceProperty() { Ref = Subnet.LogicalId });
             this.Subnets = tempSubnets.ToArray();
         }
         public void AddListener(string loadBalancePort,string instancePort, string protocol)
@@ -81,15 +85,33 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
             this.Listeners = tempListeners.ToArray();
         }
 
-        [CloudFormationProperties]
-        public Listener[] Listeners { get; private set; }
+        [JsonIgnore]
+        public Listener[] Listeners
+        {
+            get { return this.Properties.GetValue<Listener[]>(); }
+            set { this.Properties.SetValue(value); }
+        }
 
-        [CloudFormationProperties]
-        public ReferenceProperty[] Instances { get; private set; }
+        [JsonIgnore]
+        public ReferenceProperty[] Instances
+        {
+            get { return this.Properties.GetValue<ReferenceProperty[]>(); }
+            set { this.Properties.SetValue(value); }
+        }
 
-        [CloudFormationProperties]
-        public ReferenceProperty[] Subnets { get; private set; }
+        [JsonIgnore]
+        public ReferenceProperty[] Subnets
+        {
+            get { return this.Properties.GetValue<ReferenceProperty[]>(); }
+            set { this.Properties.SetValue(value); }
+        }
 
+        [JsonIgnore]
+        public IdCollection<SecurityGroup> SecurityGroups
+        {
+            get { return this.Properties.GetValue<IdCollection<SecurityGroup>>(); }
+            set { this.Properties.SetValue(value); }
+        }
 
         public class Listener
         {

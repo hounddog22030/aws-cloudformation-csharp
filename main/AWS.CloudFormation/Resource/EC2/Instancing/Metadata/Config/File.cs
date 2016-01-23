@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AWS.CloudFormation.Common;
-using AWS.CloudFormation.Resource;
-using Newtonsoft.Json;
+﻿using AWS.CloudFormation.Common;
 
-namespace AWS.CloudFormation.Instance.Metadata.Config
+namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config
 {
     public class ConfigFile : CloudFormationDictionary
     {
-        public ConfigFile(Resource.EC2.Instance resource) : base(resource)
+        public ConfigFile(Instance resource) : base(resource)
         {
             Content = (ConfigFileContent)this.Add("content", new ConfigFileContent(resource));
         }

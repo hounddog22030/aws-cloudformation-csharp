@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Text;
-using System.Collections.Generic;
 using System.IO;
-using System.Net;
-using AWS.CloudFormation.Instance;
-using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.EC2.Instancing;
+using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OperatingSystem = AWS.CloudFormation.Resource.EC2.Instancing.OperatingSystem;
@@ -80,7 +76,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateTemplateFileTest()
         {
-            var template = StackTest.GetTemplate();
+            var template = StackTest.GetTemplateFullStack(this.TestContext);
 
             FileInfo file = TemplateEngine.CreateTemplateFile(template);
             Assert.IsNotNull(file);
@@ -105,9 +101,9 @@ namespace AWS.CloudFormation.Test
             InvalidOperationException o = null;
             try
             {
-                var template = new Template(Guid.NewGuid().ToString());
+                var template = new Template(Guid.NewGuid().ToString(),null,null);
                 template.Parameters.Clear();
-                var i1 = new Resource.EC2.Instance(template, Guid.NewGuid().ToString(), InstanceTypes.T2Nano, "ami-b17f35db", OperatingSystem.Windows, false);
+                var i1 = new Instance(template, Guid.NewGuid().ToString(), InstanceTypes.T2Nano, "ami-b17f35db", OperatingSystem.Windows, false);
             }
             catch (InvalidOperationException e)
             {
@@ -119,8 +115,8 @@ namespace AWS.CloudFormation.Test
         private static Template GetTemplate()
         {
             string defaultKeyName = "InvalidKeyName";
-            var template = new Template(defaultKeyName);
-            var i1 = new Resource.EC2.Instance(template,Guid.NewGuid().ToString(), InstanceTypes.T2Nano, "ami-b17f35db", OperatingSystem.Windows, false);
+            var template = new Template(defaultKeyName,null,null);
+            var i1 = new Instance(template,Guid.NewGuid().ToString(), InstanceTypes.T2Nano, "ami-b17f35db", OperatingSystem.Windows, false);
             template.Resources.Add("instance1", i1);
             var vpc = new Vpc(template,"Vpc","0.0.0.0/0");
             template.Resources.Add("VPC", vpc);

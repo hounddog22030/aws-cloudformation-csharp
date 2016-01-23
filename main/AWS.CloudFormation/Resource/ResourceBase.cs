@@ -1,54 +1,37 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Reflection;
+﻿using System.Collections.Generic;
 using AWS.CloudFormation.Common;
-using AWS.CloudFormation.Instance.Metadata;
-using AWS.CloudFormation.Instance.Metadata.Config.Command;
-using AWS.CloudFormation.Property;
-using AWS.CloudFormation.Resource.Networking;
-using AWS.CloudFormation.Resource.Wait;
-using AWS.CloudFormation.Serializer;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
+
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using OperatingSystem = AWS.CloudFormation.Resource.EC2.Instancing.OperatingSystem;
 
 namespace AWS.CloudFormation.Resource
 {
 
-    public interface IName
+    public interface ILogicalId
     {
-        string Name { get; }
+        string LogicalId { get; }
     }
-    [JsonConverter(typeof(ResourceJsonConverter))]
-    public abstract class ResourceBase : IName
+    public abstract class ResourceBase : ILogicalId
     {
-        //protected ResourceBase(string type)
-        //{
-        //}
-
-        //protected ResourceBase(string type, string name, bool supportsTags) : this(type)
-        //{
-        //}
-
-        [CloudFormationProperties]
-        public List<KeyValuePair<string, string>> Tags { get; private set; }
 
         protected ResourceBase(Template template, string type, string name, bool supportsTags)
             //: this(type, name, supportsTags)
         {
             Type = type;
             Template = template;
-            Name = name;
-            Metadata = new Resource.Metadata(this);
+            LogicalId = name;
+            DependsOn2 = new List<string>();
+
+            this.Template.Resources.Add(name,this);
+
+            Properties = new CloudFormationDictionary();
+            Metadata = new Metadata(this);
 
             if (supportsTags)
             {
-                this.Tags = new List<KeyValuePair<string, string>>();
-                this.AddTag("Name", name);
+                this.Tags = new TagDictionary();
+                this.Tags.Add("Name", name);
             }
         }
 
@@ -58,16 +41,30 @@ namespace AWS.CloudFormation.Resource
 
         public Metadata Metadata { get; }
 
-        public KeyValuePair<string, string> AddTag(string key, string value)
-        {
-            var returnValue = new KeyValuePair<string, string>(key, value);
-            this.Tags.Add(returnValue);
-            return returnValue;
-        }
 
         [JsonIgnore]
-        public string Name { get ; private set; }
+        public string LogicalId { get ; private set; }
 
-        public string[] DependsOn { get; protected set; }
+
+        [JsonIgnore]
+        public List<string> DependsOn2 { get; }
+
+        public string[] DependsOn { get { return this.DependsOn2.ToArray(); } }
+
+        public CloudFormationDictionary Properties { get; }
+
+        [JsonIgnore]
+        public TagDictionary Tags
+        {
+
+            get { return this.Properties.GetValue<TagDictionary>(); }
+            set { this.Properties.SetValue(value); }
+        }
+
+        [JsonArray]
+        public class TagDictionary : Dictionary<string, string>
+        {
+            
+        }
     }
 }

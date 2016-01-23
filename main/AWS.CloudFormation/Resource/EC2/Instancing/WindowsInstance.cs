@@ -1,35 +1,93 @@
-﻿using System.Configuration;
-using AWS.CloudFormation.Instance.Metadata.Config;
-using AWS.CloudFormation.Instance.Metadata.Config.Command;
+﻿using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Configuration.Packages;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
+using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Resource.EC2.Instancing
 {
-    public class WindowsInstance : Resource.EC2.Instance
+    public class WindowsInstance : Instance
     {
         public const string DefaultConfigSetName = "config";
         public const string DefaultConfigSetRenameConfig = "rename";
         public const string DefaultConfigSetJoinConfig = "join";
         public const string DefaultConfigSetRenameConfigRenamePowerShellCommand = "1-execute-powershell-script-RenameComputer";
-        public const string DefaultConfigSetRenameConfigSetDnsServers = "a-set-dns-servers";
         public const string DefaultConfigSetRenameConfigJoinDomain = "b-join-domain";
         public const string InstallChefConfigSetName = "InstallChefConfigSet";
         public const string InstallChefConfigName = "InstallChefConfig";
+        public const int NetBiosMaxLength = 15;
 
-        public WindowsInstance( Template template, 
-                                string name, 
-                                InstanceTypes instanceType, 
-                                string imageId, 
-                                Subnet subnet) 
+
+        public WindowsInstance(Template template,
+                                string name,
+                                InstanceTypes instanceType,
+                                string imageId,
+                                Subnet subnet,
+                                bool rename,
+                                Ebs.VolumeTypes volumeType,
+                                uint volumeSize)
+            : this(template, name, instanceType, imageId, subnet, rename)
+        {
+            this.AddBlockDeviceMapping("/dev/sda1", volumeSize, Ebs.VolumeTypes.GeneralPurpose);
+
+        }
+
+        public WindowsInstance(Template template,
+                                string name,
+                                InstanceTypes instanceType,
+                                string imageId,
+                                Subnet subnet,
+                                bool rename)
+            : this(template, name, instanceType, imageId, rename)
+        {
+            this.Subnet = subnet;
+        }
+
+        public WindowsInstance(Template template,
+                                string name,
+                                InstanceTypes instanceType,
+                                string imageId,
+                                bool rename)
             : base(template, name, instanceType, imageId, OperatingSystem.Windows, true)
         {
-            this.Vpc = subnet.Vpc;
-            this.Subnet = subnet;
-            this.Rename();
+            if (name.Length > NetBiosMaxLength)
+            {
+                throw new InvalidOperationException($"Name length is limited to {NetBiosMaxLength} characters.");
+            }
+            var nodeJson = this.GetChefNodeJsonContent();
+            nodeJson.Add("nothing", "nothing");
+            //xvd[f - z]
+            _availableDevices = new List<string>();
+            for (char c = 'f'; c < 'z'; c++)
+            {
+                _availableDevices.Add($"xvd{c}");
+            }
+
+
+            if (rename)
+            {
+                this.Rename();
+            }
+
+            this.DisableFirewall();
         }
+
+        private void DisableFirewall()
+        {
+            var setup = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("setup");
+            var disableFirewallCommand = setup.Commands.AddCommand<PowerShellCommand>("a-disable-win-fw");
+            disableFirewallCommand.WaitAfterCompletion = 0.ToString();
+            disableFirewallCommand.Command.AddCommandLine(new object[]
+            {"-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\""});
+        }
+
 
         [JsonIgnore]
         public ParameterBase DomainDnsName { get; protected internal set; }
@@ -44,43 +102,53 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 var renameConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetRenameConfig);
                 var renameCommandConfig = renameConfig.Commands.AddCommand<PowerShellCommand>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
                 renameCommandConfig.Command.AddCommandLine("\"Rename-Computer -NewName ",
-                                                            this.Name,
+                                                            this.LogicalId,
                                                             " -Restart\"");
                 renameCommandConfig.WaitAfterCompletion = "forever";
             }
         }
 
-        protected internal virtual void OnAddedToDomain()
+        protected internal virtual void OnAddedToDomain(string domainName)
         {
+
+            var nodeJson = this.GetChefNodeJsonContent();
+            nodeJson.Add("domain", domainName);
         }
 
         private Config GetChefConfig(string s3bucketName, string cookbookFileName)
         {
-            var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet(InstallChefConfigSetName).GetConfig(InstallChefConfigName);
-
-            if (!chefConfig.Sources.ContainsKey("c:\\chef\\"))
+            if (!this.Metadata.Authentication.ContainsKey("S3AccessCreds"))
             {
                 var appSettingsReader = new AppSettingsReader();
                 string accessKeyString = (string)appSettingsReader.GetValue("S3AccessKey", typeof(string));
                 string secretKeyString = (string)appSettingsReader.GetValue("S3SecretKey", typeof(string));
-
                 var auth = this.Metadata.Authentication.Add("S3AccessCreds", new S3Authentication(accessKeyString, secretKeyString, new string[] { s3bucketName }));
                 auth.Type = "S3";
-                chefConfig.Sources.Add("c:\\chef\\", $"https://{s3bucketName}.s3.amazonaws.com/{cookbookFileName}");
-                chefConfig.Packages.AddPackage("msi", "chef", "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2008r2/x86_64/chefdk-0.4.0-1.msi");
-                chefConfig.Files.GetFile("c:\\chef\\client.rb").Content.SetFnJoin("cache_path 'c:/chef'\ncookbook_path 'c:/chef/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
-
-                var chefConfigContent = GetChefNodeJsonContent(s3bucketName, cookbookFileName);
+                var chefConfigContent = GetChefNodeJsonContent();
                 var s3FileNode = chefConfigContent.Add("s3_file");
                 s3FileNode.Add("key", accessKeyString);
                 s3FileNode.Add("secret", secretKeyString);
-
             }
-            if (!chefConfig.Sources.ContainsKey("c:\\tools\\pstools\\"))
+
+            var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet(cookbookFileName).GetConfig(cookbookFileName);
+
+            if (!chefConfig.Packages.ContainsKey("msi") || (chefConfig.Packages.ContainsKey("msi") && !((CloudFormationDictionary) chefConfig.Packages["msi"]).ContainsKey("chef")))
             {
-                chefConfig.Sources.Add("c:\\tools\\pstools\\", "https://download.sysinternals.com/files/PSTools.zip");
-
+                chefConfig.Packages.AddPackage("msi", "chef", "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");
             }
+
+            var sourcesKey = $"c:/chef/{cookbookFileName}/";
+            if (!chefConfig.Sources.ContainsKey(sourcesKey))
+            {
+                chefConfig.Sources.Add(sourcesKey, $"https://{s3bucketName}.s3.amazonaws.com/{cookbookFileName}");
+            }
+
+            var clientRbFileKey = $"c:/chef/{cookbookFileName}/client.rb";
+            if (!chefConfig.Files.ContainsKey(clientRbFileKey))
+            {
+                chefConfig.Files.GetFile(clientRbFileKey).Content.SetFnJoin($"cache_path 'c:/chef'\ncookbook_path 'c:/chef/{cookbookFileName}/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
+            }
+
             return chefConfig;
         }
 
@@ -88,15 +156,42 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         {
             var chefConfig = this.GetChefConfig(s3bucketName, cookbookFileName);
             var chefCommandConfig = chefConfig.Commands.AddCommand<Command>(recipeList.Replace(':','-'));
-            chefCommandConfig.Test = "IF EXIST \"C:\\Program Files\\Microsoft SQL Server\\MSSQL12.MSSQLSERVER\\MSSQL\\Binn\\sqlservr.exe\" EXIT 1";
-            chefCommandConfig.Command.SetFnJoin($"C:\\opscode\\chefdk\\bin\\chef-client.bat --runlist 'recipe[{recipeList}]'");
+            //chefCommandConfig.Test = "IF EXIST \"C:/Program Files/Microsoft SQL Server/MSSQL12.MSSQLSERVER/MSSQL/Binn/sqlservr.exe\" EXIT 1";
+            chefCommandConfig.Command.SetFnJoin($"C:/opscode/chef/bin/chef-client.bat -z -o {recipeList} -c c:/chef/{cookbookFileName}/client.rb");
         }
 
-        public ConfigFileContent GetChefNodeJsonContent(string s3bucketName, string cookbookFileName)
+        public ConfigFileContent GetChefNodeJsonContent()
         {
-            var chefConfig = this.GetChefConfig(s3bucketName, cookbookFileName);
-            var nodeJson = chefConfig.Files.GetFile("c:\\chef\\node.json");
+
+            var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet(InstallChefConfigSetName).GetConfig(InstallChefConfigSetName);
+            var nodeJson = chefConfig.Files.GetFile("c:/chef/node.json");
             return nodeJson.Content;
+        }
+
+        public void AddPackage(string s3BucketName, PackageBase package)
+        {
+            var cookbookFileName = $"{package.CookbookName}.tar.gz";
+            this.AddChefExec(s3BucketName, cookbookFileName,package.RecipeName);
+            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this, this.GetAvailableDevice());
+            blockDeviceMapping.Ebs.SnapshotId = package.SnapshotId;
+            this.AddBlockDeviceMapping(blockDeviceMapping);
+        }
+
+        readonly List<string> _availableDevices;
+
+        protected string GetAvailableDevice()
+        {
+            var returnValue = _availableDevices.First();
+            _availableDevices.Remove(returnValue);
+            return returnValue;
+        }
+
+        public void AddDisk(Ebs.VolumeTypes ec2DiskType, int sizeInGigabytes)
+        {
+            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this,this.GetAvailableDevice());
+            blockDeviceMapping.Ebs.VolumeSize = sizeInGigabytes;
+            blockDeviceMapping.Ebs.VolumeType = ec2DiskType;
+            this.AddBlockDeviceMapping(blockDeviceMapping);
         }
     }
 }

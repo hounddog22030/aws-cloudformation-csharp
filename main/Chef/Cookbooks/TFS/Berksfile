@@ -2,4 +2,8 @@ source "https://supermarket.chef.io"
 
 metadata
 
-s3_file
+cookbook 'ec2helper', path: '../ec2helper'
+cookbook 'vs', path: '../vs'
+cookbook 'PsTools', path: '../PsTools'
+cookbook 's3_file'
+cookbook 'windows'

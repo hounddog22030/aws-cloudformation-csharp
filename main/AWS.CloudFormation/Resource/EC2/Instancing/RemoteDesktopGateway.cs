@@ -1,6 +1,9 @@
-﻿using AWS.CloudFormation.Instance;
-using AWS.CloudFormation.Instance.Metadata.Config.Command;
+﻿using System;
+using AWS.CloudFormation.Property;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
+using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
+using AWS.CloudFormation.Resource.Route53;
 using AWS.CloudFormation.Stack;
 
 namespace AWS.CloudFormation.Resource.EC2.Instancing
@@ -15,7 +18,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             InstanceTypes instanceType,
             string imageId,
             Subnet subnet) : 
-            base(template, name, instanceType, imageId, subnet )
+            base(template, name, instanceType, imageId, subnet, true)
         {
             this.Subnet = subnet;
             this.AddSecurityGroup();
@@ -39,7 +42,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             installRdsCommand = installRdsConfig.Commands.AddCommand<PowerShellCommand>("b-configure-rdgw");
             installRdsCommand.Command.AddCommandLine(
                                             "-ExecutionPolicy RemoteSigned",
-                                            " C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN " + this.Name + ".",
+                                            " C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN " + this.LogicalId + ".",
                                             this.DomainDnsName,
                                             " -DomainNetBiosName ",
                                             this.DomainNetBiosName,
@@ -49,20 +52,35 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         private void AddSecurityGroup()
         {
-            var rdgwSecurityGroup = this.Template.GetSecurityGroup("RDGWSecurityGroup", this.Subnet.Vpc, "Remote Desktop Security Group");
+            var rdgwSecurityGroup = new SecurityGroup(Template, "RDGWSecurityGroup", "Remote Desktop Security Group", this.Subnet.Vpc);
 
-            rdgwSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol, Ports.Ssl);
-            rdgwSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Udp, Ports.RdpAdmin);
-            rdgwSecurityGroup.AddIngressEgress<SecurityGroupIngress>(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
+            rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol, Ports.Ssl);
+            rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Udp, Ports.RdpAdmin);
+            rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
 
-            this.SecurityGroups.Add(rdgwSecurityGroup);
+            this.SecurityGroupIds.Add(rdgwSecurityGroup);
         }
 
 
-        protected internal override void OnAddedToDomain()
+        protected internal override void OnAddedToDomain(string domainName)
         {
-            base.OnAddedToDomain();
+            base.OnAddedToDomain(domainName);
+
+            var domainParts = this.DomainDnsName.Default.ToString().Split('.');
+            var tldDomain = $"{domainParts[domainParts.Length - 2]}.{domainParts[domainParts.Length - 1]}.";
+
+
             this.InstallRemoteDesktopGateway();
+            RecordSet routing = RecordSet.AddByHostedZoneName(
+                this.Template, 
+                this.LogicalId + "Record",
+                tldDomain,
+                $"rdp{DateTime.Now.Second}.{this.DomainDnsName.Default}.",
+                RecordSet.RecordSetTypeEnum.A);
+            routing.ResourceRecords.Add(this.ElasticIp);
+
+            routing.TTL = "60";
+
         }
     }
 }

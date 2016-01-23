@@ -1,42 +1,21 @@
 ﻿using System.ComponentModel;
+using System.Runtime.Serialization;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+using EnumConverter = AWS.CloudFormation.Serialization.EnumConverter;
 
 namespace AWS.CloudFormation.Resource.EC2.Instancing
 {
-    internal class InstanceTypesConverter : StringEnumConverter
-    {
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            InstanceTypes valueAsInstanceTypes = (InstanceTypes)value;
-            switch (valueAsInstanceTypes)
-            {
-                case InstanceTypes.T2Nano:
-                    writer.WriteValue(Resource.EC2.Instance.T2Nano);
-                    break;
-                case InstanceTypes.T2Micro:
-                    writer.WriteValue(Resource.EC2.Instance.T2Micro);
-                    break;
-                case InstanceTypes.T2Small:
-                    writer.WriteValue(Resource.EC2.Instance.T2Small);
-                    break;
-                case InstanceTypes.M4Xlarge:
-                    writer.WriteValue(Resource.EC2.Instance.T2Small);
-                    break;
-
-                default:
-                    throw new InvalidEnumArgumentException();
-            }
-        }
-    }
-
-    [JsonConverter(typeof(InstanceTypesConverter))]
+    [JsonConverter(typeof(EnumConverter))]
     public enum InstanceTypes
     {
         None,
+        [EnumMember(Value="t2.nano")]
         T2Nano,
+        [EnumMember(Value = "t2.micro")]
         T2Micro,
+        [EnumMember(Value = "t2.small")]
         T2Small,
+        [EnumMember(Value = "m4.xlarge")]
         M4Xlarge
     }
 }

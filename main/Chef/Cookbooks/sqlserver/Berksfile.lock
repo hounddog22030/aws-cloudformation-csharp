@@ -1,0 +1,15 @@
+DEPENDENCIES
+  ec2helper
+    path: ../ec2helper
+  msdotnet35
+    path: ../msdotnet35
+  sqlserver
+    path: .
+    metadata: true
+
+GRAPH
+  ec2helper (0.1.0)
+  msdotnet35 (0.1.0)
+  sqlserver (0.1.0)
+    ec2helper (>= 0.0.0)
+    msdotnet35 (>= 0.0.0)

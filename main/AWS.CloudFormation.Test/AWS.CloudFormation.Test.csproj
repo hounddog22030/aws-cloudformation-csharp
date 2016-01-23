@@ -40,6 +40,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AWSSDK.CloudFormation, Version=3.1.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
+      <HintPath>..\packages\AWSSDK.CloudFormation.3.1.1.2\lib\net45\AWSSDK.CloudFormation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="AWSSDK.Core, Version=3.1.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
+      <HintPath>..\packages\AWSSDK.Core.3.1.4.0\lib\net45\AWSSDK.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <Choose>
@@ -50,19 +58,28 @@
     </When>
     <Otherwise>
       <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework" />
+        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework">
+          <Private>False</Private>
+        </Reference>
       </ItemGroup>
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Route53\HostedZoneTest.cs" />
+    <Compile Include="Route53\RecordSetTest.cs" />
     <Compile Include="StackTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TemplateEngineTest.cs" />
+    <Compile Include="UnitTest1.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AWS.CloudFormation\AWS.CloudFormation.csproj">
       <Project>{640a43a9-f1d7-4d13-8ab3-819797155f3d}</Project>
       <Name>AWS.CloudFormation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\System.Net.IPNetwork\System.Net.IPNetwork.csproj">
+      <Project>{e76938d8-edec-4568-b73c-b98c41044423}</Project>
+      <Name>System.Net.IPNetwork</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -71,6 +88,14 @@
     <None Include="Examples\latest-template.template" />
     <None Include="Examples\Stackd9b63a70-dc26-4ceb-a907-94802e79166a.template" />
     <None Include="Examples\Template_1_AD_2012.template" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\packages\AWSSDK.CloudFormation.3.1.1.2\analyzers\dotnet\cs\AWSSDK.CloudFormation.CodeAnalysis.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Examples\Template_1_AD_2012.template.txt" />
+    <Content Include="Examples\working.txt" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

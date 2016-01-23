@@ -1,13 +1,12 @@
 ﻿using AWS.CloudFormation.Common;
-using AWS.CloudFormation.Instance.Metadata.Config;
-using AWS.CloudFormation.Instance.Metadata.Config.Command;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config
 {
     public class Sources : CloudFormationDictionary
     {
-        public Sources(Resource.EC2.Instance resource) : base(resource)
+        public Sources(Instance resource) : base(resource)
         {
             Instance = resource;
         }
@@ -24,12 +23,12 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config
             }
         }
 
-        public Resource.EC2.Instance Instance { get; }
+        public Instance Instance { get; }
     }
 
     public class Config : CloudFormationDictionary
     {
-        public Config(Resource.EC2.Instance resource) : base(resource)
+        public Config(Instance resource) : base(resource)
         {
             Commands = this.Add("commands", new Commands(resource)) as Commands;
             Files = this.Add("files", new Files(resource)) as Files;
@@ -60,7 +59,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config
 
     public class Packages : CloudFormationDictionary
     {
-        public Packages(Resource.EC2.Instance resource) : base(resource)
+        public Packages(Instance resource) : base(resource)
         {
         }
 

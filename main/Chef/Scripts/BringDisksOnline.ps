@@ -1,0 +1,7 @@
+﻿$d = Get-Disk  | Where OperationalStatus -eq 'Offline'
+$d.ToString();
+
+$d | ForEach-Object  {Set-Disk $_.Number -IsReadOnly $False}
+ 
+$d | ForEach-Object  {Set-Disk $_.Number -IsOffline $False}
+

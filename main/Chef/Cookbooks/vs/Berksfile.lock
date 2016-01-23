@@ -1,0 +1,11 @@
+DEPENDENCIES
+  ec2helper
+    path: ../ec2helper
+  vs
+    path: .
+    metadata: true
+
+GRAPH
+  ec2helper (0.1.0)
+  vs (0.1.0)
+    ec2helper (>= 0.0.0)

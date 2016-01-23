@@ -1,4 +1,6 @@
-﻿namespace AWS.CloudFormation.Resource.EC2.Instancing
+﻿using System.Runtime.Serialization;
+
+namespace AWS.CloudFormation.Resource.EC2.Instancing
 {
     public enum OperatingSystem
     {

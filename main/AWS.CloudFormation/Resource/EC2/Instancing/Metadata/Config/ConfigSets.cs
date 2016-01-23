@@ -1,10 +1,10 @@
 ﻿using AWS.CloudFormation.Common;
 
-namespace AWS.CloudFormation.Instance.Metadata.Config
+namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config
 {
     public class ConfigSets : CloudFormationDictionary
     {
-        public ConfigSets(Resource.EC2.Instance resource) : base(resource)
+        public ConfigSets(Instance resource) : base(resource)
         {
             Instance = resource;
         }
@@ -24,6 +24,6 @@ namespace AWS.CloudFormation.Instance.Metadata.Config
             }
         }
 
-        public Resource.EC2.Instance Instance { get; }
+        public Instance Instance { get; }
     }
 }

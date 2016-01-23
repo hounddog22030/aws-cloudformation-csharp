@@ -143,7 +143,7 @@ publish/
 # NuGet Packages
 *.nupkg
 # The packages folder can be ignored because of Package Restore
-**/packages/*
+# **/packages/*
 # except build/, which is used as an MSBuild target.
 !**/packages/build/
 # Uncomment if necessary however generally it will be regenerated when needed
@@ -212,3 +212,9 @@ _Pvt_Extensions/
 ModelManifest.xml
 /main/Chef/Cookbooks/nodes/DESKTOP-I3BQHCB.json
 /main/Chef/nodes
+*.gz
+/main/Chef/Cookbooks/TFS/x.txt
+/main/Chef/Cookbooks/x.txt
+/main/Chef/x.txt
+/main/Chef/berks-cookbooks
+/main/Chef/cookbooks/sqlserver.tar
