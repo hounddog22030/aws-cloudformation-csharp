@@ -36,7 +36,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             : this(template, name, instanceType, imageId, subnet, rename)
         {
             this.AddBlockDeviceMapping("/dev/sda1", volumeSize, Ebs.VolumeTypes.GeneralPurpose);
-
         }
 
         public WindowsInstance(Template template,
