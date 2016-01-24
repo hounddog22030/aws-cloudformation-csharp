@@ -299,11 +299,8 @@ namespace AWS.CloudFormation.Test
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
-            var PrivateSubnet1 = new Subnet(template,"PrivateSubnet1", vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A);
-            var dc1 = AddDomainController(template, PrivateSubnet1);
-            WindowsInstance w = AddWorkstation(template, "Windows1", DMZSubnet, dc1, rdp, false);
+            WindowsInstance w = AddWorkstation(template, "Windows1", DMZSubnet, null, rdp, false);
             w.AddElasticIp();
-
             CreateTestStack(template, this.TestContext);
 
         }
@@ -521,7 +518,7 @@ namespace AWS.CloudFormation.Test
             buildServer.AddBlockDeviceMapping("/dev/sda1", 100, Ebs.VolumeTypes.GeneralPurpose);
 
             buildServer.AddPackage(BucketNameSoftware, new TeamFoundationServerBuildServer(buildServer, tfsServer));
-            buildServer.AddPackage(BucketNameSoftware, new VisualStudio());
+            //buildServer.AddPackage(BucketNameSoftware, new VisualStudio());
 
             if (tfsServer != null)
             {
@@ -547,13 +544,8 @@ namespace AWS.CloudFormation.Test
         {
             if (subnet == null) throw new ArgumentNullException(nameof(subnet));
 
-            WindowsInstance workstation = new WindowsInstance(template, name, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnet, rename);
-            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
-            blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.GeneralPurpose;
-            blockDeviceMapping.Ebs.VolumeSize = 214;
-            workstation.AddBlockDeviceMapping(blockDeviceMapping);
-            workstation.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 10);
-            workstation.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 5);
+            WindowsInstance workstation = new WindowsInstance(template, name, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnet, rename, Ebs.VolumeTypes.GeneralPurpose, 214);
+
             workstation.AddPackage(BucketNameSoftware, new SqlServerExpress(workstation));
             workstation.AddPackage(BucketNameSoftware, new VisualStudio());
 
