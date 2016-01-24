@@ -78,7 +78,7 @@ namespace AWS.CloudFormation.Test
         {
             var template = StackTest.GetTemplateFullStack(this.TestContext);
 
-            FileInfo file = TemplateEngine.CreateTemplateFile(template, Guid.NewGuid().ToString());
+            FileInfo file = TemplateEngine.CreateTemplateFile(template);
             Assert.IsNotNull(file);
             Assert.IsTrue(file.Exists);
         }
@@ -87,7 +87,7 @@ namespace AWS.CloudFormation.Test
         public void UpdateTemplateTest()
         {
             var template = GetTemplate();
-            Uri uri = TemplateEngine.UploadTemplate(template, Guid.NewGuid().ToString(), "gtbb/software/cf");
+            Uri uri = TemplateEngine.UploadTemplate(template, "gtbb/software/cf");
             Assert.IsNotNull(uri);
             Assert.AreEqual("https", uri.Scheme);
             Assert.AreEqual("s3.amazonaws.com", uri.DnsSafeHost);

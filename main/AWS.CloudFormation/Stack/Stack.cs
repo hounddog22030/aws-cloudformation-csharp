@@ -11,7 +11,7 @@ namespace AWS.CloudFormation.Stack
     {
         public static CreateStackResponse CreateStack(Template template,string name)
         {
-            var templateUri = TemplateEngine.UploadTemplate(template, name, "gtbb/templates");
+            var templateUri = TemplateEngine.UploadTemplate(template, "gtbb/templates");
 
             AmazonCloudFormationClient client = new AmazonCloudFormationClient(RegionEndpoint.USEast1);
 
@@ -45,7 +45,7 @@ namespace AWS.CloudFormation.Stack
 
         public static void UpdateStack(string stackName, Template template)
         {
-            var templateUri = TemplateEngine.UploadTemplate(template, Guid.NewGuid().ToString(), "gtbb/templates");
+            var templateUri = TemplateEngine.UploadTemplate(template, "gtbb/templates");
             AmazonCloudFormationClient client = new AmazonCloudFormationClient(RegionEndpoint.USEast1);
 
             UpdateStackRequest request = new UpdateStackRequest

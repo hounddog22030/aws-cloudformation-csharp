@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Runtime.Serialization;
-using Amazon.Runtime.Internal.Transform;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
@@ -41,7 +40,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             SecurityGroupIds = new IdCollection<SecurityGroup>();
             this.InstanceType = instanceType;
             this.ImageId = imageId;
-            NetworkInterfaces = new List<object>();
+            NetworkInterfaces = new List<NetworkInterface>();
             if (!this.Template.Parameters.ContainsKey(ParameterNameDefaultKeyPairKeyName))
             {
                 throw new InvalidOperationException($"Template must contain a Parameter named {ParameterNameDefaultKeyPairKeyName} which contains the default encryption key name for the instance.");
@@ -139,11 +138,11 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         }
 
         [JsonIgnore]
-        public List<object> NetworkInterfaces
+        public List<NetworkInterface> NetworkInterfaces
         {
             get
             {
-                return this.Properties.GetValue<List<object>>();
+                return this.Properties.GetValue<List<NetworkInterface>>();
             }
             set
             {
@@ -330,15 +329,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             {
                 throw new ReadOnlyException();
             }
-        }
-
-        public void AddNetworkInterface(NetworkInterfaceResource natNetworkInterface)
-        {
-            this.NetworkInterfaces.Add(new NetworkInterface(natNetworkInterface));
-            //var networkInterfaceId = new CloudFormationDictionary();
-            //var networkInferfaceReference = new CloudFormationDictionary();
-            //networkInferfaceReference.Add("NetworkInterfaceId",new ReferenceProperty() {Ref=natNetworkInterface.LogicalId});
-            //this.NetworkInterfaces.Add(networkInterfaceId);
         }
     }
 }

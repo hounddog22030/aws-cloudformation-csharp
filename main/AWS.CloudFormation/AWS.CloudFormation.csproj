@@ -64,9 +64,6 @@
     <Compile Include="Property\AvailabilityZone.cs" />
     <Compile Include="Resource\EC2\Instancing\BlockDeviceMapping.cs" />
     <Compile Include="Resource\EC2\Instancing\DomainController.cs" />
-    <Compile Include="Resource\EC2\Networking\EipAssociation.cs" />
-    <Compile Include="Resource\EC2\Networking\NetworkInterfaceAttachment.cs" />
-    <Compile Include="Resource\EC2\Networking\NetworkInterfaceResource.cs" />
     <Compile Include="Serialization\EnumConverter.cs" />
     <Compile Include="Resource\EC2\Instancing\Metadata\Authentication.cs" />
     <Compile Include="Resource\EC2\Instancing\Metadata\ConfigSet.cs" />
