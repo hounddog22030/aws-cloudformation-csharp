@@ -40,15 +40,19 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         }
 
 
-        public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, Subnet subnet, bool rename)
-            : this(template,name,instanceType,imageId, rename )
+        public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, Subnet subnet, bool rename, DefinitionType definitionType)
+            : this(template, name, instanceType, imageId, rename, definitionType)
         {
             this.Subnet = subnet;
+
+        }
+        public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, Subnet subnet, bool rename)
+            : this(template, name, instanceType, imageId, subnet, rename, DefinitionType.Instance)
+        {
         }
 
-
-        public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, bool rename)
-            : base(template, name, instanceType, imageId, OperatingSystem.Windows, true, DefinitionType.Instance)
+        public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, bool rename,
+            DefinitionType definitionType): base(template, name, instanceType, imageId, OperatingSystem.Windows, true, definitionType)
         {
             if (name.Length > NetBiosMaxLength)
             {
@@ -70,6 +74,14 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
 
             this.DisableFirewall();
+
+        }
+
+
+
+        public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, bool rename)
+            : this(template, name, instanceType, imageId, rename, DefinitionType.Instance)
+        {
         }
 
         private void DisableFirewall()

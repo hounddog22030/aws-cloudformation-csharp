@@ -43,6 +43,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             {
                     case DefinitionType.Instance:
                     this.Type = "AWS::EC2::Instance";
+                    // only applies to instances
+                    SourceDestCheck = true;
                     break;
                 case DefinitionType.LaunchConfiguration:
                     this.Type = "AWS::AutoScaling::LaunchConfiguration";
@@ -54,34 +56,67 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
             SecurityGroupIds = new IdCollection<SecurityGroup>();
             NetworkInterfaces = new List<NetworkInterface>();
-            SourceDestCheck = true;
+
+            if (this.SupportsTags)
+            {
+                this.Tags.Add("Name",name);
+            }
         }
 
+        private IdCollection<SecurityGroup> _securityGroupIds;
         [JsonIgnore]
         public IdCollection<SecurityGroup> SecurityGroupIds
         {
             get
             {
-                return this.Properties.GetValue<IdCollection<SecurityGroup>>();
+                if (this.Type.Contains("Instance"))
+                {
+                    return this.Properties.GetValue<IdCollection<SecurityGroup>>();
+                }
+                else
+                {
+                    return _securityGroupIds;
+                }
             }
             set
             {
-                this.Properties.SetValue(value);
+                if (this.Type.Contains("Instance"))
+                {
+                    this.Properties.SetValue(value);
+                }
+                else
+                {
+                    _securityGroupIds = value;
+                }
             }
         }
 
 
-
+        private Subnet _subnet;
 
         [JsonIgnore] public Subnet Subnet
         {
             get
             {
-                return this.Properties.GetValue<Subnet>();
+                if (this.Type.Contains("Instance"))
+                {
+                    return this.Properties.GetValue<Subnet>();
+                }
+                else
+                {
+                    return _subnet;
+                }
             }
             set
             {
-                this.Properties.SetValue(value);
+                if (this.Type.Contains("Instance"))
+                {
+                    this.Properties.SetValue(value);
+                }
+                else
+                {
+                    _subnet = value;
+                }
             }
         }
 
@@ -100,16 +135,33 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
         }
 
+        private List<NetworkInterface> _networkInterfaces;
+
         [JsonIgnore]
         public List<NetworkInterface> NetworkInterfaces
         {
             get
             {
-                return this.Properties.GetValue<List<NetworkInterface>>();
+                if (this.Type.Contains("Instance"))
+                {
+                    return this.Properties.GetValue<List<NetworkInterface>>();
+                }
+                else
+                {
+                    return _networkInterfaces;
+                }
+                
             }
             set
             {
-                this.Properties.SetValue(value);
+                if (this.Type.Contains("Instance"))
+                {
+                    this.Properties.SetValue(value);
+                }
+                else
+                {
+                    _networkInterfaces = value;
+                }
             }
         }
 
@@ -136,8 +188,10 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             return ElasticIp;
         }
 
-         
-
+        protected override bool SupportsTags
+        {
+            get { return this.Type.Contains("Instance"); }
+        }
 
 
         public void AddDependsOn(Instance dependsOn, TimeSpan timeout)

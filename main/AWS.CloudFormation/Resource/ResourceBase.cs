@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 
@@ -21,17 +22,9 @@ namespace AWS.CloudFormation.Resource
             Template = template;
             LogicalId = name;
             DependsOn2 = new List<string>();
-
             this.Template.Resources.Add(name,this);
-
             Properties = new CloudFormationDictionary();
             Metadata = new Metadata(this);
-
-            // ReSharper disable once VirtualMemberCallInContructor
-            if (SupportsTags)
-            {
-                this.Tags = new TagDictionary {{"Name", name}};
-            }
         }
 
         protected abstract bool SupportsTags { get; }
@@ -59,8 +52,35 @@ namespace AWS.CloudFormation.Resource
         public TagDictionary Tags
         {
 
-            get { return this.Properties.GetValue<TagDictionary>(); }
-            set { this.Properties.SetValue(value); }
+            get
+            {
+                if (SupportsTags)
+                {
+                    var returnValue = this.Properties.GetValue<TagDictionary>();
+                    if (returnValue == null)
+                    {
+                        this.Tags = new TagDictionary();
+                        return this.Tags;
+                    }
+                    return returnValue;
+                }
+                else
+                {
+                    return null;
+                }
+
+            }
+            set
+            {
+                if (SupportsTags)
+                {
+                    this.Properties.SetValue(value);
+                }
+                else
+                {
+                    throw new NotSupportedException();
+                }
+            }
         }
 
         [JsonArray]
