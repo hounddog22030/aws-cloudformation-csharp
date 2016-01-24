@@ -11,3 +11,9 @@ default['tfs']['build_agent_zipfile_path'] = "#{Chef::Config['file_cache_path']}
 default['tfs']['build_agent_dir'] = "c:/agent"
 default['tfs']['build_agent_command_file_path'] = "#{default['tfs']['build_agent_dir']}/ConfigureAgent.cmd"
 
+default['tfs']['build_test_agent_filename'] = "vstf_testagent.exe"
+default['tfs']['build_test_agent_bucket_name'] = "gtbb"
+default['tfs']['build_test_agent_bucket_url'] = "https://s3.amazonaws.com/#{default['tfs']['build_test_agent_bucket_name']}"
+default['tfs']['build_test_agent_url'] = "https://s3.amazonaws.com/#{default['tfs']['build_test_agent_bucket_name']}/#{default['tfs']['build_test_agent_filename']}"
+default['tfs']['build_test_agent_path'] = "#{Chef::Config['file_cache_path']}/#{default['tfs']['build_test_agent_filename']}"
+default['tfs']['build_test_agent_command_file_path'] = "#{default['tfs']['build_test_agent_dir']}/ConfigureAgent.cmd"
