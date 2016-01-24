@@ -136,7 +136,7 @@ namespace AWS.CloudFormation.Test
 
 
             // uses 33gb
-            var workstation = AddWorkstation(template, "workstation3", subnetWorkstation, tfsServer, instanceDomainController, workstationSecurityGroup, true);
+            var workstation = AddWorkstation(template, "workstation3", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
             //var workstation2 = AddWorkstation(template, "workstation2", PrivateSubnet1, buildServer, domainController, workstationSecurityGroup, tfsServerUsers);
 
 
@@ -301,7 +301,7 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             var PrivateSubnet1 = new Subnet(template,"PrivateSubnet1", vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A);
             var dc1 = AddDomainController(template, PrivateSubnet1);
-            WindowsInstance w = AddWorkstation(template, "Windows1", DMZSubnet, null, dc1, rdp, false);
+            WindowsInstance w = AddWorkstation(template, "Windows1", DMZSubnet, dc1, rdp, false);
             w.AddElasticIp();
 
             CreateTestStack(template, this.TestContext);
@@ -517,7 +517,7 @@ namespace AWS.CloudFormation.Test
         private static WindowsInstance AddBuildServer(Template template, Subnet subnet, WindowsInstance tfsServer, DomainController domainController, SecurityGroup buildServerSecurityGroup)
         {
 
-            var buildServer = new WindowsInstance(template, $"b{DateTime.Now.Ticks.ToString().Substring(DateTime.Now.Ticks.ToString().Length - WindowsInstance.NetBiosMaxLength -1, WindowsInstance.NetBiosMaxLength - 1)}", InstanceTypes.T2Small, UsEast1AWindows2012R2Ami, subnet, true);
+            var buildServer = new WindowsInstance(template, $"b{DateTime.Now.Ticks.ToString().Substring(DateTime.Now.Ticks.ToString().Length - WindowsInstance.NetBiosMaxLength -1, WindowsInstance.NetBiosMaxLength - 1)}", InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, subnet, true);
             buildServer.AddBlockDeviceMapping("/dev/sda1", 100, Ebs.VolumeTypes.GeneralPurpose);
 
             buildServer.AddPackage(BucketNameSoftware, new TeamFoundationServerBuildServer(buildServer, tfsServer));
@@ -541,7 +541,6 @@ namespace AWS.CloudFormation.Test
         private static WindowsInstance AddWorkstation(  Template template, 
                                                         string name, 
                                                         Subnet subnet, 
-                                                        Instance dependsOn, 
                                                         DomainController instanceDomainController, 
                                                         SecurityGroup workstationSecurityGroup, 
                                                         bool rename)
@@ -557,11 +556,6 @@ namespace AWS.CloudFormation.Test
             workstation.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 5);
             workstation.AddPackage(BucketNameSoftware, new SqlServerExpress(workstation));
             workstation.AddPackage(BucketNameSoftware, new VisualStudio());
-
-            if (dependsOn != null)
-            {
-                workstation.AddDependsOn(dependsOn, Timeout3Hours);
-            }
 
             if (workstationSecurityGroup != null)
             {
@@ -582,7 +576,7 @@ namespace AWS.CloudFormation.Test
         {
             var tfsServer = new WindowsInstance(    template, 
                                                     "tfsserver1", 
-                                                    InstanceTypes.T2Micro, 
+                                                    InstanceTypes.T2Small, 
                                                     UsEast1AWindows2012R2Ami, 
                                                     privateSubnet1, 
                                                     true, 
