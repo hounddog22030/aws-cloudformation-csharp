@@ -211,6 +211,7 @@ namespace AWS.CloudFormation.Test
             launchGroup.MinSize = 1.ToString();
             launchGroup.MaxSize = 2.ToString();
             launchGroup.AddAvailabilityZone(AvailabilityZone.UsEast1A);
+            launchGroup.AddSubnetToVpcZoneIdentifier(DMZSubnet);
             Stack.Stack.CreateStack(template,this.TestContext.TestName + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty));
         }
 

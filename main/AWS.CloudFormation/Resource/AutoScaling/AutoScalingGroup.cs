@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
+using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
@@ -26,6 +27,8 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             //    }
             //      ]
             this.Properties["AvailabilityZones"] = new List<string>();
+            this.Properties["VPCZoneIdentifier"] = new List<ReferenceProperty>();
+
             var d = new CloudFormationDictionary();
             d.Add("Granularity", "1Minute");
             string[] sizes = new[] { "GroupMinSize", "GroupMaxSize" };
@@ -125,6 +128,19 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             }
         }
 
+        [JsonIgnore]
+        public string[] VPCZoneIdentifier
+        {
+            get
+            {
+                return this.Properties.GetValue<List<string>>().ToArray();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
+            }
+        }
+
         //"MetricsCollection": [
         //         {
         //            "Granularity": "1Minute",
@@ -135,5 +151,9 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         //    }
         //      ]
 
+        public void AddSubnetToVpcZoneIdentifier(Subnet subnet)
+        {
+            ((List<ReferenceProperty>)this.Properties["VPCZoneIdentifier"]).Add(new ReferenceProperty() {Ref = subnet.LogicalId});
+        }
     }
 }
