@@ -43,6 +43,19 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         }
 
         [JsonIgnore]
+        public bool AssociatePublicIpAddress
+        {
+            get
+            {
+                return this.Properties.GetValue<bool>();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
+            }
+        }
+
+        [JsonIgnore]
         public string WaitConditionName => $"{this.LogicalId}WaitCondition";
 
         [JsonIgnore]
