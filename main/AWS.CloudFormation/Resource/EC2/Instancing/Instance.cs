@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
+using AWS.CloudFormation.Resource.AutoScaling;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
@@ -16,7 +17,7 @@ using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Resource.EC2.Instancing
 {
-    public class Instance : ResourceBase, ICidrBlock
+    public class Instance : LaunchConfiguration, ICidrBlock
     {
         public const string ParameterNameDefaultKeyPairKeyName = "DefaultKeyPairKeyName";
 
@@ -29,12 +30,10 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public string WaitConditionHandleName => this.WaitConditionName + "Handle";
 
         public Instance(Template template, string name, InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem, bool enableHup)
-            : base(template, name)
+            : base(template, name, instanceType, imageId)
         {
             this.OperatingSystem = operatingSystem;
             SecurityGroupIds = new IdCollection<SecurityGroup>();
-            this.InstanceType = instanceType;
-            this.ImageId = imageId;
             NetworkInterfaces = new List<NetworkInterface>();
             if (!this.Template.Parameters.ContainsKey(ParameterNameDefaultKeyPairKeyName))
             {
@@ -57,19 +56,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         [JsonIgnore]
         public OperatingSystem OperatingSystem { get; set; }
-
-        [JsonIgnore]
-        public string ImageId
-        {
-            get
-            {
-                return this.Properties.GetValue<string>();
-            }
-            set
-            {
-                this.Properties.SetValue(value);
-            }
-        }
 
         [JsonIgnore]
         public string KeyName
@@ -96,17 +82,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
         }
 
-        [JsonIgnore] public InstanceTypes InstanceType
-        {
-            get
-            {
-                return this.Properties.GetValue<InstanceTypes>();
-            }
-            set
-            {
-                this.Properties.SetValue(value);
-            }
-        }
 
         [JsonIgnore]
         public IdCollection<SecurityGroup> SecurityGroupIds

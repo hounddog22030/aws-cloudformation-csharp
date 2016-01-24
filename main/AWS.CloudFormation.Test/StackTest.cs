@@ -201,13 +201,14 @@ namespace AWS.CloudFormation.Test
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template, "DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
 
-            var launchConfig = new LaunchConfiguration(template, "Xyz", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, DMZSubnet);
+            var launchConfig = new LaunchConfiguration(template, "Xyz", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami);
 
             var launchGroup = new AutoScalingGroup(template, "AutoGroup");
             launchGroup.LaunchConfigurationName = new ReferenceProperty() { Ref = launchConfig.LogicalId };
             launchGroup.MinSize = 1.ToString();
             launchGroup.MaxSize = 2.ToString();
-            Stack.Stack.CreateStack(template,this.TestContext.TestName);
+            launchGroup.AddAvailabilityZone(AvailabilityZone.UsEast1A);
+            Stack.Stack.CreateStack(template,this.TestContext.TestName + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty));
         }
 
         [TestMethod]
