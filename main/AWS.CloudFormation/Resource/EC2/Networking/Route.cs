@@ -16,7 +16,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             this.DependsOn2.Add(Gateway.LogicalId);
         }
 
-        public Route(Template template, string routeName, string destinationCidrBlock, RouteTable routeTable) : base(template, "AWS::EC2::Route", routeName, false)
+        public Route(Template template, string routeName, string destinationCidrBlock, RouteTable routeTable) : base(template, routeName)
         {
             DestinationCidrBlock = destinationCidrBlock;
             RouteTable = routeTable;
@@ -63,6 +63,11 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         }
 
 
-
+        protected override bool SupportsTags {
+            get { return false; }
+        }
+        public override string Type {
+            get { return "AWS::EC2::Route"; }
+        }
     }
 }

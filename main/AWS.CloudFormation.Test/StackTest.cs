@@ -10,6 +10,7 @@ using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Configuration.Packages;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource;
+using AWS.CloudFormation.Resource.AutoScaling;
 using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
@@ -129,15 +130,17 @@ namespace AWS.CloudFormation.Test
 
 
             //// uses 24gb
-            var buildServer = AddBuildServer(template, subnetBuildServer, tfsServer, instanceDomainController, securityGroupBuildServer);
-            buildServer.AddFinalizer(Timeout4Hours);
+            //var buildServer = AddBuildServer(template, subnetBuildServer, tfsServer, instanceDomainController, securityGroupBuildServer);
+            //buildServer.AddFinalizer(Timeout4Hours);
 
 
 
 
-            // uses 33gb
-            var workstation = AddWorkstation(template, "workstation3", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
+            //// uses 33gb
+            //var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, false);
+            //workstation.AddFinalizer(TimeoutMax);
             //var workstation2 = AddWorkstation(template, "workstation2", PrivateSubnet1, buildServer, domainController, workstationSecurityGroup, tfsServerUsers);
+
 
 
             // the below is a remote desktop gateway server that can
@@ -185,7 +188,26 @@ namespace AWS.CloudFormation.Test
             Volume v = new Volume(t,"Volume1");
             v.SnapshotId = "snap-c4d7f7c3";
             v.AvailabilityZone = AvailabilityZone.UsEast1A;
+
             return t;
+        }
+
+        [TestMethod]
+        public void CreateAutoScalingGroupTest()
+        {
+            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var vpc = template.Vpcs.First();
+            SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
+            rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            var DMZSubnet = new Subnet(template, "DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
+
+            var launchConfig = new LaunchConfiguration(template, "Xyz", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, DMZSubnet);
+
+            var launchGroup = new AutoScalingGroup(template, "AutoGroup");
+            launchGroup.LaunchConfigurationName = new ReferenceProperty() { Ref = launchConfig.LogicalId };
+            launchGroup.MinSize = 1.ToString();
+            launchGroup.MaxSize = 2.ToString();
+            Stack.Stack.CreateStack(template,this.TestContext.TestName);
         }
 
         [TestMethod]
@@ -514,7 +536,7 @@ namespace AWS.CloudFormation.Test
         private static WindowsInstance AddBuildServer(Template template, Subnet subnet, WindowsInstance tfsServer, DomainController domainController, SecurityGroup buildServerSecurityGroup)
         {
 
-            var buildServer = new WindowsInstance(template, $"b{DateTime.Now.Ticks.ToString().Substring(DateTime.Now.Ticks.ToString().Length - WindowsInstance.NetBiosMaxLength -1, WindowsInstance.NetBiosMaxLength - 1)}", InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, subnet, true);
+            var buildServer = new WindowsInstance(template, $"b{DateTime.Now.Ticks.ToString().Substring(DateTime.Now.Ticks.ToString().Length - WindowsInstance.NetBiosMaxLength -1, WindowsInstance.NetBiosMaxLength - 1)}", InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, subnet, false);
             buildServer.AddBlockDeviceMapping("/dev/sda1", 100, Ebs.VolumeTypes.GeneralPurpose);
 
             buildServer.AddPackage(BucketNameSoftware, new TeamFoundationServerBuildServer(buildServer, tfsServer));

@@ -48,7 +48,7 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
 
     public class LoadBalancer : ResourceBase
     {
-        public LoadBalancer(Template template, string name) : base(template, "AWS::ElasticLoadBalancing::LoadBalancer", name, false)
+        public LoadBalancer(Template template, string name) : base(template, name)
         {
             SecurityGroups = new IdCollection<SecurityGroup>();
 
@@ -127,6 +127,13 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
             public string Protocol { get; }
 
 
+        }
+
+        protected override bool SupportsTags {
+            get { return false;}
+        }
+        public override string Type {
+            get { return "AWS::ElasticLoadBalancing::LoadBalancer"; }
         }
     }
 }

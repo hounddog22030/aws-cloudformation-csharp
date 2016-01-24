@@ -15,10 +15,9 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 
     public class Subnet : ResourceBase, ICidrBlock
     {
-        public const string SUBNET_TYPE = "AWS::EC2::Subnet";
 
 
-        public Subnet(Template template, string logicalId, Vpc vpc, string cidr, AvailabilityZone availabilityZone) : base(template, SUBNET_TYPE,logicalId,true)
+        public Subnet(Template template, string logicalId, Vpc vpc, string cidr, AvailabilityZone availabilityZone) : base(template, logicalId)
         {
             Vpc = vpc;
             CidrBlock = cidr;
@@ -78,5 +77,9 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             natSecurityGroup.AddIngress((ICidrBlock)this, Protocol.All, Ports.Min, Ports.Max);
             natSecurityGroup.AddIngress((ICidrBlock)this, Protocol.Icmp, Ports.All);
         }
+
+        protected override bool SupportsTags => true;
+
+        public override string Type => "AWS::EC2::Subnet";
     }
 }

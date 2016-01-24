@@ -28,13 +28,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         [JsonIgnore]
         public string WaitConditionHandleName => this.WaitConditionName + "Handle";
 
-        public Instance(    Template template, 
-                            string name, 
-                            InstanceTypes instanceType, 
-                            string imageId, 
-                            OperatingSystem operatingSystem, 
-                            bool enableHup)
-            : base(template,"AWS::EC2::Instance", name, true)
+        public Instance(Template template, string name, InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem, bool enableHup)
+            : base(template, name)
         {
             this.OperatingSystem = operatingSystem;
             SecurityGroupIds = new IdCollection<SecurityGroup>();
@@ -54,6 +49,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             this.EnableHup();
             SetUserData();
         }
+
 
         [JsonIgnore]
         public bool ShouldEnableHup { get; set; }
@@ -75,7 +71,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
         }
 
-        [JsonIgnore] public string KeyName
+        [JsonIgnore]
+        public string KeyName
         {
             get
             {
@@ -329,6 +326,13 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             {
                 throw new ReadOnlyException();
             }
+        }
+
+        protected override bool SupportsTags {
+            get { return true; } 
+        }
+        public override string Type {
+            get { return "AWS::EC2::Instance"; }
         }
     }
 }

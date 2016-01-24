@@ -25,6 +25,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public const int NetBiosMaxLength = 15;
 
 
+        
         public WindowsInstance(Template template,
                                 string name,
                                 InstanceTypes instanceType,
@@ -35,25 +36,18 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                                 uint volumeSize)
             : this(template, name, instanceType, imageId, subnet, rename)
         {
-            this.AddBlockDeviceMapping("/dev/sda1", volumeSize, Ebs.VolumeTypes.GeneralPurpose);
+            this.AddBlockDeviceMapping("/dev/sda1", volumeSize, volumeType);
         }
 
-        public WindowsInstance(Template template,
-                                string name,
-                                InstanceTypes instanceType,
-                                string imageId,
-                                Subnet subnet,
-                                bool rename)
-            : this(template, name, instanceType, imageId, rename)
+
+        public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, Subnet subnet, bool rename)
+            : this(template,name,instanceType,imageId, rename )
         {
             this.Subnet = subnet;
         }
 
-        public WindowsInstance(Template template,
-                                string name,
-                                InstanceTypes instanceType,
-                                string imageId,
-                                bool rename)
+
+        public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, bool rename)
             : base(template, name, instanceType, imageId, OperatingSystem.Windows, true)
         {
             if (name.Length > NetBiosMaxLength)

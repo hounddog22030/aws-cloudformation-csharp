@@ -8,8 +8,8 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 {
     public class SubnetRouteTableAssociation : ResourceBase
     {
-        public SubnetRouteTableAssociation(Template template, Subnet subnet, RouteTable routeTable)
-            : base(template, "AWS::EC2::SubnetRouteTableAssociation", $"SubnetRouteTableAssociation{subnet.LogicalId}" , false)
+        public SubnetRouteTableAssociation(Template template, Subnet subnet, RouteTable routeTable) 
+            : base(template, $"SubnetRouteTableAssociation{subnet.LogicalId}")
         {
             RouteTable = routeTable;
             Subnet = subnet;
@@ -39,5 +39,8 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             }
         }
 
+        protected override bool SupportsTags => false;
+
+        public override string Type => "AWS::EC2::SubnetRouteTableAssociation";
     }
 }

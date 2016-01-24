@@ -5,10 +5,13 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 
     public class InternetGateway : ResourceBase
     {
-        public InternetGateway(Template template, string name)
-            : base(template, "AWS::EC2::InternetGateway", name, true)
+        public InternetGateway(Template template, string name) : base(template, name)
         {
             
         }
+
+        protected override bool SupportsTags => true;
+
+        public override string Type => "AWS::EC2::InternetGateway";
     }
 }

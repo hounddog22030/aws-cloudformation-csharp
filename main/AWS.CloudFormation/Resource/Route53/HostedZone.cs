@@ -12,7 +12,7 @@ namespace AWS.CloudFormation.Resource.Route53
 {
     public class HostedZone : ResourceBase
     {
-        public HostedZone(Template template, string resourceName,string hostedZoneName) : base(template, "AWS::Route53::HostedZone", resourceName, false)
+        public HostedZone(Template template, string resourceName,string hostedZoneName) : base(template, resourceName)
         {
             Name = hostedZoneName;
         }
@@ -45,6 +45,13 @@ namespace AWS.CloudFormation.Resource.Route53
         {
             get { return this.Properties.GetValue<string>(); }
             set { this.Properties.SetValue(value); }
+        }
+
+        protected override bool SupportsTags {
+            get { return false; }
+        }
+        public override string Type {
+            get { return "AWS::Route53::HostedZone"; }
         }
     }
 }

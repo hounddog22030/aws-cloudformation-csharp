@@ -15,10 +15,9 @@ namespace AWS.CloudFormation.Resource
     public abstract class ResourceBase : ILogicalId
     {
 
-        protected ResourceBase(Template template, string type, string name, bool supportsTags)
+        protected ResourceBase(Template template, string name)
             //: this(type, name, supportsTags)
         {
-            Type = type;
             Template = template;
             LogicalId = name;
             DependsOn2 = new List<string>();
@@ -28,16 +27,19 @@ namespace AWS.CloudFormation.Resource
             Properties = new CloudFormationDictionary();
             Metadata = new Metadata(this);
 
-            if (supportsTags)
+            // ReSharper disable once VirtualMemberCallInContructor
+            if (SupportsTags)
             {
-                this.Tags = new TagDictionary();
-                this.Tags.Add("Name", name);
+                this.Tags = new TagDictionary {{"Name", name}};
             }
         }
 
+        protected abstract bool SupportsTags { get; }
+
         [JsonIgnore]
         internal Template Template { get; private set; }
-        public string Type { get; private set; }
+
+        public abstract string Type { get;  }
 
         public Metadata Metadata { get; }
 

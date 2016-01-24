@@ -281,6 +281,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 "-Command \"Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses ",
                 ipAddressDictionary,
                 "\"");
+
             renameCommandConfig.WaitAfterCompletion = 0.ToString();
         }
 

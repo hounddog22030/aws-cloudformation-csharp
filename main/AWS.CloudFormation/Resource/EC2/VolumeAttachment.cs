@@ -16,7 +16,7 @@ namespace AWS.CloudFormation.Resource.EC2
                                     string name, 
                                     string device, 
                                     Instance instance, 
-                                    string volumeId) : base(template, "AWS::EC2::VolumeAttachment", name, false)
+                                    string volumeId) : base(template, name)
         {
             Device = device;
             Instance = instance;
@@ -46,6 +46,9 @@ namespace AWS.CloudFormation.Resource.EC2
             set { this.Properties.SetValue(value); }
         }
 
+        protected override bool SupportsTags => false;
+
+        public override string Type => "AWS::EC2::VolumeAttachment";
 
     }
 }

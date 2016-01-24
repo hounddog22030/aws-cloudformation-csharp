@@ -11,7 +11,7 @@ namespace AWS.CloudFormation.Resource.EC2
 {
     public class Volume : ResourceBase
     {
-        public Volume(Template template, string name) : base(template, "AWS::EC2::Volume", name, true)
+        public Volume(Template template, string name) : base(template, name)
         {
         }
 
@@ -28,5 +28,8 @@ namespace AWS.CloudFormation.Resource.EC2
             get { return this.Properties.GetValue<AvailabilityZone>(); }
             set { this.Properties.SetValue(value); }
         }
+        protected override bool SupportsTags => true;
+
+        public override string Type => "AWS::EC2::Volume";
     }
 }
