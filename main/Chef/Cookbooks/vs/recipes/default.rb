@@ -49,7 +49,7 @@ end
 # Installing Team Foundation Server Standard.
 execute 'Install Visual Studio' do
 	command lazy { "#{exe_path} /quiet /ADMINFILE #{admin_xml}" }
-	timeout 21600
+	timeout 43200
 	returns [0,3010]
 	not_if { File.exist?("C:/Program Files (x86)/Microsoft Visual Studio 14.0/Common7/IDE/DevEnv.exe") }
 	action :nothing
