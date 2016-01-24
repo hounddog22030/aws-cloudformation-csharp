@@ -136,7 +136,7 @@ namespace AWS.CloudFormation.Test
 
 
             // uses 33gb
-            var workstation = AddWorkstation(template, "workstation3", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
+            var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
             //var workstation2 = AddWorkstation(template, "workstation2", PrivateSubnet1, buildServer, domainController, workstationSecurityGroup, tfsServerUsers);
 
 
@@ -544,7 +544,7 @@ namespace AWS.CloudFormation.Test
         {
             if (subnet == null) throw new ArgumentNullException(nameof(subnet));
 
-            WindowsInstance workstation = new WindowsInstance(template, name, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnet, rename, Ebs.VolumeTypes.GeneralPurpose, 214);
+            WindowsInstance workstation = new WindowsInstance(template, name, InstanceTypes.M4Xlarge, UsEast1AWindows2012R2Ami, subnet, rename, Ebs.VolumeTypes.GeneralPurpose, 214);
 
             workstation.AddPackage(BucketNameSoftware, new SqlServerExpress(workstation));
             workstation.AddPackage(BucketNameSoftware, new VisualStudio());
@@ -677,7 +677,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdatePrimeTest()
         {
-            var stackName = "CreatePrimeTest-2016-01-23T0958153893302-0500";
+            var stackName = "CreatePrimeTest-2016-01-24T0058285032395-0500";
             
             Stack.Stack.UpdateStack(stackName, GetTemplateFullStack(this.TestContext, "VpcCreatePrimeTest"));
         }
