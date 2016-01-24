@@ -14,6 +14,7 @@ using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
+using AWS.CloudFormation.Resource.ElasticLoadBalancing;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -145,12 +146,11 @@ namespace AWS.CloudFormation.Test
             //var RDGateway2 = new RemoteDesktopGateway(template, "RDGateway2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
             //domainController.AddToDomainMemberSecurityGroup(RDGateway2);
 
-            //LoadBalancer elb = new LoadBalancer(template, "elb1");
-            //elb.AddInstance(tfsServer);
-            //elb.AddListener("8080", "8080", "http");
-            //elb.AddSubnet(DMZSubnet);
-            //elb.SecurityGroupIds.Add(elbSecurityGroup);
-            //template.AddResource(elb);
+            LoadBalancer elb = new LoadBalancer(template, "elb1");
+            elb.AddInstance(tfsServer);
+            elb.AddListener("8080", "8080", "http");
+            elb.AddSubnet(subnetDmz1);
+            elb.SecurityGroups.Add(elbSecurityGroup);
 
 
             return template;
