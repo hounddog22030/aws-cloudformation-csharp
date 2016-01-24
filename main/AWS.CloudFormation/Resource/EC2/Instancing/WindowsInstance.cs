@@ -48,7 +48,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
 
         public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, bool rename)
-            : base(template, name, instanceType, imageId, OperatingSystem.Windows, true)
+            : base(template, name, instanceType, imageId, OperatingSystem.Windows, true, DefinitionType.Instance)
         {
             if (name.Length > NetBiosMaxLength)
             {

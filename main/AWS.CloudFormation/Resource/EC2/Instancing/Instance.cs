@@ -17,10 +17,18 @@ using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Resource.EC2.Instancing
 {
+
+    public enum DefinitionType
+    {
+
+        Instance,
+        LaunchConfiguration
+    }
     public class Instance : LaunchConfiguration, ICidrBlock
     {
         public const string ParameterNameDefaultKeyPairKeyName = "DefaultKeyPairKeyName";
 
+        public override string Type { get; }
 
 
         [JsonIgnore]
@@ -29,10 +37,30 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         [JsonIgnore]
         public string WaitConditionHandleName => this.WaitConditionName + "Handle";
 
-        public Instance(Template template, string name, InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem, bool enableHup)
+        public Instance(Template template, string name, InstanceTypes instanceType, string imageId,
+            OperatingSystem operatingSystem, bool enableHup)
+            : this(template,name,instanceType,imageId,operatingSystem,enableHup,DefinitionType.Instance)
+        {
+            
+        }
+
+        public Instance(Template template, string name, InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem, bool enableHup, DefinitionType definitionType)
             : base(template, name, instanceType, imageId)
         {
+            switch (definitionType)
+            {
+                    case DefinitionType.Instance:
+                    this.Type = "AWS::EC2::Instance";
+                    break;
+                case DefinitionType.LaunchConfiguration:
+                    this.Type = "AWS::AutoScaling::LaunchConfiguration";
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(definitionType));
+            }
+
             this.OperatingSystem = operatingSystem;
+
             SecurityGroupIds = new IdCollection<SecurityGroup>();
             NetworkInterfaces = new List<NetworkInterface>();
             if (!this.Template.Parameters.ContainsKey(ParameterNameDefaultKeyPairKeyName))
@@ -301,13 +329,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             {
                 throw new ReadOnlyException();
             }
-        }
-
-        protected override bool SupportsTags {
-            get { return true; } 
-        }
-        public override string Type {
-            get { return "AWS::EC2::Instance"; }
         }
     }
 }
