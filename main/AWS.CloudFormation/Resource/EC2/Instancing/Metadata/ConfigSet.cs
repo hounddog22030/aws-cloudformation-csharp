@@ -1,10 +1,11 @@
 ﻿using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Resource.AutoScaling;
 
 namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata
 {
     public class ConfigSet : CloudFormationDictionary
     {
-        public ConfigSet(Instance resource) : base(resource)
+        public ConfigSet(LaunchConfiguration resource) : base(resource)
         {
             Instance = resource;
         }
@@ -21,7 +22,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata
             }
         }
 
-        public Instance Instance { get; }
+        public LaunchConfiguration Instance { get; }
     }
 
 }

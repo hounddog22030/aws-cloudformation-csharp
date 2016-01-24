@@ -1,4 +1,5 @@
 ﻿using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Resource.AutoScaling;
 
 namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata
 {
@@ -19,7 +20,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata
                 }
                 else
                 {
-                    return this.Add("AWS::CloudFormation::Init", new Init((EC2.Instancing.Instance)this.Resource)) as Init;
+                    return this.Add("AWS::CloudFormation::Init", new Init((LaunchConfiguration)this.Resource)) as Init;
                 }
             }
 

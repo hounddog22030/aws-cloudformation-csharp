@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Resource.AutoScaling;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 using Newtonsoft.Json;
 
@@ -14,7 +15,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata
         public const string FinalizeConfigSetName = "finalizeConfigSet";
         public const string FinalizeConfigName = "finalizeConfig";
 
-        public Init(Instance resource) : base(resource)
+        public Init(LaunchConfiguration resource) : base(resource)
         {
             Instance = resource;
         }
@@ -35,7 +36,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata
             }
         }
 
-        public Instance Instance { get;  }
+        public LaunchConfiguration Instance { get;  }
 
         public class InitConverter : JsonConverter
         {

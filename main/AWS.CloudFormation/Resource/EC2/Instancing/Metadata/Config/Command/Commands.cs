@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
+using AWS.CloudFormation.Resource.AutoScaling;
 using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
@@ -14,13 +15,13 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
             CompleteWaitHandle
         }
 
-        public Commands(Instance resource) : base(resource)
+        public Commands(LaunchConfiguration resource) : base(resource)
         {
             Instance = resource;
         }
 
         [JsonIgnore]
-        public Instance Instance { get; }
+        public LaunchConfiguration Instance { get; }
 
         public ConfigCommand AddCommand<T>(string key, CommandType commandType) where T : Resource.EC2.Instancing.Metadata.Config.Command.Command, new()
         {

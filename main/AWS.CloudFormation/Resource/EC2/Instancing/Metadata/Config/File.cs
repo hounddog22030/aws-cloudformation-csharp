@@ -1,10 +1,11 @@
 ﻿using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Resource.AutoScaling;
 
 namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config
 {
     public class ConfigFile : CloudFormationDictionary
     {
-        public ConfigFile(Instance resource) : base(resource)
+        public ConfigFile(LaunchConfiguration resource) : base(resource)
         {
             Content = (ConfigFileContent)this.Add("content", new ConfigFileContent(resource));
         }
