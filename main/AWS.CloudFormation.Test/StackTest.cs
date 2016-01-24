@@ -202,6 +202,9 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(template, "DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
 
             var launchConfig = new LaunchConfiguration(template, "Xyz", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami);
+            launchConfig.SecurityGroups.Add(new ReferenceProperty() { Ref = rdp.LogicalId });
+
+
 
             var launchGroup = new AutoScalingGroup(template, "AutoGroup");
             launchGroup.LaunchConfigurationName = new ReferenceProperty() { Ref = launchConfig.LogicalId };

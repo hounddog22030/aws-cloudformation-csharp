@@ -16,7 +16,22 @@ namespace AWS.CloudFormation.Resource.AutoScaling
     {
         public AutoScalingGroup(Template template, string name) : base(template, name)
         {
+            //"MetricsCollection": [
+            //         {
+            //            "Granularity": "1Minute",
+            //            "Metrics": [
+            //               "GroupMinSize",
+            //               "GroupMaxSize"
+            //            ]
+            //    }
+            //      ]
             this.Properties["AvailabilityZones"] = new List<string>();
+            var d = new CloudFormationDictionary();
+            d.Add("Granularity", "1Minute");
+            string[] sizes = new[] { "GroupMinSize", "GroupMaxSize" };
+            d.Add("Metrics", sizes);
+            this.MetricsCollection = new object[] {d};
+            DesiredCapacity = 1.ToString();
         }
 
         [JsonIgnore]
@@ -58,6 +73,19 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             }
         }
 
+        [JsonIgnore]
+        public string DesiredCapacity
+        {
+            get
+            {
+                return this.Properties.GetValue<string>();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
+            }
+        }
+
         protected override bool SupportsTags => false;
         public override string Type => "AWS::AutoScaling::AutoScalingGroup";
 
@@ -83,6 +111,29 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             ((List<string>)this.Properties["AvailabilityZones"]).Add(theEnumMemberAttribute.Value);
 
         }
+
+        [JsonIgnore]
+        public object[] MetricsCollection
+        {
+            get
+            {
+                return this.Properties.GetValue<object[]>();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
+            }
+        }
+
+        //"MetricsCollection": [
+        //         {
+        //            "Granularity": "1Minute",
+        //            "Metrics": [
+        //               "GroupMinSize",
+        //               "GroupMaxSize"
+        //            ]
+        //    }
+        //      ]
 
     }
 }

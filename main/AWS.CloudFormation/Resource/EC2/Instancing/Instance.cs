@@ -49,6 +49,18 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             SetUserData();
         }
 
+        [JsonIgnore]
+        public IdCollection<SecurityGroup> SecurityGroupIds
+        {
+            get
+            {
+                return this.Properties.GetValue<IdCollection<SecurityGroup>>();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
+            }
+        }
 
         [JsonIgnore]
         public bool ShouldEnableHup { get; set; }
@@ -83,18 +95,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         }
 
 
-        [JsonIgnore]
-        public IdCollection<SecurityGroup> SecurityGroupIds
-        {
-            get
-            {
-                return this.Properties.GetValue<IdCollection<SecurityGroup>>();
-            }
-            set
-            {
-                this.Properties.SetValue(value);
-            }
-        }
 
         [JsonIgnore]
         public bool SourceDestCheck

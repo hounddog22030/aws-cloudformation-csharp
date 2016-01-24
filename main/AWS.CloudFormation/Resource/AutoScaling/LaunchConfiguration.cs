@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Stack;
@@ -21,6 +23,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         {
             this.InstanceType = instanceType;
             this.ImageId = imageId;
+            SecurityGroups = new List<ReferenceProperty>();
         }
 
         public override string Type => "AWS::AutoScaling::LaunchConfiguration";
@@ -45,6 +48,19 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             get
             {
                 return this.Properties.GetValue<string>();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
+            }
+        }
+
+        [JsonIgnore]
+        public List<ReferenceProperty> SecurityGroups
+        {
+            get
+            {
+                return this.Properties.GetValue<List<ReferenceProperty>>();
             }
             set
             {
