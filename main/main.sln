@@ -13,6 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Net.IPNetwork", "Sys
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2C0BC390-8844-455F-9529-36EAD6B23FE6}"
 	ProjectSection(SolutionItems) = preProject
+		Configure-RDGW.ps1 = Configure-RDGW.ps1
 		QuickTemplate_1_AD_2012.template = QuickTemplate_1_AD_2012.template
 	EndProjectSection
 EndProject

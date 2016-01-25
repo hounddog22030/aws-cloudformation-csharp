@@ -17,10 +17,10 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         public class DomainInfo
         {
-            public DomainInfo(string domainDnsName, string domainNetBiosName, string adminUserName, string adminPassword)
+            public DomainInfo(string domainDnsName, string adminUserName, string adminPassword)
             {
                 DomainDnsName = domainDnsName;
-                DomainNetBiosName = domainNetBiosName;
+                DomainNetBiosName = domainDnsName.Split('.')[0];
                 AdminUserName = adminUserName;
                 AdminPassword = adminPassword;
 

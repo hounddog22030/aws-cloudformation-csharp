@@ -36,9 +36,9 @@ namespace AWS.CloudFormation.Test
         private const string CidrWorkstationSubnet = "10.0.4.0/24";
         private const string KeyPairName = "corp.getthebuybox.com";
         private const string CidrVpc = "10.0.0.0/16";
-        private const string DomainDnsName = "prime.getthebuybox.com";
+        private const string DomainDnsName = "alpha.getthebuybox.com";
         private const string DomainAdminUser = "johnny";
-        private const string DomainNetBiosName = "prime";
+        //private const string DomainNetBiosName = "prime";
         private const string UsEast1AWindows2012R2Ami = "ami-e4034a8e";
         private const string NetBiosNameDomainController1 = "dc1";
         private const string BucketNameSoftware = "gtbb";
@@ -112,13 +112,13 @@ namespace AWS.CloudFormation.Test
 
             // ReSharper disable once InconsistentNaming
             // uses 21gb
-            var domainInfo = new DomainController.DomainInfo(DomainDnsName, DomainNetBiosName, DomainAdminUser, DomainAdminPassword);
+            var domainInfo = new DomainController.DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
             var instanceDomainController = new DomainController(template, NetBiosNameDomainController1, InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, subnetDomainController1, domainInfo);
 
 
             // uses 19gb
             // ReSharper disable once InconsistentNaming
-            var RDGateway = new RemoteDesktopGateway(template, "RDGateway", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnetDmz1);
+            var RDGateway = new RemoteDesktopGateway(template, "rdp", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnetDmz1);
             RDGateway.AddFinalizer(Timeout2Hours);
             instanceDomainController.AddToDomain(RDGateway, Timeout3Hours);
 
@@ -170,7 +170,7 @@ namespace AWS.CloudFormation.Test
                 InstanceTypes.T2Micro,
                 UsEast1AWindows2012R2Ami,
                 subnet,
-                new DomainController.DomainInfo(DomainDnsName, DomainNetBiosName, DomainAdminUser,
+                new DomainController.DomainInfo(DomainDnsName, DomainAdminUser,
                     DomainAdminPassword));
             return DomainController;
         }
@@ -571,7 +571,9 @@ namespace AWS.CloudFormation.Test
 
             var chefNode = buildServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
-            domainAdminUserInfoNode.Add("name", DomainNetBiosName + "\\" + DomainAdminUser);
+            var domainInfo = new DomainController.DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
+
+            domainAdminUserInfoNode.Add("name", domainInfo.DomainNetBiosName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             buildServer.AddSecurityGroup(buildServerSecurityGroup);
             domainController.AddToDomain(buildServer, Timeout3Hours);
@@ -631,7 +633,8 @@ namespace AWS.CloudFormation.Test
             tfsServer.AddDependsOn(tfsSqlServer, TimeoutMax);
             var chefNode = tfsServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
-            domainAdminUserInfoNode.Add("name", DomainNetBiosName + "\\" + DomainAdminUser);
+            var domainInfo = new DomainController.DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
+            domainAdminUserInfoNode.Add("name", domainInfo.DomainNetBiosName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             tfsServer.AddSecurityGroup(tfsServerSecurityGroup);
             tfsServer.AddPackage(BucketNameSoftware, new TeamFoundationServerApplicationTier(tfsServer));
@@ -721,7 +724,7 @@ namespace AWS.CloudFormation.Test
         }
 
         [TestMethod]
-        public void CreatePrimeTest()
+        public void CreateAlphaTest()
         {
             CreateTestStack(GetTemplateFullStack(this.TestContext), this.TestContext);
         }
