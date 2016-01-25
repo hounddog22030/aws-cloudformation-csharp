@@ -84,9 +84,23 @@ namespace AWS.CloudFormation.Resource
         }
 
         [JsonArray]
-        public class TagDictionary : Dictionary<string, string>
+        public class TagDictionary : List<Tag>
         {
             
         }
+
+
+    }
+
+    public class Tag
+    {
+        public Tag(string key, string value)
+        {
+            Key = key;
+            Value = value;
+        }
+
+        public string Key { get;  }
+        public string Value { get; }
     }
 }

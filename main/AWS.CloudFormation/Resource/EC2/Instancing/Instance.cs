@@ -58,7 +58,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
             if (this.SupportsTags)
             {
-                this.Tags.Add("Name",name);
+                this.Tags.Add( new Tag("Name",name) );
             }
         }
 
