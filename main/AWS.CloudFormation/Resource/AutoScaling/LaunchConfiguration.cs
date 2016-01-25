@@ -71,7 +71,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             {
                 temp.AddRange(ids);
             }
-            temp.Add(new ReferenceProperty() { Ref = securityGroup.LogicalId });
+            temp.Add(new ReferenceProperty(securityGroup));
             this.Properties.SetValue(propertyName, temp.ToArray());
         }
 
@@ -191,9 +191,10 @@ namespace AWS.CloudFormation.Resource.AutoScaling
                         "<script>cfn-init.exe -v -c ",
                         string.Join(",", this.Metadata.Init.ConfigSets.Keys),
                         " -s ",
-                        new ReferenceProperty() { Ref = "AWS::StackId" },
+                        new ReferenceProperty("AWS::StackId"),
                         " -r " + this.LogicalId + " --region ",
-                        new ReferenceProperty() { Ref = "AWS::Region" }, "</script>");
+                        new ReferenceProperty("AWS::Region"),
+                        "</script>");
                     break;
                 case OperatingSystem.Linux:
                     break;
@@ -211,8 +212,8 @@ namespace AWS.CloudFormation.Resource.AutoScaling
 
                 var cfnHupConfContent = setupFiles.GetFile("c:\\cfn\\cfn-hup.conf").Content;
                 cfnHupConfContent.Clear();
-                cfnHupConfContent.SetFnJoin("[main]\nstack=", new ReferenceProperty() { Ref = "AWS::StackName" },
-                        "\nregion=", new ReferenceProperty() { Ref = "AWS::Region" }, "\ninterval=1\nverbose=true");
+                cfnHupConfContent.SetFnJoin("[main]\nstack=", new ReferenceProperty("AWS::StackName"),
+                        "\nregion=", new ReferenceProperty("AWS::Region"), "\ninterval=1\nverbose=true");
 
                 var autoReloader = setupFiles.GetFile("c:\\cfn\\hooks.d\\cfn-auto-reloader.conf");
                 autoReloader.Content.Clear();
@@ -223,11 +224,11 @@ namespace AWS.CloudFormation.Resource.AutoScaling
                     "action=cfn-init.exe -v -c ",
                     string.Join(",", this.Metadata.Init.ConfigSets.Keys),
                     " -s ",
-                    new ReferenceProperty() { Ref = "AWS::StackName" },
+                    new ReferenceProperty("AWS::StackName"),
                     " -r ",
                     this.LogicalId,
                     " --region ",
-                    new ReferenceProperty() { Ref = "AWS::Region" },
+                    new ReferenceProperty("AWS::Region"),
                     "\n");
 
                 setup.Services.Clear();

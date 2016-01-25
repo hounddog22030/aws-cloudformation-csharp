@@ -142,7 +142,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
 
         public void AddSubnetToVpcZoneIdentifier(Subnet subnet)
         {
-            ((List<ReferenceProperty>)this.Properties["VPCZoneIdentifier"]).Add(new ReferenceProperty() {Ref = subnet.LogicalId});
+            ((List<ReferenceProperty>)this.Properties["VPCZoneIdentifier"]).Add(new ReferenceProperty(subnet));
         }
     }
 }

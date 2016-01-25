@@ -3,11 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Resource;
 
 namespace AWS.CloudFormation.Property
 {
-    public class ReferenceProperty : PropertyBase
+    public class ReferenceProperty : CloudFormationDictionary
     {
-        public string Ref { get; set; }
+        public ReferenceProperty(ILogicalId reference) : this(reference.LogicalId)
+        {
+        }
+
+        public ReferenceProperty(string reference)
+        {
+            this.Add("Ref", reference);
+        }
+
     }
 }

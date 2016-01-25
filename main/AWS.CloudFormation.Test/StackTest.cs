@@ -201,7 +201,7 @@ namespace AWS.CloudFormation.Test
 
 
             var launchGroup = new AutoScalingGroup(template, "AutoGroup");
-            launchGroup.LaunchConfigurationName = new ReferenceProperty() { Ref = launchConfig.LogicalId };
+            launchGroup.LaunchConfigurationName = new ReferenceProperty(launchConfig);
             launchGroup.MinSize = 1.ToString();
             launchGroup.MaxSize = 2.ToString();
             launchGroup.AddAvailabilityZone(AvailabilityZone.UsEast1A);
@@ -578,7 +578,7 @@ namespace AWS.CloudFormation.Test
             buildServer.AddFinalizer(TimeoutMax);
 
             AutoScalingGroup launchGroup = new AutoScalingGroup(template, "BuildServerAutoScalingGroup");
-            launchGroup.LaunchConfigurationName = new ReferenceProperty() { Ref = buildServer.LogicalId };
+            launchGroup.LaunchConfigurationName = new ReferenceProperty(buildServer);
             launchGroup.MinSize = 1.ToString();
             launchGroup.MaxSize = 2.ToString();
             launchGroup.AddAvailabilityZone(AvailabilityZone.UsEast1A);

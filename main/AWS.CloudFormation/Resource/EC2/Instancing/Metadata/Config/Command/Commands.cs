@@ -32,7 +32,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
                 case CommandType.CompleteWaitHandle:
                     var returnValue = this.AddCommand<Resource.EC2.Instancing.Metadata.Config.Command.Command>(key);
                     returnValue.Command.AddCommandLine( true, "cfn-signal.exe -e 0 \"", 
-                                                        new ReferenceProperty() { Ref = this.Instance.WaitConditionHandleName }, 
+                                                        new ReferenceProperty(this.Instance.WaitConditionHandleName), 
                                                         "\"");
                     return returnValue;
                 default:
