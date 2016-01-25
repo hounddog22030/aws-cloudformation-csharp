@@ -95,10 +95,10 @@ namespace AWS.CloudFormation.Test
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.TeamFoundationServerBuild);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.TeamFoundationServerBuild);
 
-            SecurityGroup sqlServerSecurityGroup = new SecurityGroup(template, "SqlServer4TfsSecurityGroup", "Allows communication to SQLServer Service", vpc);
-            sqlServerSecurityGroup.AddIngress((ICidrBlock) subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            sqlServerSecurityGroup.AddIngress((ICidrBlock) subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            sqlServerSecurityGroup.AddIngress((ICidrBlock) subnetTfsServer, Protocol.Tcp, Ports.MsSqlServer);
+            SecurityGroup sqlServer4TfsSecurityGroup = new SecurityGroup(template, "SqlServer4TfsSecurityGroup", "Allows communication to SQLServer Service", vpc);
+            sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock) subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock) subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock) subnetTfsServer, Protocol.Tcp, Ports.MsSqlServer);
 
             SecurityGroup workstationSecurityGroup = new SecurityGroup(template,"WorkstationSecurityGroup", "Security Group To Contain Workstations", vpc);
             tfsServerSecurityGroup.AddIngress(workstationSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
@@ -124,14 +124,21 @@ namespace AWS.CloudFormation.Test
             instanceDomainController.AddToDomain(RDGateway, Timeout3Hours);
 
             //// uses 25gb
-            var tfsSqlServer = AddSql(template, "sql4tfs", subnetSqlServer4Tfs, instanceDomainController, sqlServerSecurityGroup);
+            var tfsSqlServer = AddSql(template, "sql4tfs", subnetSqlServer4Tfs, instanceDomainController, sqlServer4TfsSecurityGroup);
 
             ////// uses 24gb
             var tfsServer = AddTfsServer(template, subnetTfsServer, tfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
 
+            SecurityGroup securityGroupSqlServer4Build = new SecurityGroup(template, "securityGroupSqlServer4Build", "Allows communication to SQLServer Service", vpc);
+            securityGroupSqlServer4Build.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            securityGroupSqlServer4Build.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            securityGroupSqlServer4Build.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.MsSqlServer);
+
+            var sql4Build = AddSql(template, "sql4build", subnetBuildServer, instanceDomainController, securityGroupSqlServer4Build);
 
             //// uses 24gb
-            var buildServer = AddBuildServer(template, subnetBuildServer, tfsServer, instanceDomainController, securityGroupBuildServer);
+            var buildServer = AddBuildServer(template, subnetBuildServer, tfsServer, instanceDomainController, securityGroupBuildServer, sql4Build);
+            
             buildServer.AddFinalizer(Timeout4Hours);
 
             // uses 33gb
@@ -354,7 +361,7 @@ namespace AWS.CloudFormation.Test
             var dc1 = AddDomainController(template, DMZSubnet);
             dc1.AddElasticIp();
             dc1.AddSecurityGroup(rdp);
-            WindowsInstance w = AddBuildServer(template, DMZSubnet, null, dc1, rdp);
+            WindowsInstance w = AddBuildServer(template, DMZSubnet, null, dc1, rdp,null);
             w.AddElasticIp();
 
             CreateTestStack(template, this.TestContext);
@@ -558,7 +565,7 @@ namespace AWS.CloudFormation.Test
         }
 
 
-        private static WindowsInstance AddBuildServer(Template template, Subnet subnet, WindowsInstance tfsServer, DomainController domainController, SecurityGroup buildServerSecurityGroup)
+        private static WindowsInstance AddBuildServer(Template template, Subnet subnet, WindowsInstance tfsServer, DomainController domainController, SecurityGroup buildServerSecurityGroup, WindowsInstance sql4Build)
         {
 
             var buildServer = new WindowsInstance(template, $"build", InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, subnet, false, DefinitionType.LaunchConfiguration);
@@ -571,6 +578,10 @@ namespace AWS.CloudFormation.Test
             if (tfsServer != null)
             {
                 buildServer.AddDependsOn(tfsServer, Timeout3Hours);
+            }
+            if (sql4Build != null)
+            {
+                buildServer.DependsOn2.Add(sql4Build.LogicalId);
             }
 
             var chefNode = buildServer.GetChefNodeJsonContent();

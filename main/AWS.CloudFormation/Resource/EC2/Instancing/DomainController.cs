@@ -146,13 +146,17 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public void AddReplicationSite(Subnet subnet)
         {
             var currentConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("configureSites");
-            ConfigCommand currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>($"create-site-{subnet.LogicalId}");
-            currentCommand.WaitAfterCompletion = 0.ToString();
-            currentCommand.Command.AddCommandLine("-Command \"", $"New-ADReplicationSite  {subnet.LogicalId}\"");
+            string commandName = $"create-site-{subnet.LogicalId}";
+            if (!currentConfig.Commands.ContainsKey(commandName))
+            {
+                ConfigCommand currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>(commandName);
+                currentCommand.WaitAfterCompletion = 0.ToString();
+                currentCommand.Command.AddCommandLine("-Command \"", $"New-ADReplicationSite  {subnet.LogicalId}\"");
 
-            currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>($"create-subnet-{subnet.LogicalId}");
-            currentCommand.WaitAfterCompletion = 0.ToString();
-            currentCommand.Command.AddCommandLine("-Command New-ADReplicationSubnet -Name ", subnet.CidrBlock, $" -Site {subnet.LogicalId}");
+                currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>($"create-subnet-{subnet.LogicalId}");
+                currentCommand.WaitAfterCompletion = 0.ToString();
+                currentCommand.Command.AddCommandLine("-Command New-ADReplicationSubnet -Name ", subnet.CidrBlock, $" -Site {subnet.LogicalId}");
+            }
         }
 
         private Config ConfigureDefaultSite(Subnet defaultSubnet)
