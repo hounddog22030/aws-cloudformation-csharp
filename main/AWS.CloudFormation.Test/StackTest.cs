@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -214,6 +215,59 @@ namespace AWS.CloudFormation.Test
             launchGroup.AddAvailabilityZone(AvailabilityZone.UsEast1A);
             launchGroup.AddSubnetToVpcZoneIdentifier(DMZSubnet);
             Stack.Stack.CreateStack(template,this.TestContext.TestName + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty));
+        }
+
+        [TestMethod]
+        public void GetHashOfSourceTest()
+        {
+            var r = GetGitHash();
+
+            StringAssert.Contains(r, "0");
+
+            Assert.AreEqual("0e34235e264c315ab1efa46d3316d84ca21a688f".Length,r.Length);
+        }
+
+        public static string GetGitHash()
+        {
+            Process p = new Process();
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.StartInfo.FileName = "git.exe";
+            p.StartInfo.Arguments = "rev-parse HEAD";
+            p.Start();
+
+            // To avoid deadlocks, always read the output stream first and then wait.
+            string output = p.StandardOutput.ReadToEnd();
+            p.WaitForExit();
+
+            byte newLineByte = 10;
+            char newLine = (char)newLineByte;
+            byte nullByte = 0;
+            char nullChar = (char) nullByte;
+            return output.Replace(newLine.ToString(), string.Empty);
+
+        }
+
+        [TestMethod]
+        public void GetGitDiffTest()
+        {
+            Assert.IsTrue(GetGitDiff());
+        }
+
+        public static bool GetGitDiff()
+        {
+            Process p = new Process();
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.StartInfo.FileName = "git.exe";
+            p.StartInfo.Arguments = "diff";
+            p.Start();
+
+            // To avoid deadlocks, always read the output stream first and then wait.
+            string output = p.StandardOutput.ReadToEnd();
+            p.WaitForExit();
+
+            return output.Length == 0;
         }
 
         [TestMethod]
