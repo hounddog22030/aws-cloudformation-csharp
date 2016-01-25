@@ -32,10 +32,9 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                     .GetConfig(InstallRds);
             var installRdsCommand = installRdsConfig.Commands.AddCommand<PowerShellCommand>("a-install-rds");
             installRdsCommand.Command.AddCommandLine("-Command \"Install-WindowsFeature RDS-Gateway,RSAT-RDS-Gateway\"");
-            //"c:\\cfn\\scripts\\Configure-RDGW.ps1"     : {
-            //    "source" : "https://s3.amazonaws.com/quickstart-reference/microsoft/activedirectory/latest/scripts/Configure-RDGW.ps1"
-            //                }
+
             var configureRdgwPsScript = installRdsConfig.Files.GetFile("c:\\cfn\\scripts\\Configure-RDGW.ps1");
+
             configureRdgwPsScript.Source =
                 "https://s3.amazonaws.com/quickstart-reference/microsoft/activedirectory/latest/scripts/Configure-RDGW.ps1";
 
@@ -75,7 +74,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 this.Template, 
                 this.LogicalId + "Record",
                 tldDomain,
-                $"rdp{DateTime.Now.Second}.{this.DomainDnsName.Default}.",
+                $"{this.LogicalId}.{this.DomainDnsName.Default}.",
                 RecordSet.RecordSetTypeEnum.A);
             routing.ResourceRecords.Add(this.ElasticIp);
 

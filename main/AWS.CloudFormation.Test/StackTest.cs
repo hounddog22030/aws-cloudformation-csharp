@@ -36,9 +36,10 @@ namespace AWS.CloudFormation.Test
         private const string CidrWorkstationSubnet = "10.0.4.0/24";
         private const string KeyPairName = "corp.getthebuybox.com";
         private const string CidrVpc = "10.0.0.0/16";
-        private const string DomainDnsName = "alpha.getthebuybox.com";
+        public static string DomainDnsName { get; set; } = string.Empty;
+        public static string DomainDnsNameSuffix { get; set; } = "yadayada.software";
+
         private const string DomainAdminUser = "johnny";
-        //private const string DomainNetBiosName = "prime";
         private const string UsEast1AWindows2012R2Ami = "ami-e4034a8e";
         private const string NetBiosNameDomainController1 = "dc1";
         private const string BucketNameSoftware = "gtbb";
@@ -155,7 +156,7 @@ namespace AWS.CloudFormation.Test
         private static WindowsInstance AddSql4Tfs(Template template, Subnet PrivateSubnet1, DomainController DomainController,
             SecurityGroup sqlServerSecurityGroup)
         {
-            var tfsSqlServer = new WindowsInstance(template, "sql1", InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, PrivateSubnet1, true);
+            var tfsSqlServer = new WindowsInstance(template, "sql4tfs", InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, PrivateSubnet1, true);
             DomainController.AddToDomain(tfsSqlServer, Timeout3Hours);
             tfsSqlServer.AddPackage(BucketNameSoftware, new SqlServerExpress(tfsSqlServer));
             tfsSqlServer.AddSecurityGroup(sqlServerSecurityGroup);
@@ -506,12 +507,16 @@ namespace AWS.CloudFormation.Test
 
         public static void CreateTestStack(Template template, TestContext context)
         {
-            var name = $"{context.TestName}";
-            using (var r = new StreamReader(Path.Combine(Directory.GetCurrentDirectory(),"..","..", "..", "..", ".git","HEAD")))
+            var name = template.StackName;
+            if (string.IsNullOrEmpty(name))
             {
-                var line = r.ReadLine();
-                var parts = line.Split('/');
-                name += $"-{parts[parts.Length - 1]}-{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")}";
+                name = $"{context.TestName}";
+                using ( var r = new StreamReader(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", ".git", "HEAD")))
+                {
+                    var line = r.ReadLine();
+                    var parts = line.Split('/');
+                    name += $"-{parts[parts.Length - 1]}-{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")}";
+                }
             }
             CreateTestStack(template, context, name);
 
@@ -621,7 +626,7 @@ namespace AWS.CloudFormation.Test
         private static WindowsInstance AddTfsServer(Template template, Subnet privateSubnet1, WindowsInstance tfsSqlServer, DomainController dc1, SecurityGroup tfsServerSecurityGroup)
         {
             var tfsServer = new WindowsInstance(    template, 
-                                                    "tfsserver1", 
+                                                    "tfs", 
                                                     InstanceTypes.T2Small, 
                                                     UsEast1AWindows2012R2Ami, 
                                                     privateSubnet1, 
@@ -723,10 +728,55 @@ namespace AWS.CloudFormation.Test
             domainControllerSg1.AddIngress((ICidrBlock)dmzaz2Subnet, Protocol.Icmp, Ports.All);
         }
 
-        [TestMethod]
-        public void CreateAlphaTest()
+        enum Greek
         {
-            CreateTestStack(GetTemplateFullStack(this.TestContext), this.TestContext);
+            Alpha,
+            Beta,
+            Gamma,
+            Delta,
+            Epsilon,
+            Zeta,
+            Eta,
+            Theta,
+            Iota,
+            Kappa,
+            Lambda,
+            Mu,
+            Nu,
+            Xi,
+            Omicron,
+            Pi,
+            Rho,
+            Sigma,
+            Tau,
+            Upsilon,
+            Phi,
+            Chi,
+            Psi,
+            Omega,
+            None
+        }
+
+        [TestMethod]
+        public void CreateDevelopmentTest()
+        {
+            var stacks = Stack.Stack.GetActiveStacks();
+            var name = string.Empty;
+
+            foreach (var thisGreek in Enum.GetNames(typeof(Greek)))
+            {
+                name = (thisGreek + "." + DomainDnsNameSuffix).ToLower();
+                if (!stacks.Any(s => s.Name.StartsWith(name.Replace('.', '-'))))
+                {
+                    break;
+                }
+            }
+
+            StackTest.DomainDnsName = name;
+            var templateToCreateStack = GetTemplateFullStack(this.TestContext);
+            templateToCreateStack.StackName = StackTest.DomainDnsName.Replace('.', '-');
+
+            CreateTestStack(templateToCreateStack, this.TestContext);
         }
 
         [TestMethod]
@@ -757,6 +807,16 @@ namespace AWS.CloudFormation.Test
                 expectedException = e;
             }
             Assert.IsNotNull(expectedException);
+        }
+
+        [TestMethod]
+        public void GetStacksTest()
+        {
+            List<Stack.Stack> stacks = Stack.Stack.GetActiveStacks();
+            Assert.IsNotNull(stacks);
+            Assert.IsTrue(stacks.Any());
+            var create = stacks.Where(r => r.Name.Contains("Create"));
+            Assert.IsTrue(create.Any());
         }
 
         internal static Template GetNewBlankTemplateWithVpc(TestContext testContext, string vpcName)

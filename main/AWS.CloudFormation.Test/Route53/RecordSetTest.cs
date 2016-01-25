@@ -99,7 +99,7 @@ namespace AWS.CloudFormation.Test.Route53
             Instance testBox = new Instance(template, "testbox", InstanceTypes.T2Micro, "ami-60b6c60a", OperatingSystem.Linux, false);
             testBox.Subnet = DMZSubnet;
             var eip = testBox.AddElasticIp();
-            var target = RecordSet.AddByHostedZoneName(template, "testprime", "getthebuybox.com.", "test.prime.getthebuybox.com.", RecordSet.RecordSetTypeEnum.A);
+            var target = RecordSet.AddByHostedZoneName(template, "test", "getthebuybox.com.", "test.test.getthebuybox.com.", RecordSet.RecordSetTypeEnum.A);
             target.TTL = "60";
             target.RecordSetType = RecordSet.RecordSetTypeEnum.A.ToString();
             target.ResourceRecords.Add(eip);
