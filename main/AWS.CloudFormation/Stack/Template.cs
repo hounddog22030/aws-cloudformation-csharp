@@ -31,6 +31,9 @@ namespace AWS.CloudFormation.Stack
             Vpc vpc = new Vpc(this,vpcName,vpcCidrBlock);
         }
 
+        [JsonIgnore]
+        public string StackName { get; set; }
+
         [JsonProperty(PropertyName = "AWSTemplateFormatVersion")]
         public string AwsTemplateFormatVersion { get; }
 

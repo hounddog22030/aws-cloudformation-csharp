@@ -124,7 +124,7 @@ namespace AWS.CloudFormation.Test
             instanceDomainController.AddToDomain(RDGateway, Timeout3Hours);
 
             //// uses 25gb
-            var tfsSqlServer = AddSql4Tfs(template, subnetSqlServer4Tfs, instanceDomainController, sqlServerSecurityGroup);
+            var tfsSqlServer = AddSql(template, "sql4tfs", subnetSqlServer4Tfs, instanceDomainController, sqlServerSecurityGroup);
 
             ////// uses 24gb
             var tfsServer = AddTfsServer(template, subnetTfsServer, tfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
@@ -153,14 +153,13 @@ namespace AWS.CloudFormation.Test
             return template;
         }
 
-        private static WindowsInstance AddSql4Tfs(Template template, Subnet PrivateSubnet1, DomainController DomainController,
-            SecurityGroup sqlServerSecurityGroup)
+        private static WindowsInstance AddSql(Template template, string instanceName, Subnet subnet, DomainController domainController, SecurityGroup sqlServerSecurityGroup)
         {
-            var tfsSqlServer = new WindowsInstance(template, "sql4tfs", InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, PrivateSubnet1, true);
-            DomainController.AddToDomain(tfsSqlServer, Timeout3Hours);
-            tfsSqlServer.AddPackage(BucketNameSoftware, new SqlServerExpress(tfsSqlServer));
-            tfsSqlServer.AddSecurityGroup(sqlServerSecurityGroup);
-            return tfsSqlServer;
+            var sqlServer = new WindowsInstance(template, instanceName, InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, subnet, true);
+            domainController.AddToDomain(sqlServer, Timeout3Hours);
+            sqlServer.AddPackage(BucketNameSoftware, new SqlServerExpress(sqlServer));
+            sqlServer.AddSecurityGroup(sqlServerSecurityGroup);
+            return sqlServer;
         }
 
         private static DomainController AddDomainController(Template template, Subnet subnet)
