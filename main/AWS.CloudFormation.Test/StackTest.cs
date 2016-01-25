@@ -65,98 +65,90 @@ namespace AWS.CloudFormation.Test
             var template = GetNewBlankTemplateWithVpc(testContext,vpcName);
             Vpc vpc = template.Vpcs.First();
 
-            var subnetDmz1 = new Subnet(template, "subnetDmz1", vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
-            var subnetDmz2 = new Subnet(template,"subnetDmz2", vpc, CidrDmz2, AvailabilityZone.UsEast1A, true);
-            var subnetDomainController1 = new Subnet(template,"subnetDomainController1", vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A);
-            var subnetSqlServer4Tfs = new Subnet(template, "subnetSqlServer4Tfs", vpc, CidrSqlServer4TfsSubnet,AvailabilityZone.UsEast1A);
-            var subnetDomainController2 = new Subnet(template, "subnetDomainController2", vpc, CidrDomainController2Subnet, AvailabilityZone.UsEast1A);
-            var subnetTfsServer = new Subnet(template, "subnetTfsServer", vpc, CidrTfsServerSubnet, AvailabilityZone.UsEast1A);
-            var subnetBuildServer = new Subnet(template, "subnetBuildServer", vpc, CidrBuildServerSubnet, AvailabilityZone.UsEast1A);
-            var subnetWorkstation = new Subnet(template, "subnetWorkstation", vpc, CidrWorkstationSubnet, AvailabilityZone.UsEast1A);
-
-            SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
-            elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            //var subnetDomainController2 = new Subnet(template, "subnetDomainController2", vpc, CidrDomainController2Subnet, AvailabilityZone.UsEast1A);
+            var subnetDmz2 = new Subnet(template, "subnetDmz2", vpc, CidrDmz2, AvailabilityZone.UsEast1A, true);
 
             SecurityGroup natSecurityGroup = new SecurityGroup(template,"natSecurityGroup", "Enables Ssh access to NAT1 in AZ1 via port 22 and outbound internet access via private subnets", vpc);
             natSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Ssh);
             natSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
 
+            var subnetDmz1 = new Subnet(template, "subnetDmz1", vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
+            var nat1 = AddNat1(template, subnetDmz1, natSecurityGroup);
+
+
+            var subnetDomainController1 = new Subnet(template, "subnetDomainController1", vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A);
+            subnetDomainController1.AddNatGateway(nat1, natSecurityGroup);
+            var domainInfo = new DomainController.DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
+            var instanceDomainController = new DomainController(template, NetBiosNameDomainController1, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnetDomainController1, domainInfo);
+            instanceDomainController.AddFinalizer(Timeout2Hours);
+
+            var instanceRdp = new RemoteDesktopGateway(template, "rdp", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnetDmz1);
+            instanceRdp.AddFinalizer(Timeout2Hours);
+            instanceDomainController.AddToDomain(instanceRdp, Timeout3Hours);
+
+            SecurityGroup sqlServer4TfsSecurityGroup = new SecurityGroup(template, "SqlServer4TfsSecurityGroup", "Allows communication to SQLServer Service", vpc);
+            sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            var subnetSqlServer4Tfs = new Subnet(template, "subnetSqlServer4Tfs", vpc, CidrSqlServer4TfsSubnet, AvailabilityZone.UsEast1A);
+            subnetSqlServer4Tfs.AddNatGateway(nat1, natSecurityGroup);
+            var tfsSqlServer = AddSql(template, "sql4tfs", subnetSqlServer4Tfs, instanceDomainController, sqlServer4TfsSecurityGroup);
+
+            var subnetTfsServer = new Subnet(template, "subnetTfsServer", vpc, CidrTfsServerSubnet, AvailabilityZone.UsEast1A);
+            subnetTfsServer.AddNatGateway(nat1, natSecurityGroup);
+            sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock)subnetTfsServer, Protocol.Tcp, Ports.MsSqlServer);
+
+            SecurityGroup tfsServerSecurityGroup = new SecurityGroup(template, "TFSServerSecurityGroup", "Allows various TFS communication", vpc);
+            tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+
+            var tfsServer = AddTfsServer(template, subnetTfsServer, tfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
+
+            SecurityGroup securityGroupSqlServer4Build = new SecurityGroup(template, "securityGroupSqlServer4Build", "Allows communication to SQLServer Service", vpc);
+            securityGroupSqlServer4Build.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            securityGroupSqlServer4Build.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+
+            var subnetBuildServer = new Subnet(template, "subnetBuildServer", vpc, CidrBuildServerSubnet, AvailabilityZone.UsEast1A);
+            securityGroupSqlServer4Build.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.MsSqlServer);
+            tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.TeamFoundationServerBuild);
+            subnetBuildServer.AddNatGateway(nat1, natSecurityGroup);
+
+            WindowsInstance sql4Build = null;
+            sql4Build = AddSql(template, "sql4build", subnetBuildServer, instanceDomainController, securityGroupSqlServer4Build);
 
             SecurityGroup securityGroupBuildServer = new SecurityGroup(template, "BuildServerSecurityGroup", "Allows build controller to build agent communication", vpc);
             securityGroupBuildServer.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             securityGroupBuildServer.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             securityGroupBuildServer.AddIngress((ICidrBlock)subnetTfsServer, Protocol.Tcp, Ports.TeamFoundationServerBuild);
 
-            SecurityGroup tfsServerSecurityGroup = new SecurityGroup(template, "TFSServerSecurityGroup", "Allows various TFS communication", vpc);
-            tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
-            tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.TeamFoundationServerHttp);
-            tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
-            tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.TeamFoundationServerBuild);
-            tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.TeamFoundationServerBuild);
-
-            SecurityGroup sqlServer4TfsSecurityGroup = new SecurityGroup(template, "SqlServer4TfsSecurityGroup", "Allows communication to SQLServer Service", vpc);
-            sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock) subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock) subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock) subnetTfsServer, Protocol.Tcp, Ports.MsSqlServer);
-
-            SecurityGroup workstationSecurityGroup = new SecurityGroup(template,"WorkstationSecurityGroup", "Security Group To Contain Workstations", vpc);
-            tfsServerSecurityGroup.AddIngress(workstationSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
-
-            var nat1 = AddNat1(template, subnetDmz1, natSecurityGroup);
-
-            subnetDomainController1.AddNatGateway(nat1, natSecurityGroup);
-            subnetSqlServer4Tfs.AddNatGateway(nat1, natSecurityGroup);
-            subnetTfsServer.AddNatGateway(nat1, natSecurityGroup);
-            subnetBuildServer.AddNatGateway(nat1, natSecurityGroup);
-            subnetWorkstation.AddNatGateway(nat1, natSecurityGroup);
-
-            // ReSharper disable once InconsistentNaming
-            // uses 21gb
-            var domainInfo = new DomainController.DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
-            var instanceDomainController = new DomainController(template, NetBiosNameDomainController1, InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, subnetDomainController1, domainInfo);
-
-
-            // uses 19gb
-            // ReSharper disable once InconsistentNaming
-            var RDGateway = new RemoteDesktopGateway(template, "rdp", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnetDmz1);
-            RDGateway.AddFinalizer(Timeout2Hours);
-            instanceDomainController.AddToDomain(RDGateway, Timeout3Hours);
-
-            //// uses 25gb
-            var tfsSqlServer = AddSql(template, "sql4tfs", subnetSqlServer4Tfs, instanceDomainController, sqlServer4TfsSecurityGroup);
-
-            ////// uses 24gb
-            var tfsServer = AddTfsServer(template, subnetTfsServer, tfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
-
-            SecurityGroup securityGroupSqlServer4Build = new SecurityGroup(template, "securityGroupSqlServer4Build", "Allows communication to SQLServer Service", vpc);
-            securityGroupSqlServer4Build.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            securityGroupSqlServer4Build.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            securityGroupSqlServer4Build.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.MsSqlServer);
-
-            var sql4Build = AddSql(template, "sql4build", subnetBuildServer, instanceDomainController, securityGroupSqlServer4Build);
-
-            //// uses 24gb
             var buildServer = AddBuildServer(template, subnetBuildServer, tfsServer, instanceDomainController, securityGroupBuildServer, sql4Build);
-            
             buildServer.AddFinalizer(Timeout4Hours);
 
+            SecurityGroup workstationSecurityGroup = new SecurityGroup(template, "WorkstationSecurityGroup", "Security Group To Contain Workstations", vpc);
+            tfsServerSecurityGroup.AddIngress(workstationSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            var subnetWorkstation = new Subnet(template, "subnetWorkstation", vpc, CidrWorkstationSubnet, AvailabilityZone.UsEast1A);
+            tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.TeamFoundationServerBuild);
+            subnetWorkstation.AddNatGateway(nat1, natSecurityGroup);
             // uses 33gb
             var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
 
+
+            SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
+            elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+
+            ////LoadBalancer elb = new LoadBalancer(template, "elb1");
+            ////elb.AddInstance(tfsServer);
+            ////elb.AddListener("8080", "8080", "http");
+            ////elb.AddSubnet(DMZSubnet);
+            ////elb.AddSecurityGroup(elbSecurityGroup);
+            ////template.AddResource(elb);
+
             // the below is a remote desktop gateway server that can
             // be uncommented to debug domain setup problems
-            //var RDGateway2 = new RemoteDesktopGateway(template, "RDGateway2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
-            //domainController.AddToDomainMemberSecurityGroup(RDGateway2);
-
-            //LoadBalancer elb = new LoadBalancer(template, "elb1");
-            //elb.AddInstance(tfsServer);
-            //elb.AddListener("8080", "8080", "http");
-            //elb.AddSubnet(DMZSubnet);
-            //elb.AddSecurityGroup(elbSecurityGroup);
-            //template.AddResource(elb);
-
+            var instanceRdp2 = new RemoteDesktopGateway(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
+            instanceDomainController.AddToDomainMemberSecurityGroup(instanceRdp2);
 
             return template;
         }
@@ -251,6 +243,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void GetGitDiffTest()
         {
+            //
             Assert.IsTrue(GetGitDiff());
         }
 
@@ -627,7 +620,7 @@ namespace AWS.CloudFormation.Test
             buildServer.AddBlockDeviceMapping("/dev/sda1", 100, Ebs.VolumeTypes.GeneralPurpose);
 
             buildServer.AddPackage(BucketNameSoftware, new VisualStudio());
-            buildServer.AddPackage(BucketNameSoftware, new TeamFoundationServerBuildServer(buildServer, tfsServer));
+            buildServer.AddPackage(BucketNameSoftware, new TeamFoundationServerBuildServerAgentOnly(buildServer, tfsServer));
 
             if (tfsServer != null)
             {
@@ -844,9 +837,9 @@ namespace AWS.CloudFormation.Test
         }
 
         [TestMethod]
-        public void UpdatePrimeTest()
+        public void UpdateDevelopmentTest()
         {
-            var stackName = "CreatePrimeTest-2016-01-24T1326284501430-0500";
+            var stackName = "beta-yadayada-software";
             
             Stack.Stack.UpdateStack(stackName, GetTemplateFullStack(this.TestContext, "VpcCreatePrimeTest"));
         }

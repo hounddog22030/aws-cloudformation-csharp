@@ -56,22 +56,3 @@ execute 'InstallAgent' do
 	action :nothing
 	not_if { File.exist?( LogFileInstallAgent ) }
 end
-
-s3_file "#{node[:tfs][:build_test_agent_path]}" do
-    remote_path "/#{node[:tfs][:build_test_agent_filename]}"
-    bucket "#{node[:tfs][:build_test_agent_bucket_name]}"
-    aws_access_key_id "#{node[:s3_file][:key]}"
-    aws_secret_access_key "#{node[:s3_file][:secret]}"
-    s3_url "#{node[:tfs][:build_test_agent_bucket_url]}"
-    action :create
-	notifies :run, "execute[InstallMsTestAgent]", :immediately
-end
-
-LogFileInstallTestAgent = "#{Chef::Config['file_cache_path']}/TestAgent.log"
-
-execute 'InstallMsTestAgent' do
-	command "#{node[:tfs][:build_test_agent_path]} /s /q > #{LogFileInstallTestAgent}"
-	action :nothing
-	not_if { File.exist?( LogFileInstallTestAgent ) }
-end
-

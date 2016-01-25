@@ -77,6 +77,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
 
             this.DisableFirewall();
+            this.AddChrome();
 
         }
 
@@ -121,6 +122,14 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
             var nodeJson = this.GetChefNodeJsonContent();
             nodeJson.Add("domain", domainName);
+        }
+
+        private void AddChrome()
+        {
+            //https://s3.amazonaws.com/gtbb/googlechromestandaloneenterprise.msi
+            var config =  this.Metadata.Init.ConfigSets.GetConfigSet("chrome").GetConfig("chrome");
+            config.Packages.AddPackage("msi", "chrome", "https://s3.amazonaws.com/gtbb/googlechromestandaloneenterprise.msi");
+
         }
 
         private Config GetChefConfig(string s3bucketName, string cookbookFileName)
