@@ -506,7 +506,13 @@ namespace AWS.CloudFormation.Test
 
         public static void CreateTestStack(Template template, TestContext context)
         {
-            var name = context.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty);
+            var name = $"{context.TestName}";
+            using (var r = new StreamReader(Path.Combine(Directory.GetCurrentDirectory(),"..","..", "..", "..", ".git","HEAD")))
+            {
+                var line = r.ReadLine();
+                var parts = line.Split('/');
+                name += $"-{parts[parts.Length - 1]}-{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")}";
+            }
             CreateTestStack(template, context, name);
 
         }
