@@ -27,8 +27,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
     public class Instance : LaunchConfiguration, ICidrBlock
     {
 
-        public override string Type { get; }
-
         public Instance(Template template, string name, InstanceTypes instanceType, string imageId,
             OperatingSystem operatingSystem, bool enableHup)
             : this(template,name,instanceType,imageId,operatingSystem,enableHup,DefinitionType.Instance)
@@ -42,12 +40,13 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             switch (definitionType)
             {
                     case DefinitionType.Instance:
-                    this.Type = "AWS::EC2::Instance";
+                    this.Type = ResourceType.AwsEc2Instance;
                     // only applies to instances
                     SourceDestCheck = true;
                     break;
                 case DefinitionType.LaunchConfiguration:
-                    this.Type = "AWS::AutoScaling::LaunchConfiguration";
+                    this.Type = ResourceType.AwsAutoScalingLaunchConfiguration;
+                    
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(definitionType));
@@ -99,7 +98,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         {
             get
             {
-                if (this.Type.Contains("Instance"))
+                if (this.Type==ResourceType.AwsEc2Instance)
                 {
                     return this.Properties.GetValue<Subnet>();
                 }
@@ -110,7 +109,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
             set
             {
-                if (this.Type.Contains("Instance"))
+                if (this.Type == ResourceType.AwsEc2Instance)
                 {
                     this.Properties.SetValue(value);
                 }
@@ -143,7 +142,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         {
             get
             {
-                if (this.Type.Contains("Instance"))
+                if (this.Type == ResourceType.AwsEc2Instance)
                 {
                     return this.Properties.GetValue<List<NetworkInterface>>();
                 }
@@ -155,7 +154,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
             set
             {
-                if (this.Type.Contains("Instance"))
+                if (this.Type == ResourceType.AwsEc2Instance)
                 {
                     this.Properties.SetValue(value);
                 }
@@ -191,7 +190,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         protected override bool SupportsTags
         {
-            get { return this.Type.Contains("Instance"); }
+            get { return this.Type == ResourceType.AwsEc2Instance; }
         }
 
 

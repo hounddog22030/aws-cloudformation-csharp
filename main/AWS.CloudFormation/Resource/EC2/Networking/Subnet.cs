@@ -17,7 +17,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
     {
 
 
-        public Subnet(Template template, string logicalId, Vpc vpc, string cidr, AvailabilityZone availabilityZone) : base(template, logicalId)
+        public Subnet(Template template, string logicalId, Vpc vpc, string cidr, AvailabilityZone availabilityZone) : base(template, logicalId, ResourceType.AwsEc2Subnet)
         {
             Vpc = vpc;
             CidrBlock = cidr;
@@ -80,6 +80,5 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 
         protected override bool SupportsTags => true;
 
-        public override string Type => "AWS::EC2::Subnet";
     }
 }

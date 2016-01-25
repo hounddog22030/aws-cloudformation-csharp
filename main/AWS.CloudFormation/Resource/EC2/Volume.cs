@@ -11,7 +11,7 @@ namespace AWS.CloudFormation.Resource.EC2
 {
     public class Volume : ResourceBase
     {
-        public Volume(Template template, string name) : base(template, name)
+        public Volume(Template template, string name) : base(template, name, ResourceType.AwsEc2Volume)
         {
         }
 
@@ -30,6 +30,5 @@ namespace AWS.CloudFormation.Resource.EC2
         }
         protected override bool SupportsTags => true;
 
-        public override string Type => "AWS::EC2::Volume";
     }
 }

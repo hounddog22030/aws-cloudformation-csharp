@@ -15,17 +15,8 @@ namespace AWS.CloudFormation.Resource.AutoScaling
 {
     public class AutoScalingGroup : ResourceBase
     {
-        public AutoScalingGroup(Template template, string name) : base(template, name)
+        public AutoScalingGroup(Template template, string name) : base(template, name, ResourceType.AwsAutoScalingAutoScalingGroup)
         {
-            //"MetricsCollection": [
-            //         {
-            //            "Granularity": "1Minute",
-            //            "Metrics": [
-            //               "GroupMinSize",
-            //               "GroupMaxSize"
-            //            ]
-            //    }
-            //      ]
             this.Properties["AvailabilityZones"] = new List<string>();
             this.Properties["VPCZoneIdentifier"] = new List<ReferenceProperty>();
 
@@ -90,8 +81,6 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         }
 
         protected override bool SupportsTags => false;
-        public override string Type => "AWS::AutoScaling::AutoScalingGroup";
-
         [JsonIgnore]
         public string[] AvailabilityZones
         {

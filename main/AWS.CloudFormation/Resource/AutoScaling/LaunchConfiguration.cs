@@ -23,7 +23,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
                                 InstanceTypes instanceType,
                                 string imageId,
                                 OperatingSystem operatingSystem)
-            : base(template, name)
+            : base(template, name, ResourceType.AwsAutoScalingLaunchConfiguration)
         {
             this.InstanceType = instanceType;
 
@@ -59,7 +59,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         public virtual void AddSecurityGroup(SecurityGroup securityGroup)
         {
             string propertyName = "SecurityGroups";
-            if (this.Type.Contains("Instance"))
+            if (this.Type==ResourceType.AwsEc2Instance)
             {
                 propertyName = "SecurityGroupIds";
             }
@@ -85,7 +85,6 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         [JsonIgnore]
         public bool ShouldEnableHup { get; set; }
 
-        public override string Type => "AWS::AutoScaling::LaunchConfiguration";
         protected override bool SupportsTags => false;
 
         [JsonIgnore]

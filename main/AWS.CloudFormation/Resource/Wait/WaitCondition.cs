@@ -12,7 +12,7 @@ namespace AWS.CloudFormation.Resource.Wait
 {
     public class WaitCondition : ResourceBase
     {
-        public WaitCondition(Template template, string name, TimeSpan timeout) : base(template,name)
+        public WaitCondition(Template template, string name, TimeSpan timeout) : base(template,name, ResourceType.AwsCloudFormationWaitCondition)
         {
             Timeout = (int)timeout.TotalSeconds;
             Handle = new WaitConditionHandle(template, this.LogicalId + "Handle");
@@ -20,7 +20,6 @@ namespace AWS.CloudFormation.Resource.Wait
 
         protected override bool SupportsTags => false;
 
-        public override string Type => "AWS::CloudFormation::WaitCondition";
 
         [JsonIgnore]
         public int Timeout

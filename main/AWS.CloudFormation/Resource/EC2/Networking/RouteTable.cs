@@ -7,7 +7,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 {
     public class RouteTable : ResourceBase
     {
-        public RouteTable(Template template, string name, Vpc vpc) : base(template, name)
+        public RouteTable(Template template, string name, Vpc vpc) : base(template, name, ResourceType.AwsEc2RouteTable)
         {
             
             this.Vpc = vpc;
@@ -27,6 +27,5 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         }
 
         protected override bool SupportsTags => true;
-        public override string Type => "AWS::EC2::RouteTable";
     }
 }

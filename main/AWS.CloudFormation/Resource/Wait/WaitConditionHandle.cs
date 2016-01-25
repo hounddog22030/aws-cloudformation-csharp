@@ -9,12 +9,11 @@ namespace AWS.CloudFormation.Resource.Wait
 {
     public class WaitConditionHandle : ResourceBase
     {
-        public WaitConditionHandle(Template template, string name) : base(template, name)
+        public WaitConditionHandle(Template template, string name) : base(template, name, ResourceType.AwsCloudFormationWaitConditionHandle)
         {
             
         }
         protected override bool SupportsTags => false;
 
-        public override string Type => "AWS::CloudFormation::WaitConditionHandle";
     }
 }

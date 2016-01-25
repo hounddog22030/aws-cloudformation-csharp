@@ -45,23 +45,22 @@ namespace AWS.CloudFormation.Resource
     public abstract class ResourceBase : ILogicalId
     {
 
-        protected ResourceBase(Template template, string name)
-            //: this(type, name, supportsTags)
+        protected ResourceBase(Template template, string name, ResourceType type)
         {
             Template = template;
+            Type = type;
             LogicalId = name;
             DependsOn2 = new List<string>();
-            this.Template.Resources.Add(name,this);
+            this.Template.Resources.Add(name, this);
             Properties = new CloudFormationDictionary();
             Metadata = new Metadata(this);
         }
-
         protected abstract bool SupportsTags { get; }
 
         [JsonIgnore]
         internal Template Template { get; private set; }
 
-        public abstract string Type { get;  }
+        public ResourceType Type { get; protected set; }
 
         public Metadata Metadata { get; }
 

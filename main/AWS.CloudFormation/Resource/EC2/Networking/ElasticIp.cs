@@ -6,7 +6,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 {
     public class ElasticIp : ResourceBase
     {
-        public ElasticIp(Instancing.Instance instance, string name) : base(instance.Template, name)
+        public ElasticIp(Instancing.Instance instance, string name) : base(instance.Template, name, ResourceType.AwsEc2Eip)
         {
             Instance = instance;
             this.Domain = "vpc";
@@ -28,9 +28,6 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 
         protected override bool SupportsTags {
             get { return false; } 
-        }
-        public override string Type {
-            get { return "AWS::EC2::EIP"; }
         }
     }
 }

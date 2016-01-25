@@ -8,7 +8,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 {
     public class Vpc : ResourceBase, ICidrBlock
     {
-        public Vpc(Template template, string name, string cidrBlock) : base(template, name)
+        public Vpc(Template template, string name, string cidrBlock) : base(template, name, ResourceType.AwsEc2Vpc)
         {
             CidrBlock = cidrBlock;
             InternetGateway = new InternetGateway(template, $"{this.LogicalId}InternetGateway");
@@ -27,7 +27,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         public class VpcGatewayAttachment : ResourceBase
         {
 
-            public VpcGatewayAttachment(Template template, string name) : base(template, name)
+            public VpcGatewayAttachment(Template template, string name) : base(template, name, ResourceType.AwsEc2VpcGatewayAttachment)
             {
 
             }
@@ -66,10 +66,8 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             }
             protected override bool SupportsTags => false;
 
-            public override string Type => "AWS::EC2::VPCGatewayAttachment";
         }
         protected override bool SupportsTags => true;
 
-        public override string Type => "AWS::EC2::VPC";
     }
 }
