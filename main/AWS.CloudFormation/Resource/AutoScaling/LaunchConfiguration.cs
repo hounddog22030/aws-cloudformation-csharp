@@ -26,8 +26,8 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             : base(template, name)
         {
             this.InstanceType = instanceType;
+
             this.ImageId = imageId;
-            SecurityGroups = new List<ReferenceProperty>();
             if (!this.Template.Parameters.ContainsKey(ParameterNameDefaultKeyPairKeyName))
             {
                 throw new InvalidOperationException($"Template must contain a Parameter named {ParameterNameDefaultKeyPairKeyName} which contains the default encryption key name for the instance.");
@@ -53,6 +53,26 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             {
                 this.Properties.SetValue(value);
             }
+        }
+
+
+        public virtual void AddSecurityGroup(SecurityGroup securityGroup)
+        {
+            string propertyName = "SecurityGroups";
+            if (this.Type.Contains("Instance"))
+            {
+                propertyName = "SecurityGroupIds";
+            }
+
+            List<ReferenceProperty> temp = new List<ReferenceProperty>();
+
+            var ids = this.Properties.GetValue<ReferenceProperty[]>(propertyName);
+            if (ids != null && ids.Any())
+            {
+                temp.AddRange(ids);
+            }
+            temp.Add(new ReferenceProperty() { Ref = securityGroup.LogicalId });
+            this.Properties.SetValue(propertyName, temp.ToArray());
         }
 
         [JsonIgnore]
@@ -87,19 +107,6 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             get
             {
                 return this.Properties.GetValue<string>();
-            }
-            set
-            {
-                this.Properties.SetValue(value);
-            }
-        }
-
-        [JsonIgnore]
-        public List<ReferenceProperty> SecurityGroups
-        {
-            get
-            {
-                return this.Properties.GetValue<List<ReferenceProperty>>();
             }
             set
             {

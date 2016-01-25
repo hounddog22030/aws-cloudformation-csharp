@@ -145,7 +145,7 @@ namespace AWS.CloudFormation.Test
             //elb.AddInstance(tfsServer);
             //elb.AddListener("8080", "8080", "http");
             //elb.AddSubnet(DMZSubnet);
-            //elb.SecurityGroupIds.Add(elbSecurityGroup);
+            //elb.AddSecurityGroup(elbSecurityGroup);
             //template.AddResource(elb);
 
 
@@ -158,7 +158,7 @@ namespace AWS.CloudFormation.Test
             var tfsSqlServer = new WindowsInstance(template, "sql1", InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, PrivateSubnet1, true);
             DomainController.AddToDomain(tfsSqlServer, Timeout3Hours);
             tfsSqlServer.AddPackage(BucketNameSoftware, new SqlServerExpress(tfsSqlServer));
-            tfsSqlServer.SecurityGroupIds.Add(sqlServerSecurityGroup);
+            tfsSqlServer.AddSecurityGroup(sqlServerSecurityGroup);
             return tfsSqlServer;
         }
 
@@ -196,7 +196,7 @@ namespace AWS.CloudFormation.Test
 
             var launchConfig = new LaunchConfiguration(template, "Xyz", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             launchConfig.AssociatePublicIpAddress = true;
-            launchConfig.SecurityGroups.Add(new ReferenceProperty() { Ref = rdp.LogicalId });
+            launchConfig.AddSecurityGroup(rdp);
 
 
 
@@ -232,7 +232,7 @@ namespace AWS.CloudFormation.Test
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A,true);
             WindowsInstance w = new WindowsInstance(template,"Windows1", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, DMZSubnet, false);
-            w.SecurityGroupIds.Add(rdp);
+            w.AddSecurityGroup(rdp);
             w.AddElasticIp();
             VolumeAttachment va = new VolumeAttachment(template,"VolumeAttachment1","/dev/sdh", w, "vol-ec768410");
             Stack.Stack.CreateStack(template);
@@ -258,7 +258,7 @@ namespace AWS.CloudFormation.Test
             blockDeviceMapping = new BlockDeviceMapping(w, "/dev/xvdh");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
             w.AddBlockDeviceMapping(blockDeviceMapping);
-            w.SecurityGroupIds.Add(rdp);
+            w.AddSecurityGroup(rdp);
 
             w.AddElasticIp();
             Stack.Stack.CreateStack(template);
@@ -285,7 +285,7 @@ namespace AWS.CloudFormation.Test
             blockDeviceMapping.Ebs.SnapshotId = "snap-4e69d94b";
             w.AddBlockDeviceMapping(blockDeviceMapping);
             w.AddChefExec(BucketNameSoftware, "MountDrives.tar.gz", "MountDrives");
-            w.SecurityGroupIds.Add(rdp);
+            w.AddSecurityGroup(rdp);
             w.AddElasticIp();
             var name = this.TestContext.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".",string.Empty) ;
             Stack.Stack.CreateStack(template, name);
@@ -306,7 +306,7 @@ namespace AWS.CloudFormation.Test
             w.AddPackage(BucketNameSoftware, new VisualStudio());
 
 
-            w.SecurityGroupIds.Add(rdp);
+            w.AddSecurityGroup(rdp);
             w.AddElasticIp();
             var name = this.TestContext.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty);
             Stack.Stack.CreateStack(template, name);
@@ -336,7 +336,7 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A,true);
             WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, false);
             w.Subnet = DMZSubnet;
-            w.SecurityGroupIds.Add(rdp);
+            w.AddSecurityGroup(rdp);
             w.AddElasticIp();
 
             CreateTestStack(template, this.TestContext);
@@ -353,7 +353,7 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A,true);
             var dc1 = AddDomainController(template, DMZSubnet);
             dc1.AddElasticIp();
-            dc1.SecurityGroupIds.Add(rdp);
+            dc1.AddSecurityGroup(rdp);
             WindowsInstance w = AddBuildServer(template, DMZSubnet, null, dc1, rdp);
             w.AddElasticIp();
 
@@ -371,13 +371,29 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(template,"PrivateSubnet", vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A,true);
 
             WindowsInstance w = AddDomainController(template, DMZSubnet);
-            w.SecurityGroupIds.Add(rdp);
+            w.AddSecurityGroup(rdp);
 
             w.AddElasticIp();
 
             CreateTestStack(template, this.TestContext);
 
         }
+
+        [TestMethod]
+        public void CreateMinimalInstanceTest()
+        {
+            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var vpc = template.Vpcs.First();
+            SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
+            rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            var DMZSubnet = new Subnet(template, "DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
+
+            WindowsInstance workstation = new WindowsInstance(template, "ISOMaker", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, DMZSubnet, false);
+            workstation.AddSecurityGroup(rdp);
+            CreateTestStack(template, this.TestContext);
+
+        }
+
 
         [TestMethod]
         public void CreateISOMaker()
@@ -396,7 +412,7 @@ namespace AWS.CloudFormation.Test
             workstation.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 6);
 
 
-            workstation.SecurityGroupIds.Add(rdp);
+            workstation.AddSecurityGroup(rdp);
 
 
 
@@ -431,7 +447,7 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A,true);
 
             WindowsInstance workstation = new WindowsInstance(template, "ISOMaker", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, DMZSubnet, false);
-            workstation.SecurityGroupIds.Add(rdp);
+            workstation.AddSecurityGroup(rdp);
             workstation.AddElasticIp();
 
 
@@ -474,7 +490,7 @@ namespace AWS.CloudFormation.Test
             Route dmzRoute = new Route(template, "DMZRoute", vpc.InternetGateway, "0.0.0.0/0", dmzRouteTable);
             SubnetRouteTableAssociation DMZSubnetRouteTableAssociation = new SubnetRouteTableAssociation(template, DMZSubnet, dmzRouteTable);
             WindowsInstance workstation = new WindowsInstance(template, "SerializerTest", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, DMZSubnet, false);
-            workstation.SecurityGroupIds.Add(rdp);
+            workstation.AddSecurityGroup(rdp);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
             blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.GeneralPurpose;
             blockDeviceMapping.Ebs.VolumeSize = 30;
@@ -525,7 +541,7 @@ namespace AWS.CloudFormation.Test
             w.AddChefExec(BucketNameSoftware, "MountDrives.tar.gz", "MountDrives");
 
 
-            w.SecurityGroupIds.Add(rdp);
+            w.AddSecurityGroup(rdp);
             w.AddElasticIp();
             var name = "CreateStackWithMounterTest-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty);
             Stack.Stack.CreateStack(template, name);
@@ -535,7 +551,7 @@ namespace AWS.CloudFormation.Test
         private static WindowsInstance AddBuildServer(Template template, Subnet subnet, WindowsInstance tfsServer, DomainController domainController, SecurityGroup buildServerSecurityGroup)
         {
 
-            var buildServer = new WindowsInstance(template, $"b{DateTime.Now.Ticks.ToString().Substring(DateTime.Now.Ticks.ToString().Length - WindowsInstance.NetBiosMaxLength -1, WindowsInstance.NetBiosMaxLength - 1)}", InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, subnet, false, DefinitionType.LaunchConfiguration);
+            var buildServer = new WindowsInstance(template, $"build", InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, subnet, false, DefinitionType.LaunchConfiguration);
 
             buildServer.AddBlockDeviceMapping("/dev/sda1", 100, Ebs.VolumeTypes.GeneralPurpose);
 
@@ -551,11 +567,11 @@ namespace AWS.CloudFormation.Test
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
             domainAdminUserInfoNode.Add("name", DomainNetBiosName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
-            buildServer.SecurityGroups.Add(new ReferenceProperty() {Ref = buildServerSecurityGroup.LogicalId });
+            buildServer.AddSecurityGroup(buildServerSecurityGroup);
             domainController.AddToDomain(buildServer, Timeout3Hours);
             buildServer.AddFinalizer(TimeoutMax);
 
-            AutoScalingGroup launchGroup = new AutoScalingGroup(template,"BuildServerGroup");
+            AutoScalingGroup launchGroup = new AutoScalingGroup(template, "BuildServerAutoScalingGroup");
             launchGroup.LaunchConfigurationName = new ReferenceProperty() { Ref = buildServer.LogicalId };
             launchGroup.MinSize = 1.ToString();
             launchGroup.MaxSize = 2.ToString();
@@ -581,7 +597,7 @@ namespace AWS.CloudFormation.Test
 
             if (workstationSecurityGroup != null)
             {
-                workstation.SecurityGroupIds.Add(workstationSecurityGroup);
+                workstation.AddSecurityGroup(workstationSecurityGroup);
             }
 
             workstation.AddFinalizer(TimeoutMax);
@@ -611,7 +627,7 @@ namespace AWS.CloudFormation.Test
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
             domainAdminUserInfoNode.Add("name", DomainNetBiosName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
-            tfsServer.SecurityGroupIds.Add(tfsServerSecurityGroup);
+            tfsServer.AddSecurityGroup(tfsServerSecurityGroup);
             tfsServer.AddPackage(BucketNameSoftware, new TeamFoundationServerApplicationTier(tfsServer));
             dc1.AddToDomain(tfsServer, Timeout3Hours);
             return tfsServer;

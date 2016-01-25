@@ -1,5 +1,6 @@
 ﻿using System;
 using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
@@ -199,7 +200,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.RemoteDesktopProtocol);
 
-            this.SecurityGroupIds.Add(DomainControllerSG1);
+            this.AddSecurityGroup(DomainControllerSG1);
 
         }
 
@@ -224,7 +225,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             DomainMemberSecurityGroup.AddIngress(domainMember.Subnet as ICidrBlock, Protocol.Tcp,
                 Ports.RemoteDesktopProtocol);
 
-            domainMember.SecurityGroupIds.Add(DomainMemberSecurityGroup);
+            domainMember.AddSecurityGroup(DomainMemberSecurityGroup);
         }
 
         [JsonIgnore]

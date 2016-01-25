@@ -54,7 +54,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
 
 
-            SecurityGroupIds = new IdCollection<SecurityGroup>();
             NetworkInterfaces = new List<NetworkInterface>();
 
             if (this.SupportsTags)
@@ -63,33 +62,35 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
         }
 
-        private IdCollection<SecurityGroup> _securityGroupIds;
-        [JsonIgnore]
-        public IdCollection<SecurityGroup> SecurityGroupIds
-        {
-            get
-            {
-                if (this.Type.Contains("Instance"))
-                {
-                    return this.Properties.GetValue<IdCollection<SecurityGroup>>();
-                }
-                else
-                {
-                    return _securityGroupIds;
-                }
-            }
-            set
-            {
-                if (this.Type.Contains("Instance"))
-                {
-                    this.Properties.SetValue(value);
-                }
-                else
-                {
-                    _securityGroupIds = value;
-                }
-            }
-        }
+        
+
+
+
+        //public IdCollection<SecurityGroup> SecurityGroupIds
+        //{
+        //    get
+        //    {
+        //        if (this.Type.Contains("Instance"))
+        //        {
+        //            return this.Properties.GetValue<IdCollection<SecurityGroup>>();
+        //        }
+        //        else
+        //        {
+        //            return _securityGroupIds;
+        //        }
+        //    }
+        //    set
+        //    {
+        //        if (this.Type.Contains("Instance"))
+        //        {
+        //            this.Properties.SetValue(value);
+        //        }
+        //        else
+        //        {
+        //            _securityGroupIds = value;
+        //        }
+        //    }
+        //}
 
 
         private Subnet _subnet;

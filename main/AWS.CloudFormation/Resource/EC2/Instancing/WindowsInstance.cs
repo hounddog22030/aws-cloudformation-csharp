@@ -43,7 +43,10 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, Subnet subnet, bool rename, DefinitionType definitionType)
             : this(template, name, instanceType, imageId, rename, definitionType)
         {
-            this.Subnet = subnet;
+            if (subnet != null)
+            {
+                this.Subnet = subnet;
+            }
 
         }
         public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, Subnet subnet, bool rename)
