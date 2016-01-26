@@ -75,33 +75,22 @@ namespace AWS.CloudFormation.Test
             var subnetDmz1 = new Subnet(template, "subnetDmz1", vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             var nat1 = AddNat1(template, subnetDmz1, natSecurityGroup);
 
-
             var subnetDomainController1 = new Subnet(template, "subnetDomainController1", vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A);
             subnetDomainController1.AddNatGateway(nat1, natSecurityGroup);
-            var domainInfo = new DomainController.DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
-            var instanceDomainController = new DomainController(template, NetBiosNameDomainController1, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnetDomainController1, domainInfo);
-            instanceDomainController.AddFinalizer(Timeout2Hours);
-
-            var instanceRdp = new RemoteDesktopGateway(template, "rdp", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnetDmz1);
-            instanceRdp.AddFinalizer(Timeout2Hours);
-            instanceDomainController.AddToDomain(instanceRdp, Timeout3Hours);
 
             SecurityGroup sqlServer4TfsSecurityGroup = new SecurityGroup(template, "SqlServer4TfsSecurityGroup", "Allows communication to SQLServer Service", vpc);
             sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var subnetSqlServer4Tfs = new Subnet(template, "subnetSqlServer4Tfs", vpc, CidrSqlServer4TfsSubnet, AvailabilityZone.UsEast1A);
             subnetSqlServer4Tfs.AddNatGateway(nat1, natSecurityGroup);
-            var tfsSqlServer = AddSql(template, "sql4tfs", subnetSqlServer4Tfs, instanceDomainController, sqlServer4TfsSecurityGroup);
 
             var subnetTfsServer = new Subnet(template, "subnetTfsServer", vpc, CidrTfsServerSubnet, AvailabilityZone.UsEast1A);
-            subnetTfsServer.AddNatGateway(nat1, natSecurityGroup);
             sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock)subnetTfsServer, Protocol.Tcp, Ports.MsSqlServer);
+            subnetTfsServer.AddNatGateway(nat1, natSecurityGroup);
 
             SecurityGroup tfsServerSecurityGroup = new SecurityGroup(template, "TFSServerSecurityGroup", "Allows various TFS communication", vpc);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-
-            var tfsServer = AddTfsServer(template, subnetTfsServer, tfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
 
             SecurityGroup securityGroupSqlServer4Build = new SecurityGroup(template, "securityGroupSqlServer4Build", "Allows communication to SQLServer Service", vpc);
             securityGroupSqlServer4Build.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -113,16 +102,10 @@ namespace AWS.CloudFormation.Test
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.TeamFoundationServerBuild);
             subnetBuildServer.AddNatGateway(nat1, natSecurityGroup);
 
-            WindowsInstance sql4Build = null;
-            sql4Build = AddSql(template, "sql4build", subnetBuildServer, instanceDomainController, securityGroupSqlServer4Build);
-
             SecurityGroup securityGroupBuildServer = new SecurityGroup(template, "BuildServerSecurityGroup", "Allows build controller to build agent communication", vpc);
             securityGroupBuildServer.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             securityGroupBuildServer.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             securityGroupBuildServer.AddIngress((ICidrBlock)subnetTfsServer, Protocol.Tcp, Ports.TeamFoundationServerBuild);
-
-            var buildServer = AddBuildServer(template, subnetBuildServer, tfsServer, instanceDomainController, securityGroupBuildServer, sql4Build);
-            buildServer.AddFinalizer(Timeout4Hours);
 
             SecurityGroup workstationSecurityGroup = new SecurityGroup(template, "WorkstationSecurityGroup", "Security Group To Contain Workstations", vpc);
             tfsServerSecurityGroup.AddIngress(workstationSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
@@ -130,20 +113,42 @@ namespace AWS.CloudFormation.Test
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.TeamFoundationServerBuild);
             subnetWorkstation.AddNatGateway(nat1, natSecurityGroup);
+
+
+
+            var domainInfo = new DomainController.DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
+            var instanceDomainController = new DomainController(template, NetBiosNameDomainController1, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnetDomainController1, domainInfo);
+            instanceDomainController.AddFinalizer(TimeoutMax);
+
+            var instanceRdp = new RemoteDesktopGateway(template, "rdp", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnetDmz1);
+            instanceRdp.AddFinalizer(TimeoutMax);
+            instanceDomainController.AddToDomain(instanceRdp, TimeoutMax);
+
+            var tfsSqlServer = AddSql(template, "sql4tfs", subnetSqlServer4Tfs, instanceDomainController, sqlServer4TfsSecurityGroup);
+            var tfsServer = AddTfsServer(template, subnetTfsServer, tfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
+
+
+            WindowsInstance sql4Build = null;
+            sql4Build = AddSql(template, "sql4build", subnetBuildServer, instanceDomainController, securityGroupSqlServer4Build);
+
+
+            var buildServer = AddBuildServer(template, subnetBuildServer, tfsServer, instanceDomainController, securityGroupBuildServer, sql4Build);
+            buildServer.AddFinalizer(TimeoutMax);
+
             // uses 33gb
             var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
 
 
-            SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
-            elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
-            tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            //SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
+            //elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            //tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
-            ////LoadBalancer elb = new LoadBalancer(template, "elb1");
-            ////elb.AddInstance(tfsServer);
-            ////elb.AddListener("8080", "8080", "http");
-            ////elb.AddSubnet(DMZSubnet);
-            ////elb.AddSecurityGroup(elbSecurityGroup);
-            ////template.AddResource(elb);
+            //////LoadBalancer elb = new LoadBalancer(template, "elb1");
+            //////elb.AddInstance(tfsServer);
+            //////elb.AddListener("8080", "8080", "http");
+            //////elb.AddSubnet(DMZSubnet);
+            //////elb.AddSecurityGroup(elbSecurityGroup);
+            //////template.AddResource(elb);
 
             // the below is a remote desktop gateway server that can
             // be uncommented to debug domain setup problems
@@ -156,7 +161,7 @@ namespace AWS.CloudFormation.Test
         private static WindowsInstance AddSql(Template template, string instanceName, Subnet subnet, DomainController domainController, SecurityGroup sqlServerSecurityGroup)
         {
             var sqlServer = new WindowsInstance(template, instanceName, InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, subnet, true);
-            domainController.AddToDomain(sqlServer, Timeout3Hours);
+            domainController.AddToDomain(sqlServer, TimeoutMax);
             sqlServer.AddPackage(BucketNameSoftware, new SqlServerExpress(sqlServer));
             sqlServer.AddSecurityGroup(sqlServerSecurityGroup);
             return sqlServer;
@@ -624,7 +629,7 @@ namespace AWS.CloudFormation.Test
 
             if (tfsServer != null)
             {
-                buildServer.AddDependsOn(tfsServer, Timeout3Hours);
+                buildServer.AddDependsOn(tfsServer, TimeoutMax);
             }
             if (sql4Build != null)
             {
@@ -638,7 +643,7 @@ namespace AWS.CloudFormation.Test
             domainAdminUserInfoNode.Add("name", domainInfo.DomainNetBiosName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             buildServer.AddSecurityGroup(buildServerSecurityGroup);
-            domainController.AddToDomain(buildServer, Timeout3Hours);
+            domainController.AddToDomain(buildServer, TimeoutMax);
             buildServer.AddFinalizer(TimeoutMax);
 
             AutoScalingGroup launchGroup = new AutoScalingGroup(template, "BuildServerAutoScalingGroup");
@@ -674,7 +679,7 @@ namespace AWS.CloudFormation.Test
 
             if (instanceDomainController != null)
             {
-                instanceDomainController.AddToDomain(workstation, Timeout3Hours);
+                instanceDomainController.AddToDomain(workstation, TimeoutMax);
             }
 
             return workstation;
@@ -700,7 +705,7 @@ namespace AWS.CloudFormation.Test
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             tfsServer.AddSecurityGroup(tfsServerSecurityGroup);
             tfsServer.AddPackage(BucketNameSoftware, new TeamFoundationServerApplicationTier(tfsServer));
-            dc1.AddToDomain(tfsServer, Timeout3Hours);
+            dc1.AddToDomain(tfsServer, TimeoutMax);
             return tfsServer;
         }
 
@@ -839,8 +844,11 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateDevelopmentTest()
         {
-            var stackName = "beta-yadayada-software";
-            
+            var stackName = "alpha-yadayada-software";
+
+            StackTest.DomainDnsName = "alpha.yadayada.software";
+
+
             Stack.Stack.UpdateStack(stackName, GetTemplateFullStack(this.TestContext, "VpcCreatePrimeTest"));
         }
 

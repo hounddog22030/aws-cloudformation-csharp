@@ -77,7 +77,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
 
             this.DisableFirewall();
-            this.AddChrome();
+            //this.AddChrome();
 
         }
 
