@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Serialization;
 using AWS.CloudFormation.Stack;
@@ -56,6 +57,10 @@ namespace AWS.CloudFormation.Resource
             this.Template.Resources.Add(name, this);
             Properties = new CloudFormationDictionary();
             Metadata = new Metadata(this);
+            if (template.Outputs.Count < 60)
+            {
+                template.Outputs.Add(name, new Output(name, new ReferenceProperty(this)));
+            }
         }
         protected abstract bool SupportsTags { get; }
 

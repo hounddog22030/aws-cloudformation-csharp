@@ -14,7 +14,7 @@ default['sqlserver']['INSTALLSQLDATADIR'] = 'd:\\sqldata'
 if "#{ENV['USERDOMAIN']}" == "#{ENV['COMPUTERNAME']}"
 	default['sqlserver']['SQLSYSADMINACCOUNTS'] = "\"#{ENV['COMPUTERNAME']}\\Users\""
 else
-	default['sqlserver']['SQLSYSADMINACCOUNTS'] = "\"#{node[:domain]\\Users\" \"#{node[:domain]}\\Domain Computers\""
+	default['sqlserver']['SQLSYSADMINACCOUNTS'] = "\"#{node[:domain]}\\Domain Users\" \"#{node[:domain]}\\Domain Computers\""
 end
 
 

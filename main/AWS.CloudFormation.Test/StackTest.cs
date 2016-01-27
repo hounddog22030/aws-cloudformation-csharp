@@ -128,16 +128,16 @@ namespace AWS.CloudFormation.Test
             instanceRdp.AddFinalizer(TimeoutMax);
             instanceDomainController.AddToDomain(instanceRdp, TimeoutMax);
 
-            //var tfsSqlServer = AddSql(template, "sql4tfs", subnetSqlServer4Tfs, instanceDomainController, sqlServer4TfsSecurityGroup);
-            //var tfsServer = AddTfsServer(template, subnetTfsServer, tfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
+            var tfsSqlServer = AddSql(template, "sql4tfs", subnetSqlServer4Tfs, instanceDomainController, sqlServer4TfsSecurityGroup);
+            var tfsServer = AddTfsServer(template, subnetTfsServer, tfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
 
 
-            //WindowsInstance sql4Build = null;
-            //sql4Build = AddSql(template, "sql4build", subnetBuildServer, instanceDomainController, securityGroupSqlServer4Build);
+            WindowsInstance sql4Build = null;
+            sql4Build = AddSql(template, "sql4build", subnetBuildServer, instanceDomainController, securityGroupSqlServer4Build);
 
 
-            //var buildServer = AddBuildServer(template, subnetBuildServer, tfsServer, instanceDomainController, securityGroupBuildServer, sql4Build);
-            //buildServer.AddFinalizer(TimeoutMax);
+            var buildServer = AddBuildServer(template, subnetBuildServer, tfsServer, instanceDomainController, securityGroupBuildServer, sql4Build);
+            buildServer.AddFinalizer(TimeoutMax);
 
             // uses 33gb
             var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
@@ -148,7 +148,7 @@ namespace AWS.CloudFormation.Test
             elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
-            template.Outputs.Add("dc1",new Output("dc1", new ReferenceProperty(instanceDomainController)));
+            //template.Outputs.Add("dc1",new Output("dc1", new ReferenceProperty(instanceDomainController)));
 
             //////LoadBalancer elb = new LoadBalancer(template, "elb1");
             //////elb.AddInstance(tfsServer);
