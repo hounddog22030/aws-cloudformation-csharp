@@ -10,3 +10,12 @@ default['sqlserver']['ADDCURRENTUSERASSQLADMIN'] = 'false'
 default['sqlserver']['SQLUSERDBDIR'] = 'd:\\sqldata'
 default['sqlserver']['SQLUSERDBLOGDIR'] = 'c:\\sqllog'
 default['sqlserver']['INSTALLSQLDATADIR'] = 'd:\\sqldata'
+
+if "#{ENV['USERDOMAIN']}" == "#{ENV['COMPUTERNAME']}"
+	default['sqlserver']['SQLSYSADMINACCOUNTS'] = "\"#{ENV['COMPUTERNAME']}\\Users\""
+else
+	default['sqlserver']['SQLSYSADMINACCOUNTS'] = "\"#{node[:domain]\\Users\" \"#{node[:domain]}\\Domain Computers\""
+end
+
+
+

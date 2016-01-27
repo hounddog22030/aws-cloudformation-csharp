@@ -128,8 +128,8 @@ namespace AWS.CloudFormation.Test
             instanceRdp.AddFinalizer(TimeoutMax);
             instanceDomainController.AddToDomain(instanceRdp, TimeoutMax);
 
-            var tfsSqlServer = AddSql(template, "sql4tfs", subnetSqlServer4Tfs, instanceDomainController, sqlServer4TfsSecurityGroup);
-            var tfsServer = AddTfsServer(template, subnetTfsServer, tfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
+            //var tfsSqlServer = AddSql(template, "sql4tfs", subnetSqlServer4Tfs, instanceDomainController, sqlServer4TfsSecurityGroup);
+            //var tfsServer = AddTfsServer(template, subnetTfsServer, tfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
 
 
             //WindowsInstance sql4Build = null;
