@@ -39,7 +39,9 @@ namespace AWS.CloudFormation.Resource
         [EnumMember(Value = "AWS::Route53::RecordSet")] AwsRoute53RecordSet,
         [EnumMember(Value = "AWS::CloudFormation::WaitCondition")] AwsCloudFormationWaitCondition,
         [EnumMember(Value = "AWS::CloudFormation::WaitConditionHandle")] AwsCloudFormationWaitConditionHandle,
-        [EnumMember(Value = "AWS::EC2::KeyPair::KeyName")] AwsEc2KeyPairKeyName
+        [EnumMember(Value = "AWS::EC2::KeyPair::KeyName")] AwsEc2KeyPairKeyName,
+        [EnumMember(Value = "AWS::EC2::DHCPOptions")] DhcpOptions,
+        [EnumMember(Value = "AWS::EC2::VPCDHCPOptionsAssociation")] VpcDhcpOptionsAssociation
     }
 
     public abstract class ResourceBase : ILogicalId

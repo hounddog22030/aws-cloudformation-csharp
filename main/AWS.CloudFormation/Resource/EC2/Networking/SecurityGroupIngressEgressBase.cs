@@ -85,11 +85,22 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         }
 
 
+
+
         public object CidrIp { get; private set; }
         public int FromPort { get; private set; }
         public string IpProtocol { get; private set; }
         public int ToPort { get; private set; }
 
         
+    }
+
+    public class FnGetAtt : CloudFormationDictionary
+    {
+        public FnGetAtt(ILogicalId resource, string attributeName)
+        {
+            var privateIp = new string[] { resource.LogicalId, attributeName };
+            this.Add("Fn::GetAtt", privateIp);
+        }
     }
 }

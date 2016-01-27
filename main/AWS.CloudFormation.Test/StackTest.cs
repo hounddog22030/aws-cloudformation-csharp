@@ -119,8 +119,12 @@ namespace AWS.CloudFormation.Test
             var domainInfo = new DomainController.DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
             var instanceDomainController = new DomainController(template, NetBiosNameDomainController1, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnetDomainController1, domainInfo);
             instanceDomainController.AddFinalizer(TimeoutMax);
+            
+            DhcpOptions dhcpOptions = new DhcpOptions(template, "dhcpOptions", $"{StackTest.DomainDnsName}", vpc, new FnGetAtt(instanceDomainController,"PrivateIp"));
+            dhcpOptions.NetbiosNodeType = "2";
 
-            var instanceRdp = new RemoteDesktopGateway(template, "rdp", InstanceTypes.M4Xlarge, UsEast1AWindows2012R2Ami, subnetDmz1);
+
+            var instanceRdp = new RemoteDesktopGateway(template, "rdp", InstanceTypes.C4XLarge, UsEast1AWindows2012R2Ami, subnetDmz1);
             instanceRdp.AddFinalizer(TimeoutMax);
             instanceDomainController.AddToDomain(instanceRdp, TimeoutMax);
 
@@ -665,7 +669,7 @@ namespace AWS.CloudFormation.Test
         {
             if (subnet == null) throw new ArgumentNullException(nameof(subnet));
 
-            WindowsInstance workstation = new WindowsInstance(template, name, InstanceTypes.M4Xlarge, UsEast1AWindows2012R2Ami, subnet, rename, Ebs.VolumeTypes.GeneralPurpose, 214);
+            WindowsInstance workstation = new WindowsInstance(template, name, InstanceTypes.M4XLarge, UsEast1AWindows2012R2Ami, subnet, rename, Ebs.VolumeTypes.GeneralPurpose, 214);
 
             workstation.AddPackage(BucketNameSoftware, new SqlServerExpress(workstation));
             workstation.AddPackage(BucketNameSoftware, new VisualStudio());

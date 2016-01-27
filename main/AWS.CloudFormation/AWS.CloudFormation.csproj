@@ -64,8 +64,10 @@
     <Compile Include="Property\AvailabilityZone.cs" />
     <Compile Include="Resource\AutoScaling\AutoScalingGroup.cs" />
     <Compile Include="Resource\AutoScaling\LaunchConfiguration.cs" />
+    <Compile Include="Resource\EC2\DHCPOptions.cs" />
     <Compile Include="Resource\EC2\Instancing\BlockDeviceMapping.cs" />
     <Compile Include="Resource\EC2\Instancing\DomainController.cs" />
+    <Compile Include="Resource\EC2\VPCDHCPOptionsAssociation.cs" />
     <Compile Include="Serialization\EnumConverter.cs" />
     <Compile Include="Resource\EC2\Instancing\Metadata\Authentication.cs" />
     <Compile Include="Resource\EC2\Instancing\Metadata\ConfigSet.cs" />

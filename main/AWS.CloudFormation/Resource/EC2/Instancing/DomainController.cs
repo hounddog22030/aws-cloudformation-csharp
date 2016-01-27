@@ -13,7 +13,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
     public class DomainController : WindowsInstance
     {
 
-        public const string DefaultConfigSetRenameConfigSetDnsServers = "a-set-dns-servers";
+        //public const string DefaultConfigSetRenameConfigSetDnsServers = "a-set-dns-servers";
 
         public class DomainInfo
         {
@@ -259,7 +259,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             joinCommand.WaitAfterCompletion = "forever";
 
             instance.AddDependsOn(this, timeToWait);
-            this.SetDnsServers(instance);
             this.AddToDomainMemberSecurityGroup(instance);
             instance.DomainNetBiosName = this.DomainNetBiosName;
             instance.DomainDnsName = this.DomainDnsName;
@@ -267,33 +266,5 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             instance.OnAddedToDomain(this.DomainNetBiosName.Default.ToString());
         }
 
-        private void SetDnsServers(WindowsInstance instanceToAddToDomain)
-        {
-            var renameConfig =
-                instanceToAddToDomain.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName)
-                    .GetConfig(DefaultConfigSetJoinConfig);
-            var renameCommandConfig =
-                renameConfig.Commands.AddCommand<PowerShellCommand>(DefaultConfigSetRenameConfigSetDnsServers);
-            //todo: the below is supposed to have two private ip addresses for the two different DCs
-
-            string[] ipAddress = new[] {this.LogicalId, "PrivateIp"};
-
-            var ipAddressDictionary = new CloudFormationDictionary(this);
-
-            ipAddressDictionary.Add("Fn::GetAtt", ipAddress);
-
-            renameCommandConfig.Command.AddCommandLine(
-                "-Command \"Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses ",
-                ipAddressDictionary,
-                "\"");
-
-            renameCommandConfig.WaitAfterCompletion = 0.ToString();
-        }
-
-        public class FnGetAtt
-        {
-            //{ "Fn::GetAtt": [ "dc1", "PrivateIp" ] }
-
-        }
     }
 }
