@@ -24,7 +24,7 @@ end
 SQLSYSADMINACCOUNTS = ''
 
 if node['domain']
-	SQLSYSADMINACCOUNTS = "/SQLSYSADMINACCOUNTS=\"#{node[:domain]}\\Domain Admins\""
+	SQLSYSADMINACCOUNTS = "/SQLSYSADMINACCOUNTS=\"#{node[:domain]}\\Domain Computers\""
 end
 
 puts "SQLSYSADMINACCOUNTS=#{SQLSYSADMINACCOUNTS}"

@@ -128,8 +128,8 @@ namespace AWS.CloudFormation.Test
             instanceRdp.AddFinalizer(TimeoutMax);
             instanceDomainController.AddToDomain(instanceRdp, TimeoutMax);
 
-            //var tfsSqlServer = AddSql(template, "sql4tfs", subnetSqlServer4Tfs, instanceDomainController, sqlServer4TfsSecurityGroup);
-            //var tfsServer = AddTfsServer(template, subnetTfsServer, tfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
+            var tfsSqlServer = AddSql(template, "sql4tfs", subnetSqlServer4Tfs, instanceDomainController, sqlServer4TfsSecurityGroup);
+            var tfsServer = AddTfsServer(template, subnetTfsServer, tfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
 
 
             //WindowsInstance sql4Build = null;
@@ -139,13 +139,16 @@ namespace AWS.CloudFormation.Test
             //var buildServer = AddBuildServer(template, subnetBuildServer, tfsServer, instanceDomainController, securityGroupBuildServer, sql4Build);
             //buildServer.AddFinalizer(TimeoutMax);
 
-            //// uses 33gb
-            //var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
+            // uses 33gb
+            var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
+            workstation.AddFinalizer(TimeoutMax);
 
 
-            //SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
-            //elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
-            //tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
+            elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+
+            template.Outputs.Add("dc1",new Output("dc1", new ReferenceProperty(instanceDomainController)));
 
             //////LoadBalancer elb = new LoadBalancer(template, "elb1");
             //////elb.AddInstance(tfsServer);
@@ -164,7 +167,7 @@ namespace AWS.CloudFormation.Test
 
         private static WindowsInstance AddSql(Template template, string instanceName, Subnet subnet, DomainController domainController, SecurityGroup sqlServerSecurityGroup)
         {
-            var sqlServer = new WindowsInstance(template, instanceName, InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, subnet, true);
+            var sqlServer = new WindowsInstance(template, instanceName, InstanceTypes.C4XLarge, UsEast1AWindows2012R2Ami, subnet, true);
             domainController.AddToDomain(sqlServer, TimeoutMax);
             sqlServer.AddPackage(BucketNameSoftware, new SqlServerExpress(sqlServer));
             sqlServer.AddSecurityGroup(sqlServerSecurityGroup);
@@ -624,7 +627,7 @@ namespace AWS.CloudFormation.Test
         private static WindowsInstance AddBuildServer(Template template, Subnet subnet, WindowsInstance tfsServer, DomainController domainController, SecurityGroup buildServerSecurityGroup, WindowsInstance sql4Build)
         {
 
-            var buildServer = new WindowsInstance(template, $"build", InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, subnet, false, DefinitionType.LaunchConfiguration);
+            var buildServer = new WindowsInstance(template, $"build", InstanceTypes.C4XLarge, UsEast1AWindows2012R2Ami, subnet, false, DefinitionType.LaunchConfiguration);
 
             buildServer.AddBlockDeviceMapping("/dev/sda1", 100, Ebs.VolumeTypes.GeneralPurpose);
 
@@ -669,7 +672,7 @@ namespace AWS.CloudFormation.Test
         {
             if (subnet == null) throw new ArgumentNullException(nameof(subnet));
 
-            WindowsInstance workstation = new WindowsInstance(template, name, InstanceTypes.M4XLarge, UsEast1AWindows2012R2Ami, subnet, rename, Ebs.VolumeTypes.GeneralPurpose, 214);
+            WindowsInstance workstation = new WindowsInstance(template, name, InstanceTypes.C4XLarge, UsEast1AWindows2012R2Ami, subnet, rename, Ebs.VolumeTypes.GeneralPurpose, 214);
 
             workstation.AddPackage(BucketNameSoftware, new SqlServerExpress(workstation));
             workstation.AddPackage(BucketNameSoftware, new VisualStudio());
@@ -693,7 +696,7 @@ namespace AWS.CloudFormation.Test
         {
             var tfsServer = new WindowsInstance(    template, 
                                                     "tfs", 
-                                                    InstanceTypes.T2Small, 
+                                                    InstanceTypes.C4XLarge, 
                                                     UsEast1AWindows2012R2Ami, 
                                                     privateSubnet1, 
                                                     true, 

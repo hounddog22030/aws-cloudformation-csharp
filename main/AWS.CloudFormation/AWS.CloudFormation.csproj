@@ -111,6 +111,7 @@
     <Compile Include="Resource\Wait\WaitCondition.cs" />
     <Compile Include="Resource\Wait\WaitConditionHandle.cs" />
     <Compile Include="Serialization\ResourceAsPropertyConverter.cs" />
+    <Compile Include="Stack\Output.cs" />
     <Compile Include="Stack\Stack.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Stack\Template.cs" />
