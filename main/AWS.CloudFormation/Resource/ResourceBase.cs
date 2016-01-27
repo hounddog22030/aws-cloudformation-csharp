@@ -53,7 +53,7 @@ namespace AWS.CloudFormation.Resource
             Template = template;
             Type = type;
             LogicalId = name;
-            DependsOn2 = new List<string>();
+            DependsOn = new List<string>();
             this.Template.Resources.Add(name, this);
             Properties = new CloudFormationDictionary();
             Metadata = new Metadata(this);
@@ -65,7 +65,7 @@ namespace AWS.CloudFormation.Resource
         protected abstract bool SupportsTags { get; }
 
         [JsonIgnore]
-        internal Template Template { get; private set; }
+        internal Template Template { get; }
 
         public ResourceType Type { get; protected set; }
 
@@ -73,13 +73,12 @@ namespace AWS.CloudFormation.Resource
 
 
         [JsonIgnore]
-        public string LogicalId { get ; private set; }
+        public string LogicalId { get ; }
 
 
-        [JsonIgnore]
-        public List<string> DependsOn2 { get; }
+        public List<string> DependsOn { get; }
 
-        public string[] DependsOn { get { return this.DependsOn2.ToArray(); } }
+        //public string[] DependsOn => this.DependsOn2.ToArray();
 
         public CloudFormationDictionary Properties { get; }
 

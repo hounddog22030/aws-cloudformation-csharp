@@ -203,7 +203,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
             dependsOn.AddFinalizer(timeout);
 
-            this.DependsOn2.Add(dependsOn.WaitConditionName);
+            this.DependsOn.Add(dependsOn.WaitConditionName);
 
         }
 

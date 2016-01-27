@@ -120,7 +120,7 @@ namespace AWS.CloudFormation.Test
             var instanceDomainController = new DomainController(template, NetBiosNameDomainController1, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnetDomainController1, domainInfo);
             instanceDomainController.AddFinalizer(TimeoutMax);
             
-            DhcpOptions dhcpOptions = new DhcpOptions(template, "dhcpOptions", $"{StackTest.DomainDnsName}", vpc, new FnGetAtt(instanceDomainController,"PrivateIp"));
+            DhcpOptions dhcpOptions = new DhcpOptions(template, "dhcpOptions", $"{StackTest.DomainDnsName}", vpc, new FnGetAtt(instanceDomainController,"PrivateIp"), "10.0.0.2");
             dhcpOptions.NetbiosNodeType = "2";
 
 
@@ -148,8 +148,6 @@ namespace AWS.CloudFormation.Test
             elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
-            //template.Outputs.Add("dc1",new Output("dc1", new ReferenceProperty(instanceDomainController)));
-
             //////LoadBalancer elb = new LoadBalancer(template, "elb1");
             //////elb.AddInstance(tfsServer);
             //////elb.AddListener("8080", "8080", "http");
@@ -159,8 +157,8 @@ namespace AWS.CloudFormation.Test
 
             // the below is a remote desktop gateway server that can
             // be uncommented to debug domain setup problems
-            //var instanceRdp2 = new RemoteDesktopGateway(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
-            //instanceDomainController.AddToDomainMemberSecurityGroup(instanceRdp2);
+            var instanceRdp2 = new RemoteDesktopGateway(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
+            instanceDomainController.AddToDomainMemberSecurityGroup(instanceRdp2);
 
             return template;
         }
@@ -640,7 +638,7 @@ namespace AWS.CloudFormation.Test
             }
             if (sql4Build != null)
             {
-                buildServer.DependsOn2.Add(sql4Build.LogicalId);
+                buildServer.DependsOn.Add(sql4Build.LogicalId);
             }
 
             var chefNode = buildServer.GetChefNodeJsonContent();
