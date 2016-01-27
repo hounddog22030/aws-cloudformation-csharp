@@ -124,7 +124,7 @@ namespace AWS.CloudFormation.Test
             dhcpOptions.NetbiosNodeType = "2";
 
 
-            var instanceRdp = new RemoteDesktopGateway(template, "rdp", InstanceTypes.C4XLarge, UsEast1AWindows2012R2Ami, subnetDmz1);
+            var instanceRdp = new RemoteDesktopGateway(template, "rdp", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnetDmz1);
             instanceRdp.AddFinalizer(TimeoutMax);
             instanceDomainController.AddToDomain(instanceRdp, TimeoutMax);
 
