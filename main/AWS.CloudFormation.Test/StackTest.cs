@@ -120,23 +120,23 @@ namespace AWS.CloudFormation.Test
             var instanceDomainController = new DomainController(template, NetBiosNameDomainController1, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnetDomainController1, domainInfo);
             instanceDomainController.AddFinalizer(TimeoutMax);
 
-            var instanceRdp = new RemoteDesktopGateway(template, "rdp", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnetDmz1);
+            var instanceRdp = new RemoteDesktopGateway(template, "rdp", InstanceTypes.M4Xlarge, UsEast1AWindows2012R2Ami, subnetDmz1);
             instanceRdp.AddFinalizer(TimeoutMax);
             instanceDomainController.AddToDomain(instanceRdp, TimeoutMax);
 
-            var tfsSqlServer = AddSql(template, "sql4tfs", subnetSqlServer4Tfs, instanceDomainController, sqlServer4TfsSecurityGroup);
-            var tfsServer = AddTfsServer(template, subnetTfsServer, tfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
+            //var tfsSqlServer = AddSql(template, "sql4tfs", subnetSqlServer4Tfs, instanceDomainController, sqlServer4TfsSecurityGroup);
+            //var tfsServer = AddTfsServer(template, subnetTfsServer, tfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
 
 
-            WindowsInstance sql4Build = null;
-            sql4Build = AddSql(template, "sql4build", subnetBuildServer, instanceDomainController, securityGroupSqlServer4Build);
+            //WindowsInstance sql4Build = null;
+            //sql4Build = AddSql(template, "sql4build", subnetBuildServer, instanceDomainController, securityGroupSqlServer4Build);
 
 
-            var buildServer = AddBuildServer(template, subnetBuildServer, tfsServer, instanceDomainController, securityGroupBuildServer, sql4Build);
-            buildServer.AddFinalizer(TimeoutMax);
+            //var buildServer = AddBuildServer(template, subnetBuildServer, tfsServer, instanceDomainController, securityGroupBuildServer, sql4Build);
+            //buildServer.AddFinalizer(TimeoutMax);
 
-            // uses 33gb
-            var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
+            //// uses 33gb
+            //var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
 
 
             //SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
@@ -152,8 +152,8 @@ namespace AWS.CloudFormation.Test
 
             // the below is a remote desktop gateway server that can
             // be uncommented to debug domain setup problems
-            var instanceRdp2 = new RemoteDesktopGateway(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
-            instanceDomainController.AddToDomainMemberSecurityGroup(instanceRdp2);
+            //var instanceRdp2 = new RemoteDesktopGateway(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
+            //instanceDomainController.AddToDomainMemberSecurityGroup(instanceRdp2);
 
             return template;
         }

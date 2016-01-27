@@ -36,7 +36,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             var configureRdgwPsScript = installRdsConfig.Files.GetFile("c:\\cfn\\scripts\\Configure-RDGW.ps1");
 
             configureRdgwPsScript.Source =
-                "https://s3.amazonaws.com/quickstart-reference/microsoft/activedirectory/latest/scripts/Configure-RDGW.ps1";
+                "https://s3.amazonaws.com/gtbb/Configure-RDGW.ps1";
 
             installRdsCommand = installRdsConfig.Commands.AddCommand<PowerShellCommand>("b-configure-rdgw");
             installRdsCommand.Command.AddCommandLine(
@@ -54,6 +54,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             var rdgwSecurityGroup = new SecurityGroup(Template, $"{this.LogicalId}SecurityGroup", "Remote Desktop Security Group", this.Subnet.Vpc);
 
             rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol, Ports.Ssl);
+            rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Http);
             rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Udp, Ports.RdpAdmin);
             rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
 

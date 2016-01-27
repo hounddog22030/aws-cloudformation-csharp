@@ -173,7 +173,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         {
             var chefConfig = this.GetChefConfig(s3bucketName, cookbookFileName);
             var chefCommandConfig = chefConfig.Commands.AddCommand<Command>(recipeList.Replace(':','-'));
-            //chefCommandConfig.Test = "IF EXIST \"C:/Program Files/Microsoft SQL Server/MSSQL12.MSSQLSERVER/MSSQL/Binn/sqlservr.exe\" EXIT 1";
             chefCommandConfig.Command.SetFnJoin($"C:/opscode/chef/bin/chef-client.bat -z -o {recipeList} -c c:/chef/{cookbookFileName}/client.rb");
         }
 
