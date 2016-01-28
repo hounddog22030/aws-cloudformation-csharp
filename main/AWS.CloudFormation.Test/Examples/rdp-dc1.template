@@ -980,7 +980,7 @@
       },
       "DependsOn": [],
       "Properties": {
-        "InstanceType": "c4.xlarge",
+        "InstanceType": "t2.nano",
         "ImageId": "ami-e4034a8e",
         "KeyName": "corp.getthebuybox.com",
         "UserData": {
@@ -1578,7 +1578,7 @@
         "dc1WaitCondition"
       ],
       "Properties": {
-        "InstanceType": "c4.xlarge",
+        "InstanceType": "t2.nano",
         "ImageId": "ami-e4034a8e",
         "KeyName": "corp.getthebuybox.com",
         "UserData": {

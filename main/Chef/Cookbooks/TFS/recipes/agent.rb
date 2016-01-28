@@ -2,6 +2,7 @@ include_recipe 'ec2helper'
 include_recipe 'PsTools'
 include_recipe 's3_file'
 include_recipe 'PsTools'
+include_recipe 'tfs::build'
 
 s3_file "#{node[:tfs][:build_agent_zipfile_path]}" do
     remote_path "/#{node[:tfs][:build_agent_zipfile_filename]}"

@@ -84,6 +84,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Examples\completed-stack.template" />
     <None Include="Examples\case-1581722131-v1.template" />
     <None Include="Examples\latest-template.template" />
     <None Include="Examples\rdp-dc1.template" />
