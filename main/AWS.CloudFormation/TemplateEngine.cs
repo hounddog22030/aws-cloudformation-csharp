@@ -24,7 +24,7 @@ namespace AWS.CloudFormation
 
         public static FileInfo CreateTemplateFile(Template template)
         {
-            FileInfo info = new FileInfo(Path.Combine(Directory.GetCurrentDirectory(), Guid.NewGuid().ToString() + ".template,"));
+            FileInfo info = new FileInfo(Path.Combine(Directory.GetCurrentDirectory(), Guid.NewGuid().ToString() + ".template"));
             using (var file = new System.IO.StreamWriter(info.FullName))
             {
                 var serialized = CreateTemplateString(template);
