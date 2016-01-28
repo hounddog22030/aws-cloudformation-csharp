@@ -1576,7 +1576,7 @@
       "DependsOn": [],
       "Properties": {
         "DomainName": "alpha.yadayada.software",
-        "NetbiosNameServers": [
+        "DomainNameServers": [
           {
             "Fn::Join": [
               ", ",
@@ -1592,7 +1592,7 @@
             ]
           }
         ],
-        "DomainNameServers": [
+        "NetbiosNameServers": [
           {
             "Fn::Join": [
               ", ",
@@ -1602,8 +1602,7 @@
                     "dc1",
                     "PrivateIp"
                   ]
-                },
-                "10.0.0.2"
+                }
               ]
             ]
           }

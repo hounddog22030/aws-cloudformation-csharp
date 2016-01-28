@@ -127,7 +127,12 @@ namespace AWS.CloudFormation.Test
             FnGetAtt dc1PrivateIp = new FnGetAtt(instanceDomainController,"PrivateIp");
             object[] elements = new object[] {dc1PrivateIp, "10.0.0.2" };
             FnJoin dnsServers = new FnJoin(", ", elements);
-            DhcpOptions dhcpOptions = new DhcpOptions(template, "dhcpOptions", $"{StackTest.DomainDnsName}", vpc, dnsServers);
+            object[] netBiosServersElements = new object[] {dc1PrivateIp};
+            FnJoin netBiosServers = new FnJoin(", ", netBiosServersElements);
+
+
+
+            DhcpOptions dhcpOptions = new DhcpOptions(template, "dhcpOptions", $"{StackTest.DomainDnsName}", vpc, dnsServers, netBiosServers);
             dhcpOptions.NetbiosNodeType = "2";
 
 

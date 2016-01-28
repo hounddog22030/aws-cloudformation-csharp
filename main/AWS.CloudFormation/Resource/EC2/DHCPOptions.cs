@@ -24,18 +24,11 @@ namespace AWS.CloudFormation.Resource.EC2
     }
     public class DhcpOptions : ResourceBase
     {
-        public DhcpOptions(Template template, string name, string domainName, Vpc vpc, params object[] netBiosNameServers) : base(template, name, ResourceType.DhcpOptions)
+        public DhcpOptions(Template template, string name, string domainName, Vpc vpc, FnJoin dnsServers, FnJoin netBiosNameServers) : base(template, name, ResourceType.DhcpOptions)
         {
             this.DomainName = domainName;
-            //this.AddDomainNameServer("AmazonProvidedDNS");
-            if (netBiosNameServers != null)
-            {
-                foreach (var netBiosNameServer in netBiosNameServers)
-                {
-                    this.AddNetBiosNameServers(netBiosNameServer);
-                    this.AddDomainNameServer(netBiosNameServer);
-                }
-            }
+            this.AddDomainNameServer(dnsServers);
+            this.AddNetBiosNameServers(netBiosNameServers);
             VpcDhcpOptionsAssociation association = new VpcDhcpOptionsAssociation(template,$"vpcDhcpOptionsAssociationFor{name}",this,vpc);
         }
 
