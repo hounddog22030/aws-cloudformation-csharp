@@ -150,62 +150,62 @@ namespace AWS.CloudFormation.Test
             instanceRdp.AddFinalizer(TimeoutMax);
             instanceDomainController.AddToDomain(instanceRdp, TimeoutMax);
 
-            instanceSize = InstanceTypes.T2Small;
-            if (mode == ProvisionMode.Launch)
-            {
-                instanceSize = InstanceTypes.C4XLarge;
-            }
+            //instanceSize = InstanceTypes.T2Small;
+            //if (mode == ProvisionMode.Launch)
+            //{
+            //    instanceSize = InstanceTypes.C4XLarge;
+            //}
 
-            var tfsSqlServer = AddSql(template, "sql4tfs", instanceSize, subnetSqlServer4Tfs, instanceDomainController, sqlServer4TfsSecurityGroup);
+            //var tfsSqlServer = AddSql(template, "sql4tfs", instanceSize, subnetSqlServer4Tfs, instanceDomainController, sqlServer4TfsSecurityGroup);
 
-            instanceSize = InstanceTypes.T2Small;
-            if (mode == ProvisionMode.Launch)
-            {
-                instanceSize = InstanceTypes.C4XLarge;
-            }
+            //instanceSize = InstanceTypes.T2Small;
+            //if (mode == ProvisionMode.Launch)
+            //{
+            //    instanceSize = InstanceTypes.C4XLarge;
+            //}
 
-            var tfsServer = AddTfsServer(template, instanceSize, subnetTfsServer, tfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
-
-
-            instanceSize = InstanceTypes.T2Nano;
-            if (mode == ProvisionMode.Launch)
-            {
-                instanceSize = InstanceTypes.C4XLarge;
-            }
-
-            WindowsInstance sql4Build = null;
-            sql4Build = AddSql(template, "sql4build", instanceSize, subnetBuildServer, instanceDomainController, securityGroupSqlServer4Build);
+            //var tfsServer = AddTfsServer(template, instanceSize, subnetTfsServer, tfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
 
 
-            instanceSize = InstanceTypes.T2Nano;
-            if (mode == ProvisionMode.Launch)
-            {
-                instanceSize = InstanceTypes.C4XLarge;
-            }
+            //instanceSize = InstanceTypes.T2Nano;
+            //if (mode == ProvisionMode.Launch)
+            //{
+            //    instanceSize = InstanceTypes.C4XLarge;
+            //}
 
-            var buildServer = AddBuildServer(template, instanceSize, subnetBuildServer, tfsServer, instanceDomainController, securityGroupBuildServer, sql4Build);
-            buildServer.AddFinalizer(TimeoutMax);
-
-            // uses 33gb
-            var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
-            workstation.AddFinalizer(TimeoutMax);
+            //WindowsInstance sql4Build = null;
+            //sql4Build = AddSql(template, "sql4build", instanceSize, subnetBuildServer, instanceDomainController, securityGroupSqlServer4Build);
 
 
-            SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
-            elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
-            tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            //instanceSize = InstanceTypes.T2Nano;
+            //if (mode == ProvisionMode.Launch)
+            //{
+            //    instanceSize = InstanceTypes.C4XLarge;
+            //}
 
-            //////LoadBalancer elb = new LoadBalancer(template, "elb1");
-            //////elb.AddInstance(tfsServer);
-            //////elb.AddListener("8080", "8080", "http");
-            //////elb.AddSubnet(DMZSubnet);
-            //////elb.AddSecurityGroup(elbSecurityGroup);
-            //////template.AddResource(elb);
+            //var buildServer = AddBuildServer(template, instanceSize, subnetBuildServer, tfsServer, instanceDomainController, securityGroupBuildServer, sql4Build);
+            //buildServer.AddFinalizer(TimeoutMax);
 
-            // the below is a remote desktop gateway server that can
-            // be uncommented to debug domain setup problems
-            var instanceRdp2 = new RemoteDesktopGateway(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
-            instanceDomainController.AddToDomainMemberSecurityGroup(instanceRdp2);
+            //// uses 33gb
+            //var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
+            //workstation.AddFinalizer(TimeoutMax);
+
+
+            //SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
+            //elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            //tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+
+            ////////LoadBalancer elb = new LoadBalancer(template, "elb1");
+            ////////elb.AddInstance(tfsServer);
+            ////////elb.AddListener("8080", "8080", "http");
+            ////////elb.AddSubnet(DMZSubnet);
+            ////////elb.AddSecurityGroup(elbSecurityGroup);
+            ////////template.AddResource(elb);
+
+            //// the below is a remote desktop gateway server that can
+            //// be uncommented to debug domain setup problems
+            //var instanceRdp2 = new RemoteDesktopGateway(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
+            //instanceDomainController.AddToDomainMemberSecurityGroup(instanceRdp2);
 
             return template;
         }
@@ -499,11 +499,14 @@ namespace AWS.CloudFormation.Test
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template, "DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
 
-            WindowsInstance workstation = new WindowsInstance(template, "ISOMaker", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, DMZSubnet, false);
+            WindowsInstance workstation = new WindowsInstance(template, "ISOMaker", InstanceTypes.C4XLarge, UsEast1AWindows2012R2Ami, DMZSubnet, false);
             workstation.AddSecurityGroup(rdp);
+            workstation.AddElasticIp();
             CreateTestStack(template, this.TestContext);
 
         }
+
+        
 
 
         [TestMethod]
@@ -530,8 +533,9 @@ namespace AWS.CloudFormation.Test
             workstation.AddElasticIp();
 
             CreateTestStack(template, this.TestContext);
-
         }
+
+        //ISOMaker
 
         [TestMethod]
         public void CreateSubnetTest()

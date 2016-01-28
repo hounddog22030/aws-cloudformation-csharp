@@ -1,0 +1,1993 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "VpcCreateDevelopmentTest": {
+      "Type": "AWS::EC2::VPC",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "CidrBlock": "10.0.0.0/16"
+      }
+    },
+    "VpcCreateDevelopmentTestInternetGateway": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {}
+    },
+    "VpcCreateDevelopmentTestInternetGatewayAttachment": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "InternetGatewayId": {
+          "Ref": "VpcCreateDevelopmentTestInternetGateway"
+        },
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        }
+      }
+    },
+    "subnetDmz2": {
+      "Type": "AWS::EC2::Subnet",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        },
+        "CidrBlock": "10.0.255.0/28",
+        "AvailabilityZone": "us-east-1a"
+      }
+    },
+    "subnetDmz2RouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        }
+      }
+    },
+    "subnetDmz2Route": {
+      "Type": "AWS::EC2::Route",
+      "Metadata": {},
+      "DependsOn": [
+        "VpcCreateDevelopmentTestInternetGateway"
+      ],
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "subnetDmz2RouteTable"
+        },
+        "GatewayId": {
+          "Ref": "VpcCreateDevelopmentTestInternetGateway"
+        }
+      }
+    },
+    "SubnetRouteTableAssociationsubnetDmz2": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "subnetDmz2RouteTable"
+        },
+        "SubnetId": {
+          "Ref": "subnetDmz2"
+        }
+      }
+    },
+    "natSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        },
+        "GroupDescription": "Enables Ssh access to NAT1 in AZ1 via port 22 and outbound internet access via private subnets",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 22,
+            "IpProtocol": "Tcp",
+            "ToPort": 22
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": -1,
+            "IpProtocol": "Icmp",
+            "ToPort": -1
+          },
+          {
+            "CidrIp": "10.0.0.0/24",
+            "FromPort": 1,
+            "IpProtocol": "-1",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.0.0/24",
+            "FromPort": -1,
+            "IpProtocol": "Icmp",
+            "ToPort": -1
+          },
+          {
+            "CidrIp": "10.0.1.0/24",
+            "FromPort": 1,
+            "IpProtocol": "-1",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.1.0/24",
+            "FromPort": -1,
+            "IpProtocol": "Icmp",
+            "ToPort": -1
+          },
+          {
+            "CidrIp": "10.0.2.0/24",
+            "FromPort": 1,
+            "IpProtocol": "-1",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.2.0/24",
+            "FromPort": -1,
+            "IpProtocol": "Icmp",
+            "ToPort": -1
+          },
+          {
+            "CidrIp": "10.0.3.0/24",
+            "FromPort": 1,
+            "IpProtocol": "-1",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.3.0/24",
+            "FromPort": -1,
+            "IpProtocol": "Icmp",
+            "ToPort": -1
+          },
+          {
+            "CidrIp": "10.0.4.0/24",
+            "FromPort": 1,
+            "IpProtocol": "-1",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.4.0/24",
+            "FromPort": -1,
+            "IpProtocol": "Icmp",
+            "ToPort": -1
+          }
+        ],
+        "SecurityGroupEgress": []
+      }
+    },
+    "subnetDmz1": {
+      "Type": "AWS::EC2::Subnet",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        },
+        "CidrBlock": "10.0.127.0/28",
+        "AvailabilityZone": "us-east-1a"
+      }
+    },
+    "subnetDmz1RouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        }
+      }
+    },
+    "subnetDmz1Route": {
+      "Type": "AWS::EC2::Route",
+      "Metadata": {},
+      "DependsOn": [
+        "VpcCreateDevelopmentTestInternetGateway"
+      ],
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "subnetDmz1RouteTable"
+        },
+        "GatewayId": {
+          "Ref": "VpcCreateDevelopmentTestInternetGateway"
+        }
+      }
+    },
+    "SubnetRouteTableAssociationsubnetDmz1": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "subnetDmz1RouteTable"
+        },
+        "SubnetId": {
+          "Ref": "subnetDmz1"
+        }
+      }
+    },
+    "NAT1": {
+      "Type": "AWS::EC2::Instance",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "InstanceType": "t2.micro",
+        "ImageId": "ami-4c9e4b24",
+        "KeyName": "corp.getthebuybox.com",
+        "UserData": {
+          "Fn::Base64": ""
+        },
+        "SourceDestCheck": false,
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": true,
+            "DeviceIndex": 0,
+            "DeleteOnTermination": true,
+            "SubnetId": {
+              "Ref": "subnetDmz1"
+            },
+            "GroupSet": [
+              {
+                "Ref": "natSecurityGroup"
+              }
+            ]
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "NAT1"
+          }
+        ]
+      }
+    },
+    "subnetDomainController1": {
+      "Type": "AWS::EC2::Subnet",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        },
+        "CidrBlock": "10.0.0.0/24",
+        "AvailabilityZone": "us-east-1a"
+      }
+    },
+    "routeTableForsubnetDomainController1": {
+      "Type": "AWS::EC2::RouteTable",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        }
+      }
+    },
+    "routeForsubnetDomainController1": {
+      "Type": "AWS::EC2::Route",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "routeTableForsubnetDomainController1"
+        },
+        "InstanceId": {
+          "Ref": "NAT1"
+        }
+      }
+    },
+    "SubnetRouteTableAssociationsubnetDomainController1": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "routeTableForsubnetDomainController1"
+        },
+        "SubnetId": {
+          "Ref": "subnetDomainController1"
+        }
+      }
+    },
+    "SqlServer4TfsSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        },
+        "GroupDescription": "Allows communication to SQLServer Service",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "10.0.127.0/28",
+            "FromPort": 3389,
+            "IpProtocol": "Tcp",
+            "ToPort": 3389
+          },
+          {
+            "CidrIp": "10.0.255.0/28",
+            "FromPort": 3389,
+            "IpProtocol": "Tcp",
+            "ToPort": 3389
+          },
+          {
+            "CidrIp": "10.0.2.0/24",
+            "FromPort": 1433,
+            "IpProtocol": "Tcp",
+            "ToPort": 1433
+          }
+        ],
+        "SecurityGroupEgress": []
+      }
+    },
+    "subnetSqlServer4Tfs": {
+      "Type": "AWS::EC2::Subnet",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        },
+        "CidrBlock": "10.0.1.0/24",
+        "AvailabilityZone": "us-east-1a"
+      }
+    },
+    "routeTableForsubnetSqlServer4Tfs": {
+      "Type": "AWS::EC2::RouteTable",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        }
+      }
+    },
+    "routeForsubnetSqlServer4Tfs": {
+      "Type": "AWS::EC2::Route",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "routeTableForsubnetSqlServer4Tfs"
+        },
+        "InstanceId": {
+          "Ref": "NAT1"
+        }
+      }
+    },
+    "SubnetRouteTableAssociationsubnetSqlServer4Tfs": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "routeTableForsubnetSqlServer4Tfs"
+        },
+        "SubnetId": {
+          "Ref": "subnetSqlServer4Tfs"
+        }
+      }
+    },
+    "subnetTfsServer": {
+      "Type": "AWS::EC2::Subnet",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        },
+        "CidrBlock": "10.0.2.0/24",
+        "AvailabilityZone": "us-east-1a"
+      }
+    },
+    "routeTableForsubnetTfsServer": {
+      "Type": "AWS::EC2::RouteTable",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        }
+      }
+    },
+    "routeForsubnetTfsServer": {
+      "Type": "AWS::EC2::Route",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "routeTableForsubnetTfsServer"
+        },
+        "InstanceId": {
+          "Ref": "NAT1"
+        }
+      }
+    },
+    "SubnetRouteTableAssociationsubnetTfsServer": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "routeTableForsubnetTfsServer"
+        },
+        "SubnetId": {
+          "Ref": "subnetTfsServer"
+        }
+      }
+    },
+    "TFSServerSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        },
+        "GroupDescription": "Allows various TFS communication",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "10.0.127.0/28",
+            "FromPort": 3389,
+            "IpProtocol": "Tcp",
+            "ToPort": 3389
+          },
+          {
+            "CidrIp": "10.0.255.0/28",
+            "FromPort": 3389,
+            "IpProtocol": "Tcp",
+            "ToPort": 3389
+          },
+          {
+            "CidrIp": "10.0.3.0/24",
+            "FromPort": 8080,
+            "IpProtocol": "Tcp",
+            "ToPort": 8080
+          },
+          {
+            "CidrIp": "10.0.3.0/24",
+            "FromPort": 9191,
+            "IpProtocol": "Tcp",
+            "ToPort": 9191
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "WorkstationSecurityGroup"
+            },
+            "FromPort": 8080,
+            "IpProtocol": "tcp",
+            "ToPort": 8080
+          },
+          {
+            "CidrIp": "10.0.4.0/24",
+            "FromPort": 8080,
+            "IpProtocol": "Tcp",
+            "ToPort": 8080
+          },
+          {
+            "CidrIp": "10.0.4.0/24",
+            "FromPort": 9191,
+            "IpProtocol": "Tcp",
+            "ToPort": 9191
+          }
+        ],
+        "SecurityGroupEgress": []
+      }
+    },
+    "securityGroupSqlServer4Build": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        },
+        "GroupDescription": "Allows communication to SQLServer Service",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "10.0.127.0/28",
+            "FromPort": 3389,
+            "IpProtocol": "Tcp",
+            "ToPort": 3389
+          },
+          {
+            "CidrIp": "10.0.255.0/28",
+            "FromPort": 3389,
+            "IpProtocol": "Tcp",
+            "ToPort": 3389
+          },
+          {
+            "CidrIp": "10.0.3.0/24",
+            "FromPort": 1433,
+            "IpProtocol": "Tcp",
+            "ToPort": 1433
+          }
+        ],
+        "SecurityGroupEgress": []
+      }
+    },
+    "subnetBuildServer": {
+      "Type": "AWS::EC2::Subnet",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        },
+        "CidrBlock": "10.0.3.0/24",
+        "AvailabilityZone": "us-east-1a"
+      }
+    },
+    "routeTableForsubnetBuildServer": {
+      "Type": "AWS::EC2::RouteTable",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        }
+      }
+    },
+    "routeForsubnetBuildServer": {
+      "Type": "AWS::EC2::Route",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "routeTableForsubnetBuildServer"
+        },
+        "InstanceId": {
+          "Ref": "NAT1"
+        }
+      }
+    },
+    "SubnetRouteTableAssociationsubnetBuildServer": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "routeTableForsubnetBuildServer"
+        },
+        "SubnetId": {
+          "Ref": "subnetBuildServer"
+        }
+      }
+    },
+    "BuildServerSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        },
+        "GroupDescription": "Allows build controller to build agent communication",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "10.0.127.0/28",
+            "FromPort": 3389,
+            "IpProtocol": "Tcp",
+            "ToPort": 3389
+          },
+          {
+            "CidrIp": "10.0.255.0/28",
+            "FromPort": 3389,
+            "IpProtocol": "Tcp",
+            "ToPort": 3389
+          },
+          {
+            "CidrIp": "10.0.2.0/24",
+            "FromPort": 9191,
+            "IpProtocol": "Tcp",
+            "ToPort": 9191
+          }
+        ],
+        "SecurityGroupEgress": []
+      }
+    },
+    "WorkstationSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        },
+        "GroupDescription": "Security Group To Contain Workstations",
+        "SecurityGroupIngress": [],
+        "SecurityGroupEgress": []
+      }
+    },
+    "subnetWorkstation": {
+      "Type": "AWS::EC2::Subnet",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        },
+        "CidrBlock": "10.0.4.0/24",
+        "AvailabilityZone": "us-east-1a"
+      }
+    },
+    "routeTableForsubnetWorkstation": {
+      "Type": "AWS::EC2::RouteTable",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        }
+      }
+    },
+    "routeForsubnetWorkstation": {
+      "Type": "AWS::EC2::Route",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "routeTableForsubnetWorkstation"
+        },
+        "InstanceId": {
+          "Ref": "NAT1"
+        }
+      }
+    },
+    "SubnetRouteTableAssociationsubnetWorkstation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "routeTableForsubnetWorkstation"
+        },
+        "SubnetId": {
+          "Ref": "subnetWorkstation"
+        }
+      }
+    },
+    "dc1": {
+      "Type": "AWS::EC2::Instance",
+      "Metadata": {
+        "AWS::CloudFormation::Init": {
+          "configSets": {
+            "config": [
+              "setup",
+              "rename",
+              "installADDS",
+              "configureSites"
+            ],
+            "InstallChefConfigSet": [
+              "InstallChefConfigSet"
+            ],
+            "finalizeConfigSet": [
+              "finalizeConfig"
+            ]
+          },
+          "setup": {
+            "commands": {
+              "a-disable-win-fw": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\""
+                    ]
+                  ]
+                }
+              }
+            },
+            "files": {
+              "c:\\cfn\\cfn-hup.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[main]\nstack=",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      "\nregion=",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\ninterval=1\nverbose=true"
+                    ]
+                  ]
+                }
+              },
+              "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[cfn-auto-reloader-hook]\n",
+                      "triggers=post.update\n",
+                      "path=Resources.dc1.Metadata.AWS::CloudFormation::Init\n",
+                      "action=cfn-init.exe -v -c ",
+                      "config,InstallChefConfigSet,finalizeConfigSet",
+                      " -s ",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      " -r ",
+                      "dc1",
+                      " --region ",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\n"
+                    ]
+                  ]
+                }
+              },
+              "c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1": {
+                "content": {},
+                "source": "https://s3.amazonaws.com/quickstart-reference/microsoft/activedirectory/latest/scripts/ConvertTo-EnterpriseAdmin.ps1"
+              }
+            },
+            "services": {
+              "windows": {
+                "cfn-hup": {
+                  "enabled": true,
+                  "ensureRunning": true,
+                  "files": [
+                    "c:\\cfn\\cfn-hup.conf",
+                    "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf"
+                  ]
+                }
+              }
+            },
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": true
+          },
+          "rename": {
+            "commands": {
+              "1-execute-powershell-script-RenameComputer": {
+                "waitAfterCompletion": "forever",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "\"Rename-Computer -NewName ",
+                      "dc1",
+                      " -Restart\""
+                    ]
+                  ]
+                }
+              }
+            },
+            "files": {},
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": true
+          },
+          "installADDS": {
+            "commands": {
+              "1-install-prereqsz": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Install-WindowsFeature AD-Domain-Services, rsat-adds -IncludeAllSubFeature\""
+                    ]
+                  ]
+                }
+              },
+              "2-install-adds": {
+                "waitAfterCompletion": "forever",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Install-ADDSForest -DomainName ",
+                      {
+                        "Ref": "DomainDNSName"
+                      },
+                      " -SafeModeAdministratorPassword (convertto-securestring jhkjhsdf338! -asplaintext -force) -DomainMode Win2012 -DomainNetbiosName ",
+                      {
+                        "Ref": "DomainNetBIOSName"
+                      },
+                      " -ForestMode Win2012 -Confirm:$false -Force\""
+                    ]
+                  ]
+                }
+              },
+              "3-restart-service": {
+                "waitAfterCompletion": "20",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Restart-Service NetLogon -EA 0\""
+                    ]
+                  ]
+                }
+              },
+              "4 - create - adminuser": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"",
+                      "New-ADUser ",
+                      "-Name ",
+                      {
+                        "Ref": "DomainAdminUser"
+                      },
+                      " -UserPrincipalName ",
+                      {
+                        "Ref": "DomainAdminUser"
+                      },
+                      "@",
+                      {
+                        "Ref": "DomainDNSName"
+                      },
+                      " ",
+                      "-AccountPassword (ConvertTo-SecureString ",
+                      {
+                        "Ref": "DomainAdminPassword"
+                      },
+                      " -AsPlainText -Force) ",
+                      "-Enabled $true ",
+                      "-PasswordNeverExpires $true\""
+                    ]
+                  ]
+                }
+              },
+              "5 - update - adminuser": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-ExecutionPolicy RemoteSigned -Command \"c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1 -Members ",
+                      {
+                        "Ref": "DomainAdminUser"
+                      },
+                      "\""
+                    ]
+                  ]
+                }
+              }
+            },
+            "files": {},
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": true
+          },
+          "configureSites": {
+            "commands": {
+              "a-rename-default-site": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      " ",
+                      "\"",
+                      "Get-ADObject -SearchBase (Get-ADRootDSE).ConfigurationNamingContext -filter {Name -eq 'Default-First-Site-Name'} | Rename-ADObject -NewName subnetDomainController1",
+                      "\""
+                    ]
+                  ]
+                }
+              },
+              "create-site-subnetDmz1": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"",
+                      "New-ADReplicationSite  subnetDmz1\""
+                    ]
+                  ]
+                }
+              },
+              "create-subnet-subnetDmz1": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command New-ADReplicationSubnet -Name ",
+                      "10.0.127.0/28",
+                      " -Site subnetDmz1"
+                    ]
+                  ]
+                }
+              }
+            },
+            "files": {},
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": true
+          },
+          "InstallChefConfigSet": {
+            "commands": {},
+            "files": {
+              "c:/chef/node.json": {
+                "content": {
+                  "nothing": "nothing",
+                  "domain": "beta"
+                }
+              }
+            },
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": true
+          },
+          "finalizeConfig": {
+            "commands": {
+              "a-signal-success": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "cfn-signal.exe -e 0 \"",
+                      {
+                        "Ref": "dc1WaitConditionHandle"
+                      },
+                      "\""
+                    ]
+                  ]
+                }
+              }
+            },
+            "files": {},
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": true
+          }
+        }
+      },
+      "DependsOn": [],
+      "Properties": {
+        "InstanceType": "c4.xlarge",
+        "ImageId": "ami-e4034a8e",
+        "KeyName": "corp.getthebuybox.com",
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "<script>cfn-init.exe -v -c ",
+                "config,InstallChefConfigSet,finalizeConfigSet",
+                " -s ",
+                {
+                  "Ref": "AWS::StackId"
+                },
+                " -r dc1 --region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "</script>"
+              ]
+            ]
+          }
+        },
+        "SourceDestCheck": true,
+        "NetworkInterfaces": [],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "dc1"
+          }
+        ],
+        "SubnetId": {
+          "Ref": "subnetDomainController1"
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "DomainControllerSG1"
+          }
+        ]
+      }
+    },
+    "DomainMemberSG": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        },
+        "GroupDescription": "Domain Member Security Group",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "10.0.127.0/28",
+            "FromPort": 53,
+            "IpProtocol": "Tcp",
+            "ToPort": 53
+          },
+          {
+            "CidrIp": "10.0.127.0/28",
+            "FromPort": 53,
+            "IpProtocol": "Udp",
+            "ToPort": 53
+          },
+          {
+            "CidrIp": "10.0.127.0/28",
+            "FromPort": 49152,
+            "IpProtocol": "Tcp",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.127.0/28",
+            "FromPort": 49152,
+            "IpProtocol": "Udp",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.127.0/28",
+            "FromPort": 3389,
+            "IpProtocol": "Tcp",
+            "ToPort": 3389
+          },
+          {
+            "CidrIp": "10.0.127.0/28",
+            "FromPort": 3389,
+            "IpProtocol": "Tcp",
+            "ToPort": 3389
+          }
+        ],
+        "SecurityGroupEgress": []
+      }
+    },
+    "DomainControllerSG1": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        },
+        "GroupDescription": "Domain Controller",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 5985,
+            "IpProtocol": "Tcp",
+            "ToPort": 5985
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 80,
+            "IpProtocol": "Tcp",
+            "ToPort": 80
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 123,
+            "IpProtocol": "udp",
+            "ToPort": 123
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 135,
+            "IpProtocol": "tcp",
+            "ToPort": 135
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 9389,
+            "IpProtocol": "tcp",
+            "ToPort": 9389
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 138,
+            "IpProtocol": "udp",
+            "ToPort": 138
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 445,
+            "IpProtocol": "tcp",
+            "ToPort": 445
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 445,
+            "IpProtocol": "udp",
+            "ToPort": 445
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 464,
+            "IpProtocol": "tcp",
+            "ToPort": 464
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 464,
+            "IpProtocol": "udp",
+            "ToPort": 464
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 49152,
+            "IpProtocol": "tcp",
+            "ToPort": 65535
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 49152,
+            "IpProtocol": "udp",
+            "ToPort": 65535
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 389,
+            "IpProtocol": "tcp",
+            "ToPort": 389
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 389,
+            "IpProtocol": "udp",
+            "ToPort": 389
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 636,
+            "IpProtocol": "tcp",
+            "ToPort": 636
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 3268,
+            "IpProtocol": "tcp",
+            "ToPort": 3269
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 53,
+            "IpProtocol": "tcp",
+            "ToPort": 53
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 53,
+            "IpProtocol": "udp",
+            "ToPort": 53
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 88,
+            "IpProtocol": "tcp",
+            "ToPort": 88
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 88,
+            "IpProtocol": "udp",
+            "ToPort": 88
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 3389,
+            "IpProtocol": "tcp",
+            "ToPort": 3389
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "DomainMemberSG"
+            },
+            "FromPort": 3389,
+            "IpProtocol": "udp",
+            "ToPort": 3389
+          }
+        ],
+        "SecurityGroupEgress": []
+      }
+    },
+    "dc1WaitCondition": {
+      "Type": "AWS::CloudFormation::WaitCondition",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "Timeout": 43200,
+        "Handle": {
+          "Ref": "dc1WaitConditionHandle"
+        }
+      }
+    },
+    "dc1WaitConditionHandle": {
+      "Type": "AWS::CloudFormation::WaitConditionHandle",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {}
+    },
+    "dhcpOptions": {
+      "Type": "AWS::EC2::DHCPOptions",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "DomainName": "beta.yadayada.software",
+        "NetbiosNameServers": [
+          {
+            "Fn::Join": [
+              ", ",
+              [
+                {
+                  "Fn::GetAtt": [
+                    "dc1",
+                    "PrivateIp"
+                  ]
+                },
+                "10.0.0.2"
+              ]
+            ]
+          }
+        ],
+        "DomainNameServers": [
+          {
+            "Fn::Join": [
+              ", ",
+              [
+                {
+                  "Fn::GetAtt": [
+                    "dc1",
+                    "PrivateIp"
+                  ]
+                },
+                "10.0.0.2"
+              ]
+            ]
+          }
+        ],
+        "NetbiosNodeType": "2"
+      }
+    },
+    "vpcDhcpOptionsAssociationFordhcpOptions": {
+      "Type": "AWS::EC2::VPCDHCPOptionsAssociation",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "DhcpOptionsId": {
+          "Ref": "dhcpOptions"
+        },
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        }
+      }
+    },
+    "rdp": {
+      "Type": "AWS::EC2::Instance",
+      "Metadata": {
+        "AWS::CloudFormation::Init": {
+          "configSets": {
+            "config": [
+              "setup",
+              "rename",
+              "join",
+              "installRDS"
+            ],
+            "InstallChefConfigSet": [
+              "InstallChefConfigSet"
+            ],
+            "finalizeConfigSet": [
+              "finalizeConfig"
+            ]
+          },
+          "setup": {
+            "commands": {
+              "a-disable-win-fw": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\""
+                    ]
+                  ]
+                }
+              }
+            },
+            "files": {
+              "c:\\cfn\\cfn-hup.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[main]\nstack=",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      "\nregion=",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\ninterval=1\nverbose=true"
+                    ]
+                  ]
+                }
+              },
+              "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[cfn-auto-reloader-hook]\n",
+                      "triggers=post.update\n",
+                      "path=Resources.rdp.Metadata.AWS::CloudFormation::Init\n",
+                      "action=cfn-init.exe -v -c ",
+                      "config,InstallChefConfigSet,finalizeConfigSet",
+                      " -s ",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      " -r ",
+                      "rdp",
+                      " --region ",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\n"
+                    ]
+                  ]
+                }
+              }
+            },
+            "services": {
+              "windows": {
+                "cfn-hup": {
+                  "enabled": true,
+                  "ensureRunning": true,
+                  "files": [
+                    "c:\\cfn\\cfn-hup.conf",
+                    "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf"
+                  ]
+                }
+              }
+            },
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": true
+          },
+          "rename": {
+            "commands": {
+              "1-execute-powershell-script-RenameComputer": {
+                "waitAfterCompletion": "forever",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "\"Rename-Computer -NewName ",
+                      "rdp",
+                      " -Restart\""
+                    ]
+                  ]
+                }
+              }
+            },
+            "files": {},
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": true
+          },
+          "join": {
+            "commands": {
+              "b-join-domain": {
+                "waitAfterCompletion": "forever",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"",
+                      " Add-Computer -DomainName ",
+                      {
+                        "Ref": "DomainDNSName"
+                      },
+                      " -Credential ",
+                      "(New-Object System.Management.Automation.PSCredential('",
+                      {
+                        "Ref": "DomainNetBIOSName"
+                      },
+                      "\\",
+                      {
+                        "Ref": "DomainAdminUser"
+                      },
+                      "',",
+                      "(ConvertTo-SecureString ",
+                      {
+                        "Ref": "DomainAdminPassword"
+                      },
+                      " -AsPlainText -Force))) ",
+                      "-Restart\""
+                    ]
+                  ]
+                }
+              }
+            },
+            "files": {},
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": true
+          },
+          "installRDS": {
+            "commands": {
+              "a-install-rds": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Install-WindowsFeature RDS-Gateway,RSAT-RDS-Gateway\""
+                    ]
+                  ]
+                }
+              },
+              "b-configure-rdgw": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-ExecutionPolicy RemoteSigned",
+                      " C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN rdp.",
+                      {
+                        "Ref": "DomainDNSName"
+                      },
+                      " -DomainNetBiosName ",
+                      {
+                        "Ref": "DomainNetBIOSName"
+                      },
+                      " -GroupName 'domain admins'"
+                    ]
+                  ]
+                }
+              }
+            },
+            "files": {
+              "c:\\cfn\\scripts\\Configure-RDGW.ps1": {
+                "content": {},
+                "source": "https://s3.amazonaws.com/gtbb/Configure-RDGW.ps1"
+              }
+            },
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": true
+          },
+          "InstallChefConfigSet": {
+            "commands": {},
+            "files": {
+              "c:/chef/node.json": {
+                "content": {
+                  "nothing": "nothing",
+                  "domain": "beta"
+                }
+              }
+            },
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": true
+          },
+          "finalizeConfig": {
+            "commands": {
+              "a-signal-success": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "cfn-signal.exe -e 0 \"",
+                      {
+                        "Ref": "rdpWaitConditionHandle"
+                      },
+                      "\""
+                    ]
+                  ]
+                }
+              }
+            },
+            "files": {},
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": true
+          }
+        }
+      },
+      "DependsOn": [
+        "dc1WaitCondition"
+      ],
+      "Properties": {
+        "InstanceType": "c4.xlarge",
+        "ImageId": "ami-e4034a8e",
+        "KeyName": "corp.getthebuybox.com",
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "<script>cfn-init.exe -v -c ",
+                "config,InstallChefConfigSet,finalizeConfigSet",
+                " -s ",
+                {
+                  "Ref": "AWS::StackId"
+                },
+                " -r rdp --region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "</script>"
+              ]
+            ]
+          }
+        },
+        "SourceDestCheck": true,
+        "NetworkInterfaces": [],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "rdp"
+          }
+        ],
+        "SubnetId": {
+          "Ref": "subnetDmz1"
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "rdpSecurityGroup"
+          },
+          {
+            "Ref": "DomainMemberSG"
+          }
+        ]
+      }
+    },
+    "rdpSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateDevelopmentTest"
+        },
+        "GroupDescription": "Remote Desktop Security Group",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 3389,
+            "IpProtocol": "Tcp",
+            "ToPort": 3389
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 443,
+            "IpProtocol": "Tcp",
+            "ToPort": 443
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 80,
+            "IpProtocol": "Tcp",
+            "ToPort": 80
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 3391,
+            "IpProtocol": "Udp",
+            "ToPort": 3391
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": -1,
+            "IpProtocol": "Icmp",
+            "ToPort": -1
+          }
+        ],
+        "SecurityGroupEgress": []
+      }
+    },
+    "rdpEIP": {
+      "Type": "AWS::EC2::EIP",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "InstanceId": {
+          "Ref": "rdp"
+        },
+        "Domain": "vpc"
+      }
+    },
+    "rdpWaitCondition": {
+      "Type": "AWS::CloudFormation::WaitCondition",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "Timeout": 43200,
+        "Handle": {
+          "Ref": "rdpWaitConditionHandle"
+        }
+      }
+    },
+    "rdpWaitConditionHandle": {
+      "Type": "AWS::CloudFormation::WaitConditionHandle",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {}
+    },
+    "rdpRecord": {
+      "Type": "AWS::Route53::RecordSet",
+      "Metadata": {},
+      "DependsOn": [],
+      "Properties": {
+        "TTL": "60",
+        "Type": "A",
+        "ResourceRecords": [
+          {
+            "Ref": "rdpEIP"
+          }
+        ],
+        "HostedZoneName": "yadayada.software.",
+        "Name": "rdp.beta.yadayada.software."
+      }
+    }
+  },
+  "Parameters": {
+    "DefaultKeyPairKeyName": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Default": "corp.getthebuybox.com"
+    },
+    "DomainDNSName": {
+      "Type": "String",
+      "Default": "beta.yadayada.software"
+    },
+    "DomainAdminPassword": {
+      "Type": "String",
+      "Default": "kasdfiajs!!9"
+    },
+    "DomainNetBIOSName": {
+      "Type": "String",
+      "Default": "beta"
+    },
+    "DomainAdminUser": {
+      "Type": "String",
+      "Default": "johnny"
+    }
+  },
+  "Outputs": {
+    "VpcCreateDevelopmentTest": {
+      "Value": {
+        "Ref": "VpcCreateDevelopmentTest"
+      }
+    },
+    "VpcCreateDevelopmentTestInternetGateway": {
+      "Value": {
+        "Ref": "VpcCreateDevelopmentTestInternetGateway"
+      }
+    },
+    "VpcCreateDevelopmentTestInternetGatewayAttachment": {
+      "Value": {
+        "Ref": "VpcCreateDevelopmentTestInternetGatewayAttachment"
+      }
+    },
+    "subnetDmz2": {
+      "Value": {
+        "Ref": "subnetDmz2"
+      }
+    },
+    "subnetDmz2RouteTable": {
+      "Value": {
+        "Ref": "subnetDmz2RouteTable"
+      }
+    },
+    "subnetDmz2Route": {
+      "Value": {
+        "Ref": "subnetDmz2Route"
+      }
+    },
+    "SubnetRouteTableAssociationsubnetDmz2": {
+      "Value": {
+        "Ref": "SubnetRouteTableAssociationsubnetDmz2"
+      }
+    },
+    "natSecurityGroup": {
+      "Value": {
+        "Ref": "natSecurityGroup"
+      }
+    },
+    "subnetDmz1": {
+      "Value": {
+        "Ref": "subnetDmz1"
+      }
+    },
+    "subnetDmz1RouteTable": {
+      "Value": {
+        "Ref": "subnetDmz1RouteTable"
+      }
+    },
+    "subnetDmz1Route": {
+      "Value": {
+        "Ref": "subnetDmz1Route"
+      }
+    },
+    "SubnetRouteTableAssociationsubnetDmz1": {
+      "Value": {
+        "Ref": "SubnetRouteTableAssociationsubnetDmz1"
+      }
+    },
+    "NAT1": {
+      "Value": {
+        "Ref": "NAT1"
+      }
+    },
+    "subnetDomainController1": {
+      "Value": {
+        "Ref": "subnetDomainController1"
+      }
+    },
+    "routeTableForsubnetDomainController1": {
+      "Value": {
+        "Ref": "routeTableForsubnetDomainController1"
+      }
+    },
+    "routeForsubnetDomainController1": {
+      "Value": {
+        "Ref": "routeForsubnetDomainController1"
+      }
+    },
+    "SubnetRouteTableAssociationsubnetDomainController1": {
+      "Value": {
+        "Ref": "SubnetRouteTableAssociationsubnetDomainController1"
+      }
+    },
+    "SqlServer4TfsSecurityGroup": {
+      "Value": {
+        "Ref": "SqlServer4TfsSecurityGroup"
+      }
+    },
+    "subnetSqlServer4Tfs": {
+      "Value": {
+        "Ref": "subnetSqlServer4Tfs"
+      }
+    },
+    "routeTableForsubnetSqlServer4Tfs": {
+      "Value": {
+        "Ref": "routeTableForsubnetSqlServer4Tfs"
+      }
+    },
+    "routeForsubnetSqlServer4Tfs": {
+      "Value": {
+        "Ref": "routeForsubnetSqlServer4Tfs"
+      }
+    },
+    "SubnetRouteTableAssociationsubnetSqlServer4Tfs": {
+      "Value": {
+        "Ref": "SubnetRouteTableAssociationsubnetSqlServer4Tfs"
+      }
+    },
+    "subnetTfsServer": {
+      "Value": {
+        "Ref": "subnetTfsServer"
+      }
+    },
+    "routeTableForsubnetTfsServer": {
+      "Value": {
+        "Ref": "routeTableForsubnetTfsServer"
+      }
+    },
+    "routeForsubnetTfsServer": {
+      "Value": {
+        "Ref": "routeForsubnetTfsServer"
+      }
+    },
+    "SubnetRouteTableAssociationsubnetTfsServer": {
+      "Value": {
+        "Ref": "SubnetRouteTableAssociationsubnetTfsServer"
+      }
+    },
+    "TFSServerSecurityGroup": {
+      "Value": {
+        "Ref": "TFSServerSecurityGroup"
+      }
+    },
+    "securityGroupSqlServer4Build": {
+      "Value": {
+        "Ref": "securityGroupSqlServer4Build"
+      }
+    },
+    "subnetBuildServer": {
+      "Value": {
+        "Ref": "subnetBuildServer"
+      }
+    },
+    "routeTableForsubnetBuildServer": {
+      "Value": {
+        "Ref": "routeTableForsubnetBuildServer"
+      }
+    },
+    "routeForsubnetBuildServer": {
+      "Value": {
+        "Ref": "routeForsubnetBuildServer"
+      }
+    },
+    "SubnetRouteTableAssociationsubnetBuildServer": {
+      "Value": {
+        "Ref": "SubnetRouteTableAssociationsubnetBuildServer"
+      }
+    },
+    "BuildServerSecurityGroup": {
+      "Value": {
+        "Ref": "BuildServerSecurityGroup"
+      }
+    },
+    "WorkstationSecurityGroup": {
+      "Value": {
+        "Ref": "WorkstationSecurityGroup"
+      }
+    },
+    "subnetWorkstation": {
+      "Value": {
+        "Ref": "subnetWorkstation"
+      }
+    },
+    "routeTableForsubnetWorkstation": {
+      "Value": {
+        "Ref": "routeTableForsubnetWorkstation"
+      }
+    },
+    "routeForsubnetWorkstation": {
+      "Value": {
+        "Ref": "routeForsubnetWorkstation"
+      }
+    },
+    "SubnetRouteTableAssociationsubnetWorkstation": {
+      "Value": {
+        "Ref": "SubnetRouteTableAssociationsubnetWorkstation"
+      }
+    },
+    "dc1": {
+      "Value": {
+        "Ref": "dc1"
+      }
+    },
+    "DomainMemberSG": {
+      "Value": {
+        "Ref": "DomainMemberSG"
+      }
+    },
+    "DomainControllerSG1": {
+      "Value": {
+        "Ref": "DomainControllerSG1"
+      }
+    },
+    "dc1WaitCondition": {
+      "Value": {
+        "Ref": "dc1WaitCondition"
+      }
+    },
+    "dc1WaitConditionHandle": {
+      "Value": {
+        "Ref": "dc1WaitConditionHandle"
+      }
+    },
+    "dhcpOptions": {
+      "Value": {
+        "Ref": "dhcpOptions"
+      }
+    },
+    "vpcDhcpOptionsAssociationFordhcpOptions": {
+      "Value": {
+        "Ref": "vpcDhcpOptionsAssociationFordhcpOptions"
+      }
+    },
+    "rdp": {
+      "Value": {
+        "Ref": "rdp"
+      }
+    },
+    "rdpSecurityGroup": {
+      "Value": {
+        "Ref": "rdpSecurityGroup"
+      }
+    },
+    "rdpEIP": {
+      "Value": {
+        "Ref": "rdpEIP"
+      }
+    },
+    "rdpWaitCondition": {
+      "Value": {
+        "Ref": "rdpWaitCondition"
+      }
+    },
+    "rdpWaitConditionHandle": {
+      "Value": {
+        "Ref": "rdpWaitConditionHandle"
+      }
+    },
+    "rdpRecord": {
+      "Value": {
+        "Ref": "rdpRecord"
+      }
+    }
+  }
+}
