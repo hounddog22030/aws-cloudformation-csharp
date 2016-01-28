@@ -1,7 +1,7 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Resources": {
-    "VpcCreateDevelopmentTest": {
+    "Vpc": {
       "Type": "AWS::EC2::VPC",
       "Metadata": {},
       "DependsOn": [],
@@ -9,22 +9,22 @@
         "CidrBlock": "10.0.0.0/16"
       }
     },
-    "VpcCreateDevelopmentTestInternetGateway": {
+    "VpcInternetGateway": {
       "Type": "AWS::EC2::InternetGateway",
       "Metadata": {},
       "DependsOn": [],
       "Properties": {}
     },
-    "VpcCreateDevelopmentTestInternetGatewayAttachment": {
+    "VpcInternetGatewayAttachment": {
       "Type": "AWS::EC2::VPCGatewayAttachment",
       "Metadata": {},
       "DependsOn": [],
       "Properties": {
         "InternetGatewayId": {
-          "Ref": "VpcCreateDevelopmentTestInternetGateway"
+          "Ref": "VpcInternetGateway"
         },
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         }
       }
     },
@@ -34,7 +34,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         },
         "CidrBlock": "10.0.255.0/28",
         "AvailabilityZone": "us-east-1a"
@@ -46,7 +46,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         }
       }
     },
@@ -54,7 +54,7 @@
       "Type": "AWS::EC2::Route",
       "Metadata": {},
       "DependsOn": [
-        "VpcCreateDevelopmentTestInternetGateway"
+        "VpcInternetGateway"
       ],
       "Properties": {
         "DestinationCidrBlock": "0.0.0.0/0",
@@ -62,7 +62,7 @@
           "Ref": "subnetDmz2RouteTable"
         },
         "GatewayId": {
-          "Ref": "VpcCreateDevelopmentTestInternetGateway"
+          "Ref": "VpcInternetGateway"
         }
       }
     },
@@ -85,7 +85,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         },
         "GroupDescription": "Enables Ssh access to NAT1 in AZ1 via port 22 and outbound internet access via private subnets",
         "SecurityGroupIngress": [
@@ -171,7 +171,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         },
         "CidrBlock": "10.0.127.0/28",
         "AvailabilityZone": "us-east-1a"
@@ -183,7 +183,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         }
       }
     },
@@ -191,7 +191,7 @@
       "Type": "AWS::EC2::Route",
       "Metadata": {},
       "DependsOn": [
-        "VpcCreateDevelopmentTestInternetGateway"
+        "VpcInternetGateway"
       ],
       "Properties": {
         "DestinationCidrBlock": "0.0.0.0/0",
@@ -199,7 +199,7 @@
           "Ref": "subnetDmz1RouteTable"
         },
         "GatewayId": {
-          "Ref": "VpcCreateDevelopmentTestInternetGateway"
+          "Ref": "VpcInternetGateway"
         }
       }
     },
@@ -257,7 +257,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         },
         "CidrBlock": "10.0.0.0/24",
         "AvailabilityZone": "us-east-1a"
@@ -269,7 +269,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         }
       }
     },
@@ -306,7 +306,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         },
         "GroupDescription": "Allows communication to SQLServer Service",
         "SecurityGroupIngress": [
@@ -338,7 +338,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         },
         "CidrBlock": "10.0.1.0/24",
         "AvailabilityZone": "us-east-1a"
@@ -350,7 +350,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         }
       }
     },
@@ -387,7 +387,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         },
         "CidrBlock": "10.0.2.0/24",
         "AvailabilityZone": "us-east-1a"
@@ -399,7 +399,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         }
       }
     },
@@ -436,7 +436,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         },
         "GroupDescription": "Allows various TFS communication",
         "SecurityGroupIngress": [
@@ -494,7 +494,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         },
         "GroupDescription": "Allows communication to SQLServer Service",
         "SecurityGroupIngress": [
@@ -526,7 +526,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         },
         "CidrBlock": "10.0.3.0/24",
         "AvailabilityZone": "us-east-1a"
@@ -538,7 +538,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         }
       }
     },
@@ -575,7 +575,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         },
         "GroupDescription": "Allows build controller to build agent communication",
         "SecurityGroupIngress": [
@@ -607,7 +607,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         },
         "GroupDescription": "Security Group To Contain Workstations",
         "SecurityGroupIngress": [],
@@ -620,7 +620,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         },
         "CidrBlock": "10.0.4.0/24",
         "AvailabilityZone": "us-east-1a"
@@ -632,7 +632,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         }
       }
     },
@@ -943,7 +943,7 @@
               "c:/chef/node.json": {
                 "content": {
                   "nothing": "nothing",
-                  "domain": "beta"
+                  "domain": "alpha"
                 }
               }
             },
@@ -1027,7 +1027,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         },
         "GroupDescription": "Domain Member Security Group",
         "SecurityGroupIngress": [
@@ -1077,7 +1077,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         },
         "GroupDescription": "Domain Controller",
         "SecurityGroupIngress": [
@@ -1279,7 +1279,7 @@
       "Metadata": {},
       "DependsOn": [],
       "Properties": {
-        "DomainName": "beta.yadayada.software",
+        "DomainName": "alpha.yadayada.software",
         "NetbiosNameServers": [
           {
             "Fn::Join": [
@@ -1324,7 +1324,7 @@
           "Ref": "dhcpOptions"
         },
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         }
       }
     },
@@ -1539,7 +1539,7 @@
               "c:/chef/node.json": {
                 "content": {
                   "nothing": "nothing",
-                  "domain": "beta"
+                  "domain": "alpha"
                 }
               }
             },
@@ -1628,7 +1628,7 @@
       "DependsOn": [],
       "Properties": {
         "VpcId": {
-          "Ref": "VpcCreateDevelopmentTest"
+          "Ref": "Vpc"
         },
         "GroupDescription": "Remote Desktop Security Group",
         "SecurityGroupIngress": [
@@ -1707,7 +1707,7 @@
           }
         ],
         "HostedZoneName": "yadayada.software.",
-        "Name": "rdp.beta.yadayada.software."
+        "Name": "rdp.alpha.yadayada.software."
       }
     }
   },
@@ -1718,7 +1718,7 @@
     },
     "DomainDNSName": {
       "Type": "String",
-      "Default": "beta.yadayada.software"
+      "Default": "alpha.yadayada.software"
     },
     "DomainAdminPassword": {
       "Type": "String",
@@ -1726,7 +1726,7 @@
     },
     "DomainNetBIOSName": {
       "Type": "String",
-      "Default": "beta"
+      "Default": "alpha"
     },
     "DomainAdminUser": {
       "Type": "String",
@@ -1734,19 +1734,19 @@
     }
   },
   "Outputs": {
-    "VpcCreateDevelopmentTest": {
+    "Vpc": {
       "Value": {
-        "Ref": "VpcCreateDevelopmentTest"
+        "Ref": "Vpc"
       }
     },
-    "VpcCreateDevelopmentTestInternetGateway": {
+    "VpcInternetGateway": {
       "Value": {
-        "Ref": "VpcCreateDevelopmentTestInternetGateway"
+        "Ref": "VpcInternetGateway"
       }
     },
-    "VpcCreateDevelopmentTestInternetGatewayAttachment": {
+    "VpcInternetGatewayAttachment": {
       "Value": {
-        "Ref": "VpcCreateDevelopmentTestInternetGatewayAttachment"
+        "Ref": "VpcInternetGatewayAttachment"
       }
     },
     "subnetDmz2": {

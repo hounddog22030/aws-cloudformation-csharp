@@ -50,10 +50,6 @@ namespace AWS.CloudFormation.Test
         private static readonly TimeSpan Timeout4Hours = new TimeSpan(4, 0, 0);
 
 
-        public static Template GetTemplateFullStack(TestContext testContext, ProvisionMode mode)
-        {
-            return GetTemplateFullStack(testContext, null, mode);
-        }
 
         public enum ProvisionMode
         {
@@ -61,14 +57,9 @@ namespace AWS.CloudFormation.Test
             Run
         }
 
-        private static Template GetTemplateFullStack(TestContext testContext, string vpcName, ProvisionMode mode)
+        public static Template GetTemplateFullStack(ProvisionMode mode)
         {
-            if (string.IsNullOrEmpty(vpcName))
-            {
-                vpcName = $"Vpc{testContext.TestName}";
-            }
-
-            var template = GetNewBlankTemplateWithVpc(testContext,vpcName);
+            var template = GetNewBlankTemplateWithVpc("Vpc");
             Vpc vpc = template.Vpcs.First();
 
             //var subnetDomainController2 = new Subnet(template, "subnetDomainController2", vpc, CidrDomainController2Subnet, AvailabilityZone.UsEast1A);
@@ -232,9 +223,9 @@ namespace AWS.CloudFormation.Test
             return DomainController;
         }
 
-        public static Template GetTemplateVolumeOnly(TestContext testContext)
+        public Template GetTemplateVolumeOnly(TestContext testContext)
         {
-            Template t = GetNewBlankTemplateWithVpc(testContext);
+            Template t = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
             Volume v = new Volume(t,"Volume1");
             v.SnapshotId = "snap-c4d7f7c3";
             v.AvailabilityZone = AvailabilityZone.UsEast1A;
@@ -245,7 +236,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateAutoScalingGroupTest()
         {
-            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var template = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -337,7 +328,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateStackVolumeAttachmentTest()
         {
-            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var template = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -352,7 +343,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateStackBlockDeviceMappingFromSnapshotTest()
         {
-            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var template = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -378,7 +369,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateStackWithMountedSqlTfsVsIsosTest()
         {
-            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var template = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -406,7 +397,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateStackWithVisualStudio()
         {
-            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var template = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -426,7 +417,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateDeveloperWorkstation()
         {
-            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var template = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -440,7 +431,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateGenericInstance()
         {
-            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var template = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -457,7 +448,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateBuildServer()
         {
-            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var template = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -475,7 +466,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateDomainController()
         {
-            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var template = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -493,7 +484,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateMinimalInstanceTest()
         {
-            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var template = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -512,7 +503,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateISOMaker()
         {
-            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var template = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -540,7 +531,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateSubnetTest()
         {
-            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var template = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
             var vpc = template.Vpcs.First();
             var subnet1 = new Subnet(template,"subnet1", vpc, CidrDmz1, AvailabilityZone.UsEast1A);
             var subnet2 = new Subnet(template,"subnet2", vpc, CidrDmz2, AvailabilityZone.UsEast1A);
@@ -555,7 +546,7 @@ namespace AWS.CloudFormation.Test
         [Timeout(int.MaxValue)]
         public void CfnInitOverWriteTest()
         {
-            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var template = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -594,7 +585,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void SerializerTest()
         {
-            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var template = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "SecurityGroupRdp", "Allows Remote Desktop Access", vpc);
             System.Diagnostics.Debug.WriteLine(rdp.Vpc);
@@ -646,7 +637,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateStackWithMounterTest()
         {
-            var template = GetNewBlankTemplateWithVpc(this.TestContext);
+            var template = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -891,7 +882,7 @@ namespace AWS.CloudFormation.Test
             }
 
             StackTest.DomainDnsName = name;
-            var templateToCreateStack = GetTemplateFullStack(this.TestContext, ProvisionMode.Launch);
+            var templateToCreateStack = GetTemplateFullStack(ProvisionMode.Launch);
             templateToCreateStack.StackName = StackTest.DomainDnsName.Replace('.', '-');
 
             CreateTestStack(templateToCreateStack, this.TestContext);
@@ -900,11 +891,11 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateDevelopmentTest()
         {
-            var stackName = "alpha-yadayada-software";
+            var stackName = "beta-yadayada-software";
 
-            StackTest.DomainDnsName = "alpha.yadayada.software";
+            StackTest.DomainDnsName = "beta.yadayada.software";
 
-            Stack.Stack.UpdateStack(stackName, GetTemplateFullStack(this.TestContext, "VpcCreatePrimeTest", ProvisionMode.Run));
+            Stack.Stack.UpdateStack(stackName, GetTemplateFullStack(ProvisionMode.Run));
         }
 
 
@@ -912,7 +903,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void AddingSameResourceTwiceFails()
         {
-            var t = GetNewBlankTemplateWithVpc(this.TestContext);
+            var t = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
             var v = new Vpc(t,"X","10.0.0.0/16");
             var s = new Subnet(t,"Vpc1",v,null,AvailabilityZone.UsEast1A);
 
@@ -939,20 +930,16 @@ namespace AWS.CloudFormation.Test
             Assert.IsTrue(create.Any());
         }
 
-        internal static Template GetNewBlankTemplateWithVpc(TestContext testContext, string vpcName)
+        internal static Template GetNewBlankTemplateWithVpc(string vpcName)
         {
             if (string.IsNullOrEmpty(vpcName))
             {
-                vpcName = $"Vpc{testContext.TestName}";
+                throw new ArgumentNullException(nameof(vpcName));
             }
             return new Template(KeyPairName, vpcName, CidrVpc);
 
         }
-        internal static Template GetNewBlankTemplateWithVpc(TestContext testContext)
-        {
-            return GetNewBlankTemplateWithVpc(testContext, null);
 
-        }
         private TestContext testContextInstance;
 
         /// <summary>
