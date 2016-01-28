@@ -3,12 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Resource.EC2
 {
+
+    public class FnJoin : CloudFormationDictionary
+    {
+        public FnJoin(string delimiter, params object[] elements)
+        {
+            var temp = new List<object>();
+            temp.Add(delimiter);
+            temp.Add(elements);
+            this.Add("Fn::Join", temp.ToArray());
+        }
+
+    }
     public class DhcpOptions : ResourceBase
     {
         public DhcpOptions(Template template, string name, string domainName, Vpc vpc, params object[] netBiosNameServers) : base(template, name, ResourceType.DhcpOptions)

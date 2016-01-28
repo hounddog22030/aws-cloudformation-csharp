@@ -13,7 +13,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
     public class DomainController : WindowsInstance
     {
 
-        //public const string DefaultConfigSetRenameConfigSetDnsServers = "a-set-dns-servers";
+        public const string DefaultConfigSetRenameConfigSetDnsServers = "a-set-dns-servers";
 
         public class DomainInfo
         {
@@ -36,6 +36,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public const string ParameterNameDomainDnsName = "DomainDNSName";
         public const string ParameterNameDomainNetBiosName = "DomainNetBIOSName";
         public const string ParameterNameDomainAdminUser = "DomainAdminUser";
+
+
 
 
 
@@ -64,7 +66,21 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             this.CreateDomainControllerSecurityGroup();
             this.MakeDomainController();
             ConfigureDefaultSite(subnet);
+            //this.SetDnsServers();
         }
+
+        //private void SetDnsServers()
+        //{
+        //    var renameConfig =
+        //        this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName)
+        //            .GetConfig(DefaultConfigSetJoinConfig);
+        //    var renameCommandConfig =
+        //        renameConfig.Commands.AddCommand<PowerShellCommand>(DefaultConfigSetRenameConfigSetDnsServers);
+
+        //    renameCommandConfig.Command.AddCommandLine(
+        //        "-Command \"Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses 10.0.0.2 \"");
+        //    renameCommandConfig.WaitAfterCompletion = 0.ToString();
+        //}
 
         [JsonIgnore]
         public ParameterBase DomainAdminUser { get; }
