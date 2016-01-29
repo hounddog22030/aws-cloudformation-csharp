@@ -15,6 +15,8 @@ namespace AWS.CloudFormation.Property
         [EnumMember(Value = "invalid")]
         None,
         [EnumMember(Value = "us-east-1a")]
-        UsEast1A
+        UsEast1A,
+        [EnumMember(Value = "us-east-1e")]
+        UsEast1E
     }
 }

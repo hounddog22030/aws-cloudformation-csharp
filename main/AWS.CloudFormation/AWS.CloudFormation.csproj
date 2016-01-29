@@ -68,6 +68,8 @@
     <Compile Include="Resource\EC2\Instancing\BlockDeviceMapping.cs" />
     <Compile Include="Resource\EC2\Instancing\DomainController.cs" />
     <Compile Include="Resource\EC2\VPCDHCPOptionsAssociation.cs" />
+    <Compile Include="Resource\RDS\DbInstance.cs" />
+    <Compile Include="Resource\RDS\DbSubnetGroup.cs" />
     <Compile Include="Serialization\EnumConverter.cs" />
     <Compile Include="Resource\EC2\Instancing\Metadata\Authentication.cs" />
     <Compile Include="Resource\EC2\Instancing\Metadata\ConfigSet.cs" />

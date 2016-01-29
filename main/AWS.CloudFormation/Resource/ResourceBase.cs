@@ -42,7 +42,9 @@ namespace AWS.CloudFormation.Resource
         [EnumMember(Value = "AWS::CloudFormation::WaitConditionHandle")] AwsCloudFormationWaitConditionHandle,
         [EnumMember(Value = "AWS::EC2::KeyPair::KeyName")] AwsEc2KeyPairKeyName,
         [EnumMember(Value = "AWS::EC2::DHCPOptions")] DhcpOptions,
-        [EnumMember(Value = "AWS::EC2::VPCDHCPOptionsAssociation")] VpcDhcpOptionsAssociation
+        [EnumMember(Value = "AWS::EC2::VPCDHCPOptionsAssociation")] VpcDhcpOptionsAssociation,
+        [EnumMember(Value = "AWS::RDS::DBInstance")] AwsRdsDbInstance,
+        [EnumMember(Value = "AWS::RDS::DBSubnetGroup")] AwsRdsDbSubnetGroup
     }
 
     public abstract class ResourceBase : ILogicalId

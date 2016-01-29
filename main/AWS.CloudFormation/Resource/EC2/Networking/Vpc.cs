@@ -16,11 +16,25 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         }
 
         [JsonIgnore]
+        public bool EnableDnsHostnames
+        {
+            get { return this.Properties.GetValue<bool>(); }
+            set { this.Properties.SetValue(value); }
+        }
+
+        [JsonIgnore]
+        public bool EnableDnsSupport
+        {
+            get { return this.Properties.GetValue<bool>(); }
+            set { this.Properties.SetValue(value); }
+        }
+
+        [JsonIgnore]
         public InternetGateway InternetGateway { get; }
 
         [JsonIgnore]
         public string CidrBlock {
-            get { return (string)this.Properties.GetValue<string>(); }
+            get { return this.Properties.GetValue<string>(); }
             set { this.Properties.SetValue(value); }
         }
 

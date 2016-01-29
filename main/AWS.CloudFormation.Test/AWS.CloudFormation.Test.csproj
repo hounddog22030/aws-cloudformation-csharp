@@ -65,6 +65,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Resource\RDS\DbInstanceTest.cs" />
     <Compile Include="Route53\HostedZoneTest.cs" />
     <Compile Include="Route53\RecordSetTest.cs" />
     <Compile Include="StackTest.cs" />
