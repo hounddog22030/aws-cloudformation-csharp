@@ -36,7 +36,7 @@ namespace AWS.CloudFormation.Test.Resource.RDS
             var subnet1 = new Subnet(template, "subnetDb1", vpc, "10.0.128.0/28", AvailabilityZone.UsEast1A);
             RouteTable routeTable4Subnet1 = new RouteTable(template, "routeTable4Subnet1", vpc);
             Route route4subnet1 = new Route(template, "route4subnet1", vpc.InternetGateway, "0.0.0.0/0", routeTable4Subnet1);
-            SubnetRouteTableAssociation subnetRouteTableAssociationSubnet2 = new SubnetRouteTableAssociation(template, subnet1, routeTable4Subnet1);
+            SubnetRouteTableAssociation subnetRouteTableAssociationSubnet1 = new SubnetRouteTableAssociation(template, subnet1, routeTable4Subnet1);
 
             var subnet2 = new Subnet(template, "subnetDb2", template.Vpcs.First(), "10.0.64.0/28", AvailabilityZone.UsEast1E);
             RouteTable routeTable4Subnet2 = new RouteTable(template, "routeTable4Subnet2", vpc);

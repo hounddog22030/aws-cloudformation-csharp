@@ -155,7 +155,7 @@ namespace AWS.CloudFormation.Test
 
             var instanceTfsSqlServer = AddSql(template, "sql4tfs", instanceSize, subnetSqlServer4Tfs, instanceDomainController, sqlServer4TfsSecurityGroup);
 
-            instanceSize = InstanceTypes.T2Micro;
+            instanceSize = InstanceTypes.T2Small;
             if (mode == ProvisionMode.Launch)
             {
                 instanceSize = InstanceTypes.C4Large;
