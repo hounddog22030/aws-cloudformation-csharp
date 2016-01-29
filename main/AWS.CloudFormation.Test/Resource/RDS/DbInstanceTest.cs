@@ -25,6 +25,18 @@ namespace AWS.CloudFormation.Test.Resource.RDS
             Stack.Stack.CreateStack(GetSingleDbTemplate(), this.TestContext.TestName + DateTime.Now.Ticks );
         }
 
+        [TestMethod]
+        public void AuroraDbInstanceTest()
+        {
+            Stack.Stack.CreateStack(GetSingleDbAuroraTemplate(), this.TestContext.TestName + DateTime.Now.Ticks);
+        }
+
+        [TestMethod]
+        public void MySqlDbInstanceTest()
+        {
+            Stack.Stack.CreateStack(GetMySqlTemplate(), this.TestContext.TestName + DateTime.Now.Ticks);
+        }
+
         private Template GetSingleDbTemplate()
         {
             var template = new Template("corp.getthebuybox.com", "vpcBasicDbInstanceTest", "10.0.0.0/16");
@@ -73,6 +85,101 @@ namespace AWS.CloudFormation.Test.Resource.RDS
             return template;
         }
 
+        private Template GetMySqlTemplate()
+        {
+            var template = new Template("corp.getthebuybox.com", "vpcBasicDbInstanceTest", "10.0.0.0/16");
+
+            var vpc = template.Vpcs.First();
+            vpc.EnableDnsHostnames = true;
+            vpc.EnableDnsSupport = true;
+
+            var subnet1 = new Subnet(template, "subnetDb1", vpc, "10.0.128.0/28", AvailabilityZone.UsEast1A);
+            RouteTable routeTable4Subnet1 = new RouteTable(template, "routeTable4Subnet1", vpc);
+            Route route4subnet1 = new Route(template, "route4subnet1", vpc.InternetGateway, "0.0.0.0/0", routeTable4Subnet1);
+            SubnetRouteTableAssociation subnetRouteTableAssociationSubnet1 = new SubnetRouteTableAssociation(template, subnet1, routeTable4Subnet1);
+
+            var subnet2 = new Subnet(template, "subnetDb2", template.Vpcs.First(), "10.0.64.0/28", AvailabilityZone.UsEast1E);
+            RouteTable routeTable4Subnet2 = new RouteTable(template, "routeTable4Subnet2", vpc);
+            Route route4subnet2 = new Route(template, "route4subnet2", vpc.InternetGateway, "0.0.0.0/0", routeTable4Subnet2);
+            SubnetRouteTableAssociation subnetRouteTableAssociationSubnet2 = new SubnetRouteTableAssociation(template, subnet2, routeTable4Subnet2);
+
+            var subnetGroup = new DbSubnetGroup(template, "dbSubnetGroup", "this is my subnet group description");
+            subnetGroup.AddSubnet(subnet1);
+            subnetGroup.AddSubnet(subnet2);
+
+            SecurityGroup securityGroup = new SecurityGroup(template, "securityGroupWorldWide", "Allows access to SqlServer from everywhere", vpc);
+            securityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.MySql);
+
+            DbInstance instance = new DbInstance(template,
+                "instanceBasicDbInstanceTest",
+                DbInstanceClassEnum.DbT2Micro,
+                EngineType.MySql,
+                "MyMasterUsername",
+                "YellowBeard123",
+                20,
+                subnetGroup);
+
+            var dbSecurityGroup = new DbSecurityGroup(template, "dbSecurityGroup", vpc, "Why is a description required?");
+
+            var dbSecurityGroupIngress = new DbSecurityGroupIngress();
+            dbSecurityGroupIngress.CIDRIP = "0.0.0.0/0";
+            //dbSecurityGroupIngress.EC2SecurityGroupId = new ReferenceProperty(securityGroup);
+
+            dbSecurityGroup.AddDbSecurityGroupIngress(dbSecurityGroupIngress);
+
+            instance.AddDbSecurityGroup(dbSecurityGroup);
+
+            instance.PubliclyAccessible = true.ToString().ToLowerInvariant();
+            return template;
+        }
+        private Template GetSingleDbAuroraTemplate()
+        {
+            var template = new Template("corp.getthebuybox.com", "vpcBasicDbInstanceTest", "10.0.0.0/16");
+
+            var vpc = template.Vpcs.First();
+            vpc.EnableDnsHostnames = true;
+            vpc.EnableDnsSupport = true;
+
+            var subnet1 = new Subnet(template, "subnetDb1", vpc, "10.0.128.0/28", AvailabilityZone.UsEast1A);
+            RouteTable routeTable4Subnet1 = new RouteTable(template, "routeTable4Subnet1", vpc);
+            Route route4subnet1 = new Route(template, "route4subnet1", vpc.InternetGateway, "0.0.0.0/0", routeTable4Subnet1);
+            SubnetRouteTableAssociation subnetRouteTableAssociationSubnet1 = new SubnetRouteTableAssociation(template, subnet1, routeTable4Subnet1);
+
+            var subnet2 = new Subnet(template, "subnetDb2", template.Vpcs.First(), "10.0.64.0/28", AvailabilityZone.UsEast1E);
+            RouteTable routeTable4Subnet2 = new RouteTable(template, "routeTable4Subnet2", vpc);
+            Route route4subnet2 = new Route(template, "route4subnet2", vpc.InternetGateway, "0.0.0.0/0", routeTable4Subnet2);
+            SubnetRouteTableAssociation subnetRouteTableAssociationSubnet2 = new SubnetRouteTableAssociation(template, subnet2, routeTable4Subnet2);
+
+            var subnetGroup = new DbSubnetGroup(template, "dbSubnetGroup", "this is my subnet group description");
+            subnetGroup.AddSubnet(subnet1);
+            subnetGroup.AddSubnet(subnet2);
+
+            SecurityGroup securityGroup = new SecurityGroup(template, "securityGroupWorldWide", "Allows access to SqlServer from everywhere", vpc);
+            securityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.MsSqlServer);
+
+            DbInstance instance = new DbInstance(template,
+                "instanceBasicDbInstanceTest",
+                DbInstanceClassEnum.DbR3Large,
+                EngineType.Aurora,
+                "MyMasterUsername",
+                "YellowBeard123",
+                100,
+                subnetGroup);
+
+            var dbSecurityGroup = new DbSecurityGroup(template, "dbSecurityGroup", vpc, "Why is a description required?");
+
+            var dbSecurityGroupIngress = new DbSecurityGroupIngress();
+            dbSecurityGroupIngress.CIDRIP = "0.0.0.0/0";
+            //dbSecurityGroupIngress.EC2SecurityGroupId = new ReferenceProperty(securityGroup);
+
+            dbSecurityGroup.AddDbSecurityGroupIngress(dbSecurityGroupIngress);
+
+            instance.AddDbSecurityGroup(dbSecurityGroup);
+
+            instance.PubliclyAccessible = true.ToString().ToLowerInvariant();
+            return template;
+        }
+
         [TestMethod]
         public void UpdateDbTest()
         {
@@ -80,6 +187,13 @@ namespace AWS.CloudFormation.Test.Resource.RDS
             Stack.Stack.UpdateStack(stackName, GetSingleDbTemplate());
         }
 
+
+        [TestMethod]
+        public void UpdateMySql()
+        {
+            var stackName = "MySqlDbInstanceTest635896351095707209";
+            Stack.Stack.UpdateStack(stackName, GetSingleDbTemplate());
+        }
 
 
         #region "Test Stuff"

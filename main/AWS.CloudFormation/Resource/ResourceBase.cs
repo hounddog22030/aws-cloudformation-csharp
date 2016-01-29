@@ -64,6 +64,10 @@ namespace AWS.CloudFormation.Resource
             {
                 template.Outputs.Add(name, new Output(name, new ReferenceProperty(this)));
             }
+            if (SupportsTags)
+            {
+                this.Tags.Add(new Tag("Name",name));
+            }
         }
         protected abstract bool SupportsTags { get; }
 

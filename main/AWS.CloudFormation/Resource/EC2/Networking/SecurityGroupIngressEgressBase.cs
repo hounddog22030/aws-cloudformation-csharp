@@ -37,7 +37,8 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         BuildController = 9191,
         TeamFoundationServerHttp = 8080,
         TeamFoundationServerBuild = 9191,
-        Ping = 1
+        Ping = 1,
+        MySql = 3306
     }
 
     [Flags]

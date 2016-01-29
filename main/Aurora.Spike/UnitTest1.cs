@@ -11,13 +11,14 @@ namespace Aurora.Spike
         public void TestMethod1()
         {
             //DataBase = DataBaseName;
-            using ( MySqlConnection c = new MySqlConnection("Host=mydb.cjb3mfdiqjpi.us-east-1.rds.amazonaws.com;Database=mydbname; Protocol=TCP; Port=3306; Compress=false; Pooling=true; Min Pool Size=0; Max Pool Size=100; Connection Lifetime=0; User id=MyDbUserName;Password=Odelay123."))
+            //; Database = mydbname
+            using ( MySqlConnection c = new MySqlConnection("Host=micfi8z9bwvejr.cjb3mfdiqjpi.us-east-1.rds.amazonaws.com; Protocol=TCP; Port=3306; Compress=false; Pooling=true; Min Pool Size=0; Max Pool Size=100; Connection Lifetime=0; User id=MyMasterUsername;Password=YellowBeard123"))
             {
                 c.Open();
                 var cc = c.CreateCommand();
                 cc.CommandText = "SELECT 0";
                 var result = cc.ExecuteScalar();
-                Assert.AreEqual(0,result);
+                Assert.AreEqual((Int64)0,result);
 
             }
             

@@ -21,7 +21,9 @@ namespace AWS.CloudFormation.Resource.RDS
     public enum DbInstanceClassEnum
     {
         [EnumMember(Value = "db.t2.micro")]
-        DbT2Micro
+        DbT2Micro,
+        [EnumMember(Value = "db.r3.large")]
+        DbR3Large
 
     }
 
@@ -31,12 +33,14 @@ namespace AWS.CloudFormation.Resource.RDS
     [JsonConverter(typeof(EnumConverter))]
     public enum EngineType
     {
-        [EnumMember(Value = "MySQL")]
+        [EnumMember(Value = "mysql")]
         MySql,
         [EnumMember(Value = "mariadb")]
         MariaDb,
         [EnumMember(Value = "sqlserver-ex")]
-        SqlServerExpress
+        SqlServerExpress,
+        [EnumMember(Value = "aurora")]
+        Aurora
     }
     public class DbInstance : ResourceBase
     {
@@ -56,8 +60,8 @@ namespace AWS.CloudFormation.Resource.RDS
             this.MasterUsername = masterUserName;
             this.MasterUserPassword = masterPassword;
             this.DBSubnetGroupName = new ReferenceProperty(subnetGroup);
-            this.LicenseModel = "license-included";
-            this.EngineVersion = "12.00.4422.0.v1";
+            this.LicenseModel = "general-public-license";
+            //this.EngineVersion = "12.00.4422.0.v1";
         }
 
 
