@@ -12,7 +12,7 @@ namespace Aurora.Spike
         {
             //DataBase = DataBaseName;
             //; Database = mydbname
-            using ( MySqlConnection c = new MySqlConnection("Host=micfi8z9bwvejr.cjb3mfdiqjpi.us-east-1.rds.amazonaws.com; Protocol=TCP; Port=3306; Compress=false; Pooling=true; Min Pool Size=0; Max Pool Size=100; Connection Lifetime=0; User id=MyMasterUsername;Password=YellowBeard123"))
+            using ( MySqlConnection c = new MySqlConnection("User id=masterusername;Password=Hy77tttt.;Host=as1mttmlpf8v8hr.cjb3mfdiqjpi.us-east-1.rds.amazonaws.com; Protocol=TCP; Port=3306; Compress=false; Pooling=true; Min Pool Size=0; Max Pool Size=100; Connection Lifetime=0"))
             {
                 c.Open();
                 var cc = c.CreateCommand();
