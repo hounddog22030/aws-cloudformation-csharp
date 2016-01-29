@@ -181,6 +181,33 @@ namespace AWS.CloudFormation.Resource.RDS
             }
         }
 
+        //DBSecurityGroups
+        [JsonIgnore]
+        public object[] DBSecurityGroups
+        {
+            get
+            {
+                return this.Properties.GetValue<object[]>();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
+            }
+        }
+
+        public void AddSecurityGroup(SecurityGroup securityGroup)
+        {
+            var replaceWith = new List<object>();
+            if (this.DBSecurityGroups != null && this.DBSecurityGroups.Any())
+            {
+                replaceWith.AddRange(this.DBSecurityGroups);
+            }
+            replaceWith.Add(new ReferenceProperty(securityGroup));
+            this.DBSecurityGroups = replaceWith.ToArray();
+        }
+
+
+
 
 
 

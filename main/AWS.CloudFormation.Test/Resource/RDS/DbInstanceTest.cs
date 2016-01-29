@@ -29,19 +29,23 @@ namespace AWS.CloudFormation.Test.Resource.RDS
             vpc.EnableDnsSupport = true;
             var subnet1 = new Subnet(template, "subnetDb1", vpc, "10.0.128.0/28", AvailabilityZone.UsEast1A);
 
-            RouteTable routeTable4SubnetDb1 = new RouteTable(template, "routeTable4SubnetDb1", vpc);
-            Route subnet1Route = new Route(template, "subnet1Route", vpc.InternetGateway, "0.0.0.0/0", routeTable4SubnetDb1);
-            SubnetRouteTableAssociation subnetRouteTableAssociationSubnet1 = new SubnetRouteTableAssociation(template, subnet1, routeTable4SubnetDb1);
+            RouteTable routeTable = new RouteTable(template, "routeTable", vpc);
+            Route route = new Route(template, "route", vpc.InternetGateway, "0.0.0.0/0", routeTable);
 
             var subnet2 = new Subnet(template, "subnetDb2", template.Vpcs.First(), "10.0.64.0/28", AvailabilityZone.UsEast1E);
 
-            RouteTable routeTable4SubnetDb2 = new RouteTable(template, "routeTable4SubnetDb2", vpc);
-            Route subnet2Route = new Route(template, "subnet2Route", vpc.InternetGateway, "0.0.0.0/0", routeTable4SubnetDb2);
-            SubnetRouteTableAssociation subnetRouteTableAssociationSubnet2 = new SubnetRouteTableAssociation(template, subnet2, routeTable4SubnetDb2);
+            //RouteTable routeTable4SubnetDb2 = new RouteTable(template, "routeTable4SubnetDb2", vpc);
+            //Route subnet2Route = new Route(template, "subnet2Route", vpc.InternetGateway, "0.0.0.0/0", routeTable4SubnetDb2);
+            //SubnetRouteTableAssociation subnetRouteTableAssociationSubnet2 = new SubnetRouteTableAssociation(template, subnet2, routeTable4SubnetDb2);
 
             var subnetGroup = new DbSubnetGroup(template,"dbSubnetGroup", "this is my subnet group description");
             subnetGroup.AddSubnet(subnet1);
             subnetGroup.AddSubnet(subnet2);
+
+            SecurityGroup securityGroup = new SecurityGroup(template,"securityGroupWorldWide","Allows access to SqlServer from everywhere", vpc);
+            securityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.MsSqlServer);
+
+
 
             DbInstance instance = new DbInstance(template, 
                 "instanceBasicDbInstanceTest", 
@@ -51,6 +55,8 @@ namespace AWS.CloudFormation.Test.Resource.RDS
                 "YellowBeard123",
                 20,
                 subnetGroup);
+
+            instance.AddSecurityGroup(securityGroup);
 
             instance.PubliclyAccessible = true;
 
