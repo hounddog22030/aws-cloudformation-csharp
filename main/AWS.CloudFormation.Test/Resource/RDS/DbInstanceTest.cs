@@ -22,41 +22,44 @@ namespace AWS.CloudFormation.Test.Resource.RDS
         [TestMethod]
         public void BasicDbInstanceTest()
         {
-            var template = new Template("corp.getthebuybox.com", "vpcBasicDbInstanceTest","10.0.0.0/16");
+            Stack.Stack.CreateStack(GetSingleDbTemplate(), this.TestContext.TestName + DateTime.Now.Ticks );
+        }
+
+        private Template GetSingleDbTemplate()
+        {
+            var template = new Template("corp.getthebuybox.com", "vpcBasicDbInstanceTest", "10.0.0.0/16");
 
             var vpc = template.Vpcs.First();
             vpc.EnableDnsHostnames = true;
             vpc.EnableDnsSupport = true;
-            var subnet1 = new Subnet(template, "subnetDb1", vpc, "10.0.128.0/28", AvailabilityZone.UsEast1A);
 
-            RouteTable routeTable = new RouteTable(template, "routeTable", vpc);
-            Route route = new Route(template, "route", vpc.InternetGateway, "0.0.0.0/0", routeTable);
+            var subnet1 = new Subnet(template, "subnetDb1", vpc, "10.0.128.0/28", AvailabilityZone.UsEast1A);
+            RouteTable routeTable4Subnet1 = new RouteTable(template, "routeTable4Subnet1", vpc);
+            Route route4subnet1 = new Route(template, "route4subnet1", vpc.InternetGateway, "0.0.0.0/0", routeTable4Subnet1);
+            SubnetRouteTableAssociation subnetRouteTableAssociationSubnet2 = new SubnetRouteTableAssociation(template, subnet1, routeTable4Subnet1);
 
             var subnet2 = new Subnet(template, "subnetDb2", template.Vpcs.First(), "10.0.64.0/28", AvailabilityZone.UsEast1E);
+            RouteTable routeTable4Subnet2 = new RouteTable(template, "routeTable4Subnet2", vpc);
+            Route route4subnet2 = new Route(template, "route4subnet2", vpc.InternetGateway, "0.0.0.0/0", routeTable4Subnet2);
+            SubnetRouteTableAssociation subnetRouteTableAssociationSubnet2 = new SubnetRouteTableAssociation(template, subnet2, routeTable4Subnet2);
 
-            //RouteTable routeTable4SubnetDb2 = new RouteTable(template, "routeTable4SubnetDb2", vpc);
-            //Route subnet2Route = new Route(template, "subnet2Route", vpc.InternetGateway, "0.0.0.0/0", routeTable4SubnetDb2);
-            //SubnetRouteTableAssociation subnetRouteTableAssociationSubnet2 = new SubnetRouteTableAssociation(template, subnet2, routeTable4SubnetDb2);
-
-            var subnetGroup = new DbSubnetGroup(template,"dbSubnetGroup", "this is my subnet group description");
-            subnetGroup.AddSubnet(subnet1);
+            var subnetGroup = new DbSubnetGroup(template, "dbSubnetGroup", "this is my subnet group description");
+            subnetGroup.AddSubnet(subnet2);
             subnetGroup.AddSubnet(subnet2);
 
-            SecurityGroup securityGroup = new SecurityGroup(template,"securityGroupWorldWide","Allows access to SqlServer from everywhere", vpc);
+            SecurityGroup securityGroup = new SecurityGroup(template, "securityGroupWorldWide", "Allows access to SqlServer from everywhere", vpc);
             securityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.MsSqlServer);
 
-
-
-            DbInstance instance = new DbInstance(template, 
-                "instanceBasicDbInstanceTest", 
-                DbInstanceClassEnum.DbT2Micro, 
+            DbInstance instance = new DbInstance(template,
+                "instanceBasicDbInstanceTest",
+                DbInstanceClassEnum.DbT2Micro,
                 EngineType.SqlServerExpress,
                 "MyMasterUsername",
                 "YellowBeard123",
                 20,
                 subnetGroup);
 
-            var dbSecurityGroup = new DbSecurityGroup(template,"dbSecurityGroup", vpc, "Why is a description required?");
+            var dbSecurityGroup = new DbSecurityGroup(template, "dbSecurityGroup", vpc, "Why is a description required?");
 
             var dbSecurityGroupIngress = new DbSecurityGroupIngress();
             dbSecurityGroupIngress.CIDRIP = "0.0.0.0/0";
@@ -66,13 +69,19 @@ namespace AWS.CloudFormation.Test.Resource.RDS
 
             instance.AddDbSecurityGroup(dbSecurityGroup);
 
-            instance.PubliclyAccessible = true;
+            instance.PubliclyAccessible = true.ToString().ToLowerInvariant();
+            return template;
+        }
 
-            Stack.Stack.CreateStack(template, this.TestContext.TestName + DateTime.Now.Ticks );
+        [TestMethod]
+        public void UpdateDbTest()
+        {
+            var stackName = "BasicDbInstanceTest635896256671970189";
+            Stack.Stack.UpdateStack(stackName, GetSingleDbTemplate());
         }
 
 
-        
+
         #region "Test Stuff"
         public DbInstanceTest()
         {

@@ -170,11 +170,11 @@ namespace AWS.CloudFormation.Resource.RDS
         //PubliclyAccessible
 
         [JsonIgnore]
-        public bool PubliclyAccessible
+        public string PubliclyAccessible
         {
             get
             {
-                return this.Properties.GetValue<bool>();
+                return this.Properties.GetValue<string>();
             }
             set
             {
