@@ -56,7 +56,15 @@ namespace AWS.CloudFormation.Test.Resource.RDS
                 20,
                 subnetGroup);
 
-            instance.AddSecurityGroup(securityGroup);
+            var dbSecurityGroup = new DbSecurityGroup(template,"dbSecurityGroup", vpc, "Why is a description required?");
+
+            var dbSecurityGroupIngress = new DbSecurityGroupIngress();
+            dbSecurityGroupIngress.CIDRIP = "0.0.0.0/0";
+            //dbSecurityGroupIngress.EC2SecurityGroupId = new ReferenceProperty(securityGroup);
+
+            dbSecurityGroup.AddDbSecurityGroupIngress(dbSecurityGroupIngress);
+
+            instance.AddDbSecurityGroup(dbSecurityGroup);
 
             instance.PubliclyAccessible = true;
 

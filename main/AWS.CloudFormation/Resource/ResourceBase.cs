@@ -44,7 +44,8 @@ namespace AWS.CloudFormation.Resource
         [EnumMember(Value = "AWS::EC2::DHCPOptions")] DhcpOptions,
         [EnumMember(Value = "AWS::EC2::VPCDHCPOptionsAssociation")] VpcDhcpOptionsAssociation,
         [EnumMember(Value = "AWS::RDS::DBInstance")] AwsRdsDbInstance,
-        [EnumMember(Value = "AWS::RDS::DBSubnetGroup")] AwsRdsDbSubnetGroup
+        [EnumMember(Value = "AWS::RDS::DBSubnetGroup")] AwsRdsDbSubnetGroup,
+        [EnumMember(Value = "AWS::RDS::DBSecurityGroup")] AwsRdsDbSecurityGroup
     }
 
     public abstract class ResourceBase : ILogicalId

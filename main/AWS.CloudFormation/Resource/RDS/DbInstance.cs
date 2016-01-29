@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.AutoScaling;
 using AWS.CloudFormation.Resource.EC2.Instancing;
@@ -183,11 +184,12 @@ namespace AWS.CloudFormation.Resource.RDS
 
         //DBSecurityGroups
         [JsonIgnore]
-        public object[] DBSecurityGroups
+        // ReSharper disable once InconsistentNaming
+        public ReferenceProperty[] DBSecurityGroups
         {
             get
             {
-                return this.Properties.GetValue<object[]>();
+                return this.Properties.GetValue<ReferenceProperty[]>();
             }
             set
             {
@@ -195,16 +197,18 @@ namespace AWS.CloudFormation.Resource.RDS
             }
         }
 
-        public void AddSecurityGroup(SecurityGroup securityGroup)
+        public void AddDbSecurityGroup(DbSecurityGroup securityGroup)
         {
-            var replaceWith = new List<object>();
+            var replaceWith = new List<ReferenceProperty>();
             if (this.DBSecurityGroups != null && this.DBSecurityGroups.Any())
             {
-                replaceWith.AddRange(this.DBSecurityGroups);
+                replaceWith.AddRange(this.DBSecurityGroups.ToArray());
             }
             replaceWith.Add(new ReferenceProperty(securityGroup));
             this.DBSecurityGroups = replaceWith.ToArray();
+
         }
+
 
 
 

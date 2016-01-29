@@ -153,7 +153,18 @@ namespace AWS.CloudFormation.Test
                 instanceSize = InstanceTypes.C4Large;
             }
 
-            //var instanceTfsSqlServer = AddSql(template, "sql4tfs", instanceSize, subnetSqlServer4Tfs, instanceDomainController, sqlServer4TfsSecurityGroup);
+            var instanceTfsSqlServer = AddSql(template, "sql4tfs", instanceSize, subnetSqlServer4Tfs, instanceDomainController, sqlServer4TfsSecurityGroup);
+
+            instanceSize = InstanceTypes.T2Micro;
+            if (mode == ProvisionMode.Launch)
+            {
+                instanceSize = InstanceTypes.C4Large;
+            }
+
+
+
+            var tfsServer = AddTfsServer(template, instanceSize, subnetTfsServer, instanceTfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
+
 
             //instanceSize = InstanceTypes.T2Micro;
             //if (mode == ProvisionMode.Launch)
@@ -161,50 +172,39 @@ namespace AWS.CloudFormation.Test
             //    instanceSize = InstanceTypes.C4Large;
             //}
 
-
-
-            //var tfsServer = AddTfsServer(template, instanceSize, subnetTfsServer, instanceTfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
-
-
-            //instanceSize = InstanceTypes.T2Micro;
-            //if (mode == ProvisionMode.Launch)
-            //{
-            //    instanceSize = InstanceTypes.C4Large;
-            //}
-
-            //WindowsInstance sql4Build = null;
+            WindowsInstance sql4Build = null;
             //sql4Build = AddSql(template, "sql4build", instanceSize, subnetBuildServer, instanceDomainController, securityGroupSqlServer4Build);
 
 
-            //instanceSize = InstanceTypes.T2Small;
-            //if (mode == ProvisionMode.Launch)
-            //{
-            //    instanceSize = InstanceTypes.C4Large;
-            //}
+            instanceSize = InstanceTypes.T2Small;
+            if (mode == ProvisionMode.Launch)
+            {
+                instanceSize = InstanceTypes.C4Large;
+            }
 
-            //var buildServer = AddBuildServer(template, instanceSize, subnetBuildServer, tfsServer, instanceDomainController, securityGroupBuildServer, sql4Build);
-            //buildServer.AddFinalizer(TimeoutMax);
+            var buildServer = AddBuildServer(template, instanceSize, subnetBuildServer, tfsServer, instanceDomainController, securityGroupBuildServer, sql4Build);
+            buildServer.AddFinalizer(TimeoutMax);
 
-            //// uses 33gb
-            //var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
-            //workstation.AddFinalizer(TimeoutMax);
+            // uses 33gb
+            var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
+            workstation.AddFinalizer(TimeoutMax);
 
 
-            //SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
-            //elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
-            //tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
+            elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
-            ////////LoadBalancer elb = new LoadBalancer(template, "elb1");
-            ////////elb.AddInstance(tfsServer);
-            ////////elb.AddListener("8080", "8080", "http");
-            ////////elb.AddSubnet(DMZSubnet);
-            ////////elb.AddSecurityGroup(elbSecurityGroup);
-            ////////template.AddResource(elb);
+            //////LoadBalancer elb = new LoadBalancer(template, "elb1");
+            //////elb.AddInstance(tfsServer);
+            //////elb.AddListener("8080", "8080", "http");
+            //////elb.AddSubnet(DMZSubnet);
+            //////elb.AddSecurityGroup(elbSecurityGroup);
+            //////template.AddResource(elb);
 
-            //// the below is a remote desktop gateway server that can
-            //// be uncommented to debug domain setup problems
-            var instanceRdp2 = new RemoteDesktopGateway(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
-            instanceDomainController.AddToDomainMemberSecurityGroup(instanceRdp2);
+            // the below is a remote desktop gateway server that can
+            // be uncommented to debug domain setup problems
+            //var instanceRdp2 = new RemoteDesktopGateway(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
+            //instanceDomainController.AddToDomainMemberSecurityGroup(instanceRdp2);
 
             return template;
         }
@@ -899,9 +899,9 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateDevelopmentTest()
         {
-            var stackName = "gamma-yadayada-software";
+            var stackName = "alpha-yadayada-software";
 
-            StackTest.DomainDnsName = "gamma.yadayada.software";
+            StackTest.DomainDnsName = "alpha.yadayada.software";
 
             Stack.Stack.UpdateStack(stackName, GetTemplateFullStack(ProvisionMode.Run));
         }
