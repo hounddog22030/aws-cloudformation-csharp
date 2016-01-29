@@ -17,6 +17,7 @@ using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
+using AWS.CloudFormation.Resource.RDS;
 using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OperatingSystem = AWS.CloudFormation.Resource.EC2.Instancing.OperatingSystem;
@@ -35,6 +36,7 @@ namespace AWS.CloudFormation.Test
         private const string CidrTfsServerSubnet = "10.0.2.0/24";
         private const string CidrBuildServerSubnet = "10.0.3.0/24";
         private const string CidrWorkstationSubnet = "10.0.4.0/24";
+        private const string CidrDatabase4BuildSubnet2 = "10.0.5.0/24";
         private const string KeyPairName = "corp.getthebuybox.com";
         private const string CidrVpc = "10.0.0.0/16";
         public static string DomainDnsName { get; set; } = string.Empty;
@@ -90,15 +92,16 @@ namespace AWS.CloudFormation.Test
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
 
-            SecurityGroup securityGroupSqlServer4Build = new SecurityGroup(template, "securityGroupSqlServer4Build", "Allows communication to SQLServer Service", vpc);
-            securityGroupSqlServer4Build.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            securityGroupSqlServer4Build.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            SecurityGroup securityGroupDb4Build = new SecurityGroup(template, "securityGroupDb4Build", "Allows communication to Db", vpc);
 
             var subnetBuildServer = new Subnet(template, "subnetBuildServer", vpc, CidrBuildServerSubnet, AvailabilityZone.UsEast1A);
-            securityGroupSqlServer4Build.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.MsSqlServer);
+            securityGroupDb4Build.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.MySql);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.TeamFoundationServerBuild);
             subnetBuildServer.AddNatGateway(nat1, natSecurityGroup);
+
+            var subnetDatabase4BuildServer2 = new Subnet(template, "subnetDatabase4BuildServer2", vpc, CidrDatabase4BuildSubnet2, AvailabilityZone.UsEast1E);
+            securityGroupDb4Build.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.MySql);
 
             SecurityGroup securityGroupBuildServer = new SecurityGroup(template, "BuildServerSecurityGroup", "Allows build controller to build agent communication", vpc);
             securityGroupBuildServer.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -111,6 +114,7 @@ namespace AWS.CloudFormation.Test
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.TeamFoundationServerBuild);
             subnetWorkstation.AddNatGateway(nat1, natSecurityGroup);
+            securityGroupDb4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MySql);
 
 
 
@@ -172,8 +176,11 @@ namespace AWS.CloudFormation.Test
             //    instanceSize = InstanceTypes.C4Large;
             //}
 
-            WindowsInstance sql4Build = null;
-            //sql4Build = AddSql(template, "sql4build", instanceSize, subnetBuildServer, instanceDomainController, securityGroupSqlServer4Build);
+            //WindowsInstance sql4Build = null;
+            DbSubnetGroup dbSubnetGroupForDatabaseForBuild = new DbSubnetGroup(template, "dbSubnetGroupForDatabaseForBuild","Second subnet for database for build server");
+            dbSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
+            dbSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
+            var sql4Build = new DbInstance(template, "sql4build", DbInstanceClassEnum.DbT2Micro, EngineType.MySql, "masterusername", "Hy77tttt.",20, dbSubnetGroupForDatabaseForBuild);
 
 
             instanceSize = InstanceTypes.T2Small;
@@ -182,7 +189,8 @@ namespace AWS.CloudFormation.Test
                 instanceSize = InstanceTypes.C4Large;
             }
 
-            var buildServer = AddBuildServer(template, instanceSize, subnetBuildServer, tfsServer, instanceDomainController, securityGroupBuildServer, sql4Build);
+            var buildServer = AddBuildServer(template, instanceSize, subnetBuildServer, tfsServer,
+                instanceDomainController, securityGroupBuildServer, sql4Build);
             buildServer.AddFinalizer(TimeoutMax);
 
             // uses 33gb
@@ -672,7 +680,7 @@ namespace AWS.CloudFormation.Test
         }
 
 
-        private static WindowsInstance AddBuildServer(Template template, InstanceTypes instanceSize, Subnet subnet, WindowsInstance tfsServer, DomainController domainController, SecurityGroup buildServerSecurityGroup, WindowsInstance sql4Build)
+        private static WindowsInstance AddBuildServer(Template template, InstanceTypes instanceSize, Subnet subnet, WindowsInstance tfsServer, DomainController domainController, SecurityGroup buildServerSecurityGroup, ResourceBase sql4Build)
         {
 
             var buildServer = new WindowsInstance(template, $"build", instanceSize, UsEast1AWindows2012R2Ami, subnet, false, DefinitionType.LaunchConfiguration);

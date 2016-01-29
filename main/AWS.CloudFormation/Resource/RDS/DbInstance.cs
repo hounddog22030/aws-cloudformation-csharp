@@ -64,7 +64,6 @@ namespace AWS.CloudFormation.Resource.RDS
             //this.EngineVersion = "12.00.4422.0.v1";
         }
 
-
         protected override bool SupportsTags => true;
 
         //LicenseModel
