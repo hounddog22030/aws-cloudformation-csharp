@@ -200,7 +200,12 @@ namespace AWS.CloudFormation.Resource.AutoScaling
                 case OperatingSystem.Windows:
                     this.UserData.Clear();
                     this.UserData.Add("Fn::Base64").SetFnJoin(
-                        "<script>cfn-init.exe -v -c ",
+                        "<script>",
+                        "ipconfig /renew",
+                        Environment.NewLine,
+                        "ipconfig /flushdns",
+                        Environment.NewLine,
+                        "cfn-init.exe -v -c ",
                         string.Join(",", this.Metadata.Init.ConfigSets.Keys),
                         " -s ",
                         new ReferenceProperty("AWS::StackId"),
@@ -233,7 +238,12 @@ namespace AWS.CloudFormation.Resource.AutoScaling
                     "[cfn-auto-reloader-hook]\n",
                     "triggers=post.update\n",
                     "path=Resources." + LogicalId + ".Metadata.AWS::CloudFormation::Init\n",
-                    "action=cfn-init.exe -v -c ",
+                    "action=",
+                    "ipconfig /renew",
+                    Environment.NewLine,
+                    "ipconfig /flushdns",
+                    Environment.NewLine,
+                    "cfn-init.exe -v -c ",
                     string.Join(",", this.Metadata.Init.ConfigSets.Keys),
                     " -s ",
                     new ReferenceProperty("AWS::StackName"),

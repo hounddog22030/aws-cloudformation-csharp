@@ -83,6 +83,7 @@ namespace AWS.CloudFormation.Test
 
             var subnetTfsServer = new Subnet(template, "subnetTfsServer", vpc, CidrTfsServerSubnet, AvailabilityZone.UsEast1A);
             sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock)subnetTfsServer, Protocol.Tcp, Ports.MsSqlServer);
+            sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock)subnetTfsServer, Protocol.Tcp, Ports.Smb);
             subnetTfsServer.AddNatGateway(nat1, natSecurityGroup);
 
             SecurityGroup tfsServerSecurityGroup = new SecurityGroup(template, "TFSServerSecurityGroup", "Allows various TFS communication", vpc);
@@ -146,7 +147,7 @@ namespace AWS.CloudFormation.Test
             instanceRdp.AddFinalizer(TimeoutMax);
             instanceDomainController.AddToDomain(instanceRdp, TimeoutMax);
 
-            instanceSize = InstanceTypes.T2Small;
+            instanceSize = InstanceTypes.T2Micro;
             if (mode == ProvisionMode.Launch)
             {
                 instanceSize = InstanceTypes.C4Large;
@@ -154,7 +155,7 @@ namespace AWS.CloudFormation.Test
 
             var tfsSqlServer = AddSql(template, "sql4tfs", instanceSize, subnetSqlServer4Tfs, instanceDomainController, sqlServer4TfsSecurityGroup);
 
-            instanceSize = InstanceTypes.T2Small;
+            instanceSize = InstanceTypes.T2Micro;
             if (mode == ProvisionMode.Launch)
             {
                 instanceSize = InstanceTypes.C4Large;
@@ -163,7 +164,7 @@ namespace AWS.CloudFormation.Test
             var tfsServer = AddTfsServer(template, instanceSize, subnetTfsServer, tfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
 
 
-            instanceSize = InstanceTypes.T2Nano;
+            instanceSize = InstanceTypes.T2Micro;
             if (mode == ProvisionMode.Launch)
             {
                 instanceSize = InstanceTypes.C4Large;
@@ -173,7 +174,7 @@ namespace AWS.CloudFormation.Test
             sql4Build = AddSql(template, "sql4build", instanceSize, subnetBuildServer, instanceDomainController, securityGroupSqlServer4Build);
 
 
-            instanceSize = InstanceTypes.T2Nano;
+            instanceSize = InstanceTypes.T2Small;
             if (mode == ProvisionMode.Launch)
             {
                 instanceSize = InstanceTypes.C4Large;
@@ -887,7 +888,7 @@ namespace AWS.CloudFormation.Test
             }
 
             StackTest.DomainDnsName = name;
-            var templateToCreateStack = GetTemplateFullStack(ProvisionMode.Launch);
+            var templateToCreateStack = GetTemplateFullStack(ProvisionMode.Run);
             templateToCreateStack.StackName = StackTest.DomainDnsName.Replace('.', '-');
 
             CreateTestStack(templateToCreateStack, this.TestContext);
@@ -896,9 +897,9 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateDevelopmentTest()
         {
-            var stackName = "alpha-yadayada-software";
+            var stackName = "gamma-yadayada-software";
 
-            StackTest.DomainDnsName = "alpha.yadayada.software";
+            StackTest.DomainDnsName = "gamma.yadayada.software";
 
             Stack.Stack.UpdateStack(stackName, GetTemplateFullStack(ProvisionMode.Run));
         }

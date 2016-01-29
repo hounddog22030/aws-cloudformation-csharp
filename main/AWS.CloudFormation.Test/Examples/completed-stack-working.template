@@ -731,7 +731,12 @@
                       "[cfn-auto-reloader-hook]\n",
                       "triggers=post.update\n",
                       "path=Resources.dc1.Metadata.AWS::CloudFormation::Init\n",
-                      "action=cfn-init.exe -v -c ",
+                      "action=",
+                      "ipconfig /renew",
+                      "\r\n",
+                      "ipconfig /flushdns",
+                      "\r\n",
+                      "cfn-init.exe -v -c ",
                       "config,InstallChefConfigSet,finalizeConfigSet",
                       " -s ",
                       {
@@ -1104,7 +1109,12 @@
             "Fn::Join": [
               "",
               [
-                "<script>cfn-init.exe -v -c ",
+                "<script>",
+                "ipconfig /renew",
+                "\r\n",
+                "ipconfig /flushdns",
+                "\r\n",
+                "cfn-init.exe -v -c ",
                 "config,InstallChefConfigSet,finalizeConfigSet",
                 " -s ",
                 {
@@ -1683,7 +1693,12 @@
                       "[cfn-auto-reloader-hook]\n",
                       "triggers=post.update\n",
                       "path=Resources.rdp.Metadata.AWS::CloudFormation::Init\n",
-                      "action=cfn-init.exe -v -c ",
+                      "action=",
+                      "ipconfig /renew",
+                      "\r\n",
+                      "ipconfig /flushdns",
+                      "\r\n",
+                      "cfn-init.exe -v -c ",
                       "config,InstallChefConfigSet,finalizeConfigSet",
                       " -s ",
                       {
@@ -1881,7 +1896,12 @@
             "Fn::Join": [
               "",
               [
-                "<script>cfn-init.exe -v -c ",
+                "<script>",
+                "ipconfig /renew",
+                "\r\n",
+                "ipconfig /flushdns",
+                "\r\n",
+                "cfn-init.exe -v -c ",
                 "config,InstallChefConfigSet,finalizeConfigSet",
                 " -s ",
                 {
@@ -2067,7 +2087,12 @@
                       "[cfn-auto-reloader-hook]\n",
                       "triggers=post.update\n",
                       "path=Resources.sql4tfs.Metadata.AWS::CloudFormation::Init\n",
-                      "action=cfn-init.exe -v -c ",
+                      "action=",
+                      "ipconfig /renew",
+                      "\r\n",
+                      "ipconfig /flushdns",
+                      "\r\n",
+                      "cfn-init.exe -v -c ",
                       "config,InstallChefConfigSet,sqlserver.tar.gz,finalizeConfigSet",
                       " -s ",
                       {
@@ -2274,7 +2299,12 @@
             "Fn::Join": [
               "",
               [
-                "<script>cfn-init.exe -v -c ",
+                "<script>",
+                "ipconfig /renew",
+                "\r\n",
+                "ipconfig /flushdns",
+                "\r\n",
+                "cfn-init.exe -v -c ",
                 "config,InstallChefConfigSet,sqlserver.tar.gz,finalizeConfigSet",
                 " -s ",
                 {
@@ -2401,7 +2431,12 @@
                       "[cfn-auto-reloader-hook]\n",
                       "triggers=post.update\n",
                       "path=Resources.tfs.Metadata.AWS::CloudFormation::Init\n",
-                      "action=cfn-init.exe -v -c ",
+                      "action=",
+                      "ipconfig /renew",
+                      "\r\n",
+                      "ipconfig /flushdns",
+                      "\r\n",
+                      "cfn-init.exe -v -c ",
                       "config,InstallChefConfigSet,tfs.tar.gz,finalizeConfigSet",
                       " -s ",
                       {
@@ -2611,7 +2646,12 @@
             "Fn::Join": [
               "",
               [
-                "<script>cfn-init.exe -v -c ",
+                "<script>",
+                "ipconfig /renew",
+                "\r\n",
+                "ipconfig /flushdns",
+                "\r\n",
+                "cfn-init.exe -v -c ",
                 "config,InstallChefConfigSet,tfs.tar.gz,finalizeConfigSet",
                 " -s ",
                 {
@@ -2738,7 +2778,12 @@
                       "[cfn-auto-reloader-hook]\n",
                       "triggers=post.update\n",
                       "path=Resources.sql4build.Metadata.AWS::CloudFormation::Init\n",
-                      "action=cfn-init.exe -v -c ",
+                      "action=",
+                      "ipconfig /renew",
+                      "\r\n",
+                      "ipconfig /flushdns",
+                      "\r\n",
+                      "cfn-init.exe -v -c ",
                       "config,InstallChefConfigSet,sqlserver.tar.gz",
                       " -s ",
                       {
@@ -2921,7 +2966,12 @@
             "Fn::Join": [
               "",
               [
-                "<script>cfn-init.exe -v -c ",
+                "<script>",
+                "ipconfig /renew",
+                "\r\n",
+                "ipconfig /flushdns",
+                "\r\n",
+                "cfn-init.exe -v -c ",
                 "config,InstallChefConfigSet,sqlserver.tar.gz",
                 " -s ",
                 {
@@ -3050,7 +3100,12 @@
                       "[cfn-auto-reloader-hook]\n",
                       "triggers=post.update\n",
                       "path=Resources.build.Metadata.AWS::CloudFormation::Init\n",
-                      "action=cfn-init.exe -v -c ",
+                      "action=",
+                      "ipconfig /renew",
+                      "\r\n",
+                      "ipconfig /flushdns",
+                      "\r\n",
+                      "cfn-init.exe -v -c ",
                       "config,InstallChefConfigSet,vs.tar.gz,tfs.tar.gz,finalizeConfigSet",
                       " -s ",
                       {
@@ -3275,7 +3330,12 @@
             "Fn::Join": [
               "",
               [
-                "<script>cfn-init.exe -v -c ",
+                "<script>",
+                "ipconfig /renew",
+                "\r\n",
+                "ipconfig /flushdns",
+                "\r\n",
+                "cfn-init.exe -v -c ",
                 "config,InstallChefConfigSet,vs.tar.gz,tfs.tar.gz,finalizeConfigSet",
                 " -s ",
                 {
@@ -3450,7 +3510,12 @@
                       "[cfn-auto-reloader-hook]\n",
                       "triggers=post.update\n",
                       "path=Resources.workstation.Metadata.AWS::CloudFormation::Init\n",
-                      "action=cfn-init.exe -v -c ",
+                      "action=",
+                      "ipconfig /renew",
+                      "\r\n",
+                      "ipconfig /flushdns",
+                      "\r\n",
+                      "cfn-init.exe -v -c ",
                       "config,InstallChefConfigSet,sqlserver.tar.gz,vs.tar.gz,finalizeConfigSet",
                       " -s ",
                       {
@@ -3694,7 +3759,12 @@
             "Fn::Join": [
               "",
               [
-                "<script>cfn-init.exe -v -c ",
+                "<script>",
+                "ipconfig /renew",
+                "\r\n",
+                "ipconfig /flushdns",
+                "\r\n",
+                "cfn-init.exe -v -c ",
                 "config,InstallChefConfigSet,sqlserver.tar.gz,vs.tar.gz,finalizeConfigSet",
                 " -s ",
                 {
