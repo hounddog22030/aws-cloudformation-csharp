@@ -48,10 +48,11 @@ namespace AWS.CloudFormation.Resource.RDS
             string name, 
             DbInstanceClassEnum instanceType, 
             EngineType engineType, 
-            string masterUserName,
-            string masterPassword,
-            int allocatedStorage,
-            DbSubnetGroup subnetGroup) : base(template, name, ResourceType.AwsRdsDbInstance)
+            string masterUserName, 
+            string masterPassword, 
+            int allocatedStorage, 
+            DbSubnetGroup subnetGroup, 
+            DbSecurityGroup dbSecurityGroup) : base(template, name, ResourceType.AwsRdsDbInstance)
         {
             this.Type = ResourceType.AwsRdsDbInstance;
             this.DBInstanceClass = instanceType;
@@ -61,6 +62,29 @@ namespace AWS.CloudFormation.Resource.RDS
             this.MasterUserPassword = masterPassword;
             this.DBSubnetGroupName = new ReferenceProperty(subnetGroup);
             this.LicenseModel = "general-public-license";
+            this.AddDbSecurityGroup(dbSecurityGroup);
+            //this.EngineVersion = "12.00.4422.0.v1";
+        }
+
+        public DbInstance(Template template,
+            string name,
+            DbInstanceClassEnum instanceType,
+            EngineType engineType,
+            string masterUserName,
+            string masterPassword,
+            int allocatedStorage,
+            DbSubnetGroup subnetGroup,
+            SecurityGroup dbSecurityGroup) : base(template, name, ResourceType.AwsRdsDbInstance)
+        {
+            this.Type = ResourceType.AwsRdsDbInstance;
+            this.DBInstanceClass = instanceType;
+            this.AllocatedStorage = allocatedStorage.ToString();
+            this.Engine = engineType;
+            this.MasterUsername = masterUserName;
+            this.MasterUserPassword = masterPassword;
+            this.DBSubnetGroupName = new ReferenceProperty(subnetGroup);
+            this.LicenseModel = "general-public-license";
+            this.AddVpcSecurityGroup(dbSecurityGroup);
             //this.EngineVersion = "12.00.4422.0.v1";
         }
 
@@ -199,6 +223,19 @@ namespace AWS.CloudFormation.Resource.RDS
                 this.Properties.SetValue(value);
             }
         }
+        [JsonIgnore]
+        // ReSharper disable once InconsistentNaming
+        public ReferenceProperty[] VPCSecurityGroups
+        {
+            get
+            {
+                return this.Properties.GetValue<ReferenceProperty[]>();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
+            }
+        }
 
         public void AddDbSecurityGroup(DbSecurityGroup securityGroup)
         {
@@ -209,6 +246,17 @@ namespace AWS.CloudFormation.Resource.RDS
             }
             replaceWith.Add(new ReferenceProperty(securityGroup));
             this.DBSecurityGroups = replaceWith.ToArray();
+
+        }
+        public void AddVpcSecurityGroup(SecurityGroup securityGroup)
+        {
+            var replaceWith = new List<ReferenceProperty>();
+            if (this.VPCSecurityGroups != null && this.VPCSecurityGroups.Any())
+            {
+                replaceWith.AddRange(this.VPCSecurityGroups.ToArray());
+            }
+            replaceWith.Add(new ReferenceProperty(securityGroup));
+            this.VPCSecurityGroups = replaceWith.ToArray();
 
         }
 

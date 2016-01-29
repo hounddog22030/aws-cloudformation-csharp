@@ -62,6 +62,11 @@ namespace AWS.CloudFormation.Test.Resource.RDS
             SecurityGroup securityGroup = new SecurityGroup(template, "securityGroupWorldWide", "Allows access to SqlServer from everywhere", vpc);
             securityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.MsSqlServer);
 
+            var dbSecurityGroup = new DbSecurityGroup(template, "dbSecurityGroup", vpc, "Why is a description required?");
+            var dbSecurityGroupIngress = new DbSecurityGroupIngress();
+            dbSecurityGroupIngress.CIDRIP = "0.0.0.0/0";
+            dbSecurityGroup.AddDbSecurityGroupIngress(dbSecurityGroupIngress);
+
             DbInstance instance = new DbInstance(template,
                 "instanceBasicDbInstanceTest",
                 DbInstanceClassEnum.DbT2Micro,
@@ -69,17 +74,10 @@ namespace AWS.CloudFormation.Test.Resource.RDS
                 "MyMasterUsername",
                 "YellowBeard123",
                 20,
-                subnetGroup);
+                subnetGroup,
+                dbSecurityGroup);
 
-            var dbSecurityGroup = new DbSecurityGroup(template, "dbSecurityGroup", vpc, "Why is a description required?");
 
-            var dbSecurityGroupIngress = new DbSecurityGroupIngress();
-            dbSecurityGroupIngress.CIDRIP = "0.0.0.0/0";
-            //dbSecurityGroupIngress.EC2SecurityGroupId = new ReferenceProperty(securityGroup);
-
-            dbSecurityGroup.AddDbSecurityGroupIngress(dbSecurityGroupIngress);
-
-            instance.AddDbSecurityGroup(dbSecurityGroup);
 
             instance.PubliclyAccessible = true.ToString().ToLowerInvariant();
             return template;
@@ -110,6 +108,11 @@ namespace AWS.CloudFormation.Test.Resource.RDS
             SecurityGroup securityGroup = new SecurityGroup(template, "securityGroupWorldWide", "Allows access to SqlServer from everywhere", vpc);
             securityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.MySql);
 
+            var dbSecurityGroup = new DbSecurityGroup(template, "dbSecurityGroup", vpc, "Why is a description required?");
+            var dbSecurityGroupIngress = new DbSecurityGroupIngress();
+            dbSecurityGroupIngress.CIDRIP = "0.0.0.0/0";
+            dbSecurityGroup.AddDbSecurityGroupIngress(dbSecurityGroupIngress);
+
             DbInstance instance = new DbInstance(template,
                 "instanceBasicDbInstanceTest",
                 DbInstanceClassEnum.DbT2Micro,
@@ -117,17 +120,8 @@ namespace AWS.CloudFormation.Test.Resource.RDS
                 "MyMasterUsername",
                 "YellowBeard123",
                 20,
-                subnetGroup);
-
-            var dbSecurityGroup = new DbSecurityGroup(template, "dbSecurityGroup", vpc, "Why is a description required?");
-
-            var dbSecurityGroupIngress = new DbSecurityGroupIngress();
-            dbSecurityGroupIngress.CIDRIP = "0.0.0.0/0";
-            //dbSecurityGroupIngress.EC2SecurityGroupId = new ReferenceProperty(securityGroup);
-
-            dbSecurityGroup.AddDbSecurityGroupIngress(dbSecurityGroupIngress);
-
-            instance.AddDbSecurityGroup(dbSecurityGroup);
+                subnetGroup,
+                dbSecurityGroup);
 
             instance.PubliclyAccessible = true.ToString().ToLowerInvariant();
             return template;
@@ -157,6 +151,12 @@ namespace AWS.CloudFormation.Test.Resource.RDS
             SecurityGroup securityGroup = new SecurityGroup(template, "securityGroupWorldWide", "Allows access to SqlServer from everywhere", vpc);
             securityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.MsSqlServer);
 
+            var dbSecurityGroup = new DbSecurityGroup(template, "dbSecurityGroup", vpc, "Why is a description required?");
+
+            var dbSecurityGroupIngress = new DbSecurityGroupIngress();
+            dbSecurityGroupIngress.CIDRIP = "0.0.0.0/0";
+            dbSecurityGroup.AddDbSecurityGroupIngress(dbSecurityGroupIngress);
+
             DbInstance instance = new DbInstance(template,
                 "instanceBasicDbInstanceTest",
                 DbInstanceClassEnum.DbR3Large,
@@ -164,17 +164,9 @@ namespace AWS.CloudFormation.Test.Resource.RDS
                 "MyMasterUsername",
                 "YellowBeard123",
                 100,
-                subnetGroup);
+                subnetGroup,
+                dbSecurityGroup);
 
-            var dbSecurityGroup = new DbSecurityGroup(template, "dbSecurityGroup", vpc, "Why is a description required?");
-
-            var dbSecurityGroupIngress = new DbSecurityGroupIngress();
-            dbSecurityGroupIngress.CIDRIP = "0.0.0.0/0";
-            //dbSecurityGroupIngress.EC2SecurityGroupId = new ReferenceProperty(securityGroup);
-
-            dbSecurityGroup.AddDbSecurityGroupIngress(dbSecurityGroupIngress);
-
-            instance.AddDbSecurityGroup(dbSecurityGroup);
 
             instance.PubliclyAccessible = true.ToString().ToLowerInvariant();
             return template;
