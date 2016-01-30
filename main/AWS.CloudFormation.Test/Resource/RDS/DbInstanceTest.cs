@@ -20,9 +20,9 @@ namespace AWS.CloudFormation.Test.Resource.RDS
 
 
         [TestMethod]
-        public void BasicDbInstanceTest()
+        public void SqlExpressDbInstanceTest()
         {
-            Stack.Stack.CreateStack(GetSingleDbTemplate(), this.TestContext.TestName + DateTime.Now.Ticks );
+            Stack.Stack.CreateStack(GetSqlExpressDbTemplate(), this.TestContext.TestName + DateTime.Now.Ticks );
         }
 
         [TestMethod]
@@ -37,7 +37,7 @@ namespace AWS.CloudFormation.Test.Resource.RDS
             Stack.Stack.CreateStack(GetMySqlTemplate(), this.TestContext.TestName + DateTime.Now.Ticks);
         }
 
-        private Template GetSingleDbTemplate()
+        private Template GetSqlExpressDbTemplate()
         {
             var template = new Template("corp.getthebuybox.com", "vpcBasicDbInstanceTest", "10.0.0.0/16");
 
@@ -56,7 +56,7 @@ namespace AWS.CloudFormation.Test.Resource.RDS
             SubnetRouteTableAssociation subnetRouteTableAssociationSubnet2 = new SubnetRouteTableAssociation(template, subnet2, routeTable4Subnet2);
 
             var subnetGroup = new DbSubnetGroup(template, "dbSubnetGroup", "this is my subnet group description");
-            subnetGroup.AddSubnet(subnet2);
+            subnetGroup.AddSubnet(subnet1);
             subnetGroup.AddSubnet(subnet2);
 
             SecurityGroup securityGroup = new SecurityGroup(template, "securityGroupWorldWide", "Allows access to SqlServer from everywhere", vpc);
@@ -71,6 +71,7 @@ namespace AWS.CloudFormation.Test.Resource.RDS
                 "instanceBasicDbInstanceTest",
                 DbInstanceClassEnum.DbT2Micro,
                 EngineType.SqlServerExpress,
+                LicenseModelType.LicenseIncluded, 
                 "MyMasterUsername",
                 "YellowBeard123",
                 20,
@@ -117,6 +118,7 @@ namespace AWS.CloudFormation.Test.Resource.RDS
                 "instanceBasicDbInstanceTest",
                 DbInstanceClassEnum.DbT2Micro,
                 EngineType.MySql,
+                LicenseModelType.GeneralPublicLicense, 
                 "MyMasterUsername",
                 "YellowBeard123",
                 20,
@@ -161,6 +163,7 @@ namespace AWS.CloudFormation.Test.Resource.RDS
                 "instanceBasicDbInstanceTest",
                 DbInstanceClassEnum.DbR3Large,
                 EngineType.Aurora,
+                LicenseModelType.GeneralPublicLicense, 
                 "MyMasterUsername",
                 "YellowBeard123",
                 100,
@@ -176,7 +179,7 @@ namespace AWS.CloudFormation.Test.Resource.RDS
         public void UpdateDbTest()
         {
             var stackName = "BasicDbInstanceTest635896256671970189";
-            Stack.Stack.UpdateStack(stackName, GetSingleDbTemplate());
+            Stack.Stack.UpdateStack(stackName, GetSqlExpressDbTemplate());
         }
 
 
@@ -184,7 +187,7 @@ namespace AWS.CloudFormation.Test.Resource.RDS
         public void UpdateMySql()
         {
             var stackName = "MySqlDbInstanceTest635896351095707209";
-            Stack.Stack.UpdateStack(stackName, GetSingleDbTemplate());
+            Stack.Stack.UpdateStack(stackName, GetSqlExpressDbTemplate());
         }
 
 

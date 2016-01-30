@@ -42,17 +42,26 @@ namespace AWS.CloudFormation.Resource.RDS
         [EnumMember(Value = "aurora")]
         Aurora
     }
+    [JsonConverter(typeof(EnumConverter))]
+    public enum LicenseModelType
+    {
+        [EnumMember(Value = "general-public-license")]
+        GeneralPublicLicense,
+        [EnumMember(Value = "license-included")]
+        LicenseIncluded
+    }
+    //"general-public-license"
+    //"license-included"
     public class DbInstance : ResourceBase
     {
-        public DbInstance(Template template, 
-            string name, 
-            DbInstanceClassEnum instanceType, 
-            EngineType engineType, 
-            string masterUserName, 
-            string masterPassword, 
-            int allocatedStorage, 
-            DbSubnetGroup subnetGroup, 
-            DbSecurityGroup dbSecurityGroup) : base(template, name, ResourceType.AwsRdsDbInstance)
+        public DbInstance(Template template,
+            string name,
+            DbInstanceClassEnum instanceType,
+            EngineType engineType,
+            LicenseModelType licenseType,
+            string masterUserName,
+            string masterPassword,
+            int allocatedStorage) : base(template, name, ResourceType.AwsRdsDbInstance)
         {
             this.Type = ResourceType.AwsRdsDbInstance;
             this.DBInstanceClass = instanceType;
@@ -60,43 +69,48 @@ namespace AWS.CloudFormation.Resource.RDS
             this.Engine = engineType;
             this.MasterUsername = masterUserName;
             this.MasterUserPassword = masterPassword;
+            this.LicenseModel = licenseType;
+
+        }
+        public DbInstance(Template template, 
+            string name, 
+            DbInstanceClassEnum instanceType, 
+            EngineType engineType,
+            LicenseModelType licenseType,
+            string masterUserName, 
+            string masterPassword, 
+            int allocatedStorage, 
+            DbSubnetGroup subnetGroup, 
+            DbSecurityGroup dbSecurityGroup) : this(template,name,instanceType,engineType,licenseType,masterUserName,masterPassword,allocatedStorage)
+        {
             this.DBSubnetGroupName = new ReferenceProperty(subnetGroup);
-            this.LicenseModel = "general-public-license";
             this.AddDbSecurityGroup(dbSecurityGroup);
-            //this.EngineVersion = "12.00.4422.0.v1";
         }
 
         public DbInstance(Template template,
             string name,
             DbInstanceClassEnum instanceType,
             EngineType engineType,
+            LicenseModelType licenseType,
             string masterUserName,
             string masterPassword,
             int allocatedStorage,
             DbSubnetGroup subnetGroup,
-            SecurityGroup dbSecurityGroup) : base(template, name, ResourceType.AwsRdsDbInstance)
+            SecurityGroup dbSecurityGroup) : this(template, name, instanceType, engineType, licenseType, masterUserName, masterPassword, allocatedStorage)
         {
-            this.Type = ResourceType.AwsRdsDbInstance;
-            this.DBInstanceClass = instanceType;
-            this.AllocatedStorage = allocatedStorage.ToString();
-            this.Engine = engineType;
-            this.MasterUsername = masterUserName;
-            this.MasterUserPassword = masterPassword;
             this.DBSubnetGroupName = new ReferenceProperty(subnetGroup);
-            this.LicenseModel = "general-public-license";
             this.AddVpcSecurityGroup(dbSecurityGroup);
-            //this.EngineVersion = "12.00.4422.0.v1";
         }
 
         protected override bool SupportsTags => true;
 
         //LicenseModel
         [JsonIgnore]
-        public string LicenseModel
+        public LicenseModelType LicenseModel
         {
             get
             {
-                return this.Properties.GetValue<string>();
+                return this.Properties.GetValue<LicenseModelType>();
             }
             set
             {
