@@ -36,7 +36,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config
             Services = this.Add("services", new CloudFormationDictionary(resource));
             Sources = this.Add("sources", new Sources(resource)) as Sources;
             Packages = this.Add("packages", new Packages(resource)) as Packages;
-            this.Add("ignoreErrors", true);
+            this.Add("ignoreErrors", true.ToString());
         }
 
         [JsonIgnore]

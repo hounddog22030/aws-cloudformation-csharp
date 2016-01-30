@@ -136,27 +136,27 @@ namespace AWS.CloudFormation.Test
             var instanceDomainController = new DomainController(template, NetBiosNameDomainController1, instanceSize, UsEast1AWindows2012R2Ami, subnetDomainController1, domainInfo);
             instanceDomainController.AddFinalizer(TimeoutMax);
 
-            //FnGetAtt dc1PrivateIp = new FnGetAtt(instanceDomainController,"PrivateIp");
-            //object[] elements = new object[] {dc1PrivateIp, "10.0.0.2" };
-            //FnJoin dnsServers = new FnJoin(", ", elements);
-            //object[] netBiosServersElements = new object[] {dc1PrivateIp};
-            //FnJoin netBiosServers = new FnJoin(", ", netBiosServersElements);
+            FnGetAtt dc1PrivateIp = new FnGetAtt(instanceDomainController, "PrivateIp");
+            object[] elements = new object[] { dc1PrivateIp, "10.0.0.2" };
+            FnJoin dnsServers = new FnJoin(", ", elements);
+            object[] netBiosServersElements = new object[] { dc1PrivateIp };
+            FnJoin netBiosServers = new FnJoin(", ", netBiosServersElements);
 
 
 
-            //DhcpOptions dhcpOptions = new DhcpOptions(template, "dhcpOptions", $"{StackTest.DomainDnsName}", vpc, dnsServers, netBiosServers);
-            //dhcpOptions.NetbiosNodeType = "2";
+            DhcpOptions dhcpOptions = new DhcpOptions(template, "dhcpOptions", $"{StackTest.DomainDnsName}", vpc, dnsServers, netBiosServers);
+            dhcpOptions.NetbiosNodeType = "2";
 
 
-            //instanceSize = InstanceTypes.T2Nano;
-            //if (mode == ProvisionMode.Launch)
-            //{
-            //    instanceSize = InstanceTypes.C4Large;
-            //}
+            instanceSize = InstanceTypes.T2Nano;
+            if (mode == ProvisionMode.Launch)
+            {
+                instanceSize = InstanceTypes.C4Large;
+            }
 
-            //var instanceRdp = new RemoteDesktopGateway(template, "rdp", instanceSize, UsEast1AWindows2012R2Ami, subnetDmz1);
-            //instanceRdp.AddFinalizer(TimeoutMax);
-            //instanceDomainController.AddToDomain(instanceRdp, TimeoutMax);
+            var instanceRdp = new RemoteDesktopGateway(template, "rdp", instanceSize, UsEast1AWindows2012R2Ami, subnetDmz1);
+            instanceRdp.AddFinalizer(TimeoutMax);
+            instanceDomainController.AddToDomain(instanceRdp, TimeoutMax);
 
             //instanceSize = InstanceTypes.T2Micro;
             //if (mode == ProvisionMode.Launch)
@@ -947,9 +947,9 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateDevelopmentTest()
         {
-            var stackName = "alpha-yadayada-software";
+            var stackName = "delta-yadayada-software";
 
-            StackTest.DomainDnsName = "alpha.yadayada.software";
+            StackTest.DomainDnsName = "delta.yadayada.software";
 
             Stack.Stack.UpdateStack(stackName, GetTemplateFullStack(ProvisionMode.Run));
         }

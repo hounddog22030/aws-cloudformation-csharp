@@ -93,6 +93,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
             currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("2-install-adds");
             currentCommand.WaitAfterCompletion = "forever";
+            currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
+
 
             currentCommand.Command.AddCommandLine(
                 "-Command \"Install-ADDSForest -DomainName ",
@@ -100,6 +102,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 " -SafeModeAdministratorPassword (convertto-securestring jhkjhsdf338! -asplaintext -force) -DomainMode Win2012 -DomainNetbiosName ",
                 this.DomainNetBiosName,
                 " -ForestMode Win2012 -Confirm:$false -Force\"");
+            currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
 
             currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("3-restart-service");
@@ -110,6 +113,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                     "-Command \"Restart-Service NetLogon -EA 0\""
                 }
                 );
+            currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
             currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("4 - create - adminuser");
             currentCommand.WaitAfterCompletion = "0";
@@ -131,6 +135,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                     "-Enabled $true ",
                     "-PasswordNeverExpires $true\""
                 });
+            currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
             currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("5 - update - adminuser");
             currentCommand.WaitAfterCompletion = "0";
@@ -141,6 +146,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                     this.DomainAdminUser,
                     "\""
                 });
+            currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
             this.OnAddedToDomain(this.DomainNetBiosName.Default.ToString());
         }
