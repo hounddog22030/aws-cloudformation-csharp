@@ -40,15 +40,22 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         }
 
 
-        public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, Subnet subnet, bool rename)
-            : this(template,name,instanceType,imageId, rename )
+        public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, Subnet subnet, bool rename, DefinitionType definitionType)
+            : this(template, name, instanceType, imageId, rename, definitionType)
         {
-            this.Subnet = subnet;
+            if (subnet != null)
+            {
+                this.Subnet = subnet;
+            }
+
+        }
+        public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, Subnet subnet, bool rename)
+            : this(template, name, instanceType, imageId, subnet, rename, DefinitionType.Instance)
+        {
         }
 
-
-        public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, bool rename)
-            : base(template, name, instanceType, imageId, OperatingSystem.Windows, true, DefinitionType.Instance)
+        public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, bool rename,
+            DefinitionType definitionType): base(template, name, instanceType, imageId, OperatingSystem.Windows, true, definitionType)
         {
             if (name.Length > NetBiosMaxLength)
             {
@@ -70,6 +77,15 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
 
             this.DisableFirewall();
+            //this.AddChrome();
+
+        }
+
+
+
+        public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, bool rename)
+            : this(template, name, instanceType, imageId, rename, DefinitionType.Instance)
+        {
         }
 
         private void DisableFirewall()
@@ -106,6 +122,14 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
             var nodeJson = this.GetChefNodeJsonContent();
             nodeJson.Add("domain", domainName);
+        }
+
+        private void AddChrome()
+        {
+            //https://s3.amazonaws.com/gtbb/googlechromestandaloneenterprise.msi
+            var config =  this.Metadata.Init.ConfigSets.GetConfigSet("chrome").GetConfig("chrome");
+            config.Packages.AddPackage("msi", "chrome", "https://s3.amazonaws.com/gtbb/googlechromestandaloneenterprise.msi");
+
         }
 
         private Config GetChefConfig(string s3bucketName, string cookbookFileName)
@@ -149,7 +173,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         {
             var chefConfig = this.GetChefConfig(s3bucketName, cookbookFileName);
             var chefCommandConfig = chefConfig.Commands.AddCommand<Command>(recipeList.Replace(':','-'));
-            //chefCommandConfig.Test = "IF EXIST \"C:/Program Files/Microsoft SQL Server/MSSQL12.MSSQLSERVER/MSSQL/Binn/sqlservr.exe\" EXIT 1";
             chefCommandConfig.Command.SetFnJoin($"C:/opscode/chef/bin/chef-client.bat -z -o {recipeList} -c c:/chef/{cookbookFileName}/client.rb");
         }
 

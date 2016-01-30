@@ -27,8 +27,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
     public class Instance : LaunchConfiguration, ICidrBlock
     {
 
-        public override string Type { get; }
-
         public Instance(Template template, string name, InstanceTypes instanceType, string imageId,
             OperatingSystem operatingSystem, bool enableHup)
             : this(template,name,instanceType,imageId,operatingSystem,enableHup,DefinitionType.Instance)
@@ -42,46 +40,83 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             switch (definitionType)
             {
                     case DefinitionType.Instance:
-                    this.Type = "AWS::EC2::Instance";
+                    this.Type = ResourceType.AwsEc2Instance;
+                    // only applies to instances
+                    SourceDestCheck = true;
                     break;
                 case DefinitionType.LaunchConfiguration:
-                    this.Type = "AWS::AutoScaling::LaunchConfiguration";
+                    this.Type = ResourceType.AwsAutoScalingLaunchConfiguration;
+                    
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(definitionType));
             }
 
 
-            SecurityGroupIds = new IdCollection<SecurityGroup>();
             NetworkInterfaces = new List<NetworkInterface>();
-            SourceDestCheck = true;
-        }
 
-        [JsonIgnore]
-        public IdCollection<SecurityGroup> SecurityGroupIds
-        {
-            get
+            if (this.SupportsTags)
             {
-                return this.Properties.GetValue<IdCollection<SecurityGroup>>();
-            }
-            set
-            {
-                this.Properties.SetValue(value);
+                this.Tags.Add( new Tag("Name",name) );
             }
         }
 
+        
 
 
+
+        //public IdCollection<SecurityGroup> SecurityGroupIds
+        //{
+        //    get
+        //    {
+        //        if (this.Type.Contains("Instance"))
+        //        {
+        //            return this.Properties.GetValue<IdCollection<SecurityGroup>>();
+        //        }
+        //        else
+        //        {
+        //            return _securityGroupIds;
+        //        }
+        //    }
+        //    set
+        //    {
+        //        if (this.Type.Contains("Instance"))
+        //        {
+        //            this.Properties.SetValue(value);
+        //        }
+        //        else
+        //        {
+        //            _securityGroupIds = value;
+        //        }
+        //    }
+        //}
+
+
+        private Subnet _subnet;
 
         [JsonIgnore] public Subnet Subnet
         {
             get
             {
-                return this.Properties.GetValue<Subnet>();
+                if (this.Type==ResourceType.AwsEc2Instance)
+                {
+                    return this.Properties.GetValue<Subnet>();
+                }
+                else
+                {
+                    return _subnet;
+                }
             }
             set
             {
-                this.Properties.SetValue(value);
+                if (this.Type == ResourceType.AwsEc2Instance)
+                {
+                    this.Properties.SetValue(value);
+                }
+                else
+                {
+                    _subnet = value;
+                }
             }
         }
 
@@ -100,16 +135,33 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
         }
 
+        private List<NetworkInterface> _networkInterfaces;
+
         [JsonIgnore]
         public List<NetworkInterface> NetworkInterfaces
         {
             get
             {
-                return this.Properties.GetValue<List<NetworkInterface>>();
+                if (this.Type == ResourceType.AwsEc2Instance)
+                {
+                    return this.Properties.GetValue<List<NetworkInterface>>();
+                }
+                else
+                {
+                    return _networkInterfaces;
+                }
+                
             }
             set
             {
-                this.Properties.SetValue(value);
+                if (this.Type == ResourceType.AwsEc2Instance)
+                {
+                    this.Properties.SetValue(value);
+                }
+                else
+                {
+                    _networkInterfaces = value;
+                }
             }
         }
 
@@ -136,8 +188,10 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             return ElasticIp;
         }
 
-         
-
+        protected override bool SupportsTags
+        {
+            get { return this.Type == ResourceType.AwsEc2Instance; }
+        }
 
 
         public void AddDependsOn(Instance dependsOn, TimeSpan timeout)
@@ -149,7 +203,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
             dependsOn.AddFinalizer(timeout);
 
-            this.DependsOn2.Add(dependsOn.WaitConditionName);
+            this.DependsOn.Add(dependsOn.WaitConditionName);
 
         }
 

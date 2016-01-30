@@ -48,7 +48,7 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
 
     public class LoadBalancer : ResourceBase
     {
-        public LoadBalancer(Template template, string name) : base(template, name)
+        public LoadBalancer(Template template, string name) : base(template, name, ResourceType.AwsElasticLoadBalancingLoadBalancer)
         {
             SecurityGroups = new IdCollection<SecurityGroup>();
 
@@ -61,7 +61,7 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
             {
                 tempInstances.AddRange(this.Instances);
             }
-            tempInstances.Add(new ReferenceProperty() { Ref = instance.LogicalId });
+            tempInstances.Add(new ReferenceProperty(instance));
             this.Instances = tempInstances.ToArray();
         }
         public void AddSubnet(Subnet Subnet)
@@ -71,7 +71,7 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
             {
                 tempSubnets.AddRange(this.Subnets);
             }
-            tempSubnets.Add(new ReferenceProperty() { Ref = Subnet.LogicalId });
+            tempSubnets.Add(new ReferenceProperty(Subnet));
             this.Subnets = tempSubnets.ToArray();
         }
         public void AddListener(string loadBalancePort,string instancePort, string protocol)
@@ -131,9 +131,6 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
 
         protected override bool SupportsTags {
             get { return false;}
-        }
-        public override string Type {
-            get { return "AWS::ElasticLoadBalancing::LoadBalancer"; }
         }
     }
 }

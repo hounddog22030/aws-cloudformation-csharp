@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
 using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
-
+using AWS.CloudFormation.Serialization;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
@@ -12,46 +15,77 @@ namespace AWS.CloudFormation.Resource
     {
         string LogicalId { get; }
     }
+
+    [JsonConverter(typeof (EnumConverter))]
+    public enum ResourceType
+    {
+        [EnumMember(Value = "AWS::AutoScaling::AutoScalingGroup")] AwsAutoScalingAutoScalingGroup,
+        [EnumMember(Value = "AWS::AutoScaling::LaunchConfiguration")] AwsAutoScalingLaunchConfiguration,
+        [EnumMember(Value = "AWS::EC2::Instance")] AwsEc2Instance,
+        [EnumMember(Value = "AWS::CloudFormation::Init")] AwsCloudFormationInit,
+        [EnumMember(Value = "AWS::CloudFormation::Authentication")] AwsCloudFormationAuthentication,
+        [EnumMember(Value = "AWS::EC2::EIP")] AwsEc2Eip,
+        [EnumMember(Value = "AWS::EC2::InternetGateway")] AwsEc2InternetGateway,
+        [EnumMember(Value = "AWS::EC2::Route")] AwsEc2Route,
+        [EnumMember(Value = "AWS::EC2::RouteTable")] AwsEc2RouteTable,
+        [EnumMember(Value = "AWS::EC2::SecurityGroup")] AwsEc2SecurityGroup,
+        [EnumMember(Value = "AWS::EC2::Subnet")] AwsEc2Subnet,
+        [EnumMember(Value = "AWS::EC2::SubnetRouteTableAssociation")] AwsEc2SubnetRouteTableAssociation,
+        [EnumMember(Value = "AWS::EC2::VPCGatewayAttachment")] AwsEc2VpcGatewayAttachment,
+        [EnumMember(Value = "AWS::EC2::VPC")] AwsEc2Vpc,
+        [EnumMember(Value = "AWS::EC2::Volume")] AwsEc2Volume,
+        [EnumMember(Value = "AWS::EC2::VolumeAttachment")] AwsEc2VolumeAttachment,
+        [EnumMember(Value = "AWS::ElasticLoadBalancing::LoadBalancer")] AwsElasticLoadBalancingLoadBalancer,
+        [EnumMember(Value = "AWS::Route53::HostedZone")] AwsRoute53HostedZone,
+        [EnumMember(Value = "AWS::Route53::RecordSet")] AwsRoute53RecordSet,
+        [EnumMember(Value = "AWS::CloudFormation::WaitCondition")] AwsCloudFormationWaitCondition,
+        [EnumMember(Value = "AWS::CloudFormation::WaitConditionHandle")] AwsCloudFormationWaitConditionHandle,
+        [EnumMember(Value = "AWS::EC2::KeyPair::KeyName")] AwsEc2KeyPairKeyName,
+        [EnumMember(Value = "AWS::EC2::DHCPOptions")] DhcpOptions,
+        [EnumMember(Value = "AWS::EC2::VPCDHCPOptionsAssociation")] VpcDhcpOptionsAssociation,
+        [EnumMember(Value = "AWS::RDS::DBInstance")] AwsRdsDbInstance,
+        [EnumMember(Value = "AWS::RDS::DBSubnetGroup")] AwsRdsDbSubnetGroup,
+        [EnumMember(Value = "AWS::RDS::DBSecurityGroup")] AwsRdsDbSecurityGroup
+    }
+
     public abstract class ResourceBase : ILogicalId
     {
 
-        protected ResourceBase(Template template, string name)
-            //: this(type, name, supportsTags)
+        protected ResourceBase(Template template, string name, ResourceType type)
         {
             Template = template;
+            Type = type;
             LogicalId = name;
-            DependsOn2 = new List<string>();
-
-            this.Template.Resources.Add(name,this);
-
+            DependsOn = new List<string>();
+            this.Template.Resources.Add(name, this);
             Properties = new CloudFormationDictionary();
             Metadata = new Metadata(this);
-
-            // ReSharper disable once VirtualMemberCallInContructor
+            if (template.Outputs.Count < 60)
+            {
+                template.Outputs.Add(name, new Output(name, new ReferenceProperty(this)));
+            }
             if (SupportsTags)
             {
-                this.Tags = new TagDictionary {{"Name", name}};
+                this.Tags.Add(new Tag("Name",name));
             }
         }
-
         protected abstract bool SupportsTags { get; }
 
         [JsonIgnore]
-        internal Template Template { get; private set; }
+        internal Template Template { get; }
 
-        public abstract string Type { get;  }
+        public ResourceType Type { get; protected set; }
 
         public Metadata Metadata { get; }
 
 
         [JsonIgnore]
-        public string LogicalId { get ; private set; }
+        public string LogicalId { get ; }
 
 
-        [JsonIgnore]
-        public List<string> DependsOn2 { get; }
+        public List<string> DependsOn { get; }
 
-        public string[] DependsOn { get { return this.DependsOn2.ToArray(); } }
+        //public string[] DependsOn => this.DependsOn2.ToArray();
 
         public CloudFormationDictionary Properties { get; }
 
@@ -59,14 +93,55 @@ namespace AWS.CloudFormation.Resource
         public TagDictionary Tags
         {
 
-            get { return this.Properties.GetValue<TagDictionary>(); }
-            set { this.Properties.SetValue(value); }
+            get
+            {
+                if (SupportsTags)
+                {
+                    var returnValue = this.Properties.GetValue<TagDictionary>();
+                    if (returnValue == null)
+                    {
+                        this.Tags = new TagDictionary();
+                        return this.Tags;
+                    }
+                    return returnValue;
+                }
+                else
+                {
+                    return null;
+                }
+
+            }
+            set
+            {
+                if (SupportsTags)
+                {
+                    this.Properties.SetValue(value);
+                }
+                else
+                {
+                    throw new NotSupportedException();
+                }
+            }
         }
 
         [JsonArray]
-        public class TagDictionary : Dictionary<string, string>
+        public class TagDictionary : List<Tag>
         {
             
         }
+
+
+    }
+
+    public class Tag
+    {
+        public Tag(string key, string value)
+        {
+            Key = key;
+            Value = value;
+        }
+
+        public string Key { get;  }
+        public string Value { get; }
     }
 }

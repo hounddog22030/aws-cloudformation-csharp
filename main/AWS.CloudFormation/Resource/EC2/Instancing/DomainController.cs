@@ -1,5 +1,6 @@
 ﻿using System;
 using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
@@ -16,10 +17,10 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         public class DomainInfo
         {
-            public DomainInfo(string domainDnsName, string domainNetBiosName, string adminUserName, string adminPassword)
+            public DomainInfo(string domainDnsName, string adminUserName, string adminPassword)
             {
                 DomainDnsName = domainDnsName;
-                DomainNetBiosName = domainNetBiosName;
+                DomainNetBiosName = domainDnsName.Split('.')[0];
                 AdminUserName = adminUserName;
                 AdminPassword = adminPassword;
 
@@ -35,6 +36,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public const string ParameterNameDomainDnsName = "DomainDNSName";
         public const string ParameterNameDomainNetBiosName = "DomainNetBIOSName";
         public const string ParameterNameDomainAdminUser = "DomainAdminUser";
+
+
 
 
 
@@ -63,7 +66,21 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             this.CreateDomainControllerSecurityGroup();
             this.MakeDomainController();
             ConfigureDefaultSite(subnet);
+            //this.SetDnsServers();
         }
+
+        //private void SetDnsServers()
+        //{
+        //    var renameConfig =
+        //        this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName)
+        //            .GetConfig(DefaultConfigSetJoinConfig);
+        //    var renameCommandConfig =
+        //        renameConfig.Commands.AddCommand<PowerShellCommand>(DefaultConfigSetRenameConfigSetDnsServers);
+
+        //    renameCommandConfig.Command.AddCommandLine(
+        //        "-Command \"Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses 10.0.0.2 \"");
+        //    renameCommandConfig.WaitAfterCompletion = 0.ToString();
+        //}
 
         [JsonIgnore]
         public ParameterBase DomainAdminUser { get; }
@@ -145,13 +162,17 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public void AddReplicationSite(Subnet subnet)
         {
             var currentConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("configureSites");
-            ConfigCommand currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>($"create-site-{subnet.LogicalId}");
-            currentCommand.WaitAfterCompletion = 0.ToString();
-            currentCommand.Command.AddCommandLine("-Command \"", $"New-ADReplicationSite  {subnet.LogicalId}\"");
+            string commandName = $"create-site-{subnet.LogicalId}";
+            if (!currentConfig.Commands.ContainsKey(commandName))
+            {
+                ConfigCommand currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>(commandName);
+                currentCommand.WaitAfterCompletion = 0.ToString();
+                currentCommand.Command.AddCommandLine("-Command \"", $"New-ADReplicationSite  {subnet.LogicalId}\"");
 
-            currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>($"create-subnet-{subnet.LogicalId}");
-            currentCommand.WaitAfterCompletion = 0.ToString();
-            currentCommand.Command.AddCommandLine("-Command New-ADReplicationSubnet -Name ", subnet.CidrBlock, $" -Site {subnet.LogicalId}");
+                currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>($"create-subnet-{subnet.LogicalId}");
+                currentCommand.WaitAfterCompletion = 0.ToString();
+                currentCommand.Command.AddCommandLine("-Command New-ADReplicationSubnet -Name ", subnet.CidrBlock, $" -Site {subnet.LogicalId}");
+            }
         }
 
         private Config ConfigureDefaultSite(Subnet defaultSubnet)
@@ -199,7 +220,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.RemoteDesktopProtocol);
 
-            this.SecurityGroupIds.Add(DomainControllerSG1);
+            this.AddSecurityGroup(DomainControllerSG1);
 
         }
 
@@ -224,7 +245,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             DomainMemberSecurityGroup.AddIngress(domainMember.Subnet as ICidrBlock, Protocol.Tcp,
                 Ports.RemoteDesktopProtocol);
 
-            domainMember.SecurityGroupIds.Add(DomainMemberSecurityGroup);
+            domainMember.AddSecurityGroup(DomainMemberSecurityGroup);
         }
 
         [JsonIgnore]
@@ -254,7 +275,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             joinCommand.WaitAfterCompletion = "forever";
 
             instance.AddDependsOn(this, timeToWait);
-            this.SetDnsServers(instance);
             this.AddToDomainMemberSecurityGroup(instance);
             instance.DomainNetBiosName = this.DomainNetBiosName;
             instance.DomainDnsName = this.DomainDnsName;
@@ -262,33 +282,5 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             instance.OnAddedToDomain(this.DomainNetBiosName.Default.ToString());
         }
 
-        private void SetDnsServers(WindowsInstance instanceToAddToDomain)
-        {
-            var renameConfig =
-                instanceToAddToDomain.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName)
-                    .GetConfig(DefaultConfigSetJoinConfig);
-            var renameCommandConfig =
-                renameConfig.Commands.AddCommand<PowerShellCommand>(DefaultConfigSetRenameConfigSetDnsServers);
-            //todo: the below is supposed to have two private ip addresses for the two different DCs
-
-            string[] ipAddress = new[] {this.LogicalId, "PrivateIp"};
-
-            var ipAddressDictionary = new CloudFormationDictionary(this);
-
-            ipAddressDictionary.Add("Fn::GetAtt", ipAddress);
-
-            renameCommandConfig.Command.AddCommandLine(
-                "-Command \"Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses ",
-                ipAddressDictionary,
-                "\"");
-
-            renameCommandConfig.WaitAfterCompletion = 0.ToString();
-        }
-
-        public class FnGetAtt
-        {
-            //{ "Fn::GetAtt": [ "dc1", "PrivateIp" ] }
-
-        }
     }
 }

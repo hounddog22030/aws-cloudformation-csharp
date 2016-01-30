@@ -10,5 +10,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
             commandLineList.Insert(0,"powershell.exe ");
             base.AddCommandLine(commandLineList.ToArray());
         }
+
+
     }
 }

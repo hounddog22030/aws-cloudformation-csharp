@@ -71,5 +71,12 @@ namespace AWS.CloudFormation.Configuration.Packages
 
         }
     }
+    public class TeamFoundationServerBuildServerAgentOnly : TeamFoundationServer
+    {
+        public TeamFoundationServerBuildServerAgentOnly(WindowsInstance buildServer, WindowsInstance applicationServer) : base(buildServer, applicationServer, "agent")
+        {
+
+        }
+    }
 
 }

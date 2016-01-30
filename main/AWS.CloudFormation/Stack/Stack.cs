@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using Amazon;
@@ -9,6 +10,11 @@ namespace AWS.CloudFormation.Stack
 {
     public class Stack
     {
+        private Stack(string name)
+        {
+            this.Name = name;
+        }
+
         public static CreateStackResponse CreateStack(Template template,string name)
         {
             var templateUri = TemplateEngine.UploadTemplate(template, "gtbb/templates");
@@ -69,6 +75,38 @@ namespace AWS.CloudFormation.Stack
                 throw new Exception(ex.Message);
             }
         }
+
+        public static List<Stack> GetActiveStacks()
+        {
+            AmazonCloudFormationClient client = new AmazonCloudFormationClient(RegionEndpoint.USEast1);
+            ListStacksRequest listStacksRequest = new ListStacksRequest();
+
+            listStacksRequest.StackStatusFilter.Add("CREATE_IN_PROGRESS");
+            listStacksRequest.StackStatusFilter.Add("CREATE_FAILED");
+            listStacksRequest.StackStatusFilter.Add("CREATE_COMPLETE");
+            listStacksRequest.StackStatusFilter.Add("ROLLBACK_IN_PROGRESS");
+            listStacksRequest.StackStatusFilter.Add("ROLLBACK_FAILED");
+            listStacksRequest.StackStatusFilter.Add("ROLLBACK_COMPLETE");
+            listStacksRequest.StackStatusFilter.Add("DELETE_IN_PROGRESS");
+            listStacksRequest.StackStatusFilter.Add("DELETE_FAILED");
+            listStacksRequest.StackStatusFilter.Add("UPDATE_IN_PROGRESS");
+            listStacksRequest.StackStatusFilter.Add("UPDATE_COMPLETE_CLEANUP_IN_PROGRESS");
+            listStacksRequest.StackStatusFilter.Add("UPDATE_COMPLETE");
+            listStacksRequest.StackStatusFilter.Add("UPDATE_ROLLBACK_IN_PROGRESS");
+            listStacksRequest.StackStatusFilter.Add("UPDATE_ROLLBACK_FAILED");
+            listStacksRequest.StackStatusFilter.Add("UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS");
+            listStacksRequest.StackStatusFilter.Add("UPDATE_ROLLBACK_COMPLETE");
+
+            var response = client.ListStacks(listStacksRequest);
+
+            List<Stack> returnValue = new List<Stack>();
+
+            response.StackSummaries.ForEach(s=> returnValue.Add(new Stack(s.StackName)));
+
+            return returnValue;
+        }
+
+        public string Name { get; }
     }
 
     public static class MyExtensions

@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.Serialization;
+using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.EC2;
@@ -22,14 +23,18 @@ namespace AWS.CloudFormation.Stack
         public const string CIDR_IP_THE_WORLD = "0.0.0.0/0";
 
 
-        public Template(string defaultKeyName, string vpcName, string vpcCidrBlock)
+        public Template(string defaultKeyName, string vpcName, string vpcCidrBlock )
         {
+            Outputs = new CloudFormationDictionary();
             AwsTemplateFormatVersion = AwsTemplateFormatVersion20100909;
             this.Resources = new Dictionary<string, ResourceBase>();
             this.Parameters = new Dictionary<string, ParameterBase>();
             this.Parameters.Add(Instance.ParameterNameDefaultKeyPairKeyName, new ParameterBase(Instance.ParameterNameDefaultKeyPairKeyName, "AWS::EC2::KeyPair::KeyName", defaultKeyName));
             Vpc vpc = new Vpc(this,vpcName,vpcCidrBlock);
         }
+
+        [JsonIgnore]
+        public string StackName { get; set; }
 
         [JsonProperty(PropertyName = "AWSTemplateFormatVersion")]
         public string AwsTemplateFormatVersion { get; }
@@ -54,6 +59,8 @@ namespace AWS.CloudFormation.Stack
         {
             Parameters.Add(parameter.LogicalId,parameter);
         }
+
+        public CloudFormationDictionary Outputs { get; }
     }
 
     public class ParameterBase : Dictionary<string,object>, ILogicalId

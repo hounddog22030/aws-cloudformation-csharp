@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Text;
 using System.Collections.Generic;
+using System.Linq;
+using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.Route53;
 using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -13,6 +15,25 @@ namespace AWS.CloudFormation.Test.Route53
     [TestClass]
     public class HostedZoneTest
     {
+        [TestMethod]
+        public void CreateHostedZoneByName()
+        {
+            Template template = StackTest.GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
+            string hostedZoneName = $"{this.TestContext.TestName}{Guid.NewGuid().ToString().Replace("-", string.Empty)}.com";
+            HostedZone hz = new HostedZone(template, hostedZoneName, hostedZoneName);
+            StackTest.CreateTestStack(template, this.TestContext);
+        }
+
+        [TestMethod]
+        public void CreatePrivateHostedZone()
+        {
+            Template template = StackTest.GetNewBlankTemplateWithVpc($"VpcCreatePrivateHostedZone");
+            string hostedZoneName = $"{this.TestContext.TestName}{Guid.NewGuid().ToString().Replace("-", string.Empty)}";
+            HostedZone hz = new HostedZone(template, hostedZoneName, "example.com");
+            hz.AddVpc(template.Vpcs.First(),Region.UsEast1);
+            StackTest.CreateTestStack(template, this.TestContext);
+        }
+        #region "TestStuff"
         public HostedZoneTest()
         {
             //
@@ -59,19 +80,6 @@ namespace AWS.CloudFormation.Test.Route53
         // public void MyTestCleanup() { }
         //
         #endregion
-
-
-        [TestMethod]
-        public void CreateHostedZoneByName()
-        {
-            Template template = StackTest.GetNewBlankTemplateWithVpc(this.TestContext);
-            //Z313ZDEZ2F8F0F
-            string hostedZoneName = $"{this.TestContext.TestName}{Guid.NewGuid().ToString().Replace("-", string.Empty)}.com";
-            HostedZone hz = new HostedZone(template, hostedZoneName, hostedZoneName);
-            StackTest.CreateTestStack(template, this.TestContext);
-            //
-            // TODO: Add test logic here
-            //
-        }
+        #endregion
     }
 }

@@ -32,12 +32,11 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                     .GetConfig(InstallRds);
             var installRdsCommand = installRdsConfig.Commands.AddCommand<PowerShellCommand>("a-install-rds");
             installRdsCommand.Command.AddCommandLine("-Command \"Install-WindowsFeature RDS-Gateway,RSAT-RDS-Gateway\"");
-            //"c:\\cfn\\scripts\\Configure-RDGW.ps1"     : {
-            //    "source" : "https://s3.amazonaws.com/quickstart-reference/microsoft/activedirectory/latest/scripts/Configure-RDGW.ps1"
-            //                }
+
             var configureRdgwPsScript = installRdsConfig.Files.GetFile("c:\\cfn\\scripts\\Configure-RDGW.ps1");
+
             configureRdgwPsScript.Source =
-                "https://s3.amazonaws.com/quickstart-reference/microsoft/activedirectory/latest/scripts/Configure-RDGW.ps1";
+                "https://s3.amazonaws.com/gtbb/Configure-RDGW.ps1";
 
             installRdsCommand = installRdsConfig.Commands.AddCommand<PowerShellCommand>("b-configure-rdgw");
             installRdsCommand.Command.AddCommandLine(
@@ -52,13 +51,14 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         private void AddSecurityGroup()
         {
-            var rdgwSecurityGroup = new SecurityGroup(Template, "RDGWSecurityGroup", "Remote Desktop Security Group", this.Subnet.Vpc);
+            var rdgwSecurityGroup = new SecurityGroup(Template, $"{this.LogicalId}SecurityGroup", "Remote Desktop Security Group", this.Subnet.Vpc);
 
             rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol, Ports.Ssl);
+            rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Http);
             rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Udp, Ports.RdpAdmin);
             rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
 
-            this.SecurityGroupIds.Add(rdgwSecurityGroup);
+            this.AddSecurityGroup(rdgwSecurityGroup);
         }
 
 
@@ -75,7 +75,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 this.Template, 
                 this.LogicalId + "Record",
                 tldDomain,
-                $"rdp{DateTime.Now.Second}.{this.DomainDnsName.Default}.",
+                $"{this.LogicalId}.{this.DomainDnsName.Default}.",
                 RecordSet.RecordSetTypeEnum.A);
             routing.ResourceRecords.Add(this.ElasticIp);
 

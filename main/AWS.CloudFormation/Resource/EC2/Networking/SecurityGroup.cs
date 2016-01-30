@@ -13,7 +13,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
     
     public class SecurityGroup : ResourceBase
     {
-        public SecurityGroup(Template template, string name, string description, Vpc vpc) : base(template, name)
+        public SecurityGroup(Template template, string name, string description, Vpc vpc) : base(template, name, ResourceType.AwsEc2SecurityGroup)
         {
             Vpc = vpc;
             GroupDescription = description;
@@ -194,9 +194,6 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 
         protected override bool SupportsTags {
             get { return true; }
-        }
-        public override string Type {
-            get { return "AWS::EC2::SecurityGroup"; }
         }
     }
 }

@@ -3,6 +3,8 @@ default['tfs']['setup_exe_filename'] = "setup.exe"
 default['tfs']['setup_exe_path'] = "#{default['tfs']['setup_drive_letter']}/tfs_express.exe"
 default['tfs']['config_exe_path'] = "C:/Program Files/Microsoft Team Foundation Server 14.0/Tools/TFSConfig.exe"
 default['tfs']['application_server_netbios_name'] = "tfsserver1"
+
+#build_agent
 default['tfs']['build_agent_zipfile_filename'] = "agent.zip"
 default['tfs']['build_agent_zipfile_bucket_name'] = "gtbb"
 default['tfs']['build_agent_zipfile_bucket_url'] = "https://s3.amazonaws.com/#{default['tfs']['build_agent_zipfile_bucket_name']}"
@@ -10,10 +12,3 @@ default['tfs']['build_agent_zipfile_url'] = "https://s3.amazonaws.com/#{default[
 default['tfs']['build_agent_zipfile_path'] = "#{Chef::Config['file_cache_path']}/#{default['tfs']['build_agent_zipfile_filename']}"
 default['tfs']['build_agent_dir'] = "c:/agent"
 default['tfs']['build_agent_command_file_path'] = "#{default['tfs']['build_agent_dir']}/ConfigureAgent.cmd"
-
-default['tfs']['build_test_agent_filename'] = "vstf_testagent.exe"
-default['tfs']['build_test_agent_bucket_name'] = "gtbb"
-default['tfs']['build_test_agent_bucket_url'] = "https://s3.amazonaws.com/#{default['tfs']['build_test_agent_bucket_name']}"
-default['tfs']['build_test_agent_url'] = "https://s3.amazonaws.com/#{default['tfs']['build_test_agent_bucket_name']}/#{default['tfs']['build_test_agent_filename']}"
-default['tfs']['build_test_agent_path'] = "#{Chef::Config['file_cache_path']}/#{default['tfs']['build_test_agent_filename']}"
-default['tfs']['build_test_agent_command_file_path'] = "#{default['tfs']['build_test_agent_dir']}/ConfigureAgent.cmd"

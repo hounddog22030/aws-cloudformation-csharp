@@ -38,7 +38,7 @@ namespace AWS.CloudFormation.Resource.Route53
         }
 
 
-        private RecordSet(Template template, string name, RecordSetTypeEnum recordSetType) : base(template, name)
+        private RecordSet(Template template, string name, RecordSetTypeEnum recordSetType) : base(template, name, ResourceType.AwsRoute53RecordSet)
         {
             TTL = "900";
             this.RecordSetType = recordSetType.ToString();
@@ -114,9 +114,6 @@ namespace AWS.CloudFormation.Resource.Route53
 
         protected override bool SupportsTags {
             get { return false; }
-        }
-        public override string Type {
-            get { return "AWS::Route53::RecordSet"; }
         }
     }
 }

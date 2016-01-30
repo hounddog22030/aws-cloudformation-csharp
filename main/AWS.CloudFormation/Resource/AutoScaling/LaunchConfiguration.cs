@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.EC2.Instancing;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Stack;
 using OperatingSystem = AWS.CloudFormation.Resource.EC2.Instancing.OperatingSystem;
@@ -23,11 +24,11 @@ namespace AWS.CloudFormation.Resource.AutoScaling
                                 InstanceTypes instanceType,
                                 string imageId,
                                 OperatingSystem operatingSystem)
-            : base(template, name)
+            : base(template, name, ResourceType.AwsAutoScalingLaunchConfiguration)
         {
             this.InstanceType = instanceType;
+
             this.ImageId = imageId;
-            SecurityGroups = new List<ReferenceProperty>();
             if (!this.Template.Parameters.ContainsKey(ParameterNameDefaultKeyPairKeyName))
             {
                 throw new InvalidOperationException($"Template must contain a Parameter named {ParameterNameDefaultKeyPairKeyName} which contains the default encryption key name for the instance.");
@@ -40,6 +41,17 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             ShouldEnableHup = operatingSystem==OperatingSystem.Windows;
             this.EnableHup();
             SetUserData();
+            //if (operatingSystem == OperatingSystem.Windows)
+            //{
+            //    var setCfnInitAboveNormalConfig =
+            //        this.Metadata.Init.ConfigSets.GetConfigSet("SetCfnInitToAboveNormalConfigSet")
+            //            .GetConfig("SetCfnInitToAboveNormalConfig");
+
+            //    var command =
+            //        setCfnInitAboveNormalConfig.Commands.AddCommand<PowerShellCommand>("SetCfnInitToAboveNormalCommand");
+            //    command.WaitAfterCompletion = 0.ToString();
+            //    command.Command.AddCommandLine("-Command \"get-process -processname \"cfn-init\" | foreach { $_.PriorityClass = \"AboveNormal\" }\"");
+            //}
         }
 
         [JsonIgnore]
@@ -55,6 +67,26 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             }
         }
 
+
+        public virtual void AddSecurityGroup(SecurityGroup securityGroup)
+        {
+            string propertyName = "SecurityGroups";
+            if (this.Type==ResourceType.AwsEc2Instance)
+            {
+                propertyName = "SecurityGroupIds";
+            }
+
+            List<ReferenceProperty> temp = new List<ReferenceProperty>();
+
+            var ids = this.Properties.GetValue<ReferenceProperty[]>(propertyName);
+            if (ids != null && ids.Any())
+            {
+                temp.AddRange(ids);
+            }
+            temp.Add(new ReferenceProperty(securityGroup));
+            this.Properties.SetValue(propertyName, temp.ToArray());
+        }
+
         [JsonIgnore]
         public string WaitConditionName => $"{this.LogicalId}WaitCondition";
 
@@ -65,7 +97,6 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         [JsonIgnore]
         public bool ShouldEnableHup { get; set; }
 
-        public override string Type => "AWS::AutoScaling::LaunchConfiguration";
         protected override bool SupportsTags => false;
 
         [JsonIgnore]
@@ -87,19 +118,6 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             get
             {
                 return this.Properties.GetValue<string>();
-            }
-            set
-            {
-                this.Properties.SetValue(value);
-            }
-        }
-
-        [JsonIgnore]
-        public List<ReferenceProperty> SecurityGroups
-        {
-            get
-            {
-                return this.Properties.GetValue<List<ReferenceProperty>>();
             }
             set
             {
@@ -182,12 +200,18 @@ namespace AWS.CloudFormation.Resource.AutoScaling
                 case OperatingSystem.Windows:
                     this.UserData.Clear();
                     this.UserData.Add("Fn::Base64").SetFnJoin(
-                        "<script>cfn-init.exe -v -c ",
+                        "<script>",
+                        "ipconfig /renew",
+                        Environment.NewLine,
+                        "ipconfig /flushdns",
+                        Environment.NewLine,
+                        "cfn-init.exe -v -c ",
                         string.Join(",", this.Metadata.Init.ConfigSets.Keys),
                         " -s ",
-                        new ReferenceProperty() { Ref = "AWS::StackId" },
+                        new ReferenceProperty("AWS::StackId"),
                         " -r " + this.LogicalId + " --region ",
-                        new ReferenceProperty() { Ref = "AWS::Region" }, "</script>");
+                        new ReferenceProperty("AWS::Region"),
+                        "</script>");
                     break;
                 case OperatingSystem.Linux:
                     break;
@@ -205,8 +229,8 @@ namespace AWS.CloudFormation.Resource.AutoScaling
 
                 var cfnHupConfContent = setupFiles.GetFile("c:\\cfn\\cfn-hup.conf").Content;
                 cfnHupConfContent.Clear();
-                cfnHupConfContent.SetFnJoin("[main]\nstack=", new ReferenceProperty() { Ref = "AWS::StackName" },
-                        "\nregion=", new ReferenceProperty() { Ref = "AWS::Region" }, "\ninterval=1\nverbose=true");
+                cfnHupConfContent.SetFnJoin("[main]\nstack=", new ReferenceProperty("AWS::StackName"),
+                        "\nregion=", new ReferenceProperty("AWS::Region"), "\ninterval=1\nverbose=true");
 
                 var autoReloader = setupFiles.GetFile("c:\\cfn\\hooks.d\\cfn-auto-reloader.conf");
                 autoReloader.Content.Clear();
@@ -214,14 +238,19 @@ namespace AWS.CloudFormation.Resource.AutoScaling
                     "[cfn-auto-reloader-hook]\n",
                     "triggers=post.update\n",
                     "path=Resources." + LogicalId + ".Metadata.AWS::CloudFormation::Init\n",
-                    "action=cfn-init.exe -v -c ",
+                    "action=",
+                    "ipconfig /renew",
+                    Environment.NewLine,
+                    "ipconfig /flushdns",
+                    Environment.NewLine,
+                    "cfn-init.exe -v -c ",
                     string.Join(",", this.Metadata.Init.ConfigSets.Keys),
                     " -s ",
-                    new ReferenceProperty() { Ref = "AWS::StackName" },
+                    new ReferenceProperty("AWS::StackName"),
                     " -r ",
                     this.LogicalId,
                     " --region ",
-                    new ReferenceProperty() { Ref = "AWS::Region" },
+                    new ReferenceProperty("AWS::Region"),
                     "\n");
 
                 setup.Services.Clear();

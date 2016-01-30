@@ -1,4 +1,5 @@
-﻿using System;
+﻿// 0e34235e264c315ab1efa46d3316d84ca21a688f
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +12,7 @@ namespace AWS.CloudFormation.Resource.EC2
 {
     public class Volume : ResourceBase
     {
-        public Volume(Template template, string name) : base(template, name)
+        public Volume(Template template, string name) : base(template, name, ResourceType.AwsEc2Volume)
         {
         }
 
@@ -30,6 +31,5 @@ namespace AWS.CloudFormation.Resource.EC2
         }
         protected override bool SupportsTags => true;
 
-        public override string Type => "AWS::EC2::Volume";
     }
 }

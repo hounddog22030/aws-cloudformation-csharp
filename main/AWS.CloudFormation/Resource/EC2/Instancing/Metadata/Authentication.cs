@@ -3,17 +3,6 @@ using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata
 {
-    //public abstract class Authentication : ResourceBase
-    //{
-    //    public Authentication(Template template, string name) : base("AWS::CloudFormation::Authentication",name,false)
-    //    {
-    //        AuthenticationType = name;
-    //    }
-
-    //    [JsonProperty(PropertyName = "type")]
-    //    public string AuthenticationType { get; }
-    //}
-
     public class S3Authentication : CloudFormationDictionary
     {
         public S3Authentication(string accessKey, string secretKey, string[] buckets)

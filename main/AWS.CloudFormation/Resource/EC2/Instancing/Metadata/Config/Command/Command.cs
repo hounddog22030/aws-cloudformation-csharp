@@ -37,13 +37,14 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
 
             List<object> stringCommandLine = new List<object>();
 
-            FileInfo outFile = null;
 
             foreach (var o in commandLine)
             {
-                if (o is ILogicalId)
+                ILogicalId logicalId = o as ILogicalId;
+
+                if (logicalId!=null)
                 {
-                    stringCommandLine.Add(new ReferenceProperty() { Ref = ((ILogicalId)o).LogicalId });
+                    stringCommandLine.Add(new ReferenceProperty(logicalId));
                 }
                 else
                 {
@@ -52,21 +53,9 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
 
                 if (o is FileInfo && ((FileInfo)o).IsOutFileLog())
                 {
-                    outFile = o as FileInfo;
+                    throw new InvalidOperationException();
                 }
             }
-
-            if (outFile == null)
-            {
-                outFile = new FileInfo($"c:\\cfn\\log\\{this.Parent.Name}.log");
-                stringCommandLine.Add($" > \"{outFile.FullName}\"");
-            }
-
-            if (!doNotAddTest)
-            {
-                this.Parent.Test = $"IF EXIST \"{outFile.FullName}\" EXIT 1";
-            }
-
 
             this.SetFnJoin(stringCommandLine.ToArray());
         }

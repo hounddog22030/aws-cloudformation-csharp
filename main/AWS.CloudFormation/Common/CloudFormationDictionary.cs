@@ -70,10 +70,8 @@ namespace AWS.CloudFormation.Common
 
         readonly Dictionary<string,ILogicalId> _objects = new Dictionary<string, ILogicalId>();
 
-        public void SetValue(object value)
+        public void SetValue(string propertyName, object value)
         {
-            var propertyName = GetPropertyName(value);
-            
             ILogicalId valueAsLogicalId = value as ILogicalId;
             if (valueAsLogicalId != null)
             {
@@ -87,6 +85,11 @@ namespace AWS.CloudFormation.Common
                 this[propertyName] = value;
             }
 
+        }
+        public void SetValue(object value)
+        {
+            var propertyName = GetPropertyName(value);
+            this.SetValue(propertyName,value);
         }
 
         private static string GetPropertyName(object value)

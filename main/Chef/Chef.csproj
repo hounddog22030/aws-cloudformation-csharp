@@ -131,6 +131,7 @@
     <None Include="cookbooks\tfs\metadata.rb" />
     <None Include="cookbooks\tfs\README.md" />
     <None Include="cookbooks\tfs\recipes\applicationtier.rb" />
+    <None Include="cookbooks\tfs\recipes\agent.rb" />
     <None Include="cookbooks\tfs\recipes\build.rb" />
     <None Include="cookbooks\tfs\recipes\install.rb" />
     <None Include="cookbooks\tfs\templates\build.ini.erb" />
