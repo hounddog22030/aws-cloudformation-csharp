@@ -47,29 +47,41 @@ namespace AWS.CloudFormation.Configuration.Packages
         private string v1;
         private string v2;
 
-        public PackageChef(LaunchConfiguration instance, string snapshotId, string cookbookName, string recipeName) : base(snapshotId)
+        public PackageChef(LaunchConfiguration instance, string snapshotId, string bucketName, string cookbookName, string recipeName) : base(snapshotId)
         {
             Instance = instance;
             CookbookName = cookbookName;
-            RecipeName = $"{CookbookName}::{recipeName}";
-            this.WaitCondition = this.AddChefExec("gtbb",cookbookName,recipeName);
+            BucketName = bucketName;
+            RecipeList = $"{CookbookName}";
+            if (!string.IsNullOrEmpty(recipeName))
+            {
+                RecipeList = $"{CookbookName}::{recipeName}";
+            }
+            this.WaitCondition = this.AddChefExec();
         }
 
-        public PackageChef(LaunchConfiguration instance, string snapshotId, string cookbookName) : this(instance,snapshotId,cookbookName,"default")
+        public string BucketName { get; }
+
+        public PackageChef(LaunchConfiguration instance, string snapshotId, string bucketName, string cookbookName) : this(instance,snapshotId, bucketName, cookbookName, null)
         {
         }
 
         public LaunchConfiguration Instance { get; }
         public string CookbookName { get; }
-        public string RecipeName { get; private set; }
+        public string RecipeList { get; private set; }
 
-        public WaitCondition AddChefExec(string s3bucketName, string cookbookFileName, string recipeList)
+        public WaitCondition AddChefExec()
         {
-            var chefConfig = this.Instance.Metadata.Init.ConfigSets.GetConfigSet(RecipeName.Replace(":",string.Empty)).GetConfig("run");
+            var chefConfig = this.Instance.Metadata.Init.ConfigSets.GetConfigSet(RecipeList.Replace(":",string.Empty)).GetConfig("run");
             chefConfig.Packages.AddPackage("msi", "chef", "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");
-            var chefCommandConfig = chefConfig.Commands.AddCommand<Command>($"{this.CookbookName}{recipeList.Replace(':', '-')}");
-            chefCommandConfig.Command.SetFnJoin($"C:/opscode/chef/bin/chef-client.bat -z -o {recipeList} -c c:/chef/{cookbookFileName}/client.rb");
-            WaitCondition chefComplete = new WaitCondition(this.Instance.Template, $"waitCondition{this.Instance.LogicalId}{cookbookFileName}{recipeList}".Replace(".", string.Empty).Replace(":", string.Empty),
+            var chefCommandConfig = chefConfig.Commands.AddCommand<Command>($"{this.CookbookName}{RecipeList.Replace(':', '-')}");
+
+            var clientRbFileKey = $"c:/chef/{CookbookName}/client.rb";
+            chefConfig.Files.GetFile(clientRbFileKey).Content.SetFnJoin($"cache_path 'c:/chef'\ncookbook_path 'c:/chef/{CookbookName}/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
+            chefConfig.Sources.Add($"c:/chef/{CookbookName}/", $"https://{BucketName}.s3.amazonaws.com/{CookbookName}.tar.gz");
+
+            chefCommandConfig.Command.SetFnJoin($"C:/opscode/chef/bin/chef-client.bat -z -o {RecipeList} -c c:/chef/{CookbookName}/client.rb");
+            WaitCondition chefComplete = new WaitCondition(this.Instance.Template, $"waitCondition{this.Instance.LogicalId}{CookbookName}{RecipeList}".Replace(".", string.Empty).Replace(":", string.Empty),
                 new TimeSpan(4, 0, 0));
             chefConfig.Commands.AddCommand<Command>(chefComplete);
             return chefComplete;
@@ -80,13 +92,13 @@ namespace AWS.CloudFormation.Configuration.Packages
     public class VisualStudio : PackageChef
     {
 
-        public VisualStudio(LaunchConfiguration instance) : base(instance, "snap-5e27a85a", "vs")
+        public VisualStudio(LaunchConfiguration instance, string bucketName) : base(instance, "snap-5e27a85a", bucketName, "vs")
         {
         }
     }
     public class SqlServerExpress : PackageChef
     {
-        public SqlServerExpress(WindowsInstance sqlServer) : base(sqlServer,"snap-2cf80f29", "sqlserver")
+        public SqlServerExpress(WindowsInstance sqlServer, string bucketName) : base(sqlServer,"snap-2cf80f29", bucketName, "sqlserver")
         {
             sqlServer.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 20);
             sqlServer.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 10);

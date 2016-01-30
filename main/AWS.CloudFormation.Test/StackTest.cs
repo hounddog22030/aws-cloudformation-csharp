@@ -213,38 +213,38 @@ namespace AWS.CloudFormation.Test
             target.AddResourceRecord(new FnGetAtt(rdsSqlExpress4Build, "Endpoint.Address"));
 
 
-            instanceSize = InstanceTypes.T2Small;
-            if (mode == ProvisionMode.Launch)
-            {
-                instanceSize = InstanceTypes.C4Large;
-            }
+            //instanceSize = InstanceTypes.T2Small;
+            //if (mode == ProvisionMode.Launch)
+            //{
+            //    instanceSize = InstanceTypes.C4Large;
+            //}
 
-            var buildServer = AddBuildServer(template, instanceSize, subnetBuildServer, tfsServer, tfsWait,
-                instanceDomainController, securityGroupBuildServer, mySql4Build, rdsSqlExpress4Build);
-            //buildServer.AddFinalizer(TimeoutMax);
+            //var buildServer = AddBuildServer(template, instanceSize, subnetBuildServer, tfsServer, tfsWait,
+            //    instanceDomainController, securityGroupBuildServer, mySql4Build, rdsSqlExpress4Build);
+            ////buildServer.AddFinalizer(TimeoutMax);
 
-            // uses 33gb
-            var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
-            var workstationChrome = workstation.AddPackage<Chrome>();
-            var workstationReSharper = workstation.AddPackage<ReSharper>();
-            //workstation.AddFinalizer(TimeoutMax);
+            //// uses 33gb
+            //var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
+            //var workstationChrome = workstation.AddPackage<Chrome>();
+            //var workstationReSharper = workstation.AddPackage<ReSharper>();
+            ////workstation.AddFinalizer(TimeoutMax);
 
 
-            SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
-            elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
-            tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            //SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
+            //elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            //tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
-            ////////LoadBalancer elb = new LoadBalancer(template, "elb1");
-            ////////elb.AddInstance(tfsServer);
-            ////////elb.AddListener("8080", "8080", "http");
-            ////////elb.AddSubnet(DMZSubnet);
-            ////////elb.AddSecurityGroup(elbSecurityGroup);
-            ////////template.AddResource(elb);
+            //////////LoadBalancer elb = new LoadBalancer(template, "elb1");
+            //////////elb.AddInstance(tfsServer);
+            //////////elb.AddListener("8080", "8080", "http");
+            //////////elb.AddSubnet(DMZSubnet);
+            //////////elb.AddSecurityGroup(elbSecurityGroup);
+            //////////template.AddResource(elb);
 
-            //the below is a remote desktop gateway server that can
-            // be uncommented to debug domain setup problems
-            var instanceRdp2 = new RemoteDesktopGateway(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
-            instanceDomainController.AddToDomainMemberSecurityGroup(instanceRdp2);
+            ////the below is a remote desktop gateway server that can
+            //// be uncommented to debug domain setup problems
+            //var instanceRdp2 = new RemoteDesktopGateway(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
+            //instanceDomainController.AddToDomainMemberSecurityGroup(instanceRdp2);
 
 
             return template;
@@ -255,7 +255,7 @@ namespace AWS.CloudFormation.Test
             var sqlServer = new WindowsInstance(template, instanceName, instanceSize, UsEast1AWindows2012R2Ami, subnet, true);
 
             domainController.AddToDomain(sqlServer, TimeoutMax);
-            var sqlServerPackage = new SqlServerExpress(sqlServer);
+            var sqlServerPackage = new SqlServerExpress(sqlServer,BucketNameSoftware);
             //sqlServer.AddPackage(BucketNameSoftware, new SqlServerExpress(sqlServer));
             sqlServer.AddSecurityGroup(sqlServerSecurityGroup);
             return sqlServerPackage.WaitCondition;
@@ -455,8 +455,7 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A,true);
             WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, DMZSubnet, false);
 
-            var packageSqlServerExpress = new SqlServerExpress(w);
-            var packageVs = new VisualStudio(w);
+            var packageVs = new VisualStudio(w, BucketNameSoftware);
 
 
             w.AddSecurityGroup(rdp);
@@ -730,7 +729,7 @@ namespace AWS.CloudFormation.Test
 
             buildServer.AddBlockDeviceMapping("/dev/sda1", 100, Ebs.VolumeTypes.GeneralPurpose);
 
-            var packageVisualStudio = new VisualStudio(buildServer);
+            var packageVisualStudio = new VisualStudio(buildServer, BucketNameSoftware);
             var packageAgentOnly = new TeamFoundationServerBuildServerAgentOnly(buildServer, tfsServer);
 
             if (tfsServerComplete != null)
@@ -773,8 +772,8 @@ namespace AWS.CloudFormation.Test
 
             WindowsInstance workstation = new WindowsInstance(template, name, InstanceTypes.C4Large, UsEast1AWindows2012R2Ami, subnet, rename, Ebs.VolumeTypes.GeneralPurpose, 214);
 
-            var packageSqlExpress = new SqlServerExpress(workstation);
-            var packageVisualStudio = new VisualStudio(workstation);
+            var packageSqlExpress = new SqlServerExpress(workstation, BucketNameSoftware);
+            var packageVisualStudio = new VisualStudio(workstation, BucketNameSoftware);
 
             if (workstationSecurityGroup != null)
             {
