@@ -8,6 +8,7 @@ using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
+using AWS.CloudFormation.Resource.Wait;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
@@ -171,11 +172,17 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             return chefConfig;
         }
 
-        public void AddChefExec(string s3bucketName, string cookbookFileName,string recipeList)
+        public WaitCondition AddChefExec(string s3bucketName, string cookbookFileName,string recipeList)
         {
             var chefConfig = this.GetChefConfig(s3bucketName, cookbookFileName);
             var chefCommandConfig = chefConfig.Commands.AddCommand<Command>(recipeList.Replace(':','-'));
             chefCommandConfig.Command.SetFnJoin($"C:/opscode/chef/bin/chef-client.bat -z -o {recipeList} -c c:/chef/{cookbookFileName}/client.rb");
+            WaitCondition chefComplete = new WaitCondition(this.Template,
+                $"waitCondition{cookbookFileName}{recipeList}".Replace(".",string.Empty).Replace(":",string.Empty),
+                new TimeSpan(0,4,0));
+            chefConfig.Commands.AddCommand<Command>(chefComplete);
+            return chefComplete;
+
         }
 
         public ConfigFileContent GetChefNodeJsonContent()
@@ -186,18 +193,20 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             return nodeJson.Content;
         }
 
-        public void AddPackage(string s3BucketName, PackageBase package)
+        public WaitCondition AddPackage(string s3BucketName, PackageBase package)
         {
             var cookbookFileName = $"{package.CookbookName}.tar.gz";
-            this.AddChefExec(s3BucketName, cookbookFileName,package.RecipeName);
+            var chefComplete = this.AddChefExec(s3BucketName, cookbookFileName,package.RecipeName);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this, this.GetAvailableDevice());
             blockDeviceMapping.Ebs.SnapshotId = package.SnapshotId;
             this.AddBlockDeviceMapping(blockDeviceMapping);
+            return chefComplete;
         }
-        public void AddPackage<T>() where T :PackageBase,new()
+        public T AddPackage<T>() where T :PackageBase,new()
         {
             T package = new T();
             package.AddConfiguration(this);
+            return package;
         }
 
         readonly List<string> _availableDevices;

@@ -19,6 +19,7 @@ using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Resource.RDS;
 using AWS.CloudFormation.Resource.Route53;
+using AWS.CloudFormation.Resource.Wait;
 using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OperatingSystem = AWS.CloudFormation.Resource.EC2.Instancing.OperatingSystem;
@@ -176,69 +177,69 @@ namespace AWS.CloudFormation.Test
             var tfsServer = AddTfsServer(template, instanceSize, subnetTfsServer, instanceTfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
 
 
-            DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup(template, "mySqlSubnetGroupForDatabaseForBuild", "Second subnet for database for build server");
-            mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
-            mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
-            DbInstance mySql4Build = null;
-            mySql4Build = new DbInstance(template, "sql4build", DbInstanceClassEnum.DbT2Micro, EngineType.MySql, LicenseModelType.GeneralPublicLicense, "masterusername", "Hy77tttt.", 20, mySqlSubnetGroupForDatabaseForBuild, securityGroupDb4Build);
+            //DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup(template, "mySqlSubnetGroupForDatabaseForBuild", "Second subnet for database for build server");
+            //mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
+            //mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
+            //DbInstance mySql4Build = null;
+            //mySql4Build = new DbInstance(template, "sql4build", DbInstanceClassEnum.DbT2Micro, EngineType.MySql, LicenseModelType.GeneralPublicLicense, "masterusername", "Hy77tttt.", 20, mySqlSubnetGroupForDatabaseForBuild, securityGroupDb4Build);
 
-            DbSubnetGroup subnetGroupSqlExpress4Build = new DbSubnetGroup(template, "subnetGroupSqlExpress4Build", "DbSubnet Group for SQL Server database for build server");
-            subnetGroupSqlExpress4Build.AddSubnet(subnetBuildServer);
-            subnetGroupSqlExpress4Build.AddSubnet(subnetDatabase4BuildServer2);
+            //DbSubnetGroup subnetGroupSqlExpress4Build = new DbSubnetGroup(template, "subnetGroupSqlExpress4Build", "DbSubnet Group for SQL Server database for build server");
+            //subnetGroupSqlExpress4Build.AddSubnet(subnetBuildServer);
+            //subnetGroupSqlExpress4Build.AddSubnet(subnetDatabase4BuildServer2);
 
-            DbInstance rdsSqlExpress4Build = null;
-            rdsSqlExpress4Build = new DbInstance(template,
-                "sqlserver4build",
-                DbInstanceClassEnum.DbT2Micro,
-                EngineType.SqlServerExpress,
-                LicenseModelType.LicenseIncluded,
-                "sqlserveruser", "Hy77tttt.", 20, subnetGroupSqlExpress4Build, securityGroupSqlSever4Build);
+            //DbInstance rdsSqlExpress4Build = null;
+            //rdsSqlExpress4Build = new DbInstance(template,
+            //    "sqlserver4build",
+            //    DbInstanceClassEnum.DbT2Micro,
+            //    EngineType.SqlServerExpress,
+            //    LicenseModelType.LicenseIncluded,
+            //    "sqlserveruser", "Hy77tttt.", 20, subnetGroupSqlExpress4Build, securityGroupSqlSever4Build);
 
-            HostedZone hz = new HostedZone(template, $"hostedZone{DomainDnsNameSuffix}Private".Replace(".", string.Empty), $"{DomainDnsNameSuffix}.private.");
-            //HostedZone hz = new HostedZone(template, $"hostedZoneExample.Com".Replace(".", string.Empty), $"example.com.");
-            hz.AddVpc(template.Vpcs.First(), Region.UsEast1);
-            var target = RecordSet.AddByHostedZone(template,
-                $"recordset4{rdsSqlExpress4Build.LogicalId}".Replace('.', '-'),
-                hz,
-                $"sqlserver.{DomainDnsName}.private.",
-                RecordSet.RecordSetTypeEnum.CNAME);
+            //HostedZone hz = new HostedZone(template, $"hostedZone{DomainDnsNameSuffix}Private".Replace(".", string.Empty), $"{DomainDnsNameSuffix}.private.");
+            ////HostedZone hz = new HostedZone(template, $"hostedZoneExample.Com".Replace(".", string.Empty), $"example.com.");
+            //hz.AddVpc(template.Vpcs.First(), Region.UsEast1);
             //var target = RecordSet.AddByHostedZone(template,
             //    $"recordset4{rdsSqlExpress4Build.LogicalId}".Replace('.', '-'),
             //    hz,
-            //    $"sqlserver.example.com.",
+            //    $"sqlserver.{DomainDnsName}.private.",
             //    RecordSet.RecordSetTypeEnum.CNAME);
-            target.DependsOn.Add(hz.LogicalId);
-            target.TTL = "60";
-            target.AddResourceRecord(new FnGetAtt(rdsSqlExpress4Build, "Endpoint.Address"));
+            ////var target = RecordSet.AddByHostedZone(template,
+            ////    $"recordset4{rdsSqlExpress4Build.LogicalId}".Replace('.', '-'),
+            ////    hz,
+            ////    $"sqlserver.example.com.",
+            ////    RecordSet.RecordSetTypeEnum.CNAME);
+            //target.DependsOn.Add(hz.LogicalId);
+            //target.TTL = "60";
+            //target.AddResourceRecord(new FnGetAtt(rdsSqlExpress4Build, "Endpoint.Address"));
 
 
-            instanceSize = InstanceTypes.T2Small;
-            if (mode == ProvisionMode.Launch)
-            {
-                instanceSize = InstanceTypes.C4Large;
-            }
+            //instanceSize = InstanceTypes.T2Small;
+            //if (mode == ProvisionMode.Launch)
+            //{
+            //    instanceSize = InstanceTypes.C4Large;
+            //}
 
-            var buildServer = AddBuildServer(template, instanceSize, subnetBuildServer, tfsServer,
-                instanceDomainController, securityGroupBuildServer, mySql4Build, rdsSqlExpress4Build);
-            //buildServer.AddFinalizer(TimeoutMax);
+            //var buildServer = AddBuildServer(template, instanceSize, subnetBuildServer, tfsServer,
+            //    instanceDomainController, securityGroupBuildServer, mySql4Build, rdsSqlExpress4Build);
+            ////buildServer.AddFinalizer(TimeoutMax);
 
-            // uses 33gb
-            var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
-            workstation.AddPackage<Chrome>();
-            workstation.AddPackage<ReSharper>();
-            //workstation.AddFinalizer(TimeoutMax);
+            //// uses 33gb
+            //var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
+            //var workstationChrome = workstation.AddPackage<Chrome>();
+            //var workstationReSharper = workstation.AddPackage<ReSharper>();
+            ////workstation.AddFinalizer(TimeoutMax);
 
 
-            SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
-            elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
-            tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            //SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
+            //elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            //tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
-            //////LoadBalancer elb = new LoadBalancer(template, "elb1");
-            //////elb.AddInstance(tfsServer);
-            //////elb.AddListener("8080", "8080", "http");
-            //////elb.AddSubnet(DMZSubnet);
-            //////elb.AddSecurityGroup(elbSecurityGroup);
-            //////template.AddResource(elb);
+            ////////LoadBalancer elb = new LoadBalancer(template, "elb1");
+            ////////elb.AddInstance(tfsServer);
+            ////////elb.AddListener("8080", "8080", "http");
+            ////////elb.AddSubnet(DMZSubnet);
+            ////////elb.AddSecurityGroup(elbSecurityGroup);
+            ////////template.AddResource(elb);
 
             // the below is a remote desktop gateway server that can
             // be uncommented to debug domain setup problems
@@ -249,13 +250,14 @@ namespace AWS.CloudFormation.Test
             return template;
         }
 
-        private static WindowsInstance AddSql(Template template, string instanceName, InstanceTypes instanceSize, Subnet subnet, DomainController domainController, SecurityGroup sqlServerSecurityGroup)
+        private static WaitCondition AddSql(Template template, string instanceName, InstanceTypes instanceSize, Subnet subnet, DomainController domainController, SecurityGroup sqlServerSecurityGroup)
         {
             var sqlServer = new WindowsInstance(template, instanceName, instanceSize, UsEast1AWindows2012R2Ami, subnet, true);
+
             domainController.AddToDomain(sqlServer, TimeoutMax);
-            sqlServer.AddPackage(BucketNameSoftware, new SqlServerExpress(sqlServer));
+            var sqlServerPackage = sqlServer.AddPackage(BucketNameSoftware, new SqlServerExpress(sqlServer));
             sqlServer.AddSecurityGroup(sqlServerSecurityGroup);
-            return sqlServer;
+            return sqlServerPackage;
         }
 
         private static DomainController AddDomainController(Template template, Subnet subnet)
@@ -787,7 +789,10 @@ namespace AWS.CloudFormation.Test
             return workstation;
         }
 
-        private static WindowsInstance AddTfsServer(Template template, InstanceTypes instanceSize, Subnet privateSubnet1, WindowsInstance tfsSqlServer, DomainController dc1, SecurityGroup tfsServerSecurityGroup)
+        private static WindowsInstance AddTfsServer(Template template,
+            InstanceTypes instanceSize, 
+            Subnet privateSubnet1, 
+            WaitCondition waitFor, DomainController dc1, SecurityGroup tfsServerSecurityGroup)
         {
             var tfsServer = new WindowsInstance(    template, 
                                                     "tfs",
@@ -799,8 +804,7 @@ namespace AWS.CloudFormation.Test
                                                     214);
 
             
-            
-            tfsServer.AddDependsOn(tfsSqlServer, TimeoutMax);
+            tfsServer.AddDependsOn(waitFor);
             var chefNode = tfsServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
             var domainInfo = new DomainController.DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);

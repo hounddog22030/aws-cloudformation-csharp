@@ -218,7 +218,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 this.Metadata.Init.ConfigSets.GetConfigSet(Init.FinalizeConfigSetName)
                     .GetConfig(Init.FinalizeConfigName);
 
-            string finalizeKey = $"waitCondition{logicalName}";
+            string finalizeKey = $"waitCondition{logicalName}{DateTime.Now.Ticks}";
             WaitCondition wait = new WaitCondition(Template, finalizeKey, timeout);
             var command = finalizeConfig.Commands.AddCommand<Command>(finalizeKey, Commands.CommandType.CompleteWaitHandle, $"{wait.Handle.LogicalId}");
 
