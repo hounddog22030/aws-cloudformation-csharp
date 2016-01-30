@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Stack;
 using AWS.CloudFormation.Resource.AutoScaling;
@@ -65,6 +66,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         public WaitCondition AddChefExec(string s3bucketName, string cookbookFileName, string recipeList)
         {
             var chefConfig = this.Instance.Metadata.Init.ConfigSets.GetConfigSet(RecipeName.Replace(":",string.Empty)).GetConfig("run");
+            chefConfig.Packages.AddPackage("msi", "chef", "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");
             var chefCommandConfig = chefConfig.Commands.AddCommand<Command>($"{this.CookbookName}{recipeList.Replace(':', '-')}");
             chefCommandConfig.Command.SetFnJoin($"C:/opscode/chef/bin/chef-client.bat -z -o {recipeList} -c c:/chef/{cookbookFileName}/client.rb");
             WaitCondition chefComplete = new WaitCondition(this.Instance.Template, $"waitCondition{this.Instance.LogicalId}{cookbookFileName}{recipeList}".Replace(".", string.Empty).Replace(":", string.Empty),

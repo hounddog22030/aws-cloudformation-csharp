@@ -21,8 +21,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public const string DefaultConfigSetJoinConfig = "join";
         public const string DefaultConfigSetRenameConfigRenamePowerShellCommand = "1-execute-powershell-script-RenameComputer";
         public const string DefaultConfigSetRenameConfigJoinDomain = "b-join-domain";
-        public const string InstallChefConfigSetName = "InstallChefConfigSet";
-        public const string InstallChefConfigName = "InstallChefConfig";
+        public const string ChefNodeJsonConfigSetName = "ChefNodeJsonConfigSetName";
+        public const string ChefNodeJsonConfigName = "ChefNodeJsonConfigName";
         public const int NetBiosMaxLength = 15;
 
 
@@ -188,7 +188,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public ConfigFileContent GetChefNodeJsonContent()
         {
 
-            var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet(InstallChefConfigSetName).GetConfig(InstallChefConfigSetName);
+            var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet(ChefNodeJsonConfigSetName).GetConfig(ChefNodeJsonConfigSetName);
             var nodeJson = chefConfig.Files.GetFile("c:/chef/node.json");
             return nodeJson.Content;
         }
