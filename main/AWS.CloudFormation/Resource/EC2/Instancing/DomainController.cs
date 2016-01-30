@@ -83,7 +83,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             {
                 if (_domainAvailable == null)
                 {
-                    _domainAvailable = new WaitCondition(this.Template, $"domainAvailableWaitCondition{DateTime.Now.Ticks}", new TimeSpan(4,0,0));
+                    _domainAvailable = new WaitCondition(this.Template, $"{this.LogicalId}DomainAvailableWaitCondition", new TimeSpan(4,0,0));
                 }
                 return _domainAvailable;
             }

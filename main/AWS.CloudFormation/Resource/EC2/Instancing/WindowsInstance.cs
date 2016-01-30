@@ -178,7 +178,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             var chefCommandConfig = chefConfig.Commands.AddCommand<Command>(recipeList.Replace(':','-'));
             chefCommandConfig.Command.SetFnJoin($"C:/opscode/chef/bin/chef-client.bat -z -o {recipeList} -c c:/chef/{cookbookFileName}/client.rb");
             WaitCondition chefComplete = new WaitCondition(this.Template,
-                $"waitCondition{cookbookFileName}{recipeList}".Replace(".",string.Empty).Replace(":",string.Empty),
+                $"waitCondition{this.LogicalId}{cookbookFileName}{recipeList}".Replace(".",string.Empty).Replace(":",string.Empty),
                 new TimeSpan(4,0,0));
             chefConfig.Commands.AddCommand<Command>(chefComplete);
             return chefComplete;
