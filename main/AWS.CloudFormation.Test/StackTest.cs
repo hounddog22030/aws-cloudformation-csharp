@@ -180,7 +180,8 @@ namespace AWS.CloudFormation.Test
             DbSubnetGroup dbSubnetGroupForDatabaseForBuild = new DbSubnetGroup(template, "dbSubnetGroupForDatabaseForBuild","Second subnet for database for build server");
             dbSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
             dbSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
-            var sql4Build = new DbInstance(template, "sql4build", DbInstanceClassEnum.DbT2Micro, EngineType.MySql, "masterusername", "Hy77tttt.",20, dbSubnetGroupForDatabaseForBuild, securityGroupDb4Build);
+            DbInstance sql4Build = null;
+            //sql4Build = new DbInstance(template, "sql4build", DbInstanceClassEnum.DbT2Micro, EngineType.MySql, "masterusername", "Hy77tttt.",20, dbSubnetGroupForDatabaseForBuild, securityGroupDb4Build);
 
 
             instanceSize = InstanceTypes.T2Small;
