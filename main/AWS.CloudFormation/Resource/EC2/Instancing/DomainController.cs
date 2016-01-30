@@ -260,6 +260,9 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             var joinCommand =
                 joinCommandConfig.Commands.AddCommand<PowerShellCommand>(DefaultConfigSetRenameConfigJoinDomain);
             joinCommand.Command.AddCommandLine("-Command \"",
+                    "if ((gwmi win32_computersystem).partofdomain -eq $true)             {",
+                        "write-host -fore green \"I am domain joined!\"",
+                    "} else {",
                 " Add-Computer -DomainName ",
                 this.DomainDnsName,
                 " -Credential ",
@@ -271,8 +274,11 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 "(ConvertTo-SecureString ",
                 this.DomainAdminPassword,
                 " -AsPlainText -Force))) ",
-                "-Restart\"");
-            joinCommand.WaitAfterCompletion = "forever";
+                "-Restart\"",
+                " }");
+            joinCommand.WaitAfterCompletion = "90";
+            joinCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
+
 
             instance.AddDependsOn(this, timeToWait);
             this.AddToDomainMemberSecurityGroup(instance);

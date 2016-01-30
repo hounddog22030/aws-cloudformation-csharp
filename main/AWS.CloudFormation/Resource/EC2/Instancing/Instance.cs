@@ -212,14 +212,13 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             var finalizeConfig =
                 this.Metadata.Init.ConfigSets.GetConfigSet(Init.FinalizeConfigSetName).GetConfig(Init.FinalizeConfigName);
 
-            const string finalizeKey = "a-signal-success";
+            string finalizeKey = $"a-signal-success{DateTime.Now.Ticks}" ;
+            var command = finalizeConfig.Commands.AddCommand<Command>(finalizeKey,
+                Commands.CommandType.CompleteWaitHandle);
+            command.WaitAfterCompletion = 0.ToString();
 
-            if (!finalizeConfig.Commands.ContainsKey(finalizeKey))
+            if (!Template.Resources.ContainsKey(this.WaitConditionName))
             {
-                var command = finalizeConfig.Commands.AddCommand<Command>("a-signal-success",
-                    Commands.CommandType.CompleteWaitHandle);
-                command.WaitAfterCompletion = 0.ToString();
-
                 WaitCondition wait = new WaitCondition(Template, this.WaitConditionName, timeout);
             }
 

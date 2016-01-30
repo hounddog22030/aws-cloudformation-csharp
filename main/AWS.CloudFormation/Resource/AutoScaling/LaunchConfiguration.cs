@@ -87,8 +87,20 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             this.Properties.SetValue(propertyName, temp.ToArray());
         }
 
+        private string _waitConditionName = null;
+
         [JsonIgnore]
-        public string WaitConditionName => $"{this.LogicalId}WaitCondition";
+        public string WaitConditionName
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_waitConditionName))
+                {
+                    _waitConditionName = $"{this.LogicalId}WaitCondition{DateTime.Now.Ticks}";
+                }
+                return _waitConditionName;
+            }
+        }
 
         [JsonIgnore]
         public string WaitConditionHandleName => this.WaitConditionName + "Handle";
@@ -235,10 +247,6 @@ namespace AWS.CloudFormation.Resource.AutoScaling
                     "triggers=post.update\n",
                     "path=Resources." + LogicalId + ".Metadata.AWS::CloudFormation::Init\n",
                     "action=",
-                    "ipconfig /renew",
-                    Environment.NewLine,
-                    "ipconfig /flushdns",
-                    Environment.NewLine,
                     "cfn-init.exe -v -c ",
                     string.Join(",", this.Metadata.Init.ConfigSets.Keys),
                     " -s ",

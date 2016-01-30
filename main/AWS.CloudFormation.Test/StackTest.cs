@@ -226,6 +226,7 @@ namespace AWS.CloudFormation.Test
             // uses 33gb
             var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
             workstation.AddPackage<Chrome>();
+            workstation.AddPackage<ReSharper>();
             workstation.AddFinalizer(TimeoutMax);
 
 
