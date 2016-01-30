@@ -21,8 +21,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public const string DefaultConfigSetJoinConfig = "join";
         public const string DefaultConfigSetRenameConfigRenamePowerShellCommand = "1-execute-powershell-script-RenameComputer";
         public const string DefaultConfigSetRenameConfigJoinDomain = "b-join-domain";
-        public const string ChefNodeJsonConfigSetName = "ChefNodeJsonConfigSetName";
-        public const string ChefNodeJsonConfigName = "ChefNodeJsonConfigName";
         public const int NetBiosMaxLength = 15;
 
 
@@ -62,18 +60,12 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             {
                 throw new InvalidOperationException($"Name length is limited to {NetBiosMaxLength} characters.");
             }
-            var nodeJson = this.GetChefNodeJsonContent();
-            nodeJson.Add("nothing", "nothing");
-
-
             if (rename)
             {
                 this.Rename();
             }
 
             this.DisableFirewall();
-            //this.AddChrome();
-
         }
 
         public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, bool rename)
@@ -177,13 +169,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         }
 
-        public ConfigFileContent GetChefNodeJsonContent()
-        {
-
-            var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet(ChefNodeJsonConfigSetName).GetConfig(ChefNodeJsonConfigSetName);
-            var nodeJson = chefConfig.Files.GetFile("c:/chef/node.json");
-            return nodeJson.Content;
-        }
 
         //public WaitCondition AddPackage(string s3BucketName, PackageBase package)
         //{

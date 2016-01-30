@@ -79,13 +79,13 @@ namespace AWS.CloudFormation.Configuration.Packages
         public string CookbookName { get; }
         public string RecipeList { get; private set; }
 
-        public ConfigFileContent GetChefNodeJsonContent()
-        {
+        //public ConfigFileContent GetChefNodeJsonContent()
+        //{
 
-            var chefConfig = this.Instance.Metadata.Init.ConfigSets.GetConfigSet(WindowsInstance.ChefNodeJsonConfigSetName).GetConfig(WindowsInstance.ChefNodeJsonConfigSetName);
-            var nodeJson = chefConfig.Files.GetFile("c:/chef/node.json");
-            return nodeJson.Content;
-        }
+        //    var chefConfig = this.Instance.Metadata.Init.ConfigSets.GetConfigSet(WindowsInstance.ChefNodeJsonConfigSetName).GetConfig(WindowsInstance.ChefNodeJsonConfigSetName);
+        //    var nodeJson = chefConfig.Files.GetFile("c:/chef/node.json");
+        //    return nodeJson.Content;
+        //}
 
         public WaitCondition AddChefExec()
         {
@@ -97,7 +97,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 string secretKeyString = (string)appSettingsReader.GetValue("S3SecretKey", typeof(string));
                 var auth = this.Instance.Metadata.Authentication.Add("S3AccessCreds", new S3Authentication(accessKeyString, secretKeyString, new string[] { BucketName }));
                 auth.Type = "S3";
-                var chefConfigContent = GetChefNodeJsonContent();
+                var chefConfigContent = this.Instance.GetChefNodeJsonContent();
                 var s3FileNode = chefConfigContent.Add("s3_file");
                 s3FileNode.Add("key", accessKeyString);
                 s3FileNode.Add("secret", secretKeyString);

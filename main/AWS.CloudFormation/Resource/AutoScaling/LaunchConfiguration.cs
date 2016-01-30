@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.EC2.Instancing;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Stack;
@@ -18,6 +19,8 @@ namespace AWS.CloudFormation.Resource.AutoScaling
     public class LaunchConfiguration : ResourceBase
     {
         internal const string ParameterNameDefaultKeyPairKeyName = "DefaultKeyPairKeyName";
+        public const string ChefNodeJsonConfigSetName = "ChefNodeJsonConfigSetName";
+        public const string ChefNodeJsonConfigName = "ChefNodeJsonConfigName";
 
         public LaunchConfiguration(Template template,
                                 string name,
@@ -60,6 +63,14 @@ namespace AWS.CloudFormation.Resource.AutoScaling
                 default:
                     throw new InvalidOperationException();
             }
+        }
+
+        public ConfigFileContent GetChefNodeJsonContent()
+        {
+
+            var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet(ChefNodeJsonConfigSetName).GetConfig(ChefNodeJsonConfigName);
+            var nodeJson = chefConfig.Files.GetFile("c:/chef/node.json");
+            return nodeJson.Content;
         }
 
         protected readonly List<string> _availableDevices;
