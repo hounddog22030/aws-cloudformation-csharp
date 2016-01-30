@@ -39,7 +39,7 @@ namespace AWS.CloudFormation.Resource.Route53
             private set { this.Properties.SetValue(value); }
         }
 
-        public void AddVpc(Vpc vpc)
+        public void AddVpc(Vpc vpc, Region region)
         {
             var temp = new List<object>();
             if (this.VPCs != null && this.VPCs.Any())
@@ -49,10 +49,9 @@ namespace AWS.CloudFormation.Resource.Route53
             var hostedVpc = new HostedZoneVPC()
             {
                 VPCId = new ReferenceProperty(vpc),
-                VPCRegion = vpc.
-
-            }
-            temp.Add();
+                VPCRegion = region
+            };
+            temp.Add(hostedVpc);
             this.VPCs = temp.ToArray();
         }
 
@@ -71,8 +70,8 @@ namespace AWS.CloudFormation.Resource.Route53
 
         protected class HostedZoneVPC
         {
-            public string VPCId { get; set; }
-            public string VPCRegion { get; set; }
+            public ReferenceProperty VPCId { get; set; }
+            public Region VPCRegion { get; set; }
         }
     }
 }

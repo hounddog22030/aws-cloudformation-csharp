@@ -17,9 +17,6 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         }
 
         [JsonIgnore]
-        public AvailabilityZone AvailabilityZone { get; set; }
-
-        [JsonIgnore]
         public bool EnableDnsHostnames
         {
             get { return this.Properties.GetValue<bool>(); }

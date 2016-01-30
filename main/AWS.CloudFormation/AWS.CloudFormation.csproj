@@ -62,6 +62,7 @@
     <Compile Include="Common\CollectionAsIdsConverter.cs" />
     <Compile Include="Configuration\Packages\Packages.cs" />
     <Compile Include="Property\AvailabilityZone.cs" />
+    <Compile Include="Property\Region.cs" />
     <Compile Include="Resource\AutoScaling\AutoScalingGroup.cs" />
     <Compile Include="Resource\AutoScaling\LaunchConfiguration.cs" />
     <Compile Include="Resource\EC2\DHCPOptions.cs" />

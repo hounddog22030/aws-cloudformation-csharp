@@ -2,6 +2,7 @@
 using System.Text;
 using System.Collections.Generic;
 using System.Linq;
+using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.Route53;
 using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -28,8 +29,8 @@ namespace AWS.CloudFormation.Test.Route53
         {
             Template template = StackTest.GetNewBlankTemplateWithVpc($"VpcCreatePrivateHostedZone");
             string hostedZoneName = $"{this.TestContext.TestName}{Guid.NewGuid().ToString().Replace("-", string.Empty)}";
-            HostedZone hz = new HostedZone(template, hostedZoneName, hostedZoneName);
-            hz.AddVpc(template.Vpcs.First());
+            HostedZone hz = new HostedZone(template, hostedZoneName, "example.com");
+            hz.AddVpc(template.Vpcs.First(),Region.UsEast1);
             StackTest.CreateTestStack(template, this.TestContext);
         }
         #region "TestStuff"
