@@ -92,16 +92,20 @@ namespace AWS.CloudFormation.Test
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
 
-            SecurityGroup securityGroupDb4Build = new SecurityGroup(template, "securityGroupDb4Build", "Allows communication to Db", vpc);
-
             var subnetBuildServer = new Subnet(template, "subnetBuildServer", vpc, CidrBuildServerSubnet, AvailabilityZone.UsEast1A);
+
+            SecurityGroup securityGroupDb4Build = new SecurityGroup(template, "securityGroupDb4Build", "Allows communication to Db", vpc);
             securityGroupDb4Build.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.MySql);
+            SecurityGroup securityGroupSqlSever4Build = new SecurityGroup(template, "securityGroupSqlSever4Build", "Allows communication to SqlServer", vpc);
+            securityGroupSqlSever4Build.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.MsSqlServer);
+
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.TeamFoundationServerBuild);
             subnetBuildServer.AddNatGateway(nat1, natSecurityGroup);
 
             var subnetDatabase4BuildServer2 = new Subnet(template, "subnetDatabase4BuildServer2", vpc, CidrDatabase4BuildSubnet2, AvailabilityZone.UsEast1E);
             securityGroupDb4Build.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.MySql);
+            securityGroupSqlSever4Build.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.MsSqlServer);
 
             SecurityGroup securityGroupBuildServer = new SecurityGroup(template, "BuildServerSecurityGroup", "Allows build controller to build agent communication", vpc);
             securityGroupBuildServer.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -170,19 +174,23 @@ namespace AWS.CloudFormation.Test
             var tfsServer = AddTfsServer(template, instanceSize, subnetTfsServer, instanceTfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
 
 
-            //instanceSize = InstanceTypes.T2Micro;
-            //if (mode == ProvisionMode.Launch)
-            //{
-            //    instanceSize = InstanceTypes.C4Large;
-            //}
+            DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup(template, "mySqlSubnetGroupForDatabaseForBuild", "Second subnet for database for build server");
+            mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
+            mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
+            DbInstance mySql4Build = null;
+            mySql4Build = new DbInstance(template, "sql4build", DbInstanceClassEnum.DbT2Micro, EngineType.MySql, LicenseModelType.GeneralPublicLicense, "masterusername", "Hy77tttt.",20, mySqlSubnetGroupForDatabaseForBuild, securityGroupDb4Build);
 
-            //WindowsInstance sql4Build = null;
-            DbSubnetGroup dbSubnetGroupForDatabaseForBuild = new DbSubnetGroup(template, "dbSubnetGroupForDatabaseForBuild","Second subnet for database for build server");
-            dbSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
-            dbSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
-            DbInstance sql4Build = null;
-            //sql4Build = new DbInstance(template, "sql4build", DbInstanceClassEnum.DbT2Micro, EngineType.MySql, "masterusername", "Hy77tttt.",20, dbSubnetGroupForDatabaseForBuild, securityGroupDb4Build);
+            DbSubnetGroup subnetGroupSqlExpress4Build = new DbSubnetGroup(template, "subnetGroupSqlExpress4Build", "DbSubnet Group for SQL Server database for build server");
+            subnetGroupSqlExpress4Build.AddSubnet(subnetBuildServer);
+            subnetGroupSqlExpress4Build.AddSubnet(subnetDatabase4BuildServer2);
 
+            DbInstance rdsSqlExpress4Build = null;
+            rdsSqlExpress4Build = new DbInstance(template,
+                "sqlserver4build", 
+                DbInstanceClassEnum.DbT2Micro,
+                EngineType.SqlServerExpress, 
+                LicenseModelType.LicenseIncluded, 
+                "sqlserveruser", "Hy77tttt.", 20, subnetGroupSqlExpress4Build, securityGroupSqlSever4Build);
 
             instanceSize = InstanceTypes.T2Small;
             if (mode == ProvisionMode.Launch)
@@ -191,7 +199,7 @@ namespace AWS.CloudFormation.Test
             }
 
             var buildServer = AddBuildServer(template, instanceSize, subnetBuildServer, tfsServer,
-                instanceDomainController, securityGroupBuildServer, sql4Build);
+                instanceDomainController, securityGroupBuildServer, mySql4Build, rdsSqlExpress4Build);
             buildServer.AddFinalizer(TimeoutMax);
 
             // uses 33gb
@@ -681,7 +689,14 @@ namespace AWS.CloudFormation.Test
         }
 
 
-        private static WindowsInstance AddBuildServer(Template template, InstanceTypes instanceSize, Subnet subnet, WindowsInstance tfsServer, DomainController domainController, SecurityGroup buildServerSecurityGroup, ResourceBase sql4Build)
+        private static WindowsInstance AddBuildServer(
+            Template template, 
+            InstanceTypes instanceSize, 
+            Subnet subnet, 
+            WindowsInstance tfsServer, 
+            DomainController domainController, 
+            SecurityGroup buildServerSecurityGroup, 
+            params ResourceBase[] dependsOn)
         {
 
             var buildServer = new WindowsInstance(template, $"build", instanceSize, UsEast1AWindows2012R2Ami, subnet, false, DefinitionType.LaunchConfiguration);
@@ -695,9 +710,9 @@ namespace AWS.CloudFormation.Test
             {
                 buildServer.AddDependsOn(tfsServer, TimeoutMax);
             }
-            if (sql4Build != null)
+            if (dependsOn != null & dependsOn.Length > 0)
             {
-                buildServer.DependsOn.Add(sql4Build.LogicalId);
+                dependsOn.ToList().ForEach(d=> buildServer.DependsOn.Add(d.LogicalId));
             }
 
             var chefNode = buildServer.GetChefNodeJsonContent();
