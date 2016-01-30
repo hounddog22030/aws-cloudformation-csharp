@@ -1,4 +1,5 @@
 ﻿using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.Networking;
 
 using AWS.CloudFormation.Stack;
@@ -14,6 +15,9 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             InternetGateway = new InternetGateway(template, $"{this.LogicalId}InternetGateway");
             VpcGatewayAttachment attachment = new VpcGatewayAttachment(template, $"{InternetGateway.LogicalId}Attachment", InternetGateway, this);
         }
+
+        [JsonIgnore]
+        public AvailabilityZone AvailabilityZone { get; set; }
 
         [JsonIgnore]
         public bool EnableDnsHostnames

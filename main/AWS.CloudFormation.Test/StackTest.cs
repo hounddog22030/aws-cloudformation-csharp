@@ -18,6 +18,7 @@ using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Resource.RDS;
+using AWS.CloudFormation.Resource.Route53;
 using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OperatingSystem = AWS.CloudFormation.Resource.EC2.Instancing.OperatingSystem;
@@ -120,8 +121,6 @@ namespace AWS.CloudFormation.Test
             subnetWorkstation.AddNatGateway(nat1, natSecurityGroup);
             securityGroupDb4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MySql);
 
-
-
             var domainInfo = new DomainController.DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
 
             var instanceSize = InstanceTypes.T2Nano;
@@ -222,6 +221,7 @@ namespace AWS.CloudFormation.Test
             // be uncommented to debug domain setup problems
             //var instanceRdp2 = new RemoteDesktopGateway(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
             //instanceDomainController.AddToDomainMemberSecurityGroup(instanceRdp2);
+
 
             return template;
         }

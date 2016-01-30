@@ -4,7 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
-
+using AWS.CloudFormation.Property;
+using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
@@ -32,10 +33,27 @@ namespace AWS.CloudFormation.Resource.Route53
         }
 
         [JsonIgnore]
-        public object VPCs
+        public object[] VPCs
         {
-            get { return this.Properties.GetValue<object>(); }
-            set { this.Properties.SetValue(value); }
+            get { return this.Properties.GetValue<object[]>(); }
+            private set { this.Properties.SetValue(value); }
+        }
+
+        public void AddVpc(Vpc vpc)
+        {
+            var temp = new List<object>();
+            if (this.VPCs != null && this.VPCs.Any())
+            {
+                temp.AddRange(this.VPCs);
+            }
+            var hostedVpc = new HostedZoneVPC()
+            {
+                VPCId = new ReferenceProperty(vpc),
+                VPCRegion = vpc.
+
+            }
+            temp.Add();
+            this.VPCs = temp.ToArray();
         }
 
 
@@ -49,6 +67,12 @@ namespace AWS.CloudFormation.Resource.Route53
 
         protected override bool SupportsTags {
             get { return false; }
+        }
+
+        protected class HostedZoneVPC
+        {
+            public string VPCId { get; set; }
+            public string VPCRegion { get; set; }
         }
     }
 }
