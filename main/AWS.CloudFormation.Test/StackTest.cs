@@ -255,9 +255,10 @@ namespace AWS.CloudFormation.Test
             var sqlServer = new WindowsInstance(template, instanceName, instanceSize, UsEast1AWindows2012R2Ami, subnet, true);
 
             domainController.AddToDomain(sqlServer, TimeoutMax);
-            var sqlServerPackage = sqlServer.AddPackage(BucketNameSoftware, new SqlServerExpress(sqlServer));
+            var sqlServerPackage = new SqlServerExpress(sqlServer);
+            //sqlServer.AddPackage(BucketNameSoftware, new SqlServerExpress(sqlServer));
             sqlServer.AddSecurityGroup(sqlServerSecurityGroup);
-            return sqlServerPackage;
+            return sqlServerPackage.WaitCondition;
         }
 
         private static DomainController AddDomainController(Template template, Subnet subnet)
@@ -454,8 +455,8 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A,true);
             WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, DMZSubnet, false);
 
-            w.AddPackage(BucketNameSoftware, new SqlServerExpress(w));
-            w.AddPackage(BucketNameSoftware, new VisualStudio());
+            var packageSqlServerExpress = new SqlServerExpress(w);
+            var packageVs = new VisualStudio(w);
 
 
             w.AddSecurityGroup(rdp);
@@ -729,8 +730,8 @@ namespace AWS.CloudFormation.Test
 
             buildServer.AddBlockDeviceMapping("/dev/sda1", 100, Ebs.VolumeTypes.GeneralPurpose);
 
-            buildServer.AddPackage(BucketNameSoftware, new VisualStudio());
-            buildServer.AddPackage(BucketNameSoftware, new TeamFoundationServerBuildServerAgentOnly(buildServer, tfsServer));
+            var packageVisualStudio = new VisualStudio(buildServer);
+            var packageAgentOnly = new TeamFoundationServerBuildServerAgentOnly(buildServer, tfsServer);
 
             if (tfsServerComplete != null)
             {
@@ -772,8 +773,8 @@ namespace AWS.CloudFormation.Test
 
             WindowsInstance workstation = new WindowsInstance(template, name, InstanceTypes.C4Large, UsEast1AWindows2012R2Ami, subnet, rename, Ebs.VolumeTypes.GeneralPurpose, 214);
 
-            workstation.AddPackage(BucketNameSoftware, new SqlServerExpress(workstation));
-            workstation.AddPackage(BucketNameSoftware, new VisualStudio());
+            var packageSqlExpress = new SqlServerExpress(workstation);
+            var packageVisualStudio = new VisualStudio(workstation);
 
             if (workstationSecurityGroup != null)
             {
@@ -812,7 +813,8 @@ namespace AWS.CloudFormation.Test
             domainAdminUserInfoNode.Add("name", domainInfo.DomainNetBiosName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             tfsServer.AddSecurityGroup(tfsServerSecurityGroup);
-            tfsReady = tfsServer.AddPackage(BucketNameSoftware, new TeamFoundationServerApplicationTier(tfsServer));
+            var packageTfsApplicationTier = new TeamFoundationServerApplicationTier(tfsServer);
+            tfsReady = packageTfsApplicationTier.WaitCondition;
             dc1.AddToDomain(tfsServer, TimeoutMax);
             return tfsServer;
         }

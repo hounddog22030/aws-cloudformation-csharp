@@ -193,15 +193,16 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             return nodeJson.Content;
         }
 
-        public WaitCondition AddPackage(string s3BucketName, PackageBase package)
-        {
-            var cookbookFileName = $"{package.CookbookName}.tar.gz";
-            var chefComplete = this.AddChefExec(s3BucketName, cookbookFileName,package.RecipeName);
-            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this, this.GetAvailableDevice());
-            blockDeviceMapping.Ebs.SnapshotId = package.SnapshotId;
-            this.AddBlockDeviceMapping(blockDeviceMapping);
-            return chefComplete;
-        }
+        //public WaitCondition AddPackage(string s3BucketName, PackageBase package)
+        //{
+            
+        //    var cookbookFileName = $"{package.CookbookName}.tar.gz";
+        //    var chefComplete = this.AddChefExec(s3BucketName, cookbookFileName, package.RecipeName);
+        //    BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this, this.GetAvailableDevice());
+        //    blockDeviceMapping.Ebs.SnapshotId = package.SnapshotId;
+        //    this.AddBlockDeviceMapping(blockDeviceMapping);
+        //    return chefComplete;
+        //}
         public T AddPackage<T>() where T :PackageBase,new()
         {
             T package = new T();
