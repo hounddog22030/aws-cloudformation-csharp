@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,6 +8,8 @@ using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Stack;
 using AWS.CloudFormation.Resource.AutoScaling;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.Wait;
 
@@ -70,8 +73,33 @@ namespace AWS.CloudFormation.Configuration.Packages
         public string CookbookName { get; }
         public string RecipeList { get; private set; }
 
+        public ConfigFileContent GetChefNodeJsonContent()
+        {
+
+            var chefConfig = this.Instance.Metadata.Init.ConfigSets.GetConfigSet(WindowsInstance.ChefNodeJsonConfigSetName).GetConfig(WindowsInstance.ChefNodeJsonConfigSetName);
+            var nodeJson = chefConfig.Files.GetFile("c:/chef/node.json");
+            return nodeJson.Content;
+        }
+
         public WaitCondition AddChefExec()
         {
+
+            if (!this.Instance.Metadata.Authentication.ContainsKey("S3AccessCreds"))
+            {
+                var appSettingsReader = new AppSettingsReader();
+                string accessKeyString = (string)appSettingsReader.GetValue("S3AccessKey", typeof(string));
+                string secretKeyString = (string)appSettingsReader.GetValue("S3SecretKey", typeof(string));
+                var auth = this.Instance.Metadata.Authentication.Add("S3AccessCreds", new S3Authentication(accessKeyString, secretKeyString, new string[] { BucketName }));
+                auth.Type = "S3";
+                var chefConfigContent = GetChefNodeJsonContent();
+                var s3FileNode = chefConfigContent.Add("s3_file");
+                s3FileNode.Add("key", accessKeyString);
+                s3FileNode.Add("secret", secretKeyString);
+            }
+            //
+
+
+
             var chefConfig = this.Instance.Metadata.Init.ConfigSets.GetConfigSet(RecipeList.Replace(":",string.Empty)).GetConfig("run");
             chefConfig.Packages.AddPackage("msi", "chef", "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");
             var chefCommandConfig = chefConfig.Commands.AddCommand<Command>($"{this.CookbookName}{RecipeList.Replace(':', '-')}");
