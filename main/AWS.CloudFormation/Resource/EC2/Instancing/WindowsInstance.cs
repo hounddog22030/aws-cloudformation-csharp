@@ -216,5 +216,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             blockDeviceMapping.Ebs.VolumeType = ec2DiskType;
             this.AddBlockDeviceMapping(blockDeviceMapping);
         }
+
     }
 }

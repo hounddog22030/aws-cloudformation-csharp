@@ -79,23 +79,6 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         private string _waitConditionName = null;
 
         [JsonIgnore]
-        public string WaitConditionName
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(_waitConditionName))
-                {
-                    _waitConditionName = $"{this.LogicalId}WaitCondition{DateTime.Now.Ticks}";
-                }
-                return _waitConditionName;
-            }
-        }
-
-        [JsonIgnore]
-        public string WaitConditionHandleName => this.WaitConditionName + "Handle";
-
-
-        [JsonIgnore]
         public bool ShouldEnableHup { get; set; }
 
         protected override bool SupportsTags => false;

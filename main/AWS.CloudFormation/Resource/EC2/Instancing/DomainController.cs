@@ -5,6 +5,7 @@ using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
+using AWS.CloudFormation.Resource.Wait;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
@@ -73,6 +74,20 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         [JsonIgnore]
         public ParameterBase DomainAdminPassword { get; set; }
+
+        private WaitCondition _domainAvailable = null;
+
+        private WaitCondition DomainAvailable
+        {
+            get
+            {
+                if (_domainAvailable == null)
+                {
+                    _domainAvailable = new WaitCondition(this.Template, $"domainAvailableWaitCondition{DateTime.Now.Ticks}", new TimeSpan(0,4,0));
+                }
+                return _domainAvailable;
+            }
+        }
 
         private void MakeDomainController()
         {
@@ -147,6 +162,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                     "\""
                 });
             currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
+
+            currentCommand = currentConfig.Commands.AddCommand<Command>(this.DomainAvailable);
 
             this.OnAddedToDomain(this.DomainNetBiosName.Default.ToString());
         }
@@ -271,8 +288,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             joinCommand.WaitAfterCompletion = "90";
             joinCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
-
-            instance.AddDependsOn(this, timeToWait);
+            instance.AddDependsOn(this.DomainAvailable);
             this.AddToDomainMemberSecurityGroup(instance);
             instance.DomainNetBiosName = this.DomainNetBiosName;
             instance.DomainDnsName = this.DomainDnsName;

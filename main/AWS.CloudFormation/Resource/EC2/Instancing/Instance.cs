@@ -201,28 +201,29 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 throw new NotSupportedException($"Cannot depend on instance of OperatingSystem:{dependsOn.OperatingSystem}");
             }
 
-            dependsOn.AddFinalizer(timeout);
+            var waitConditionHandleName = dependsOn.AddFinalizer(dependsOn.LogicalId,timeout);
 
-            this.DependsOn.Add(dependsOn.WaitConditionName);
+            this.DependsOn.Add(waitConditionHandleName.LogicalId);
 
         }
 
-        public void AddFinalizer(TimeSpan timeout)
+        public void AddDependsOn(WaitCondition waitConditionHandle)
+        {
+            this.DependsOn.Add(waitConditionHandle.Handle.LogicalId);
+        }
+
+        public WaitCondition AddFinalizer(string logicalName, TimeSpan timeout)
         {
             var finalizeConfig =
-                this.Metadata.Init.ConfigSets.GetConfigSet(Init.FinalizeConfigSetName).GetConfig(Init.FinalizeConfigName);
+                this.Metadata.Init.ConfigSets.GetConfigSet(Init.FinalizeConfigSetName)
+                    .GetConfig(Init.FinalizeConfigName);
 
-            string finalizeKey = $"a-signal-success{DateTime.Now.Ticks}" ;
-            var command = finalizeConfig.Commands.AddCommand<Command>(finalizeKey,
-                Commands.CommandType.CompleteWaitHandle);
+            string finalizeKey = $"waitCondition{logicalName}";
+            WaitCondition wait = new WaitCondition(Template, finalizeKey, timeout);
+            var command = finalizeConfig.Commands.AddCommand<Command>(finalizeKey, Commands.CommandType.CompleteWaitHandle, $"{wait.Handle.LogicalId}");
+
             command.WaitAfterCompletion = 0.ToString();
-
-            if (!Template.Resources.ContainsKey(this.WaitConditionName))
-            {
-                WaitCondition wait = new WaitCondition(Template, this.WaitConditionName, timeout);
-            }
-
-
+            return wait;
         }
 
         [JsonIgnore]
