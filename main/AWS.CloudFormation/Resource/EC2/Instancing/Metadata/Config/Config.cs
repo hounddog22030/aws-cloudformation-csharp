@@ -49,10 +49,10 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config
         public Sources Sources { get;  }
         public Packages Packages { get; set; }
 
-        public bool IgnoreErrors {
+        public string IgnoreErrors {
             get
             {
-                return (bool)this["ignoreErrors"];
+                return (string)this["ignoreErrors"];
             }
             set { this["ignoreErrors"] = value; }
         }

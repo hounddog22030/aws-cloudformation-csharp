@@ -41,17 +41,6 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             ShouldEnableHup = operatingSystem==OperatingSystem.Windows;
             this.EnableHup();
             SetUserData();
-            //if (operatingSystem == OperatingSystem.Windows)
-            //{
-            //    var setCfnInitAboveNormalConfig =
-            //        this.Metadata.Init.ConfigSets.GetConfigSet("SetCfnInitToAboveNormalConfigSet")
-            //            .GetConfig("SetCfnInitToAboveNormalConfig");
-
-            //    var command =
-            //        setCfnInitAboveNormalConfig.Commands.AddCommand<PowerShellCommand>("SetCfnInitToAboveNormalCommand");
-            //    command.WaitAfterCompletion = 0.ToString();
-            //    command.Command.AddCommandLine("-Command \"get-process -processname \"cfn-init\" | foreach { $_.PriorityClass = \"AboveNormal\" }\"");
-            //}
         }
 
         [JsonIgnore]

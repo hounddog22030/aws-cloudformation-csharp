@@ -66,21 +66,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             this.CreateDomainControllerSecurityGroup();
             this.MakeDomainController();
             ConfigureDefaultSite(subnet);
-            //this.SetDnsServers();
         }
-
-        //private void SetDnsServers()
-        //{
-        //    var renameConfig =
-        //        this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName)
-        //            .GetConfig(DefaultConfigSetJoinConfig);
-        //    var renameCommandConfig =
-        //        renameConfig.Commands.AddCommand<PowerShellCommand>(DefaultConfigSetRenameConfigSetDnsServers);
-
-        //    renameCommandConfig.Command.AddCommandLine(
-        //        "-Command \"Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses 10.0.0.2 \"");
-        //    renameCommandConfig.WaitAfterCompletion = 0.ToString();
-        //}
 
         [JsonIgnore]
         public ParameterBase DomainAdminUser { get; }
