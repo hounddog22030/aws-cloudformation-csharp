@@ -77,11 +77,21 @@ namespace AWS.CloudFormation.Resource
 
         public ResourceType Type { get; protected set; }
 
+        public bool ShouldSerializeMetadata()
+        {
+            return this.Metadata != null && this.Metadata.Any();
+        }
+
         public Metadata Metadata { get; }
 
 
         [JsonIgnore]
         public string LogicalId { get ; }
+
+        public bool ShouldSerializeDependsOn()
+        {
+            return this.DependsOn.Any();
+        }
 
         public List<string> DependsOn { get; private set; }
 

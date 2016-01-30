@@ -120,13 +120,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
         }
 
-        public bool ShouldSerializeDependsOn()
-        {
-            return this.DependsOn.Any();
-        }
-
-
-
         [JsonIgnore]
         public bool SourceDestCheck
         {

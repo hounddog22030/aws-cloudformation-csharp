@@ -1,4 +1,5 @@
-﻿using AWS.CloudFormation.Common;
+﻿using System.Linq;
+using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Resource.AutoScaling;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using Newtonsoft.Json;
