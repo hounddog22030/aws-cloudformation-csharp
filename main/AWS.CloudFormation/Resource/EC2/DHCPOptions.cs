@@ -24,7 +24,8 @@ namespace AWS.CloudFormation.Resource.EC2
     }
     public class DhcpOptions : ResourceBase
     {
-        public DhcpOptions(Template template, string name, string domainName, Vpc vpc, FnJoin dnsServers, FnJoin netBiosNameServers) : base(template, name, ResourceType.DhcpOptions)
+        public DhcpOptions(Template template, string name, string domainName, Vpc vpc, FnJoin dnsServers, FnJoin netBiosNameServers) 
+            : base(template, name, ResourceType.DhcpOptions)
         {
             this.DomainName = domainName;
             this.AddDomainNameServer(dnsServers);
