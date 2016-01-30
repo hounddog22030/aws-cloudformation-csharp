@@ -64,6 +64,8 @@ namespace AWS.CloudFormation.Test
         {
             var template = GetNewBlankTemplateWithVpc("Vpc");
             Vpc vpc = template.Vpcs.First();
+            vpc.EnableDnsHostnames = true;
+            vpc.EnableDnsSupport = true;
 
             //var subnetDomainController2 = new Subnet(template, "subnetDomainController2", vpc, CidrDomainController2Subnet, AvailabilityZone.UsEast1A);
             var subnetDmz2 = new Subnet(template, "subnetDmz2", vpc, CidrDmz2, AvailabilityZone.UsEast1A, true);
@@ -190,6 +192,18 @@ namespace AWS.CloudFormation.Test
                 EngineType.SqlServerExpress, 
                 LicenseModelType.LicenseIncluded, 
                 "sqlserveruser", "Hy77tttt.", 20, subnetGroupSqlExpress4Build, securityGroupSqlSever4Build);
+
+            HostedZone hz = new HostedZone(template, $"hostedZone{DomainDnsName}".Replace(".", string.Empty), $"{DomainDnsName}.");
+            hz.AddVpc(template.Vpcs.First(), Region.UsEast1);
+            var target = RecordSet.AddByHostedZone(template, 
+                $"recordset4{rdsSqlExpress4Build.LogicalId}".Replace('.','-') , 
+                hz, 
+                $"sqlserver.{DomainDnsName}.", 
+                RecordSet.RecordSetTypeEnum.CNAME);
+            target.DependsOn.Add(hz.LogicalId);
+            target.TTL = "60";
+            target.AddResourceRecord(new FnGetAtt(rdsSqlExpress4Build, "Endpoint.Address"));
+
 
             instanceSize = InstanceTypes.T2Small;
             if (mode == ProvisionMode.Launch)
