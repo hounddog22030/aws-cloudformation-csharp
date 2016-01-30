@@ -192,6 +192,11 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             blockDeviceMapping.Ebs.SnapshotId = package.SnapshotId;
             this.AddBlockDeviceMapping(blockDeviceMapping);
         }
+        public void AddPackage<T>() where T :PackageBase,new()
+        {
+            T package = new T();
+            package.AddConfiguration(this);
+        }
 
         readonly List<string> _availableDevices;
 

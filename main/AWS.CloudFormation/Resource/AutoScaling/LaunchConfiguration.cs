@@ -201,10 +201,6 @@ namespace AWS.CloudFormation.Resource.AutoScaling
                     this.UserData.Clear();
                     this.UserData.Add("Fn::Base64").SetFnJoin(
                         "<script>",
-                        "ipconfig /renew",
-                        Environment.NewLine,
-                        "ipconfig /flushdns",
-                        Environment.NewLine,
                         "cfn-init.exe -v -c ",
                         string.Join(",", this.Metadata.Init.ConfigSets.Keys),
                         " -s ",

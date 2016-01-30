@@ -5,11 +5,24 @@ using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Stack;
+using AWS.CloudFormation.Resource.AutoScaling;
 
 namespace AWS.CloudFormation.Configuration.Packages
 {
     public abstract class PackageBase
     {
+        protected PackageBase(Uri msi)
+        {
+            Msi = msi;
+        }
+
+        internal void AddConfiguration(Instance instance)
+        {
+            var fileName = System.IO.Path.GetFileNameWithoutExtension(Msi.AbsolutePath);
+            var configSet = instance.Metadata.Init.ConfigSets.GetConfigSet(fileName).GetConfig(fileName);
+            configSet.Packages.Add("msi",Msi.AbsoluteUri);
+        }
+
         protected PackageBase(string cookbookName, string snapshotId) : this(cookbookName,snapshotId, "default")
         {
         }
@@ -19,6 +32,8 @@ namespace AWS.CloudFormation.Configuration.Packages
             SnapshotId = snapshotId;
             RecipeName = $"{CookbookName}::{recipeName}";
         }
+
+        public Uri Msi { get; }
 
         public string CookbookName { get; }
 
