@@ -64,12 +64,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
             var nodeJson = this.GetChefNodeJsonContent();
             nodeJson.Add("nothing", "nothing");
-            //xvd[f - z]
-            _availableDevices = new List<string>();
-            for (char c = 'f'; c < 'z'; c++)
-            {
-                _availableDevices.Add($"xvd{c}");
-            }
 
 
             if (rename)
@@ -81,8 +75,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             //this.AddChrome();
 
         }
-
-
 
         public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, bool rename)
             : this(template, name, instanceType, imageId, rename, DefinitionType.Instance)
@@ -210,14 +202,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             return package;
         }
 
-        readonly List<string> _availableDevices;
 
-        protected string GetAvailableDevice()
-        {
-            var returnValue = _availableDevices.First();
-            _availableDevices.Remove(returnValue);
-            return returnValue;
-        }
 
         public void AddDisk(Ebs.VolumeTypes ec2DiskType, int sizeInGigabytes)
         {

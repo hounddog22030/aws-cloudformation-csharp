@@ -17,9 +17,20 @@ namespace AWS.CloudFormation.Configuration.Packages
 {
     public abstract class PackageBase
     {
-        protected PackageBase(Uri msi)
+        private PackageBase(LaunchConfiguration instance)
         {
+            this.Instance = instance;
+        }
+        protected PackageBase(LaunchConfiguration instance, Uri msi) : this(instance)
+        { 
             Msi = msi;
+        }
+        protected PackageBase(LaunchConfiguration instance, string snapshotId) : this(instance)
+        {
+            SnapshotId = snapshotId;
+            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this.Instance , this.Instance.GetAvailableDevice());
+            blockDeviceMapping.Ebs.SnapshotId = this.SnapshotId;
+            this.Instance.AddBlockDeviceMapping(blockDeviceMapping);
         }
 
         internal void AddConfiguration(Instance instance)
@@ -29,11 +40,8 @@ namespace AWS.CloudFormation.Configuration.Packages
             configSet.Packages.Add("msi",Msi.AbsoluteUri);
         }
 
-        protected PackageBase(string snapshotId)
-        {
-            SnapshotId = snapshotId;
-        }
 
+        public LaunchConfiguration Instance { get; }
 
         public Uri Msi { get; }
 
@@ -50,16 +58,15 @@ namespace AWS.CloudFormation.Configuration.Packages
         private string v1;
         private string v2;
 
-        public PackageChef(LaunchConfiguration instance, string snapshotId, string bucketName, string cookbookName, string recipeName) : base(snapshotId)
+        public PackageChef(LaunchConfiguration instance, string snapshotId, string bucketName, string cookbookName, string recipeName) : base(instance,snapshotId)
         {
-            Instance = instance;
             CookbookName = cookbookName;
             BucketName = bucketName;
-            RecipeList = $"{CookbookName}";
-            if (!string.IsNullOrEmpty(recipeName))
+            if (string.IsNullOrEmpty(recipeName))
             {
-                RecipeList = $"{CookbookName}::{recipeName}";
+                recipeName = "default";
             }
+            RecipeList = $"{CookbookName}::{recipeName}";
             this.WaitCondition = this.AddChefExec();
         }
 
@@ -69,7 +76,6 @@ namespace AWS.CloudFormation.Configuration.Packages
         {
         }
 
-        public LaunchConfiguration Instance { get; }
         public string CookbookName { get; }
         public string RecipeList { get; private set; }
 
@@ -102,7 +108,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             var chefConfig = this.Instance.Metadata.Init.ConfigSets.GetConfigSet(RecipeList.Replace(":",string.Empty)).GetConfig("run");
             chefConfig.Packages.AddPackage("msi", "chef", "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");
-            var chefCommandConfig = chefConfig.Commands.AddCommand<Command>($"{this.CookbookName}{RecipeList.Replace(':', '-')}");
+            var chefCommandConfig = chefConfig.Commands.AddCommand<Command>(RecipeList.Replace(':', '-'));
 
             var clientRbFileKey = $"c:/chef/{CookbookName}/client.rb";
             chefConfig.Files.GetFile(clientRbFileKey).Content.SetFnJoin($"cache_path 'c:/chef'\ncookbook_path 'c:/chef/{CookbookName}/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");

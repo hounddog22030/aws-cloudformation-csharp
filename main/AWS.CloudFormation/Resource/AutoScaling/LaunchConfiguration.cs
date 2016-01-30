@@ -26,9 +26,12 @@ namespace AWS.CloudFormation.Resource.AutoScaling
                                 OperatingSystem operatingSystem)
             : base(template, name, ResourceType.AwsAutoScalingLaunchConfiguration)
         {
+            _availableDevices = new List<string>();
             this.InstanceType = instanceType;
-
+            this.OperatingSystem = operatingSystem;
             this.ImageId = imageId;
+            this.PopulateAvailableDevices();
+
             if (!this.Template.Parameters.ContainsKey(ParameterNameDefaultKeyPairKeyName))
             {
                 throw new InvalidOperationException($"Template must contain a Parameter named {ParameterNameDefaultKeyPairKeyName} which contains the default encryption key name for the instance.");
@@ -37,12 +40,35 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             KeyName = keyName.Default.ToString();
             UserData = new CloudFormationDictionary(this);
             UserData.Add("Fn::Base64", "");
-            this.OperatingSystem = operatingSystem;
             ShouldEnableHup = operatingSystem==OperatingSystem.Windows;
             this.EnableHup();
             SetUserData();
         }
 
+        protected void PopulateAvailableDevices()
+        {
+            switch (OperatingSystem)
+            {
+                case OperatingSystem.Windows:
+                    for (char c = 'f'; c < 'z'; c++)
+                    {
+                        _availableDevices.Add($"xvd{c}");
+                    }
+                    break;
+                case OperatingSystem.Linux:
+                    break;
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        protected readonly List<string> _availableDevices;
+        internal string GetAvailableDevice()
+        {
+            var returnValue = _availableDevices.First();
+            _availableDevices.Remove(returnValue);
+            return returnValue;
+        }
         [JsonIgnore]
         public bool AssociatePublicIpAddress
         {

@@ -195,7 +195,7 @@ namespace AWS.CloudFormation.Test
                 LicenseModelType.LicenseIncluded,
                 "sqlserveruser", "Hy77tttt.", 20, subnetGroupSqlExpress4Build, securityGroupSqlSever4Build);
 
-            HostedZone hz = new HostedZone(template, $"hostedZone{DomainDnsNameSuffix}Private".Replace(".", string.Empty), $"{DomainDnsNameSuffix}.private.");
+            HostedZone hz = new HostedZone(template, $"hostedZone{DomainDnsName}Private".Replace(".", string.Empty), $"{DomainDnsName}.private.");
             //HostedZone hz = new HostedZone(template, $"hostedZoneExample.Com".Replace(".", string.Empty), $"example.com.");
             hz.AddVpc(template.Vpcs.First(), Region.UsEast1);
             var target = RecordSet.AddByHostedZone(template,
