@@ -38,7 +38,7 @@ namespace Aurora.Spike
                 var cc = c.CreateCommand();
                 cc.CommandText = "SELECT 0";
                 var result = cc.ExecuteScalar();
-                Assert.AreEqual((Int64)0, result);
+                Assert.AreEqual(0, result);
 
             }
 
