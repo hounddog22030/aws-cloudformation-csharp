@@ -24,5 +24,25 @@ namespace Aurora.Spike
             
 
         }
+        [TestMethod]
+        public void ConnectToSqlServer()
+        {
+            var builder = new System.Data.SqlClient.SqlConnectionStringBuilder();
+            builder.DataSource = "sqlserver.alpha.yadayada.software.private";
+            builder.UserID = "sqlserveruser";
+            builder.Password = "Hy77tttt.";
+
+            using (var c = new System.Data.SqlClient.SqlConnection(builder.ConnectionString))
+            {
+                c.Open();
+                var cc = c.CreateCommand();
+                cc.CommandText = "SELECT 0";
+                var result = cc.ExecuteScalar();
+                Assert.AreEqual((Int64)0, result);
+
+            }
+
+
+        }
     }
 }

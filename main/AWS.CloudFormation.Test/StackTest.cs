@@ -120,8 +120,10 @@ namespace AWS.CloudFormation.Test
             var subnetWorkstation = new Subnet(template, "subnetWorkstation", vpc, CidrWorkstationSubnet, AvailabilityZone.UsEast1A);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.TeamFoundationServerBuild);
-            subnetWorkstation.AddNatGateway(nat1, natSecurityGroup);
+            // give db access to the workstations
+            securityGroupSqlSever4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MsSqlServer);
             securityGroupDb4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MySql);
+            subnetWorkstation.AddNatGateway(nat1, natSecurityGroup);
 
             var domainInfo = new DomainController.DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
 
@@ -193,13 +195,19 @@ namespace AWS.CloudFormation.Test
                 LicenseModelType.LicenseIncluded, 
                 "sqlserveruser", "Hy77tttt.", 20, subnetGroupSqlExpress4Build, securityGroupSqlSever4Build);
 
-            HostedZone hz = new HostedZone(template, $"hostedZone{DomainDnsName}".Replace(".", string.Empty), $"{DomainDnsName}.");
+            HostedZone hz = new HostedZone(template, $"hostedZone{DomainDnsNameSuffix}Private".Replace(".", string.Empty), $"{DomainDnsNameSuffix}.private.");
+            //HostedZone hz = new HostedZone(template, $"hostedZoneExample.Com".Replace(".", string.Empty), $"example.com.");
             hz.AddVpc(template.Vpcs.First(), Region.UsEast1);
-            var target = RecordSet.AddByHostedZone(template, 
-                $"recordset4{rdsSqlExpress4Build.LogicalId}".Replace('.','-') , 
-                hz, 
-                $"sqlserver.{DomainDnsName}.", 
+            var target = RecordSet.AddByHostedZone(template,
+                $"recordset4{rdsSqlExpress4Build.LogicalId}".Replace('.', '-'),
+                hz,
+                $"sqlserver.{DomainDnsName}.private.",
                 RecordSet.RecordSetTypeEnum.CNAME);
+            //var target = RecordSet.AddByHostedZone(template,
+            //    $"recordset4{rdsSqlExpress4Build.LogicalId}".Replace('.', '-'),
+            //    hz,
+            //    $"sqlserver.example.com.",
+            //    RecordSet.RecordSetTypeEnum.CNAME);
             target.DependsOn.Add(hz.LogicalId);
             target.TTL = "60";
             target.AddResourceRecord(new FnGetAtt(rdsSqlExpress4Build, "Endpoint.Address"));
