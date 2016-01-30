@@ -120,6 +120,11 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
         }
 
+        public bool ShouldSerializeDependsOn()
+        {
+            return this.DependsOn.Any();
+        }
+
 
 
         [JsonIgnore]
@@ -194,37 +199,37 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         }
 
 
-        public void AddDependsOn(Instance dependsOn, TimeSpan timeout)
-        {
-            if (dependsOn.OperatingSystem != OperatingSystem.Windows)
-            {
-                throw new NotSupportedException($"Cannot depend on instance of OperatingSystem:{dependsOn.OperatingSystem}");
-            }
+        //public void AddDependsOn(Instance dependsOn, TimeSpan timeout)
+        //{
+        //    if (dependsOn.OperatingSystem != OperatingSystem.Windows)
+        //    {
+        //        throw new NotSupportedException($"Cannot depend on instance of OperatingSystem:{dependsOn.OperatingSystem}");
+        //    }
 
-            var waitConditionHandleName = dependsOn.AddFinalizer(dependsOn.LogicalId,timeout);
+        //    var waitConditionHandleName = dependsOn.AddFinalizer(dependsOn.LogicalId,timeout);
 
-            this.DependsOn.Add(waitConditionHandleName.LogicalId);
+        //    this.DependsOn.Add(waitConditionHandleName.LogicalId);
 
-        }
+        //}
 
         public void AddDependsOn(WaitCondition waitConditionHandle)
         {
             this.DependsOn.Add(waitConditionHandle.Handle.LogicalId);
         }
 
-        public WaitCondition AddFinalizer(string logicalName, TimeSpan timeout)
-        {
-            var finalizeConfig =
-                this.Metadata.Init.ConfigSets.GetConfigSet(Init.FinalizeConfigSetName)
-                    .GetConfig(Init.FinalizeConfigName);
+        //public WaitCondition AddFinalizer(string logicalName, TimeSpan timeout)
+        //{
+        //    var finalizeConfig =
+        //        this.Metadata.Init.ConfigSets.GetConfigSet(Init.FinalizeConfigSetName)
+        //            .GetConfig(Init.FinalizeConfigName);
 
-            string finalizeKey = $"waitCondition{logicalName}{DateTime.Now.Ticks}";
-            WaitCondition wait = new WaitCondition(Template, finalizeKey, timeout);
-            var command = finalizeConfig.Commands.AddCommand<Command>(finalizeKey, Commands.CommandType.CompleteWaitHandle, $"{wait.Handle.LogicalId}");
+        //    string finalizeKey = $"waitCondition{logicalName}{DateTime.Now.Ticks}";
+        //    WaitCondition wait = new WaitCondition(Template, finalizeKey, timeout);
+        //    var command = finalizeConfig.Commands.AddCommand<Command>(finalizeKey, Commands.CommandType.CompleteWaitHandle, $"{wait.Handle.LogicalId}");
 
-            command.WaitAfterCompletion = 0.ToString();
-            return wait;
-        }
+        //    command.WaitAfterCompletion = 0.ToString();
+        //    return wait;
+        //}
 
         [JsonIgnore]
         public string CidrBlock {

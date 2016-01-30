@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
@@ -58,7 +60,6 @@ namespace AWS.CloudFormation.Resource
             LogicalId = name;
             DependsOn = new List<string>();
             this.Template.Resources.Add(name, this);
-            Properties = new CloudFormationDictionary();
             Metadata = new Metadata(this);
             if (template.Outputs.Count < 60)
             {
@@ -82,12 +83,47 @@ namespace AWS.CloudFormation.Resource
         [JsonIgnore]
         public string LogicalId { get ; }
 
-
-        public List<string> DependsOn { get; }
+        public List<string> DependsOn { get; private set; }
 
         //public string[] DependsOn => this.DependsOn2.ToArray();
 
-        public CloudFormationDictionary Properties { get; }
+        private bool _serializing = false;
+        public bool ShouldSerializeProperties()
+        {
+            _serializing = true;
+            return true;
+        }
+
+        private CloudFormationDictionary _properties;
+        public CloudFormationDictionary Properties
+        {
+            get
+            {
+                if (_properties == null)
+                {
+                    _properties = new CloudFormationDictionary(this);
+                }
+                if (_serializing)
+                {
+                    CloudFormationDictionary clone = new CloudFormationDictionary(this);
+                    foreach (var key in _properties.Keys)
+                    {
+                        ICollection valueAsCollection = _properties[key] as ICollection;
+                        bool shouldAdd = valueAsCollection == null || valueAsCollection.Count > 0;
+                        if (shouldAdd)
+                        {
+                            clone.Add(key, _properties[key]);
+                        }
+                    }
+                    return clone;
+
+                }
+                else
+                {
+                    return _properties;
+                }
+            }
+        }
 
         [JsonIgnore]
         public TagDictionary Tags

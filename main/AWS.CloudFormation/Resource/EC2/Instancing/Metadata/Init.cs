@@ -12,8 +12,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata
     [JsonConverter(typeof(InitConverter))]
     public class Init : CloudFormationDictionary
     {
-        public const string FinalizeConfigSetName = "ZZZZZZZZZZZZZfinalizeConfigSet";
-        public const string FinalizeConfigName = "ZZZZZZZZZZZZZfinalizeConfig";
 
         public Init(LaunchConfiguration resource) : base(resource)
         {

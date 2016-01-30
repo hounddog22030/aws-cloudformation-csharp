@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.AutoScaling;
@@ -31,6 +32,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
                 case CommandType.Custom:
                     return this.AddCommand<Resource.EC2.Instancing.Metadata.Config.Command.Command>(key);
                 case CommandType.CompleteWaitHandle:
+                    throw new NotImplementedException();
                     var returnValue = this.AddCommand<Resource.EC2.Instancing.Metadata.Config.Command.Command>(key);
                     returnValue.Command.AddCommandLine(true, "cfn-signal.exe -e 0 \"",
                                                         new ReferenceProperty(data[0]),
@@ -44,7 +46,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
         {
                     var returnValue = this.AddCommand<Resource.EC2.Instancing.Metadata.Config.Command.Command>($"signalComplete{waitCondition.LogicalId}");
                     returnValue.Command.AddCommandLine(true, "cfn-signal.exe -e 0 \"",
-                                                        new ReferenceProperty(waitCondition.LogicalId),
+                                                        new ReferenceProperty(waitCondition.Handle),
                                                         "\"");
                     return returnValue;
         }
