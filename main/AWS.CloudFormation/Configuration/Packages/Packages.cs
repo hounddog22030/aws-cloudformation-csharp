@@ -52,7 +52,6 @@ namespace AWS.CloudFormation.Configuration.Packages
         public string SnapshotId { get; }
 
 
-        public WaitCondition WaitCondition { get; protected set; }
     }
 
     public abstract class PackageChef : PackageBase
@@ -70,7 +69,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 recipeName = "default";
             }
             RecipeList = $"{CookbookName}::{recipeName}";
-            this.WaitCondition = this.AddChefExec();
+            this.AddChefExec();
         }
 
         public string BucketName { get; }
@@ -82,15 +81,32 @@ namespace AWS.CloudFormation.Configuration.Packages
         public string CookbookName { get; }
         public string RecipeList { get; private set; }
 
-        //public ConfigFileContent GetChefNodeJsonContent()
-        //{
+        private WaitCondition _waitCondition = null;
 
-        //    var chefConfig = this.Instance.Metadata.Init.ConfigSets.GetConfigSet(WindowsInstance.ChefNodeJsonConfigSetName).GetConfig(WindowsInstance.ChefNodeJsonConfigSetName);
-        //    var nodeJson = chefConfig.Files.GetFile("c:/chef/node.json");
-        //    return nodeJson.Content;
-        //}
+        public WaitCondition WaitCondition
+        {
+            get
+            {
+                if (_waitCondition==null)
+                {
+                    _waitCondition = new WaitCondition(this.Instance.Template, $"waitCondition{this.Instance.LogicalId}{CookbookName}{RecipeList}".Replace(".", string.Empty).Replace(":", string.Empty), TimeoutMax);
+                    this.ChefConfig.Commands.AddCommand<Command>(_waitCondition);
+                }
+                return _waitCondition;
+            }
 
-        public WaitCondition AddChefExec()
+        }
+
+        protected Resource.EC2.Instancing.Metadata.Config.Config ChefConfig
+        {
+            get
+            {
+                return this.Instance.Metadata.Init.ConfigSets.GetConfigSet(RecipeList.Replace(":", string.Empty)).GetConfig("run");
+
+            }
+        }
+
+        public void AddChefExec()
         {
 
             if (!this.Instance.Metadata.Authentication.ContainsKey("S3AccessCreds"))
@@ -109,21 +125,15 @@ namespace AWS.CloudFormation.Configuration.Packages
 
 
 
-            var chefConfig = this.Instance.Metadata.Init.ConfigSets.GetConfigSet(RecipeList.Replace(":",string.Empty)).GetConfig("run");
-            chefConfig.Packages.AddPackage("msi", "chef", "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");
-            var chefCommandConfig = chefConfig.Commands.AddCommand<Command>(RecipeList.Replace(':', '-'));
+            
+            this.ChefConfig.Packages.AddPackage("msi", "chef", "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");
+            var chefCommandConfig = this.ChefConfig.Commands.AddCommand<Command>(RecipeList.Replace(':', '-'));
 
             var clientRbFileKey = $"c:/chef/{CookbookName}/client.rb";
-            chefConfig.Files.GetFile(clientRbFileKey).Content.SetFnJoin($"cache_path 'c:/chef'\ncookbook_path 'c:/chef/{CookbookName}/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
-            chefConfig.Sources.Add($"c:/chef/{CookbookName}/", $"https://{BucketName}.s3.amazonaws.com/{CookbookName}.tar.gz");
+            this.ChefConfig.Files.GetFile(clientRbFileKey).Content.SetFnJoin($"cache_path 'c:/chef'\ncookbook_path 'c:/chef/{CookbookName}/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
+            this.ChefConfig.Sources.Add($"c:/chef/{CookbookName}/", $"https://{BucketName}.s3.amazonaws.com/{CookbookName}.tar.gz");
 
             chefCommandConfig.Command.SetFnJoin($"C:/opscode/chef/bin/chef-client.bat -z -o {RecipeList} -c c:/chef/{CookbookName}/client.rb");
-            WaitCondition chefComplete = new WaitCondition(this.Instance.Template, 
-                $"waitCondition{this.Instance.LogicalId}{CookbookName}{RecipeList}".Replace(".", string.Empty).Replace(":", string.Empty),
-                TimeoutMax);
-            chefConfig.Commands.AddCommand<Command>(chefComplete);
-            return chefComplete;
-
         }
     }
 
@@ -151,21 +161,21 @@ namespace AWS.CloudFormation.Configuration.Packages
 
     public abstract class TeamFoundationServer : PackageChef
     {
-        public TeamFoundationServer(WindowsInstance instance, string recipeName) : base (instance,"snap-4e69d94b","tfs", recipeName)
+        public TeamFoundationServer(WindowsInstance instance, string bucketName, string recipeName) : base (instance,"snap-4e69d94b", bucketName,"tfs", recipeName)
         {
         }
     }
 
     public class TeamFoundationServerApplicationTier : TeamFoundationServer
     {
-        public TeamFoundationServerApplicationTier(WindowsInstance tfsServer) : base(tfsServer, "applicationtier")
+        public TeamFoundationServerApplicationTier(WindowsInstance tfsServer,string bucketName) : base(tfsServer, bucketName,  "applicationtier")
         {
 
         }
     }
     public class TeamFoundationServerBuildServer : TeamFoundationServer
     {
-        public TeamFoundationServerBuildServer(WindowsInstance buildServer, WindowsInstance applicationServer) : base(buildServer, "build")
+        public TeamFoundationServerBuildServer(WindowsInstance buildServer, WindowsInstance applicationServer, string bucketName) : base(buildServer, bucketName, "build")
         {
             var node = buildServer.GetChefNodeJsonContent();
             var tfsNode = node.Add("tfs");
@@ -175,7 +185,7 @@ namespace AWS.CloudFormation.Configuration.Packages
     }
     public class TeamFoundationServerBuildServerAgentOnly : TeamFoundationServer
     {
-        public TeamFoundationServerBuildServerAgentOnly(WindowsInstance buildServer, WindowsInstance applicationServer) : base(buildServer, "agent")
+        public TeamFoundationServerBuildServerAgentOnly(WindowsInstance buildServer, WindowsInstance applicationServer, string bucketName) : base(buildServer, bucketName, "agent")
         {
             var node = buildServer.GetChefNodeJsonContent();
             var tfsNode = node.Add("tfs");

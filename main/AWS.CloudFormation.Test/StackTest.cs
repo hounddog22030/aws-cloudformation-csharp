@@ -450,6 +450,7 @@ namespace AWS.CloudFormation.Test
 
             var packageVs = new VisualStudio(w, BucketNameSoftware);
             var packageSqlExpress = new SqlServerExpress(w,BucketNameSoftware);
+            var x = packageSqlExpress.WaitCondition;
 
             w.AddSecurityGroup(rdp);
             w.AddElasticIp();
@@ -742,7 +743,7 @@ namespace AWS.CloudFormation.Test
             buildServer.AddBlockDeviceMapping("/dev/sda1", 100, Ebs.VolumeTypes.GeneralPurpose);
 
             var packageVisualStudio = new VisualStudio(buildServer, BucketNameSoftware);
-            var packageAgentOnly = new TeamFoundationServerBuildServerAgentOnly(buildServer, tfsServer);
+            var packageAgentOnly = new TeamFoundationServerBuildServerAgentOnly(buildServer, tfsServer,BucketNameSoftware);
 
             if (tfsServerComplete != null)
             {
@@ -824,7 +825,7 @@ namespace AWS.CloudFormation.Test
             domainAdminUserInfoNode.Add("name", domainInfo.DomainNetBiosName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             tfsServer.AddSecurityGroup(tfsServerSecurityGroup);
-            var packageTfsApplicationTier = new TeamFoundationServerApplicationTier(tfsServer);
+            var packageTfsApplicationTier = new TeamFoundationServerApplicationTier(tfsServer,BucketNameSoftware);
             tfsReady = packageTfsApplicationTier.WaitCondition;
             dc1.AddToDomain(tfsServer, TimeoutMax);
             return tfsServer;
