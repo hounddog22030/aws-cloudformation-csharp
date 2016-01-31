@@ -16,35 +16,25 @@ using AWS.CloudFormation.Resource.Wait;
 namespace AWS.CloudFormation.Configuration.Packages
 {
 
-
-    public abstract class PackageBase
+    public interface IAddToLaunchConfiguration
     {
-        public readonly static TimeSpan TimeoutMax = new TimeSpan(12,0,0);
-        private PackageBase(LaunchConfiguration instance)
-        {
-            this.Instance = instance;
-        }
-        protected PackageBase(LaunchConfiguration instance, Uri msi) : this(instance)
+        void AddToLaunchConfiguration(LaunchConfiguration configuration);
+    }
+
+
+    public abstract class PackageBase: IAddToLaunchConfiguration
+    {
+        public static readonly TimeSpan TimeoutMax = new TimeSpan(12,0,0);
+        protected PackageBase(Uri msi)
         { 
             Msi = msi;
         }
-        protected PackageBase(LaunchConfiguration instance, string snapshotId) : this(instance)
+        protected PackageBase(string snapshotId)
         {
             SnapshotId = snapshotId;
-            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this.Instance , this.Instance.GetAvailableDevice());
-            blockDeviceMapping.Ebs.SnapshotId = this.SnapshotId;
-            this.Instance.AddBlockDeviceMapping(blockDeviceMapping);
         }
 
-        internal void AddConfiguration(Instance instance)
-        {
-            var fileName = System.IO.Path.GetFileNameWithoutExtension(Msi.AbsolutePath);
-            var configSet = instance.Metadata.Init.ConfigSets.GetConfigSet(fileName).GetConfig(fileName);
-            configSet.Packages.Add("msi",Msi.AbsoluteUri);
-        }
-
-
-        public LaunchConfiguration Instance { get; }
+        public LaunchConfiguration Instance { get; internal set; }
 
         public Uri Msi { get; }
 
@@ -52,6 +42,23 @@ namespace AWS.CloudFormation.Configuration.Packages
         public string SnapshotId { get; }
 
 
+        public virtual void AddToLaunchConfiguration(LaunchConfiguration configuration)
+        {
+            this.Instance = configuration;
+
+            if (!string.IsNullOrEmpty(this.SnapshotId))
+            {
+                BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this.Instance, this.Instance.GetAvailableDevice());
+                blockDeviceMapping.Ebs.SnapshotId = this.SnapshotId;
+                this.Instance.AddBlockDeviceMapping(blockDeviceMapping);
+            }
+            if (this.Msi != null)
+            {
+                var fileName = System.IO.Path.GetFileNameWithoutExtension(Msi.AbsolutePath);
+                var configSet = configuration.Metadata.Init.ConfigSets.GetConfigSet(fileName).GetConfig(fileName);
+                configSet.Packages.Add("msi", Msi.AbsoluteUri);
+            }
+        }
     }
 
     public abstract class PackageChef : PackageBase
@@ -60,7 +67,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         private string v1;
         private string v2;
 
-        public PackageChef(LaunchConfiguration instance, string snapshotId, string bucketName, string cookbookName, string recipeName) : base(instance,snapshotId)
+        public PackageChef(string snapshotId, string bucketName, string cookbookName, string recipeName) : base(snapshotId)
         {
             CookbookName = cookbookName;
             BucketName = bucketName;
@@ -69,12 +76,11 @@ namespace AWS.CloudFormation.Configuration.Packages
                 recipeName = "default";
             }
             RecipeList = $"{CookbookName}::{recipeName}";
-            this.AddChefExec();
         }
 
         public string BucketName { get; }
 
-        public PackageChef(LaunchConfiguration instance, string snapshotId, string bucketName, string cookbookName) : this(instance,snapshotId, bucketName, cookbookName, null)
+        public PackageChef(string snapshotId, string bucketName, string cookbookName) : this(snapshotId, bucketName, cookbookName, null)
         {
         }
 
@@ -106,26 +112,24 @@ namespace AWS.CloudFormation.Configuration.Packages
             }
         }
 
-        public void AddChefExec()
-        {
 
-            if (!this.Instance.Metadata.Authentication.ContainsKey("S3AccessCreds"))
+        public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
+        {
+            base.AddToLaunchConfiguration(configuration);
+
+            if (!configuration.Metadata.Authentication.ContainsKey("S3AccessCreds"))
             {
                 var appSettingsReader = new AppSettingsReader();
                 string accessKeyString = (string)appSettingsReader.GetValue("S3AccessKey", typeof(string));
                 string secretKeyString = (string)appSettingsReader.GetValue("S3SecretKey", typeof(string));
-                var auth = this.Instance.Metadata.Authentication.Add("S3AccessCreds", new S3Authentication(accessKeyString, secretKeyString, new string[] { BucketName }));
+                var auth = configuration.Metadata.Authentication.Add("S3AccessCreds", new S3Authentication(accessKeyString, secretKeyString, new string[] { BucketName }));
                 auth.Type = "S3";
-                var chefConfigContent = this.Instance.GetChefNodeJsonContent();
+                var chefConfigContent = configuration.GetChefNodeJsonContent();
                 var s3FileNode = chefConfigContent.Add("s3_file");
                 s3FileNode.Add("key", accessKeyString);
                 s3FileNode.Add("secret", secretKeyString);
             }
-            //
 
-
-
-            
             this.ChefConfig.Packages.AddPackage("msi", "chef", "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");
             var chefCommandConfig = this.ChefConfig.Commands.AddCommand<Command>(RecipeList.Replace(':', '-'));
 
@@ -140,19 +144,24 @@ namespace AWS.CloudFormation.Configuration.Packages
     public class VisualStudio : PackageChef
     {
 
-        public VisualStudio(LaunchConfiguration instance, string bucketName) : base(instance, "snap-5e27a85a", bucketName, "vs")
+        public VisualStudio(string bucketName) : base("snap-5e27a85a", bucketName, "vs")
         {
         }
     }
     public class SqlServerExpress : PackageChef
     {
-        public SqlServerExpress(WindowsInstance instance, string bucketName) : base(instance, "snap-2cf80f29", bucketName, "sqlserver")
+        public SqlServerExpress(string bucketName) : base("snap-2cf80f29", bucketName, "sqlserver")
         {
-            instance.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 20);
-            instance.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 10);
-            instance.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 10);
-            var node = instance.GetChefNodeJsonContent();
-            var sqlServerNode =  node.Add("sqlserver");
+        }
+
+        public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
+        {
+            base.AddToLaunchConfiguration(configuration);
+            configuration.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 20);
+            configuration.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 10);
+            configuration.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 10);
+            var node = configuration.GetChefNodeJsonContent();
+            var sqlServerNode = node.Add("sqlserver");
             sqlServerNode.Add("SQLUSERDBDIR", "d:\\SqlUserDb");
             sqlServerNode.Add("SQLUSERDBLOGDIR", "e:\\SqlUserDbLog");
             sqlServerNode.Add("INSTALLSQLDATADIR", "f:\\SqlData");
@@ -161,37 +170,47 @@ namespace AWS.CloudFormation.Configuration.Packages
 
     public abstract class TeamFoundationServer : PackageChef
     {
-        public TeamFoundationServer(WindowsInstance instance, string bucketName, string recipeName) : base (instance,"snap-4e69d94b", bucketName,"tfs", recipeName)
+        public TeamFoundationServer(string bucketName, string recipeName) : base ("snap-4e69d94b", bucketName,"tfs", recipeName)
         {
         }
     }
 
     public class TeamFoundationServerApplicationTier : TeamFoundationServer
     {
-        public TeamFoundationServerApplicationTier(WindowsInstance tfsServer,string bucketName) : base(tfsServer, bucketName,  "applicationtier")
+        public TeamFoundationServerApplicationTier(string bucketName) : base(bucketName,  "applicationtier")
         {
 
         }
     }
-    public class TeamFoundationServerBuildServer : TeamFoundationServer
+
+    public class TeamFoundationServerBuildServerBase : TeamFoundationServer
     {
-        public TeamFoundationServerBuildServer(WindowsInstance buildServer, WindowsInstance applicationServer, string bucketName) : base(buildServer, bucketName, "build")
+        public TeamFoundationServerBuildServerBase(LaunchConfiguration applicationServer, string bucketName, string recipeName) : base(bucketName, recipeName)
         {
-            var node = buildServer.GetChefNodeJsonContent();
+            this.ApplicationServer = applicationServer;
+        }
+        public LaunchConfiguration ApplicationServer { get;  }
+        public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
+        {
+            base.AddToLaunchConfiguration(configuration);
+            var node = this.Instance.GetChefNodeJsonContent();
             var tfsNode = node.Add("tfs");
-            tfsNode.Add("application_server_netbios_name", applicationServer.LogicalId);
-
+            tfsNode.Add("application_server_netbios_name", this.ApplicationServer.LogicalId);
         }
     }
-    public class TeamFoundationServerBuildServerAgentOnly : TeamFoundationServer
+
+
+
+    public class TeamFoundationServerBuildServer : TeamFoundationServerBuildServerBase
     {
-        public TeamFoundationServerBuildServerAgentOnly(WindowsInstance buildServer, WindowsInstance applicationServer, string bucketName) : base(buildServer, bucketName, "agent")
+        public TeamFoundationServerBuildServer(LaunchConfiguration applicationServer, string bucketName) : base(applicationServer, bucketName, "build")
         {
-            var node = buildServer.GetChefNodeJsonContent();
-            var tfsNode = node.Add("tfs");
-            tfsNode.Add("application_server_netbios_name", applicationServer.LogicalId);
-
         }
     }
-
+    public class TeamFoundationServerBuildServerAgentOnly : TeamFoundationServerBuildServerBase
+    {
+        public TeamFoundationServerBuildServerAgentOnly(WindowsInstance applicationServer, string bucketName) : base(applicationServer, bucketName, "agent")
+        {
+        }
+    }
 }

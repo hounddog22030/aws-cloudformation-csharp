@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Configuration.Packages;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
@@ -22,6 +24,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         public const string ChefNodeJsonConfigSetName = "ChefNodeJsonConfigSetName";
         public const string ChefNodeJsonConfigName = "ChefNodeJsonConfigName";
 
+
         public LaunchConfiguration(Template template,
                                 string name,
                                 InstanceTypes instanceType,
@@ -32,6 +35,8 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             _availableDevices = new List<string>();
             this.InstanceType = instanceType;
             this.OperatingSystem = operatingSystem;
+            Packages = new ObservableCollection<PackageBase>();
+            Packages.CollectionChanged += Packages_CollectionChanged;
             this.ImageId = imageId;
             this.PopulateAvailableDevices();
 
@@ -46,6 +51,27 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             ShouldEnableHup = operatingSystem==OperatingSystem.Windows;
             this.EnableHup();
             SetUserData();
+        }
+
+        private void Packages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            foreach (var newItem in e.NewItems)
+            {
+                var senderAsPackage = newItem as PackageBase;
+                senderAsPackage.AddToLaunchConfiguration(this);
+
+            }
+        }
+
+        [JsonIgnore]
+        public ObservableCollection<PackageBase> Packages { get; }
+
+        public void AddDisk(Ebs.VolumeTypes ec2DiskType, int sizeInGigabytes)
+        {
+            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this, this.GetAvailableDevice());
+            blockDeviceMapping.Ebs.VolumeSize = sizeInGigabytes;
+            blockDeviceMapping.Ebs.VolumeType = ec2DiskType;
+            this.AddBlockDeviceMapping(blockDeviceMapping);
         }
 
         protected void PopulateAvailableDevices()

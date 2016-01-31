@@ -11,7 +11,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 {
     public class Chrome : PackageBase
     {
-        public Chrome(LaunchConfiguration instance) : base(instance, new Uri("https://s3.amazonaws.com/gtbb/software/googlechromestandaloneenterprise64.msi"))
+        public Chrome() : base(new Uri("https://s3.amazonaws.com/gtbb/software/googlechromestandaloneenterprise64.msi"))
         {
 
         }

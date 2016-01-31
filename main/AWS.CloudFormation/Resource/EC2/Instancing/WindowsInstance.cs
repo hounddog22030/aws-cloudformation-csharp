@@ -183,19 +183,11 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public T AddPackage<T>() where T :PackageBase,new()
         {
             T package = new T();
-            package.AddConfiguration(this);
             return package;
         }
 
 
 
-        public void AddDisk(Ebs.VolumeTypes ec2DiskType, int sizeInGigabytes)
-        {
-            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this,this.GetAvailableDevice());
-            blockDeviceMapping.Ebs.VolumeSize = sizeInGigabytes;
-            blockDeviceMapping.Ebs.VolumeType = ec2DiskType;
-            this.AddBlockDeviceMapping(blockDeviceMapping);
-        }
 
     }
 }

@@ -9,7 +9,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 {
     public class ReSharper : PackageBase
     {
-        public ReSharper(LaunchConfiguration instance) : base(instance,new Uri("http://download.jetbrains.com/resharper/ReSharperSetup.8.2.3000.5176.msi"))
+        public ReSharper() : base(new Uri("http://download.jetbrains.com/resharper/ReSharperSetup.8.2.3000.5176.msi"))
         {
         }
     }
