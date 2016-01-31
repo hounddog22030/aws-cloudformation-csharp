@@ -107,7 +107,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         {
             get
             {
-                return this.Instance.Metadata.Init.ConfigSets.GetConfigSet(RecipeList.Replace(":", string.Empty)).GetConfig("run");
+                return this.Instance.Metadata.Init.ConfigSets.GetConfigSet<ChefConfigSet>(RecipeList.Replace(":", string.Empty)).Run;
 
             }
         }
@@ -138,6 +138,18 @@ namespace AWS.CloudFormation.Configuration.Packages
             this.ChefConfig.Sources.Add($"c:/chef/{CookbookName}/", $"https://{BucketName}.s3.amazonaws.com/{CookbookName}.tar.gz");
 
             chefCommandConfig.Command.SetFnJoin($"C:/opscode/chef/bin/chef-client.bat -z -o {RecipeList} -c c:/chef/{CookbookName}/client.rb");
+        }
+    }
+
+    public class ChefConfigSet : ConfigSet
+    {
+        public ChefConfigSet()
+        {
+        }
+
+        public Config Run
+        {
+            get { return this.GetConfig("run"); }
         }
     }
 

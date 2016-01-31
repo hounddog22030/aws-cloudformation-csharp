@@ -5,6 +5,10 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata
 {
     public class ConfigSet : CloudFormationDictionary
     {
+        public ConfigSet()
+        {
+            
+        }
         public ConfigSet(LaunchConfiguration resource) : base(resource)
         {
             Instance = resource;
@@ -22,7 +26,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata
             }
         }
 
-        public LaunchConfiguration Instance { get; }
+        public LaunchConfiguration Instance { get; internal set; }
     }
 
 }
