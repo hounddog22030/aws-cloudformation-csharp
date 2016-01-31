@@ -196,18 +196,12 @@ namespace AWS.CloudFormation.Test
                 "sqlserveruser", "Hy77tttt.", 20, subnetGroupSqlExpress4Build, securityGroupSqlSever4Build);
 
             HostedZone hz = new HostedZone(template, $"hostedZone{DomainDnsName}Private".Replace(".", string.Empty), $"{DomainDnsName}.private.");
-            //HostedZone hz = new HostedZone(template, $"hostedZoneExample.Com".Replace(".", string.Empty), $"example.com.");
             hz.AddVpc(template.Vpcs.First(), Region.UsEast1);
             var target = RecordSet.AddByHostedZone(template,
                 $"recordset4{rdsSqlExpress4Build.LogicalId}".Replace('.', '-'),
                 hz,
                 $"sqlserver.{DomainDnsName}.private.",
                 RecordSet.RecordSetTypeEnum.CNAME);
-            //var target = RecordSet.AddByHostedZone(template,
-            //    $"recordset4{rdsSqlExpress4Build.LogicalId}".Replace('.', '-'),
-            //    hz,
-            //    $"sqlserver.example.com.",
-            //    RecordSet.RecordSetTypeEnum.CNAME);
             target.DependsOn.Add(hz.LogicalId);
             target.TTL = "60";
             target.AddResourceRecord(new FnGetAtt(rdsSqlExpress4Build, "Endpoint.Address"));
@@ -221,18 +215,18 @@ namespace AWS.CloudFormation.Test
 
             //var buildServer = AddBuildServer(template, instanceSize, subnetBuildServer, tfsServer, tfsWait,
             //    instanceDomainController, securityGroupBuildServer, mySql4Build, rdsSqlExpress4Build);
-            ////buildServer.AddFinalizer(TimeoutMax);
+            //buildServer.AddFinalizer(TimeoutMax);
 
-            //// uses 33gb
+            // uses 33gb
             //var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
-            //var workstationChrome = workstation.AddPackage<Chrome>();
-            //var workstationReSharper = workstation.AddPackage<ReSharper>();
-            ////workstation.AddFinalizer(TimeoutMax);
+            //var workstationChrome = new Chrome(workstation);
+            //var workstationReSharper = new ReSharper(workstation);
+            //workstation.AddFinalizer(TimeoutMax);
 
 
-            //SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
-            //elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
-            //tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
+            elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
             //////////LoadBalancer elb = new LoadBalancer(template, "elb1");
             //////////elb.AddInstance(tfsServer);
@@ -243,8 +237,8 @@ namespace AWS.CloudFormation.Test
 
             ////the below is a remote desktop gateway server that can
             //// be uncommented to debug domain setup problems
-            var instanceRdp2 = new RemoteDesktopGateway(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
-            instanceDomainController.AddToDomainMemberSecurityGroup(instanceRdp2);
+            //var instanceRdp2 = new RemoteDesktopGateway(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
+            //instanceDomainController.AddToDomainMemberSecurityGroup(instanceRdp2);
 
 
             return template;
@@ -444,6 +438,24 @@ namespace AWS.CloudFormation.Test
             Stack.Stack.CreateStack(template, name);
         }
 
+        [TestMethod]
+        public void UpdateStackWithVisualStudio()
+        {
+            var template = GetNewBlankTemplateWithVpc($"VpcCreateStackWithVisualStudio");
+            var vpc = template.Vpcs.First();
+            SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
+            rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            var DMZSubnet = new Subnet(template, "DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
+            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, DMZSubnet, false);
+
+            var packageVs = new VisualStudio(w, BucketNameSoftware);
+            var packageSqlExpress = new SqlServerExpress(w,BucketNameSoftware);
+
+            w.AddSecurityGroup(rdp);
+            w.AddElasticIp();
+            var name = "CreateStackWithVisualStudio-2016-01-30T1711018619021-0500";
+            Stack.Stack.UpdateStack(name, template);
+        }
 
         [TestMethod]
         public void CreateStackWithVisualStudio()
@@ -953,9 +965,9 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateDevelopmentTest()
         {
-            var stackName = "delta-yadayada-software";
+            var stackName = "beta-yadayada-software";
 
-            StackTest.DomainDnsName = "delta.yadayada.software";
+            StackTest.DomainDnsName = "beta.yadayada.software";
 
             Stack.Stack.UpdateStack(stackName, GetTemplateFullStack(ProvisionMode.Run));
         }

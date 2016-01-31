@@ -15,8 +15,11 @@ using AWS.CloudFormation.Resource.Wait;
 
 namespace AWS.CloudFormation.Configuration.Packages
 {
+
+
     public abstract class PackageBase
     {
+        public readonly static TimeSpan TimeoutMax = new TimeSpan(12,0,0);
         private PackageBase(LaunchConfiguration instance)
         {
             this.Instance = instance;
@@ -115,8 +118,9 @@ namespace AWS.CloudFormation.Configuration.Packages
             chefConfig.Sources.Add($"c:/chef/{CookbookName}/", $"https://{BucketName}.s3.amazonaws.com/{CookbookName}.tar.gz");
 
             chefCommandConfig.Command.SetFnJoin($"C:/opscode/chef/bin/chef-client.bat -z -o {RecipeList} -c c:/chef/{CookbookName}/client.rb");
-            WaitCondition chefComplete = new WaitCondition(this.Instance.Template, $"waitCondition{this.Instance.LogicalId}{CookbookName}{RecipeList}".Replace(".", string.Empty).Replace(":", string.Empty),
-                new TimeSpan(4, 0, 0));
+            WaitCondition chefComplete = new WaitCondition(this.Instance.Template, 
+                $"waitCondition{this.Instance.LogicalId}{CookbookName}{RecipeList}".Replace(".", string.Empty).Replace(":", string.Empty),
+                TimeoutMax);
             chefConfig.Commands.AddCommand<Command>(chefComplete);
             return chefComplete;
 
@@ -132,12 +136,12 @@ namespace AWS.CloudFormation.Configuration.Packages
     }
     public class SqlServerExpress : PackageChef
     {
-        public SqlServerExpress(WindowsInstance sqlServer, string bucketName) : base(sqlServer,"snap-2cf80f29", bucketName, "sqlserver")
+        public SqlServerExpress(WindowsInstance instance, string bucketName) : base(instance, "snap-2cf80f29", bucketName, "sqlserver")
         {
-            sqlServer.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 20);
-            sqlServer.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 10);
-            sqlServer.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 10);
-            var node = sqlServer.GetChefNodeJsonContent();
+            instance.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 20);
+            instance.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 10);
+            instance.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 10);
+            var node = instance.GetChefNodeJsonContent();
             var sqlServerNode =  node.Add("sqlserver");
             sqlServerNode.Add("SQLUSERDBDIR", "d:\\SqlUserDb");
             sqlServerNode.Add("SQLUSERDBLOGDIR", "e:\\SqlUserDbLog");

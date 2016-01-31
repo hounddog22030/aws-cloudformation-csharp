@@ -68,7 +68,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         public ConfigFileContent GetChefNodeJsonContent()
         {
 
-            var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet(ChefNodeJsonConfigSetName).GetConfig(ChefNodeJsonConfigName);
+            var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("setup");
             var nodeJson = chefConfig.Files.GetFile("c:/chef/node.json");
             return nodeJson.Content;
         }
