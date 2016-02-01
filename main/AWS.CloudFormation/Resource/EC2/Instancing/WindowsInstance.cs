@@ -91,12 +91,14 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             if (this.Rename && OperatingSystem == OperatingSystem.Windows)
             {
                 var renameConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetRenameConfig);
-                var renameCommandConfig = renameConfig.Commands.AddCommand<Command>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
-                renameCommandConfig.Command = new PowershellFnJoin($"\"Rename-Computer -NewName {this.LogicalId.ToUpper()} -Restart\"");
-                renameCommandConfig.WaitAfterCompletion = "forever";
-                renameCommandConfig.Test =
-                    $"if \"%COMPUTERNAME%\"==\"{this.LogicalId.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
-                this.Rename = false;
+                if (renameConfig.Commands.ContainsKey(DefaultConfigSetRenameConfigRenamePowerShellCommand))
+                {
+                    var renameCommandConfig = renameConfig.Commands.AddCommand<Command>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
+                    renameCommandConfig.Command = new PowershellFnJoin($"\"Rename-Computer -NewName {this.LogicalId.ToUpper()} -Restart\"");
+                    renameCommandConfig.WaitAfterCompletion = "forever";
+                    renameCommandConfig.Test =
+                        $"if \"%COMPUTERNAME%\"==\"{this.LogicalId.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
+                }
             }
         }
 
