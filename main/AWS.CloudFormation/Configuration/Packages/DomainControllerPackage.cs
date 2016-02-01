@@ -87,7 +87,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             currentCommand.WaitAfterCompletion = 0.ToString();
             currentCommand.Command =
                 new PowershellFnJoin(
-                    "\"Get-ADObject -SearchBase (Get-ADRootDSE).ConfigurationNamingContext -filter {{Name -eq 'Default-First-Site-Name'}} | Rename-ADObject -NewName",
+                    "\"Get-ADObject -SearchBase (Get-ADRootDSE).ConfigurationNamingContext -filter {Name -eq 'Default-First-Site-Name'} | Rename-ADObject -NewName",
                     new ReferenceProperty(this.Subnet.LogicalId),
                     "\"");
 

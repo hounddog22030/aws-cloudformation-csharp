@@ -192,10 +192,12 @@ namespace AWS.CloudFormation.Test
                 "sqlserveruser", "Hy77tttt.", 20, subnetGroupSqlExpress4Build, securityGroupSqlSever4Build,
                 Ebs.VolumeTypes.GeneralPurpose);
 
+            string privateDomain = $"{StackTest.DomainNetBiosName}.yadayada.software.private.";
+
             var target = RecordSet.AddByHostedZoneName(template,
                 $"recordset4{rdsSqlExpress4Build.LogicalId}".Replace('.', '-'),
-                "yadayada.software.private.",
-                $"sqlserver.{DomainDnsName}.private.",
+                privateDomain,
+                $"sql4tfs.{privateDomain}",
                 RecordSet.RecordSetTypeEnum.CNAME);
             target.TTL = "60";
             target.AddResourceRecord(new FnGetAtt(rdsSqlExpress4Build, "Endpoint.Address"));
@@ -959,16 +961,19 @@ namespace AWS.CloudFormation.Test
                 name = (thisGreek + "." + DomainDnsNameSuffix).ToLower();
                 if (!stacks.Any(s => s.Name.StartsWith(name.Replace('.', '-'))))
                 {
+                    StackTest.DomainDnsName = name;
+                    StackTest.DomainNetBiosName = thisGreek.ToLowerInvariant();
                     break;
                 }
             }
 
-            StackTest.DomainDnsName = name;
             var templateToCreateStack = GetTemplateFullStack();
             templateToCreateStack.StackName = StackTest.DomainDnsName.Replace('.', '-');
 
             CreateTestStack(templateToCreateStack, this.TestContext);
         }
+
+        public static string DomainNetBiosName { get; set; }
 
         [TestMethod]
         public void UpdateDevelopmentTest()
