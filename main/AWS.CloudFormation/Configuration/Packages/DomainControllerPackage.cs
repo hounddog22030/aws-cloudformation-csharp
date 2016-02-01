@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -40,14 +41,14 @@ namespace AWS.CloudFormation.Configuration.Packages
                 "https://s3.amazonaws.com/quickstart-reference/microsoft/activedirectory/latest/scripts/ConvertTo-EnterpriseAdmin.ps1";
 
             var currentConfig = this.Instance.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("installADDS");
-            var currentCommand = currentConfig.Commands.AddCommand<Command>("1-install-prereqsz");
+            var currentCommand = currentConfig.Commands.AddCommand<Command>("InstallPrequisites");
 
             currentCommand.WaitAfterCompletion = 0.ToString();
             currentCommand.Command = new PowershellFnJoin("-Command \"Install-WindowsFeature AD-Domain-Services, rsat-adds -IncludeAllSubFeature\"");
             
 
-            currentCommand = currentConfig.Commands.AddCommand<Command>("2-install-adds");
-            currentCommand.WaitAfterCompletion = "forever";
+            currentCommand = currentConfig.Commands.AddCommand<Command>("InstallActiveDirectoryDomainServices");
+            currentCommand.WaitAfterCompletion = new TimeSpan(0, 4, 0).TotalSeconds.ToString(CultureInfo.InvariantCulture);
             currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
             currentCommand.Command = new PowershellFnJoin("-Command \"Install-ADDSForest -DomainName",
                 this.DomainInfo.DomainDnsName,
@@ -59,12 +60,12 @@ namespace AWS.CloudFormation.Configuration.Packages
                 $"if \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
 
-            currentCommand = currentConfig.Commands.AddCommand<Command>("3-restart-service");
-            currentCommand.WaitAfterCompletion = 0.ToString();
-            currentCommand.Command = new PowershellFnJoin("-Command \"Restart-Service NetLogon -EA 0\"");
-            currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
+            //currentCommand = currentConfig.Commands.AddCommand<Command>("3-restart-service");
+            //currentCommand.WaitAfterCompletion = 0.ToString();
+            //currentCommand.Command = new PowershellFnJoin("-Command \"Restart-Service NetLogon -EA 0\"");
+            //currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
-            currentCommand = currentConfig.Commands.AddCommand<Command>("4 - create - adminuser");
+            currentCommand = currentConfig.Commands.AddCommand<Command>("CreateAdminUser");
             currentCommand.WaitAfterCompletion = "0";
             currentCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None, "\"New-ADUser -Name ",
                 this.DomainInfo.AdminUserName,
@@ -78,14 +79,14 @@ namespace AWS.CloudFormation.Configuration.Packages
             currentCommand.Test =
                 $"if \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
-            currentCommand = currentConfig.Commands.AddCommand<Command>("5 - update - adminuser");
+            currentCommand = currentConfig.Commands.AddCommand<Command>("UpdateAdminUser");
             currentCommand.WaitAfterCompletion = "0";
             currentCommand.Command = new PowershellFnJoin("-Command \"c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1 -Members",
                 this.DomainInfo.AdminUserName,
                 "\"");
             currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
-            currentCommand = currentConfig.Commands.AddCommand<Command>("a-rename-default-site");
+            currentCommand = currentConfig.Commands.AddCommand<Command>("RenameDefaultSite");
             currentCommand.WaitAfterCompletion = 0.ToString();
             currentCommand.Command =
                 new PowershellFnJoin(
@@ -162,9 +163,9 @@ namespace AWS.CloudFormation.Configuration.Packages
             LaunchConfiguration participantLaunchConfiguration = participant as LaunchConfiguration;
 
 
-            var joinCommandConfig = participant.Metadata.Init.ConfigSets.GetConfigSet("joinDomain").GetConfig("joinDomain");
+            var joinCommandConfig = participant.Metadata.Init.ConfigSets.GetConfigSet($"JoinDomain{this.DomainInfo.DomainNetBiosName}").GetConfig("JoinDomain");
 
-            var joinCommand = joinCommandConfig.Commands.AddCommand<Command>("joinDomain");
+            var joinCommand = joinCommandConfig.Commands.AddCommand<Command>("JoinDomain");
 
 
             joinCommand.Command = new FnJoin(FnJoinDelimiter.None,
@@ -183,7 +184,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 " -AsPlainText -Force))) ",
                 "-Restart\"",
                 " }");
-            joinCommand.WaitAfterCompletion = "90";
+            joinCommand.WaitAfterCompletion = 0.ToString();
             joinCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
             participant.AddDependsOn(this.WaitCondition);
