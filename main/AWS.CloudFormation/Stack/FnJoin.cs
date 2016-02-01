@@ -57,7 +57,7 @@ namespace AWS.CloudFormation.Stack
 
         private void PopulateDictionary()
         {
-            if (!string.IsNullOrEmpty(this.Delimiter) && this.Elements != null)
+            if (this.Delimiter!=null && this.Elements != null)
             {
                 var temp = new List<object>();
                 temp.Add(this.Delimiter);
