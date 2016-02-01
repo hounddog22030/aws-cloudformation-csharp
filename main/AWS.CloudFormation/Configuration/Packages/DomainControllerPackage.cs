@@ -69,7 +69,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             currentCommand.WaitAfterCompletion = "0";
             currentCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None, "\"New-ADUser -Name ",
                 this.DomainInfo.AdminUserName,
-                "-UserPrincipalName ",
+                " -UserPrincipalName ",
                 this.DomainInfo.AdminUserName,
                 "@",
                 this.DomainInfo.DomainDnsName,

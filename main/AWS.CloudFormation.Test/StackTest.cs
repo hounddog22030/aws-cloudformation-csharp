@@ -158,7 +158,7 @@ namespace AWS.CloudFormation.Test
             var instanceTfsSqlServer = AddSql(template, "sql4tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
             var sqlPackage = instanceTfsSqlServer.Packages.OfType<SqlServerExpress>().Single();
 
-            var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, sqlPackage.WaitCondition, dcPackage, tfsServerSecurityGroup);
+            var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
             var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
 
 
@@ -811,7 +811,7 @@ namespace AWS.CloudFormation.Test
         private static WindowsInstance AddTfsServer(Template template,
             InstanceTypes instanceSize, 
             Subnet privateSubnet1, 
-            WaitCondition sqlServer4Tfs, 
+            LaunchConfiguration sqlServer4Tfs, 
             DomainControllerPackage dc1, 
             SecurityGroup tfsServerSecurityGroup)
         {
@@ -825,14 +825,14 @@ namespace AWS.CloudFormation.Test
                                                     214);
 
 
-            tfsServer.AddDependsOn(sqlServer4Tfs);
+            tfsServer.AddDependsOn(sqlServer4Tfs.Packages.First().WaitCondition);
             var chefNode = tfsServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
             var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
             domainAdminUserInfoNode.Add("name", domainInfo.DomainNetBiosName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             tfsServer.AddSecurityGroup(tfsServerSecurityGroup);
-            var packageTfsApplicationTier = new TeamFoundationServerApplicationTier(BucketNameSoftware);
+            var packageTfsApplicationTier = new TeamFoundationServerApplicationTier(BucketNameSoftware,sqlServer4Tfs);
             tfsServer.Packages.Add(packageTfsApplicationTier);
             dc1.Participate(tfsServer);
             return tfsServer;

@@ -13,6 +13,7 @@ using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
+using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Wait;
 
 namespace AWS.CloudFormation.Configuration.Packages
@@ -250,8 +251,19 @@ namespace AWS.CloudFormation.Configuration.Packages
 
     public class TeamFoundationServerApplicationTier : TeamFoundationServer
     {
-        public TeamFoundationServerApplicationTier(string bucketName) : base(bucketName, "applicationtier")
+        public TeamFoundationServerApplicationTier(string bucketName, LaunchConfiguration sqlServer) : base(bucketName, "applicationtier")
         {
+            SqlServer = sqlServer;
+        }
+
+        public LaunchConfiguration SqlServer { get; }
+
+        public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
+        {
+            base.AddToLaunchConfiguration(configuration);
+            var node = this.Instance.GetChefNodeJsonContent();
+            var tfsNode = node.Add("tfs");
+            tfsNode.Add("application_server_netbios_name", new FnGetAtt(this.SqlServer, "PrivateDnsName"));
 
         }
     }

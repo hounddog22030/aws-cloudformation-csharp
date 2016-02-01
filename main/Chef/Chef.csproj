@@ -126,7 +126,7 @@
     <None Include="cookbooks\tfs\Berksfile" />
     <None Include="cookbooks\tfs\CHANGELOG.md" />
     <None Include="cookbooks\tfs\chefignore" />
-    <None Include="cookbooks\tfs\files\configbasic.ini" />
+    <None Include="cookbooks\tfs\templates\configbasic.ini.erb" />
     <None Include="cookbooks\tfs\Gemfile" />
     <None Include="cookbooks\tfs\LICENSE" />
     <None Include="cookbooks\tfs\metadata.rb" />

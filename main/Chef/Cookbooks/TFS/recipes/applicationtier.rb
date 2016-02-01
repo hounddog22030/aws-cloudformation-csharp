@@ -17,6 +17,12 @@ cookbook_file "#{configurationFile}" do
 	action :create_if_missing	
 end
 
+template "#{configurationFile}" do
+  source 'configbasic.ini.erb'
+  variables( :application_server_sqlname => "#{node[:tfs][:application_server_netbios_name]}")
+end
+
+
 # Installing Team Foundation Server Standard.
 execute 'Configure Team Foundation Server STD' do
 	command "#{tfsconfigure_exe_file} unattend /configure /unattendfile:#{configurationFile}"
