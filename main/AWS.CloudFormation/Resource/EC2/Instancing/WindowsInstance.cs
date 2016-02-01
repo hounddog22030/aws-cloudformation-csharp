@@ -96,6 +96,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 renameCommandConfig.WaitAfterCompletion = "forever";
                 renameCommandConfig.Test =
                     $"if \"%COMPUTERNAME%\"==\"{this.LogicalId.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
+                this.Rename = false;
             }
         }
 
