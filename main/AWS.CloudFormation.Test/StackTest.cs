@@ -61,7 +61,7 @@ namespace AWS.CloudFormation.Test
             Run
         }
 
-        public static Template GetTemplateFullStack(ProvisionMode mode)
+        public static Template GetTemplateFullStack()
         {
             var template = GetNewBlankTemplateWithVpc("Vpc");
             Vpc vpc = template.Vpcs.First();
@@ -128,13 +128,7 @@ namespace AWS.CloudFormation.Test
 
             var domainInfo = new DomainController.DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
 
-            var instanceSize = InstanceTypes.T2Nano;
-            if (mode == ProvisionMode.Launch)
-            {
-                instanceSize = InstanceTypes.C4Large;
-            }
-
-            var instanceDomainController = new DomainController(template, NetBiosNameDomainController1, instanceSize, UsEast1AWindows2012R2Ami, subnetDomainController1, domainInfo);
+            var instanceDomainController = new DomainController(template, NetBiosNameDomainController1, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnetDomainController1, domainInfo);
 
             FnGetAtt dc1PrivateIp = new FnGetAtt(instanceDomainController, "PrivateIp");
             object[] elements = new object[] { dc1PrivateIp, "10.0.0.2" };
@@ -148,34 +142,14 @@ namespace AWS.CloudFormation.Test
             dhcpOptions.NetbiosNodeType = "2";
 
 
-            instanceSize = InstanceTypes.T2Nano;
-            if (mode == ProvisionMode.Launch)
-            {
-                instanceSize = InstanceTypes.C4Large;
-            }
-
-            var instanceRdp = new RemoteDesktopGateway(template, "rdp", instanceSize, UsEast1AWindows2012R2Ami, subnetDmz1);
-            //var waitConditionRdpAvailable = instanceRdp.AddFinalizer("waitConditionRdpAvailable",TimeoutMax);
+            var instanceRdp = new RemoteDesktopGateway(template, "rdp", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnetDmz1);
             instanceDomainController.AddToDomain(instanceRdp, TimeoutMax);
 
-            instanceSize = InstanceTypes.T2Micro;
-            if (mode == ProvisionMode.Launch)
-            {
-                instanceSize = InstanceTypes.C4Large;
-            }
-
-            var instanceTfsSqlServer = AddSql(template, "sql4tfs", instanceSize, subnetSqlServer4Tfs, instanceDomainController, sqlServer4TfsSecurityGroup);
+            var instanceTfsSqlServer = AddSql(template, "sql4tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, instanceDomainController, sqlServer4TfsSecurityGroup);
             var sqlPackage = instanceTfsSqlServer.Packages.OfType<SqlServerExpress>().Single();
 
-
-            instanceSize = InstanceTypes.T2Small;
-            if (mode == ProvisionMode.Launch)
-            {
-                instanceSize = InstanceTypes.C4Large;
-            }
-
-
-            var tfsServer = AddTfsServer(template, instanceSize, subnetTfsServer, instanceTfsSqlServer, instanceDomainController, tfsServerSecurityGroup);
+            var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, sqlPackage.WaitCondition, instanceDomainController, tfsServerSecurityGroup);
+            var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
 
 
             DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup(template, "mySqlSubnetGroupForDatabaseForBuild", "Second subnet for database for build server");
@@ -207,16 +181,7 @@ namespace AWS.CloudFormation.Test
             target.TTL = "60";
             target.AddResourceRecord(new FnGetAtt(rdsSqlExpress4Build, "Endpoint.Address"));
 
-
-            //instanceSize = InstanceTypes.T2Small;
-            //if (mode == ProvisionMode.Launch)
-            //{
-            //    instanceSize = InstanceTypes.C4Large;
-            //}
-
-            //var buildServer = AddBuildServer(template, instanceSize, subnetBuildServer, tfsServer, tfsWait,
-            //    instanceDomainController, securityGroupBuildServer, mySql4Build, rdsSqlExpress4Build);
-            //buildServer.AddFinalizer(TimeoutMax);
+            //var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, instanceDomainController, securityGroupBuildServer, mySql4Build, rdsSqlExpress4Build);
 
             // uses 33gb
             //var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
@@ -225,9 +190,9 @@ namespace AWS.CloudFormation.Test
             //workstation.AddFinalizer(TimeoutMax);
 
 
-            SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
-            elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
-            tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            //SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
+            //elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            //tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
             //////////LoadBalancer elb = new LoadBalancer(template, "elb1");
             //////////elb.AddInstance(tfsServer);
@@ -236,10 +201,10 @@ namespace AWS.CloudFormation.Test
             //////////elb.AddSecurityGroup(elbSecurityGroup);
             //////////template.AddResource(elb);
 
-            ////the below is a remote desktop gateway server that can
-            //// be uncommented to debug domain setup problems
-            //var instanceRdp2 = new RemoteDesktopGateway(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
-            //instanceDomainController.AddToDomainMemberSecurityGroup(instanceRdp2);
+            //////the below is a remote desktop gateway server that can
+            ////// be uncommented to debug domain setup problems
+            ////var instanceRdp2 = new RemoteDesktopGateway(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
+            ////instanceDomainController.AddToDomainMemberSecurityGroup(instanceRdp2);
 
 
             return template;
@@ -469,7 +434,7 @@ namespace AWS.CloudFormation.Test
         public void UpdateStackWithSimpleCommand()
         {
             var template = GetCreateStackWithSimpleCommand();
-            var name = "CreateStackWithSimpleCommand-2016-01-31T2108151519427-0500";
+            var name = "CreateStackWithSimpleCommand-2016-01-31T2139494959420-0500";
             Stack.Stack.UpdateStack(name,template);
         }
 
@@ -486,9 +451,9 @@ namespace AWS.CloudFormation.Test
             Dir1 d = new Dir1();
             w.Packages.Add(d);
             WaitCondition wc = d.WaitCondition;
-            //Dir2 d2 = new Dir2();
-            //w.Packages.Add(d2);
-            //WaitCondition wc2 = d2.WaitCondition;
+            Dir2 d2 = new Dir2();
+            w.Packages.Add(d2);
+            WaitCondition wc2 = d2.WaitCondition;
             w.AddSecurityGroup(rdp);
             w.AddElasticIp();
             return template;
@@ -828,7 +793,7 @@ namespace AWS.CloudFormation.Test
         private static WindowsInstance AddTfsServer(Template template,
             InstanceTypes instanceSize, 
             Subnet privateSubnet1, 
-            LaunchConfiguration sqlServer4Tfs, 
+            WaitCondition sqlServer4Tfs, 
             DomainController dc1, 
             SecurityGroup tfsServerSecurityGroup)
         {
@@ -841,8 +806,8 @@ namespace AWS.CloudFormation.Test
                                                     Ebs.VolumeTypes.GeneralPurpose,
                                                     214);
 
-            
-            tfsServer.AddDependsOn(sqlServer4Tfs.Packages.OfType<SqlServerExpress>().Single().WaitCondition);
+
+            tfsServer.AddDependsOn(sqlServer4Tfs);
             var chefNode = tfsServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
             var domainInfo = new DomainController.DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
@@ -981,7 +946,7 @@ namespace AWS.CloudFormation.Test
             }
 
             StackTest.DomainDnsName = name;
-            var templateToCreateStack = GetTemplateFullStack(ProvisionMode.Run);
+            var templateToCreateStack = GetTemplateFullStack();
             templateToCreateStack.StackName = StackTest.DomainDnsName.Replace('.', '-');
 
             CreateTestStack(templateToCreateStack, this.TestContext);
@@ -990,11 +955,11 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateDevelopmentTest()
         {
-            var stackName = "beta-yadayada-software";
+            var stackName = "gamma-yadayada-software";
 
-            StackTest.DomainDnsName = "beta.yadayada.software";
+            StackTest.DomainDnsName = "gamma.yadayada.software";
 
-            Stack.Stack.UpdateStack(stackName, GetTemplateFullStack(ProvisionMode.Run));
+            Stack.Stack.UpdateStack(stackName, GetTemplateFullStack());
         }
 
 

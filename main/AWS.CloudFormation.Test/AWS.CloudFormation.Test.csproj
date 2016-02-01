@@ -85,6 +85,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Examples\v2.template" />
     <None Include="Examples\5840a55e-d591-4e48-acd4-174fa4364c23.template" />
     <None Include="Examples\completed-stack-working.template" />
     <None Include="Examples\case-1581722131-v1.template" />

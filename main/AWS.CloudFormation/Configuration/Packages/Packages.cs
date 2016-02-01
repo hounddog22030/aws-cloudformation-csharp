@@ -8,6 +8,7 @@ using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Stack;
 using AWS.CloudFormation.Resource.AutoScaling;
+using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
@@ -191,9 +192,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             this.ChefConfig.Sources.Add($"c:/chef/{CookbookName}/",
                 $"https://{BucketName}.s3.amazonaws.com/{CookbookName}.tar.gz");
 
-            throw new NotImplementedException();
-            //chefCommandConfig.Command.SetFnJoin(
-                //$"C:/opscode/chef/bin/chef-client.bat -z -o {RecipeList} -c c:/chef/{CookbookName}/client.rb");
+            chefCommandConfig.Command = "C:/opscode/chef/bin/chef-client.bat -z -o {RecipeList} -c c:/chef/{CookbookName}/client.rb";
         }
     }
 

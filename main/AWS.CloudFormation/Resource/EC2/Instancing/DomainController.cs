@@ -97,76 +97,50 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
             ConfigFile file = setupFiles.GetFile("c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1");
 
-            file.Source = "https://s3.amazonaws.com/quickstart-reference/microsoft/activedirectory/latest/scripts/ConvertTo-EnterpriseAdmin.ps1";
+            file.Source =
+                "https://s3.amazonaws.com/quickstart-reference/microsoft/activedirectory/latest/scripts/ConvertTo-EnterpriseAdmin.ps1";
 
             var currentConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("installADDS");
             var currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("1-install-prereqsz");
 
             currentCommand.WaitAfterCompletion = 0.ToString();
-            throw new NotImplementedException();
-            //currentCommand.Command.AddCommandLine(
-            //    "-Command \"Install-WindowsFeature AD-Domain-Services, rsat-adds -IncludeAllSubFeature\"");
+            currentCommand.Command =
+                "powershell.exe -ExecutionPolicy RemoteSigned -Command \"Install-WindowsFeature AD-Domain-Services, rsat-adds -IncludeAllSubFeature\"";
 
-            //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("2-install-adds");
-            //currentCommand.WaitAfterCompletion = "forever";
-            //currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
-
-
-            //currentCommand.Command.AddCommandLine(
-            //    "-Command \"Install-ADDSForest -DomainName ",
-            //    this.DomainDnsName,
-            //    " -SafeModeAdministratorPassword (convertto-securestring jhkjhsdf338! -asplaintext -force) -DomainMode Win2012 -DomainNetbiosName ",
-            //    this.DomainNetBiosName,
-            //    " -ForestMode Win2012 -Confirm:$false -Force\"");
-            //currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
+            currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("2-install-adds");
+            currentCommand.WaitAfterCompletion = "forever";
+            currentCommand.Test =
+                $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
 
-            //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("3-restart-service");
-            //currentCommand.WaitAfterCompletion = 20.ToString();
-            //currentCommand.Command.AddCommandLine(
-            //    new object[]
-            //    {
-            //        "-Command \"Restart-Service NetLogon -EA 0\""
-            //    }
-            //    );
-            //currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
+            currentCommand.Command =
+                $"powershell.exe -ExecutionPolicy RemoteSigned -Command \"Install-ADDSForest -DomainName {this.DomainDnsName} -SafeModeAdministratorPassword (convertto-securestring jhkjhsdf338! -asplaintext -force) -DomainMode Win2012 -DomainNetbiosName  {this.DomainNetBiosName} -ForestMode Win2012 -Confirm:$false -Force\"";
+            currentCommand.Test =
+                $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
-            //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("4 - create - adminuser");
-            //currentCommand.WaitAfterCompletion = "0";
-            //currentCommand.Command.AddCommandLine(
-            //    new object[]
-            //    {
-            //        "-Command \"",
-            //        "New-ADUser ",
-            //        "-Name ",
-            //        this.DomainAdminUser,
-            //        " -UserPrincipalName ",
-            //        this.DomainAdminUser,
-            //        "@",
-            //        this.DomainDnsName,
-            //        " ",
-            //        "-AccountPassword (ConvertTo-SecureString ",
-            //        this.DomainAdminPassword,
-            //        " -AsPlainText -Force) ",
-            //        "-Enabled $true ",
-            //        "-PasswordNeverExpires $true\""
-            //    });
-            //currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
-            //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("5 - update - adminuser");
-            //currentCommand.WaitAfterCompletion = "0";
-            //currentCommand.Command.AddCommandLine(
-            //    new object[]
-            //    {
-            //        "-ExecutionPolicy RemoteSigned -Command \"c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1 -Members ",
-            //        this.DomainAdminUser,
-            //        "\""
-            //    });
-            //currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
+            currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("3-restart-service");
+            currentCommand.WaitAfterCompletion = 20.ToString();
+            currentCommand.Command = "powershell.exe -ExecutionPolicy RemoteSigned -Command \"Restart-Service NetLogon -EA 0\"";
+            currentCommand.Test =
+                $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
-            //currentCommand = currentConfig.Commands.AddCommand<Command>(this.DomainAvailable);
+            currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("4 - create - adminuser");
+            currentCommand.WaitAfterCompletion = "0";
+            currentCommand.Command =
+                $"powershell.exe -ExecutionPolicy RemoteSigned -Command \"New-ADUser -Name {this.DomainAdminUser} -UserPrincipalName {this.DomainAdminUser}@{this.DomainDnsName} -AccountPassword (ConvertTo-SecureString {this.DomainAdminPassword}  -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"";
+            currentCommand.Test =
+                $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
-            //this.OnAddedToDomain(this.DomainNetBiosName.Default.ToString());
+            currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("5 - update - adminuser");
+            currentCommand.WaitAfterCompletion = "0";
+            currentCommand.Command =
+                $"powershell.exe -ExecutionPolicy RemoteSigned -Command \"c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1 -Members {this.DomainAdminUser} \"";
+            currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
+
+            currentConfig.Commands.AddCommand<Command>(this.DomainAvailable);
+
+            this.OnAddedToDomain(this.DomainNetBiosName.Default.ToString());
         }
 
         public void AddReplicationSite(Subnet subnet)
@@ -177,12 +151,11 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             {
                 ConfigCommand currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>(commandName);
                 currentCommand.WaitAfterCompletion = 0.ToString();
-                throw new NotImplementedException();
-                //currentCommand.Command.AddCommandLine("-Command \"", $"New-ADReplicationSite  {subnet.LogicalId}\"");
+                currentCommand.Command = $"powershell.exe -Command \"New-ADReplicationSite {subnet.LogicalId}\"";
 
-                //currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>($"create-subnet-{subnet.LogicalId}");
-                //currentCommand.WaitAfterCompletion = 0.ToString();
-                //currentCommand.Command.AddCommandLine("-Command New-ADReplicationSubnet -Name ", subnet.CidrBlock, $" -Site {subnet.LogicalId}");
+                currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>($"create-subnet-{subnet.LogicalId}");
+                currentCommand.WaitAfterCompletion = 0.ToString();
+                currentCommand.Command = $"powershell.exe -Command New-ADReplicationSubnet -Name {subnet.CidrBlock} -Site {subnet.LogicalId}";
             }
         }
 
@@ -191,10 +164,9 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             var currentConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("configureSites");
             ConfigCommand currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("a-rename-default-site");
             currentCommand.WaitAfterCompletion = 0.ToString();
-            throw new NotImplementedException();
-            //currentCommand.Command.AddCommandLine(" ", "\"", $"Get-ADObject -SearchBase (Get-ADRootDSE).ConfigurationNamingContext -filter {{Name -eq 'Default-First-Site-Name'}} | Rename-ADObject -NewName {defaultSubnet.LogicalId}", "\"");
+            currentCommand.Command = $"powershell.exe \"Get-ADObject -SearchBase (Get-ADRootDSE).ConfigurationNamingContext -filter {{Name -eq 'Default-First-Site-Name'}} | Rename-ADObject -NewName {defaultSubnet.LogicalId}\"";
 
-            //return currentConfig;
+            return currentConfig;
         }
 
         private void CreateDomainControllerSecurityGroup()
@@ -271,33 +243,33 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                     .GetConfig(DefaultConfigSetJoinConfig);
             var joinCommand =
                 joinCommandConfig.Commands.AddCommand<PowerShellCommand>(DefaultConfigSetRenameConfigJoinDomain);
-            throw new NotImplementedException();
-            //joinCommand.Command.AddCommandLine("-Command \"",
-            //        "if ((gwmi win32_computersystem).partofdomain -eq $true)             {",
-            //            "write-host -fore green \"I am domain joined!\"",
-            //        "} else {",
-            //    " Add-Computer -DomainName ",
-            //    this.DomainDnsName,
-            //    " -Credential ",
-            //    "(New-Object System.Management.Automation.PSCredential('",
-            //    this.DomainNetBiosName,
-            //    "\\",
-            //    this.DomainAdminUser,
-            //    "',",
-            //    "(ConvertTo-SecureString ",
-            //    this.DomainAdminPassword,
-            //    " -AsPlainText -Force))) ",
-            //    "-Restart\"",
-            //    " }");
-            //joinCommand.WaitAfterCompletion = "90";
-            //joinCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
+            joinCommand.Command = new FnJoin("",
+                "-Command \"",
+                    "if ((gwmi win32_computersystem).partofdomain -eq $true)             {",
+                        "write-host -fore green \"I am domain joined!\"",
+                    "} else {",
+                " Add-Computer -DomainName ",
+                new ReferenceProperty(this.DomainDnsName),
+                " -Credential ",
+                "(New-Object System.Management.Automation.PSCredential('",
+                new ReferenceProperty(this.DomainNetBiosName),
+                "\\",
+                new ReferenceProperty(this.DomainAdminUser),
+                "',",
+                "(ConvertTo-SecureString ",
+                new ReferenceProperty(this.DomainAdminPassword),
+                " -AsPlainText -Force))) ",
+                "-Restart\"",
+                " }");
+            joinCommand.WaitAfterCompletion = "90";
+            joinCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
-            //instance.AddDependsOn(this.DomainAvailable);
-            //this.AddToDomainMemberSecurityGroup(instance);
-            //instance.DomainNetBiosName = this.DomainNetBiosName;
-            //instance.DomainDnsName = this.DomainDnsName;
-            //this.AddReplicationSite(instance.Subnet);
-            //instance.OnAddedToDomain(this.DomainNetBiosName.Default.ToString());
+            instance.AddDependsOn(this.DomainAvailable);
+            this.AddToDomainMemberSecurityGroup(instance);
+            instance.DomainNetBiosName = this.DomainNetBiosName;
+            instance.DomainDnsName = this.DomainDnsName;
+            this.AddReplicationSite(instance.Subnet);
+            instance.OnAddedToDomain(this.DomainNetBiosName.Default.ToString());
         }
 
     }
