@@ -459,17 +459,36 @@ namespace AWS.CloudFormation.Test
         }
 
         [TestMethod]
+        public void CreateStackWithSimpleCommand()
+        {
+            var template = GetNewBlankTemplateWithVpc($"VpcCreateStackWithVisualStudio");
+            var vpc = template.Vpcs.First();
+            SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
+            rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            var DMZSubnet = new Subnet(template, "DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
+            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, DMZSubnet, false);
+
+            Dir1 d = new Dir1();
+            w.Packages.Add(d);
+            WaitCondition wc = d.WaitCondition;
+            w.AddSecurityGroup(rdp);
+            w.AddElasticIp();
+            var name = this.TestContext.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty);
+            Stack.Stack.CreateStack(template, name);
+        }
+
+
+        [TestMethod]
         public void CreateStackWithVisualStudio()
         {
-            var template = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
+            var template = GetNewBlankTemplateWithVpc($"VpcCreateStackWithVisualStudio");
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A,true);
             WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, DMZSubnet, false);
+
             w.Packages.Add(new VisualStudio(BucketNameSoftware));
-
-
             w.AddSecurityGroup(rdp);
             w.AddElasticIp();
             var name = this.TestContext.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty);

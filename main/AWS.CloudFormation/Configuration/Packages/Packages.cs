@@ -22,13 +22,20 @@ namespace AWS.CloudFormation.Configuration.Packages
     }
 
 
-    public abstract class PackageBase: IAddToLaunchConfiguration
+    public abstract class PackageBase<T> : IAddToLaunchConfiguration where T : ConfigSet, new()
     {
-        public static readonly TimeSpan TimeoutMax = new TimeSpan(12,0,0);
+        public static readonly TimeSpan TimeoutMax = new TimeSpan(12, 0, 0);
+
+        protected PackageBase()
+        {
+
+        }
+
         protected PackageBase(Uri msi)
-        { 
+        {
             Msi = msi;
         }
+
         protected PackageBase(string snapshotId)
         {
             SnapshotId = snapshotId;
@@ -48,7 +55,8 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             if (!string.IsNullOrEmpty(this.SnapshotId))
             {
-                BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this.Instance, this.Instance.GetAvailableDevice());
+                BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this.Instance,
+                    this.Instance.GetAvailableDevice());
                 blockDeviceMapping.Ebs.SnapshotId = this.SnapshotId;
                 this.Instance.AddBlockDeviceMapping(blockDeviceMapping);
             }
@@ -59,15 +67,55 @@ namespace AWS.CloudFormation.Configuration.Packages
                 configSet.Packages.Add("msi", Msi.AbsoluteUri);
             }
         }
+
+        private WaitCondition _waitCondition = null;
+
+        protected T ConfigSet
+        {
+            get { return this.Instance.Metadata.Init.ConfigSets.GetConfigSet<T>(this.GetHashCode().ToString()); }
+        }
+
+        protected Config Config
+        {
+            get { return this.ConfigSet.GetConfig($"Config{this.GetHashCode()}"); }
+        }
+
+        public WaitCondition WaitCondition
+        {
+            get
+            {
+                if (_waitCondition == null)
+                {
+                    _waitCondition = new WaitCondition(this.Instance.Template,
+                        $"waitCondition{this.Instance.LogicalId}{this.GetHashCode()}".Replace(".", string.Empty)
+                            .Replace(":", string.Empty), TimeoutMax);
+
+                    this.Config.Commands.AddCommand<Command>(_waitCondition);
+                }
+                return _waitCondition;
+            }
+        }
     }
 
-    public abstract class PackageChef : PackageBase
+    public class Dir1 : PackageBase<ConfigSet>
+    {
+        public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
+        {
+            base.AddToLaunchConfiguration(configuration);
+            var command =
+                configuration.Metadata.Init.ConfigSets.GetConfigSet("dir1").GetConfig("dir1").Commands.Add("dir1");
+            command.Add("dir1", "dir>dir1.txt");
+        }
+    }
+
+    public abstract class PackageChef : PackageBase<ConfigSet>
     {
         private WindowsInstance sqlServer;
         private string v1;
         private string v2;
 
-        public PackageChef(string snapshotId, string bucketName, string cookbookName, string recipeName) : base(snapshotId)
+        public PackageChef(string snapshotId, string bucketName, string cookbookName, string recipeName)
+            : base(snapshotId)
         {
             CookbookName = cookbookName;
             BucketName = bucketName;
@@ -80,35 +128,22 @@ namespace AWS.CloudFormation.Configuration.Packages
 
         public string BucketName { get; }
 
-        public PackageChef(string snapshotId, string bucketName, string cookbookName) : this(snapshotId, bucketName, cookbookName, null)
+        public PackageChef(string snapshotId, string bucketName, string cookbookName)
+            : this(snapshotId, bucketName, cookbookName, null)
         {
         }
 
         public string CookbookName { get; }
         public string RecipeList { get; private set; }
 
-        private WaitCondition _waitCondition = null;
-
-        public WaitCondition WaitCondition
-        {
-            get
-            {
-                if (_waitCondition==null)
-                {
-                    _waitCondition = new WaitCondition(this.Instance.Template, $"waitCondition{this.Instance.LogicalId}{CookbookName}{RecipeList}".Replace(".", string.Empty).Replace(":", string.Empty), TimeoutMax);
-                    this.ChefConfig.Commands.AddCommand<Command>(_waitCondition);
-                }
-                return _waitCondition;
-            }
-
-        }
 
         protected Resource.EC2.Instancing.Metadata.Config.Config ChefConfig
         {
             get
             {
-                return this.Instance.Metadata.Init.ConfigSets.GetConfigSet<ChefConfigSet>(RecipeList.Replace(":", string.Empty)).Run;
-
+                return
+                    this.Instance.Metadata.Init.ConfigSets.GetConfigSet<ChefConfigSet>(RecipeList.Replace(":",
+                        string.Empty)).Run;
             }
         }
 
@@ -120,9 +155,10 @@ namespace AWS.CloudFormation.Configuration.Packages
             if (!configuration.Metadata.Authentication.ContainsKey("S3AccessCreds"))
             {
                 var appSettingsReader = new AppSettingsReader();
-                string accessKeyString = (string)appSettingsReader.GetValue("S3AccessKey", typeof(string));
-                string secretKeyString = (string)appSettingsReader.GetValue("S3SecretKey", typeof(string));
-                var auth = configuration.Metadata.Authentication.Add("S3AccessCreds", new S3Authentication(accessKeyString, secretKeyString, new string[] { BucketName }));
+                string accessKeyString = (string) appSettingsReader.GetValue("S3AccessKey", typeof (string));
+                string secretKeyString = (string) appSettingsReader.GetValue("S3SecretKey", typeof (string));
+                var auth = configuration.Metadata.Authentication.Add("S3AccessCreds",
+                    new S3Authentication(accessKeyString, secretKeyString, new string[] {BucketName}));
                 auth.Type = "S3";
                 var chefConfigContent = configuration.GetChefNodeJsonContent();
                 var s3FileNode = chefConfigContent.Add("s3_file");
@@ -130,14 +166,19 @@ namespace AWS.CloudFormation.Configuration.Packages
                 s3FileNode.Add("secret", secretKeyString);
             }
 
-            this.ChefConfig.Packages.AddPackage("msi", "chef", "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");
+            this.ChefConfig.Packages.AddPackage("msi", "chef",
+                "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");
             var chefCommandConfig = this.ChefConfig.Commands.AddCommand<Command>(RecipeList.Replace(':', '-'));
 
             var clientRbFileKey = $"c:/chef/{CookbookName}/client.rb";
-            this.ChefConfig.Files.GetFile(clientRbFileKey).Content.SetFnJoin($"cache_path 'c:/chef'\ncookbook_path 'c:/chef/{CookbookName}/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
-            this.ChefConfig.Sources.Add($"c:/chef/{CookbookName}/", $"https://{BucketName}.s3.amazonaws.com/{CookbookName}.tar.gz");
+            this.ChefConfig.Files.GetFile(clientRbFileKey)
+                .Content.SetFnJoin(
+                    $"cache_path 'c:/chef'\ncookbook_path 'c:/chef/{CookbookName}/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
+            this.ChefConfig.Sources.Add($"c:/chef/{CookbookName}/",
+                $"https://{BucketName}.s3.amazonaws.com/{CookbookName}.tar.gz");
 
-            chefCommandConfig.Command.SetFnJoin($"C:/opscode/chef/bin/chef-client.bat -z -o {RecipeList} -c c:/chef/{CookbookName}/client.rb");
+            chefCommandConfig.Command.SetFnJoin(
+                $"C:/opscode/chef/bin/chef-client.bat -z -o {RecipeList} -c c:/chef/{CookbookName}/client.rb");
         }
     }
 
@@ -160,6 +201,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         {
         }
     }
+
     public class SqlServerExpress : PackageChef
     {
         public SqlServerExpress(string bucketName) : base("snap-2cf80f29", bucketName, "sqlserver")
@@ -182,14 +224,15 @@ namespace AWS.CloudFormation.Configuration.Packages
 
     public abstract class TeamFoundationServer : PackageChef
     {
-        public TeamFoundationServer(string bucketName, string recipeName) : base ("snap-4e69d94b", bucketName,"tfs", recipeName)
+        public TeamFoundationServer(string bucketName, string recipeName)
+            : base("snap-4e69d94b", bucketName, "tfs", recipeName)
         {
         }
     }
 
     public class TeamFoundationServerApplicationTier : TeamFoundationServer
     {
-        public TeamFoundationServerApplicationTier(string bucketName) : base(bucketName,  "applicationtier")
+        public TeamFoundationServerApplicationTier(string bucketName) : base(bucketName, "applicationtier")
         {
 
         }
@@ -197,11 +240,14 @@ namespace AWS.CloudFormation.Configuration.Packages
 
     public class TeamFoundationServerBuildServerBase : TeamFoundationServer
     {
-        public TeamFoundationServerBuildServerBase(LaunchConfiguration applicationServer, string bucketName, string recipeName) : base(bucketName, recipeName)
+        public TeamFoundationServerBuildServerBase(LaunchConfiguration applicationServer, string bucketName,
+            string recipeName) : base(bucketName, recipeName)
         {
             this.ApplicationServer = applicationServer;
         }
-        public LaunchConfiguration ApplicationServer { get;  }
+
+        public LaunchConfiguration ApplicationServer { get; }
+
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
             base.AddToLaunchConfiguration(configuration);
@@ -215,13 +261,16 @@ namespace AWS.CloudFormation.Configuration.Packages
 
     public class TeamFoundationServerBuildServer : TeamFoundationServerBuildServerBase
     {
-        public TeamFoundationServerBuildServer(LaunchConfiguration applicationServer, string bucketName) : base(applicationServer, bucketName, "build")
+        public TeamFoundationServerBuildServer(LaunchConfiguration applicationServer, string bucketName)
+            : base(applicationServer, bucketName, "build")
         {
         }
     }
+
     public class TeamFoundationServerBuildServerAgentOnly : TeamFoundationServerBuildServerBase
     {
-        public TeamFoundationServerBuildServerAgentOnly(WindowsInstance applicationServer, string bucketName) : base(applicationServer, bucketName, "agent")
+        public TeamFoundationServerBuildServerAgentOnly(WindowsInstance applicationServer, string bucketName)
+            : base(applicationServer, bucketName, "agent")
         {
         }
     }

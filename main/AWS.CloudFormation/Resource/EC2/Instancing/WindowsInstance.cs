@@ -180,7 +180,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         //    this.AddBlockDeviceMapping(blockDeviceMapping);
         //    return chefComplete;
         //}
-        public T AddPackage<T>() where T :PackageBase,new()
+        public T AddPackage<T>() where T :PackageBase<ConfigSet>, new()
         {
             T package = new T();
             return package;

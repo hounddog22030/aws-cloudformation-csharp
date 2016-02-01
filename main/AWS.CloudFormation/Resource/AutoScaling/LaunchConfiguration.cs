@@ -9,6 +9,7 @@ using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Configuration.Packages;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.EC2.Instancing;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
@@ -35,7 +36,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             _availableDevices = new List<string>();
             this.InstanceType = instanceType;
             this.OperatingSystem = operatingSystem;
-            Packages = new ObservableCollection<PackageBase>();
+            Packages = new ObservableCollection<PackageBase<ConfigSet>>();
             Packages.CollectionChanged += Packages_CollectionChanged;
             this.ImageId = imageId;
             this.PopulateAvailableDevices();
@@ -57,14 +58,14 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         {
             foreach (var newItem in e.NewItems)
             {
-                var senderAsPackage = newItem as PackageBase;
+                var senderAsPackage = newItem as PackageBase<ConfigSet>;
                 senderAsPackage.AddToLaunchConfiguration(this);
 
             }
         }
 
         [JsonIgnore]
-        public ObservableCollection<PackageBase> Packages { get; }
+        public ObservableCollection<PackageBase<ConfigSet>> Packages { get; }
 
         public void AddDisk(Ebs.VolumeTypes ec2DiskType, int sizeInGigabytes)
         {
