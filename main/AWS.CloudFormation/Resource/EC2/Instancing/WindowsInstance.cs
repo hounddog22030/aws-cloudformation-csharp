@@ -78,7 +78,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         }
 
         private bool _rename;
-        public bool Rename {
+        [JsonIgnore] public bool Rename {
             get { return _rename; }
             set
             {
