@@ -166,7 +166,18 @@ namespace AWS.CloudFormation.Test
             mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
             mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
             DbInstance mySql4Build = null;
-            mySql4Build = new DbInstance(template, "sql4build", DbInstanceClassEnum.DbT2Micro, EngineType.MySql, LicenseModelType.GeneralPublicLicense, "masterusername", "Hy77tttt.", 20, mySqlSubnetGroupForDatabaseForBuild, securityGroupDb4Build);
+            mySql4Build = new DbInstance(
+                template, 
+                "sql4build", 
+                DbInstanceClassEnum.DbT2Micro, 
+                EngineType.MySql, 
+                LicenseModelType.GeneralPublicLicense, 
+                "masterusername", 
+                "Hy77tttt.", 
+                20, 
+                mySqlSubnetGroupForDatabaseForBuild, 
+                securityGroupDb4Build,
+                Ebs.VolumeTypes.GeneralPurpose);
 
             DbSubnetGroup subnetGroupSqlExpress4Build = new DbSubnetGroup(template, "subnetGroupSqlExpress4Build", "DbSubnet Group for SQL Server database for build server");
             subnetGroupSqlExpress4Build.AddSubnet(subnetBuildServer);
@@ -178,7 +189,8 @@ namespace AWS.CloudFormation.Test
                 DbInstanceClassEnum.DbT2Micro,
                 EngineType.SqlServerExpress,
                 LicenseModelType.LicenseIncluded,
-                "sqlserveruser", "Hy77tttt.", 20, subnetGroupSqlExpress4Build, securityGroupSqlSever4Build);
+                "sqlserveruser", "Hy77tttt.", 20, subnetGroupSqlExpress4Build, securityGroupSqlSever4Build,
+                Ebs.VolumeTypes.GeneralPurpose);
 
             var target = RecordSet.AddByHostedZoneName(template,
                 $"recordset4{rdsSqlExpress4Build.LogicalId}".Replace('.', '-'),

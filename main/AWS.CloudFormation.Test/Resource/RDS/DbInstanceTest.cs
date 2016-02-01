@@ -76,7 +76,8 @@ namespace AWS.CloudFormation.Test.Resource.RDS
                 "YellowBeard123",
                 20,
                 subnetGroup,
-                dbSecurityGroup);
+                dbSecurityGroup,
+                Ebs.VolumeTypes.GeneralPurpose);
 
 
 
@@ -123,7 +124,8 @@ namespace AWS.CloudFormation.Test.Resource.RDS
                 "YellowBeard123",
                 20,
                 subnetGroup,
-                dbSecurityGroup);
+                dbSecurityGroup,
+                Ebs.VolumeTypes.GeneralPurpose);
 
             instance.PubliclyAccessible = true.ToString().ToLowerInvariant();
             return template;
@@ -168,7 +170,8 @@ namespace AWS.CloudFormation.Test.Resource.RDS
                 "YellowBeard123",
                 100,
                 subnetGroup,
-                dbSecurityGroup);
+                dbSecurityGroup,
+                Ebs.VolumeTypes.GeneralPurpose);
 
 
             instance.PubliclyAccessible = true.ToString().ToLowerInvariant();
