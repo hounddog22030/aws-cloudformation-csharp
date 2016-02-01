@@ -971,7 +971,7 @@ namespace AWS.CloudFormation.Test
             }
 
             var templateToCreateStack = GetTemplateFullStack(version);
-            templateToCreateStack.StackName = StackTest.DomainDnsName.Replace('.', '-');
+            templateToCreateStack.StackName = version.ToString() + StackTest.DomainDnsName.Replace('.', '-');
 
 
 
