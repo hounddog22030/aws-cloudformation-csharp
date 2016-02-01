@@ -4,6 +4,7 @@ using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.AutoScaling;
 using AWS.CloudFormation.Resource.Wait;
+using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command

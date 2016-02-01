@@ -30,17 +30,16 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             var installRdsConfig =
                 this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName)
                     .GetConfig(InstallRds);
-            var installRdsCommand = installRdsConfig.Commands.AddCommand<PowerShellCommand>("a-install-rds");
-            installRdsCommand.Command = $"powershell.exe -Command \"Install-WindowsFeature RDS-Gateway,RSAT-RDS-Gateway\"";
+            var installRdsCommand = installRdsConfig.Commands.AddCommand<Command>("a-install-rds");
+            installRdsCommand.Command = new PowershellFnJoin("-Command \"Install-WindowsFeature RDS-Gateway,RSAT-RDS-Gateway\"");
 
             var configureRdgwPsScript = installRdsConfig.Files.GetFile("c:\\cfn\\scripts\\Configure-RDGW.ps1");
 
             configureRdgwPsScript.Source =
                 "https://s3.amazonaws.com/gtbb/Configure-RDGW.ps1";
 
-            installRdsCommand = installRdsConfig.Commands.AddCommand<PowerShellCommand>("b-configure-rdgw");
-            installRdsCommand.Command = new FnJoin(" ",
-                                            "powershell.exe",
+            installRdsCommand = installRdsConfig.Commands.AddCommand<Command>("b-configure-rdgw");
+            installRdsCommand.Command = new PowershellFnJoin(
                                             "-ExecutionPolicy RemoteSigned",
                                             "C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN " + new ReferenceProperty(this) + ".",
                                             new ReferenceProperty(this.DomainDnsName),

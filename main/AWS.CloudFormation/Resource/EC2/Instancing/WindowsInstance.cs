@@ -76,7 +76,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         private void DisableFirewall()
         {
                 var setup = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("setup");
-                var disableFirewallCommand = setup.Commands.AddCommand<PowerShellCommand>("a-disable-win-fw");
+                var disableFirewallCommand = setup.Commands.AddCommand<Command>("a-disable-win-fw");
                 disableFirewallCommand.WaitAfterCompletion = 0.ToString();
                 disableFirewallCommand.Command = "powershell.exe -Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\"";
         }
@@ -93,8 +93,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             if (OperatingSystem == OperatingSystem.Windows)
             {
                 var renameConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetRenameConfig);
-                var renameCommandConfig = renameConfig.Commands.AddCommand<PowerShellCommand>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
-                renameCommandConfig.Command = $"powershell.exe \"Rename-Computer -NewName {this.LogicalId.ToUpper()} -Restart\"";
+                var renameCommandConfig = renameConfig.Commands.AddCommand<Command>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
+                renameCommandConfig.Command = new PowershellFnJoin($"\"Rename-Computer -NewName {this.LogicalId.ToUpper()} -Restart\"");
                 renameCommandConfig.WaitAfterCompletion = "forever";
                 renameCommandConfig.Test =
                     $"if \"%COMPUTERNAME%\"==\"{this.LogicalId.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";

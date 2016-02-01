@@ -11,17 +11,6 @@ using Newtonsoft.Json;
 namespace AWS.CloudFormation.Resource.EC2
 {
 
-    public class FnJoin : CloudFormationDictionary
-    {
-        public FnJoin(string delimiter, params object[] elements)
-        {
-            var temp = new List<object>();
-            temp.Add(delimiter);
-            temp.Add(elements);
-            this.Add("Fn::Join", temp.ToArray());
-        }
-
-    }
     public class DhcpOptions : ResourceBase
     {
         public DhcpOptions(Template template, string name, string domainName, Vpc vpc, FnJoin dnsServers, FnJoin netBiosNameServers) 

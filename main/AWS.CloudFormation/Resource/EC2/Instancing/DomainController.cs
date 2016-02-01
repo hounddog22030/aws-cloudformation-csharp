@@ -101,41 +101,48 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 "https://s3.amazonaws.com/quickstart-reference/microsoft/activedirectory/latest/scripts/ConvertTo-EnterpriseAdmin.ps1";
 
             var currentConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("installADDS");
-            var currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("1-install-prereqsz");
+            var currentCommand = currentConfig.Commands.AddCommand<Command>("1-install-prereqsz");
 
             currentCommand.WaitAfterCompletion = 0.ToString();
-            currentCommand.Command =
-                "powershell.exe -ExecutionPolicy RemoteSigned -Command \"Install-WindowsFeature AD-Domain-Services, rsat-adds -IncludeAllSubFeature\"";
+            currentCommand.Command = new PowershellFnJoin("-Command \"Install-WindowsFeature AD-Domain-Services, rsat-adds -IncludeAllSubFeature\"");
 
-            currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("2-install-adds");
+            currentCommand = currentConfig.Commands.AddCommand<Command>("2-install-adds");
             currentCommand.WaitAfterCompletion = "forever";
+            currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
+            currentCommand.Command = new PowershellFnJoin("-Command \"Install-ADDSForest -DomainName",
+                new ReferenceProperty(this.DomainDnsName),
+                "-SafeModeAdministratorPassword (convertto-securestring jhkjhsdf338! -asplaintext -force) -DomainMode Win2012 -DomainNetbiosName",
+                new ReferenceProperty(this.DomainNetBiosName),
+                "-ForestMode Win2012 -Confirm:$false -Force\"");
+
             currentCommand.Test =
                 $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
 
-            currentCommand.Command =
-                $"powershell.exe -ExecutionPolicy RemoteSigned -Command \"Install-ADDSForest -DomainName {this.DomainDnsName} -SafeModeAdministratorPassword (convertto-securestring jhkjhsdf338! -asplaintext -force) -DomainMode Win2012 -DomainNetbiosName  {this.DomainNetBiosName} -ForestMode Win2012 -Confirm:$false -Force\"";
-            currentCommand.Test =
-                $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
-
-
-            currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("3-restart-service");
+            currentCommand = currentConfig.Commands.AddCommand<Command>("3-restart-service");
             currentCommand.WaitAfterCompletion = 20.ToString();
-            currentCommand.Command = "powershell.exe -ExecutionPolicy RemoteSigned -Command \"Restart-Service NetLogon -EA 0\"";
+            currentCommand.Command = new PowershellFnJoin("-Command \"Restart-Service NetLogon -EA 0\"");
+            currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
+
+            currentCommand = currentConfig.Commands.AddCommand<Command>("4 - create - adminuser");
+            currentCommand.WaitAfterCompletion = "0";
+            currentCommand.Command = new PowershellFnJoin("\"New-ADUser -Name ",
+                new ReferenceProperty(this.DomainAdminUser),
+                "-UserPrincipalName",
+                new ReferenceProperty(this.DomainAdminUser),
+                "@",
+                new ReferenceProperty(this.DomainDnsName),
+                "-AccountPassword (ConvertTo-SecureString ",
+                new ReferenceProperty(this.DomainAdminPassword),
+                "-AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
             currentCommand.Test =
                 $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
-            currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("4 - create - adminuser");
+            currentCommand = currentConfig.Commands.AddCommand<Command>("5 - update - adminuser");
             currentCommand.WaitAfterCompletion = "0";
-            currentCommand.Command =
-                $"powershell.exe -ExecutionPolicy RemoteSigned -Command \"New-ADUser -Name {this.DomainAdminUser} -UserPrincipalName {this.DomainAdminUser}@{this.DomainDnsName} -AccountPassword (ConvertTo-SecureString {this.DomainAdminPassword}  -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"";
-            currentCommand.Test =
-                $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
-
-            currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("5 - update - adminuser");
-            currentCommand.WaitAfterCompletion = "0";
-            currentCommand.Command =
-                $"powershell.exe -ExecutionPolicy RemoteSigned -Command \"c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1 -Members {this.DomainAdminUser} \"";
+            currentCommand.Command = new PowershellFnJoin("-Command \"c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1 -Members",
+                new ReferenceProperty(this.DomainAdminUser),
+                "\"");
             currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainDnsName.Default.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
             currentConfig.Commands.AddCommand<Command>(this.DomainAvailable);
@@ -149,22 +156,29 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             string commandName = $"create-site-{subnet.LogicalId}";
             if (!currentConfig.Commands.ContainsKey(commandName))
             {
-                ConfigCommand currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>(commandName);
+                ConfigCommand currentCommand = currentConfig.Commands.AddCommand<Command>(commandName);
                 currentCommand.WaitAfterCompletion = 0.ToString();
-                currentCommand.Command = $"powershell.exe -Command \"New-ADReplicationSite {subnet.LogicalId}\"";
+                currentCommand.Command = new PowershellFnJoin("-Command \"New-ADReplicationSite",
+                    new ReferenceProperty(subnet),
+                    "\"");
 
-                currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>($"create-subnet-{subnet.LogicalId}");
+                currentCommand = currentConfig.Commands.AddCommand<Command>($"create-subnet-{subnet.LogicalId}");
                 currentCommand.WaitAfterCompletion = 0.ToString();
-                currentCommand.Command = $"powershell.exe -Command New-ADReplicationSubnet -Name {subnet.CidrBlock} -Site {subnet.LogicalId}";
+                currentCommand.Command = new PowershellFnJoin($"-Command New-ADReplicationSubnet -Name {subnet.CidrBlock} -Site ",
+                    new ReferenceProperty(subnet));
             }
         }
 
         private Config ConfigureDefaultSite(Subnet defaultSubnet)
         {
             var currentConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("configureSites");
-            ConfigCommand currentCommand = currentConfig.Commands.AddCommand<PowerShellCommand>("a-rename-default-site");
+            ConfigCommand currentCommand = currentConfig.Commands.AddCommand<Command>("a-rename-default-site");
             currentCommand.WaitAfterCompletion = 0.ToString();
-            currentCommand.Command = $"powershell.exe \"Get-ADObject -SearchBase (Get-ADRootDSE).ConfigurationNamingContext -filter {{Name -eq 'Default-First-Site-Name'}} | Rename-ADObject -NewName {defaultSubnet.LogicalId}\"";
+            currentCommand.Command =
+                new PowershellFnJoin(
+                    "\"Get-ADObject -SearchBase (Get-ADRootDSE).ConfigurationNamingContext -filter {{Name -eq 'Default-First-Site-Name'}} | Rename-ADObject -NewName",
+                    new ReferenceProperty(defaultSubnet.LogicalId),
+                    "\"");
 
             return currentConfig;
         }
@@ -242,7 +256,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 instance.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName)
                     .GetConfig(DefaultConfigSetJoinConfig);
             var joinCommand =
-                joinCommandConfig.Commands.AddCommand<PowerShellCommand>(DefaultConfigSetRenameConfigJoinDomain);
+                joinCommandConfig.Commands.AddCommand<Command>(DefaultConfigSetRenameConfigJoinDomain);
             joinCommand.Command = new FnJoin("",
                 "-Command \"",
                     "if ((gwmi win32_computersystem).partofdomain -eq $true)             {",
