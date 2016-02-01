@@ -125,9 +125,6 @@ namespace AWS.CloudFormation.Configuration.Packages
 
     public abstract class PackageChef : PackageBase<ConfigSet>
     {
-        private WindowsInstance sqlServer;
-        private string v1;
-        private string v2;
 
         public PackageChef(string snapshotId, string bucketName, string cookbookName, string recipeName)
             : base(snapshotId)

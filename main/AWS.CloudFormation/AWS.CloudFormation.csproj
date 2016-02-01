@@ -64,6 +64,7 @@
     <Compile Include="Common\CloudFormationDictionary.cs" />
     <Compile Include="Common\CollectionAsIdsConverter.cs" />
     <Compile Include="Configuration\Packages\Chrome.cs" />
+    <Compile Include="Configuration\Packages\DomainControllerPackage.cs" />
     <Compile Include="Configuration\Packages\Packages.cs" />
     <Compile Include="Configuration\Packages\ReSharper.cs" />
     <Compile Include="Property\AvailabilityZone.cs" />

@@ -129,12 +129,14 @@ namespace AWS.CloudFormation.Test
             var domainInfo = new DomainController.DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
 
             var instanceDomainController = new DomainController(template, NetBiosNameDomainController1, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnetDomainController1, domainInfo);
+            DomainControllerPackage dcPackage = new DomainControllerPackage(domainInfo);
+            instanceDomainController.Packages.Add(dcPackage);
 
             FnGetAtt dc1PrivateIp = new FnGetAtt(instanceDomainController, "PrivateIp");
             object[] elements = new object[] { dc1PrivateIp, "10.0.0.2" };
-            FnJoin dnsServers = new FnJoin(", ", elements);
+            FnJoin dnsServers = new FnJoin(FnJoinDelimiter.Comma, elements);
             object[] netBiosServersElements = new object[] { dc1PrivateIp };
-            FnJoin netBiosServers = new FnJoin(", ", netBiosServersElements);
+            FnJoin netBiosServers = new FnJoin(FnJoinDelimiter.Comma, netBiosServersElements);
 
 
 

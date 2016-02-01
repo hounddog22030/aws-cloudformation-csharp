@@ -36,9 +36,22 @@ namespace AWS.CloudFormation.Stack
             }
         }
 
-        public FnJoin(string delimiter, params object[] elements)
+        public FnJoin(FnJoinDelimiter delimiter, params object[] elements)
         {
-            this.Delimiter = delimiter;
+            switch (delimiter)
+            {
+                case FnJoinDelimiter.Space:
+                    this.Delimiter = " ";
+                    break;
+                case FnJoinDelimiter.Comma:
+                    this.Delimiter = ",";
+                    break;
+                case FnJoinDelimiter.None:
+                    this.Delimiter = string.Empty;
+                    break;
+                default:
+                    throw new ArgumentException(nameof(delimiter));
+            }
             this.Elements = elements;
         }
 
@@ -57,16 +70,25 @@ namespace AWS.CloudFormation.Stack
         }
     }
 
+    public enum FnJoinDelimiter
+    {
+        Space = 0,
+        Comma = 1,
+        None = 3
+    }
+
     public class PowershellFnJoin : FnJoin
     {
-        public PowershellFnJoin(params object[] elements) : base(" ", elements)
+        public PowershellFnJoin(FnJoinDelimiter delimiter, params object[] elements) : base(delimiter, elements)
         {
             var temp = new List<object>();
-            temp.Add("powershell.exe -ExecutionPolicy RemoteSigned");
+            temp.Add("powershell.exe -ExecutionPolicy RemoteSigned ");
             temp.AddRange(this.Elements);
             this.Elements = temp.ToArray();
         }
 
-
+        public PowershellFnJoin(params object[] elements) : this(FnJoinDelimiter.Space, elements)
+        {
+        }
     }
 }

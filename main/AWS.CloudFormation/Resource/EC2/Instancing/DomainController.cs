@@ -65,7 +65,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
             DomainMemberSecurityGroup = this.CreateDomainMemberSecurityGroup();
             this.CreateDomainControllerSecurityGroup();
-            this.MakeDomainController();
+            //this.MakeDomainController();
             ConfigureDefaultSite(subnet);
         }
 
@@ -257,20 +257,18 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                     .GetConfig(DefaultConfigSetJoinConfig);
             var joinCommand =
                 joinCommandConfig.Commands.AddCommand<Command>(DefaultConfigSetRenameConfigJoinDomain);
-            joinCommand.Command = new FnJoin("",
+            joinCommand.Command = new FnJoin(FnJoinDelimiter.None,
                 "-Command \"",
                     "if ((gwmi win32_computersystem).partofdomain -eq $true)             {",
                         "write-host -fore green \"I am domain joined!\"",
                     "} else {",
-                " Add-Computer -DomainName ",
+                "Add-Computer -DomainName ",
                 new ReferenceProperty(this.DomainDnsName),
-                " -Credential ",
-                "(New-Object System.Management.Automation.PSCredential('",
+                " -Credential (New-Object System.Management.Automation.PSCredential('",
                 new ReferenceProperty(this.DomainNetBiosName),
                 "\\",
                 new ReferenceProperty(this.DomainAdminUser),
-                "',",
-                "(ConvertTo-SecureString ",
+                "',(ConvertTo-SecureString ",
                 new ReferenceProperty(this.DomainAdminPassword),
                 " -AsPlainText -Force))) ",
                 "-Restart\"",
