@@ -151,10 +151,9 @@ namespace AWS.CloudFormation.Test
             dhcpOptions.NetbiosNodeType = "2";
 
 
-            var instanceRdp = new RemoteDesktopGateway(template, $"rdp{version}", InstanceTypes.T2Nano,
-                UsEast1AWindows2012R2Ami, subnetDmz1)
+            var instanceRdp = new Instance(template, $"rdp{version}", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
             {
-                Rename = true
+                Subnet = subnetDmz1
             };
 
 
