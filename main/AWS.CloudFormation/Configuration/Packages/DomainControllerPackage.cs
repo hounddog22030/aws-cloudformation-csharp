@@ -76,15 +76,12 @@ namespace AWS.CloudFormation.Configuration.Packages
                 " -AccountPassword (ConvertTo-SecureString ",
                 this.DomainInfo.AdminPassword,
                 " -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
-            currentCommand.Test =
-                $"if \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
             currentCommand = currentConfig.Commands.AddCommand<Command>("05-UpdateAdminUser");
             currentCommand.WaitAfterCompletion = "0";
             currentCommand.Command = new PowershellFnJoin("-Command \"c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1 -Members",
                 this.DomainInfo.AdminUserName,
                 "\"");
-            currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
             currentCommand = currentConfig.Commands.AddCommand<Command>("06-RenameDefaultSite");
             currentCommand.WaitAfterCompletion = 0.ToString();
