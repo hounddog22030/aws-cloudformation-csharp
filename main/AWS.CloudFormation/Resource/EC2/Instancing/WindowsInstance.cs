@@ -75,11 +75,10 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         private void DisableFirewall()
         {
-            var setup = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("setup");
-            var disableFirewallCommand = setup.Commands.AddCommand<PowerShellCommand>("a-disable-win-fw");
-            disableFirewallCommand.WaitAfterCompletion = 0.ToString();
-            disableFirewallCommand.Command.AddCommandLine(new object[]
-            {"-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\""});
+                var setup = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("setup");
+                var disableFirewallCommand = setup.Commands.AddCommand<PowerShellCommand>("a-disable-win-fw");
+                disableFirewallCommand.WaitAfterCompletion = 0.ToString();
+                disableFirewallCommand.Command = "powershell.exe -Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\"";
         }
 
 
@@ -95,12 +94,13 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             {
                 var renameConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetRenameConfig);
                 var renameCommandConfig = renameConfig.Commands.AddCommand<PowerShellCommand>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
-                renameCommandConfig.Command.AddCommandLine("\"Rename-Computer -NewName ",
-                                                            this.LogicalId.ToUpper(),
-                                                            " -Restart\"");
-                renameCommandConfig.WaitAfterCompletion = "forever";
-                renameCommandConfig.Test =
-                    $"if \"%COMPUTERNAME%\"==\"{this.LogicalId.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
+                throw new NotImplementedException();
+                //renameCommandConfig.Command.AddCommandLine("\"Rename-Computer -NewName ",
+                //                                            this.LogicalId.ToUpper(),
+                //                                            " -Restart\"");
+                //renameCommandConfig.WaitAfterCompletion = "forever";
+                //renameCommandConfig.Test =
+                //    $"if \"%COMPUTERNAME%\"==\"{this.LogicalId.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
             }
         }
 
@@ -160,12 +160,13 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         {
             var chefConfig = this.GetChefConfig(s3bucketName, cookbookFileName);
             var chefCommandConfig = chefConfig.Commands.AddCommand<Command>(recipeList.Replace(':','-'));
-            chefCommandConfig.Command.SetFnJoin($"C:/opscode/chef/bin/chef-client.bat -z -o {recipeList} -c c:/chef/{cookbookFileName}/client.rb");
-            WaitCondition chefComplete = new WaitCondition(this.Template,
-                $"waitCondition{this.LogicalId}{cookbookFileName}{recipeList}".Replace(".",string.Empty).Replace(":",string.Empty),
-                new TimeSpan(4,0,0));
-            chefConfig.Commands.AddCommand<Command>(chefComplete);
-            return chefComplete;
+            throw new NotImplementedException();
+            //chefCommandConfig.Command.SetFnJoin($"C:/opscode/chef/bin/chef-client.bat -z -o {recipeList} -c c:/chef/{cookbookFileName}/client.rb");
+            //WaitCondition chefComplete = new WaitCondition(this.Template,
+            //    $"waitCondition{this.LogicalId}{cookbookFileName}{recipeList}".Replace(".",string.Empty).Replace(":",string.Empty),
+            //    new TimeSpan(4,0,0));
+            //chefConfig.Commands.AddCommand<Command>(chefComplete);
+            //return chefComplete;
 
         }
 

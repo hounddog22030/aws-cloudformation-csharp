@@ -461,20 +461,37 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateStackWithSimpleCommand()
         {
+            var template = GetCreateStackWithSimpleCommand();
+            var name = this.TestContext.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty);
+            Stack.Stack.CreateStack(template, name);
+        }
+        [TestMethod]
+        public void UpdateStackWithSimpleCommand()
+        {
+            var template = GetCreateStackWithSimpleCommand();
+            var name = "CreateStackWithSimpleCommand-2016-01-31T2040132655759-0500";
+            Stack.Stack.UpdateStack(name,template);
+        }
+
+        private static Template GetCreateStackWithSimpleCommand()
+        {
             var template = GetNewBlankTemplateWithVpc($"VpcCreateStackWithVisualStudio");
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup(template, "rdp", "rdp", vpc);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template, "DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
-            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, DMZSubnet, false);
+            WindowsInstance w = new WindowsInstance(template, "Windows1", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami,
+                DMZSubnet, false);
 
             Dir1 d = new Dir1();
             w.Packages.Add(d);
             WaitCondition wc = d.WaitCondition;
+            Dir2 d2 = new Dir2();
+            w.Packages.Add(d2);
+            WaitCondition wc2 = d2.WaitCondition;
             w.AddSecurityGroup(rdp);
             w.AddElasticIp();
-            var name = this.TestContext.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty);
-            Stack.Stack.CreateStack(template, name);
+            return template;
         }
 
 
@@ -642,24 +659,11 @@ namespace AWS.CloudFormation.Test
 
             CreateTestStack(template, this.TestContext, name);
 
-            workstation.Metadata.Init.ConfigSets.GetConfigSet("x").GetConfig("y").Commands.AddCommand<Command>("z").Command.AddCommandLine(true, "dir");
+            throw new NotImplementedException();
+            //workstation.Metadata.Init.ConfigSets.GetConfigSet("x").GetConfig("y").Commands.AddCommand<Command>("z").Command.AddCommandLine(true, "dir");
 
-            Thread.Sleep(new TimeSpan(0, 60, 0));
-
-
-            //do
-            //{
-            //    try
-            //    {
-            Stack.Stack.UpdateStack(name, template);
-            //        break;
-            //    }
-            //    catch (Exception)
-            //    {
-            //        Thread.Sleep(new TimeSpan(0,5,0));
-            //    }
-
-            //} while (true);
+            //Thread.Sleep(new TimeSpan(0, 60, 0));
+            //Stack.Stack.UpdateStack(name, template);
         }
 
 

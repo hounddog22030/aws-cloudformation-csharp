@@ -15,24 +15,22 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
         [JsonIgnore]
         public string Name { get; set; }
 
-        public Resource.EC2.Instancing.Metadata.Config.Command.Command Command
+        public object Command
         {
             get
             {
-                if (this.ContainsKey("command"))
-                {
-                    return this["command"] as Resource.EC2.Instancing.Metadata.Config.Command.Command;
-                }
-                else
-                {
-                    return this.Add("command", new Resource.EC2.Instancing.Metadata.Config.Command.Command()) as Resource.EC2.Instancing.Metadata.Config.Command.Command;
-                }
+                return this["command"];
             }
             set
             {
                 this["command"]=value;
             }
 
+        }
+
+        public T GetCommand<T>()
+        {
+            return (T)this.Command;
         }
 
         public string WaitAfterCompletion

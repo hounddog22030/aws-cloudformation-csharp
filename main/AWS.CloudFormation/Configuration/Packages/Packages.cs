@@ -75,8 +75,8 @@ namespace AWS.CloudFormation.Configuration.Packages
             get { return this.Instance.Metadata.Init.ConfigSets.GetConfigSet<T>(this.ConfigSetName); }
         }
 
-        protected string ConfigSetName => $"ConfigSet{this.GetType().FullName.Replace(".", string.Empty)}";
-        protected string ConfigName => $"Config{this.GetType().FullName.Replace(".", string.Empty)}";
+        protected string ConfigSetName => $"{this.GetType().FullName.Replace(".", string.Empty)}";
+        protected string ConfigName => $"{this.GetType().FullName.Replace(".", string.Empty)}";
 
         protected Config Config
         {
@@ -91,7 +91,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 if (_waitCondition == null)
                 {
                     _waitCondition = new WaitCondition(this.Instance.Template,
-                        $"waitCondition{this.Instance.LogicalId}{this.GetHashCode()}".Replace(".", string.Empty)
+                        $"waitCondition{this.Instance.LogicalId}{this.GetType().FullName}".Replace(".", string.Empty)
                             .Replace(":", string.Empty), TimeoutMax);
 
                     this.Config.Commands.AddCommand<Command>(_waitCondition);
@@ -103,12 +103,22 @@ namespace AWS.CloudFormation.Configuration.Packages
 
     public class Dir1 : PackageBase<ConfigSet>
     {
-        
+
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
             base.AddToLaunchConfiguration(configuration);
-            var command = this.Config.Commands.AddCommand<Command>("dir1").Command;
-            command.AddCommandLine(true,"dir>dir1.txt");
+            var command = this.Config.Commands.AddCommand<Command>("dir1");
+            command.Command = "dir>dir1.txt";
+        }
+    }
+    public class Dir2 : PackageBase<ConfigSet>
+    {
+
+        public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
+        {
+            base.AddToLaunchConfiguration(configuration);
+            var command = this.Config.Commands.AddCommand<Command>("dir2");
+            command.Command = "dir>dir2.txt";
         }
     }
 
@@ -181,8 +191,9 @@ namespace AWS.CloudFormation.Configuration.Packages
             this.ChefConfig.Sources.Add($"c:/chef/{CookbookName}/",
                 $"https://{BucketName}.s3.amazonaws.com/{CookbookName}.tar.gz");
 
-            chefCommandConfig.Command.SetFnJoin(
-                $"C:/opscode/chef/bin/chef-client.bat -z -o {RecipeList} -c c:/chef/{CookbookName}/client.rb");
+            throw new NotImplementedException();
+            //chefCommandConfig.Command.SetFnJoin(
+                //$"C:/opscode/chef/bin/chef-client.bat -z -o {RecipeList} -c c:/chef/{CookbookName}/client.rb");
         }
     }
 

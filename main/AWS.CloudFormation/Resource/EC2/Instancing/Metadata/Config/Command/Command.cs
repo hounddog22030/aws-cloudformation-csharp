@@ -32,6 +32,12 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
     {
         public ConfigCommand Parent { get; internal set; }
 
+        public object CommandLine
+        {
+            get { return this["commandX"]; }
+            set { this["commandX"] = value; }
+        }
+
         public virtual void AddCommandLine(bool doNotAddTest, params object[] commandLine)
         {
 

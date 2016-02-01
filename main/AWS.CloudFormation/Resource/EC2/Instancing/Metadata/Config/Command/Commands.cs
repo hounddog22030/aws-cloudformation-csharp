@@ -33,22 +33,23 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
                     return this.AddCommand<Resource.EC2.Instancing.Metadata.Config.Command.Command>(key);
                 case CommandType.CompleteWaitHandle:
                     throw new NotImplementedException();
-                    var returnValue = this.AddCommand<Resource.EC2.Instancing.Metadata.Config.Command.Command>(key);
-                    returnValue.Command.AddCommandLine(true, "cfn-signal.exe -e 0 \"",
-                                                        new ReferenceProperty(data[0]),
-                                                        "\"");
-                    return returnValue;
+                    //var returnValue = this.AddCommand<Resource.EC2.Instancing.Metadata.Config.Command.Command>(key);
+                    //returnValue.Command.AddCommandLine(true, "cfn-signal.exe -e 0 \"",
+                    //                                    new ReferenceProperty(data[0]),
+                    //                                    "\"");
+                    //return returnValue;
                 default:
                     throw new InvalidEnumArgumentException();
             }
         }
         public ConfigCommand AddCommand<T>(WaitCondition waitCondition) where T : Resource.EC2.Instancing.Metadata.Config.Command.Command, new()
         {
-                    var returnValue = this.AddCommand<Resource.EC2.Instancing.Metadata.Config.Command.Command>($"signalComplete{waitCondition.LogicalId}");
-                    returnValue.Command.AddCommandLine(true, "cfn-signal.exe -e 0 \"",
-                                                        new ReferenceProperty(waitCondition.Handle),
-                                                        "\"");
-                    return returnValue;
+            var returnValue = this.AddCommand<Resource.EC2.Instancing.Metadata.Config.Command.Command>($"signalComplete{waitCondition.LogicalId}");
+            returnValue.Command = new FnJoin("",
+                "cfn-signal.exe -e 0 \"",
+                new ReferenceProperty(waitCondition.Handle),
+                "\"");
+            return returnValue;
         }
 
 

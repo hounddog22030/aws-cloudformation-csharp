@@ -31,21 +31,22 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName)
                     .GetConfig(InstallRds);
             var installRdsCommand = installRdsConfig.Commands.AddCommand<PowerShellCommand>("a-install-rds");
-            installRdsCommand.Command.AddCommandLine("-Command \"Install-WindowsFeature RDS-Gateway,RSAT-RDS-Gateway\"");
+            throw new NotImplementedException();
+            //installRdsCommand.Command.AddCommandLine("-Command \"Install-WindowsFeature RDS-Gateway,RSAT-RDS-Gateway\"");
 
-            var configureRdgwPsScript = installRdsConfig.Files.GetFile("c:\\cfn\\scripts\\Configure-RDGW.ps1");
+            //var configureRdgwPsScript = installRdsConfig.Files.GetFile("c:\\cfn\\scripts\\Configure-RDGW.ps1");
 
-            configureRdgwPsScript.Source =
-                "https://s3.amazonaws.com/gtbb/Configure-RDGW.ps1";
+            //configureRdgwPsScript.Source =
+            //    "https://s3.amazonaws.com/gtbb/Configure-RDGW.ps1";
 
-            installRdsCommand = installRdsConfig.Commands.AddCommand<PowerShellCommand>("b-configure-rdgw");
-            installRdsCommand.Command.AddCommandLine(
-                                            "-ExecutionPolicy RemoteSigned",
-                                            " C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN " + this.LogicalId + ".",
-                                            this.DomainDnsName,
-                                            " -DomainNetBiosName ",
-                                            this.DomainNetBiosName,
-                                            " -GroupName 'domain admins'" );
+            //installRdsCommand = installRdsConfig.Commands.AddCommand<PowerShellCommand>("b-configure-rdgw");
+            //installRdsCommand.Command.AddCommandLine(
+            //                                "-ExecutionPolicy RemoteSigned",
+            //                                " C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN " + this.LogicalId + ".",
+            //                                this.DomainDnsName,
+            //                                " -DomainNetBiosName ",
+            //                                this.DomainNetBiosName,
+            //                                " -GroupName 'domain admins'" );
         }
 
 
