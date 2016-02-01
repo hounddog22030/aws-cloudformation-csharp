@@ -41,8 +41,7 @@ namespace AWS.CloudFormation.Test
         private const string CidrDatabase4BuildSubnet2 = "10.0.5.0/24";
         private const string KeyPairName = "corp.getthebuybox.com";
         private const string CidrVpc = "10.0.0.0/16";
-        public static string DomainDnsName { get; set; } = string.Empty;
-        public static string DomainDnsNameSuffix { get; set; } = "yadayada.software";
+        public const string DomainDnsName = "yadayada.software";
 
         private const string DomainAdminUser = "johnny";
         private const string UsEast1AWindows2012R2Ami = "ami-e4034a8e";
@@ -61,17 +60,15 @@ namespace AWS.CloudFormation.Test
             Run
         }
 
-        public static Template GetTemplateFullStack()
+        public static Template GetTemplateFullStack(string version)
         {
             Assert.IsFalse(HasGitDifferences());
             var gitHash = GetGitHash();
             var template = new Template(KeyPairName, "Vpc", CidrVpc,gitHash);
-            //GetNewBlankTemplateWithVpc("Vpc", gitHash);
             Vpc vpc = template.Vpcs.First();
             vpc.EnableDnsHostnames = true;
             vpc.EnableDnsSupport = true;
 
-            //var subnetDomainController2 = new Subnet(template, "subnetDomainController2", vpc, CidrDomainController2Subnet, AvailabilityZone.UsEast1A);
             var subnetDmz2 = new Subnet(template, "subnetDmz2", vpc, CidrDmz2, AvailabilityZone.UsEast1A, true);
 
             SecurityGroup natSecurityGroup = new SecurityGroup(template,"natSecurityGroup", "Enables Ssh access to NAT1 in AZ1 via port 22 and outbound internet access via private subnets", vpc);
@@ -134,7 +131,8 @@ namespace AWS.CloudFormation.Test
             var instanceDomainController = new Instance(template, NetBiosNameDomainController1, InstanceTypes.C4Large,
                 UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
             {
-                Subnet = subnetDomainController1
+                Subnet = subnetDomainController1,
+                
             };
             
             DomainControllerPackage dcPackage = new DomainControllerPackage(domainInfo, subnetDomainController1);
@@ -152,10 +150,17 @@ namespace AWS.CloudFormation.Test
             dhcpOptions.NetbiosNodeType = "2";
 
 
-            var instanceRdp = new RemoteDesktopGateway(template, "rdp", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnetDmz1);
+            var instanceRdp = new RemoteDesktopGateway(template, $"rdp{version}", InstanceTypes.T2Nano,
+                UsEast1AWindows2012R2Ami, subnetDmz1)
+            {
+                Rename = true
+            };
+
+
             dcPackage.Participate(instanceRdp);
 
-            var instanceTfsSqlServer = AddSql(template, "sql4tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
+            var instanceTfsSqlServer = AddSql(template, "sql4tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage,
+                sqlServer4TfsSecurityGroup);
             var sqlPackage = instanceTfsSqlServer.Packages.OfType<SqlServerExpress>().Single();
 
             var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
@@ -192,15 +197,15 @@ namespace AWS.CloudFormation.Test
                 "sqlserveruser", "Hy77tttt.", 20, subnetGroupSqlExpress4Build, securityGroupSqlSever4Build,
                 Ebs.VolumeTypes.GeneralPurpose);
 
-            string privateDomain = $"{StackTest.DomainNetBiosName}.yadayada.software.private.";
+            //string privateDomain = $"{StackTest.DomainNetBiosName}.yadayada.software.private.";
 
-            var target = RecordSet.AddByHostedZoneName(template,
-                $"recordset4{rdsSqlExpress4Build.LogicalId}".Replace('.', '-'),
-                privateDomain,
-                $"sql4tfs.{privateDomain}",
-                RecordSet.RecordSetTypeEnum.CNAME);
-            target.TTL = "60";
-            target.AddResourceRecord(new FnGetAtt(rdsSqlExpress4Build, "Endpoint.Address"));
+            //var target = RecordSet.AddByHostedZoneName(template,
+            //    $"recordset4{rdsSqlExpress4Build.LogicalId}".Replace('.', '-'),
+            //    privateDomain,
+            //    $"sql4tfs.{privateDomain}",
+            //    RecordSet.RecordSetTypeEnum.CNAME);
+            //target.TTL = "60";
+            //target.AddResourceRecord(new FnGetAtt(rdsSqlExpress4Build, "Endpoint.Address"));
 
             var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, mySql4Build, rdsSqlExpress4Build);
 
@@ -954,35 +959,31 @@ namespace AWS.CloudFormation.Test
         public void CreateDevelopmentTest()
         {
             var stacks = Stack.Stack.GetActiveStacks();
-            var name = string.Empty;
+            var version = string.Empty;
 
             foreach (var thisGreek in Enum.GetNames(typeof(Greek)))
             {
-                name = (thisGreek + "." + DomainDnsNameSuffix).ToLower();
-                if (!stacks.Any(s => s.Name.StartsWith(name.Replace('.', '-'))))
+                if (!stacks.Any(s => s.Name.StartsWith(version.Replace('.', '-'))))
                 {
-                    StackTest.DomainDnsName = name;
-                    StackTest.DomainNetBiosName = thisGreek.ToLowerInvariant();
+                    version = thisGreek.ToLowerInvariant();
                     break;
                 }
             }
 
-            var templateToCreateStack = GetTemplateFullStack();
+            var templateToCreateStack = GetTemplateFullStack(version);
             templateToCreateStack.StackName = StackTest.DomainDnsName.Replace('.', '-');
+
+
 
             CreateTestStack(templateToCreateStack, this.TestContext);
         }
 
-        public static string DomainNetBiosName { get; set; }
 
         [TestMethod]
         public void UpdateDevelopmentTest()
         {
             var stackName = "gamma-yadayada-software";
-
-            StackTest.DomainDnsName = "gamma.yadayada.software";
-
-            Stack.Stack.UpdateStack(stackName, GetTemplateFullStack());
+            Stack.Stack.UpdateStack(stackName, GetTemplateFullStack("gamma"));
         }
 
 

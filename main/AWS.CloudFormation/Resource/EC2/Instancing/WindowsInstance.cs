@@ -60,11 +60,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             {
                 throw new InvalidOperationException($"Name length is limited to {NetBiosMaxLength} characters.");
             }
-            if (rename)
-            {
-                this.Rename();
-            }
-
+            Rename = rename;
             this.DisableFirewall();
         }
 
@@ -81,11 +77,18 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 disableFirewallCommand.Command = "powershell.exe -Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\"";
         }
 
-
-
-        private void Rename()
+        private bool _rename;
+        public bool Rename {
+            get { return _rename; }
+            set
+            {
+                _rename = value;
+                this.AddRename();
+            }
+        }
+        private void AddRename()
         {
-            if (OperatingSystem == OperatingSystem.Windows && false)
+            if (this.Rename && OperatingSystem == OperatingSystem.Windows)
             {
                 var renameConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetRenameConfig);
                 var renameCommandConfig = renameConfig.Commands.AddCommand<Command>(DefaultConfigSetRenameConfigRenamePowerShellCommand);

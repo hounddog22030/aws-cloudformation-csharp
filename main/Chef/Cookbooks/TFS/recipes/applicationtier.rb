@@ -12,14 +12,9 @@ tfsconfigure_exe_file = "\"C:/Program Files/Microsoft Team Foundation Server 14.
 
 configurationFile = "#{Chef::Config['file_cache_path']}/configbasic.ini"
 
-cookbook_file "#{configurationFile}" do
-	path "#{Chef::Config['file_cache_path']}/configbasic.ini"
-	action :create_if_missing	
-end
-
 template "#{configurationFile}" do
   source 'configbasic.ini.erb'
-  variables( :application_server_sqlname => "#{node[:tfs][:application_server_netbios_name]}")
+  variables( :application_server_sqlname => "#{node[:tfs][:application_server_sqlname]}")
 end
 
 
