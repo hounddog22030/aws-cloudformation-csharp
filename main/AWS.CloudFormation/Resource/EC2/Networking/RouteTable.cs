@@ -9,8 +9,8 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
     {
         public RouteTable(Template template, string name, Vpc vpc) : base(template, name, ResourceType.AwsEc2RouteTable)
         {
-            
             this.Vpc = vpc;
+            this.DependsOn.Add(vpc.InternetGateway.LogicalId);
         }
 
         [JsonIgnore]

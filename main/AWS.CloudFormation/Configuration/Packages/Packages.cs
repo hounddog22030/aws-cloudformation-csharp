@@ -72,13 +72,17 @@ namespace AWS.CloudFormation.Configuration.Packages
 
         protected T ConfigSet
         {
-            get { return this.Instance.Metadata.Init.ConfigSets.GetConfigSet<T>(this.GetHashCode().ToString()); }
+            get { return this.Instance.Metadata.Init.ConfigSets.GetConfigSet<T>(this.ConfigSetName); }
         }
+
+        protected string ConfigSetName => $"ConfigSet{this.GetType().FullName.Replace(".", string.Empty)}";
+        protected string ConfigName => $"Config{this.GetType().FullName.Replace(".", string.Empty)}";
 
         protected Config Config
         {
-            get { return this.ConfigSet.GetConfig($"Config{this.GetHashCode()}"); }
+            get { return this.ConfigSet.GetConfig(this.ConfigName); }
         }
+
 
         public WaitCondition WaitCondition
         {
@@ -99,12 +103,12 @@ namespace AWS.CloudFormation.Configuration.Packages
 
     public class Dir1 : PackageBase<ConfigSet>
     {
+        
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
             base.AddToLaunchConfiguration(configuration);
-            var command =
-                configuration.Metadata.Init.ConfigSets.GetConfigSet("dir1").GetConfig("dir1").Commands.Add("dir1");
-            command.Add("dir1", "dir>dir1.txt");
+            var command = this.Config.Commands.AddCommand<Command>("dir1").Command;
+            command.AddCommandLine(true,"dir>dir1.txt");
         }
     }
 
@@ -207,6 +211,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         public SqlServerExpress(string bucketName) : base("snap-2cf80f29", bucketName, "sqlserver")
         {
         }
+
 
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
