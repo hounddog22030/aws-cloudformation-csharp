@@ -159,7 +159,8 @@ namespace AWS.CloudFormation.Configuration.Packages
 
         public override void Participate(ResourceBase participant)
         {
-            Instance participantAsLaunchConfiguration = participant as Instance;
+            LaunchConfiguration participantLaunchConfiguration = participant as LaunchConfiguration;
+
 
             var joinCommandConfig = participant.Metadata.Init.ConfigSets.GetConfigSet("joinDomain").GetConfig("joinDomain");
 
@@ -187,11 +188,13 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             participant.AddDependsOn(this.WaitCondition);
             this.AddToDomainMemberSecurityGroup((Instance)participant);
-            participantAsLaunchConfiguration.DomainNetBiosName = this.DomainInfo.DomainNetBiosName;
-            participantAsLaunchConfiguration.DomainDnsName = this.DomainInfo.DomainDnsName;
-            this.AddReplicationSite(participantAsLaunchConfiguration.Subnet);
-            var nodeJson = participantAsLaunchConfiguration.GetChefNodeJsonContent();
+            participantLaunchConfiguration.DomainNetBiosName = this.DomainInfo.DomainNetBiosName;
+            participantLaunchConfiguration.DomainDnsName = this.DomainInfo.DomainDnsName;
+            var nodeJson = participantLaunchConfiguration.GetChefNodeJsonContent();
             nodeJson.Add("domain", this.DomainInfo.DomainNetBiosName);
+
+            this.AddReplicationSite(participantLaunchConfiguration.Subnet);
+
 
         }
         public void AddReplicationSite(Subnet subnet)

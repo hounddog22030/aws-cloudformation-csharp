@@ -82,7 +82,14 @@ namespace AWS.CloudFormation.Stack
         public PowershellFnJoin(FnJoinDelimiter delimiter, params object[] elements) : base(delimiter, elements)
         {
             var temp = new List<object>();
-            temp.Add("powershell.exe -ExecutionPolicy RemoteSigned ");
+            var commandLine = "powershell.exe ";
+            bool remoteSigned = false;
+            elements.ToList().ForEach(e=>remoteSigned=remoteSigned||e.ToString().ToLowerInvariant().Contains(".ps"));
+            if (remoteSigned)
+            {
+                commandLine += "-ExecutionPolicy RemoteSigned ";
+            }
+            temp.Add(commandLine);
             temp.AddRange(this.Elements);
             this.Elements = temp.ToArray();
         }
