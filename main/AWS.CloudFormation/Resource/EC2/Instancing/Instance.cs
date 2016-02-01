@@ -182,7 +182,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         public ElasticIp AddElasticIp()
         {
-            ElasticIp = new ElasticIp(this, this.LogicalId + "EIP");
+            ElasticIp = new ElasticIp(this);
             return ElasticIp;
         }
 

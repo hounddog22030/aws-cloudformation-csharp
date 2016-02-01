@@ -14,6 +14,7 @@ using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.AutoScaling;
 using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
@@ -158,6 +159,8 @@ namespace AWS.CloudFormation.Test
 
 
             dcPackage.Participate(instanceRdp);
+
+            instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage(domainInfo));
 
             var instanceTfsSqlServer = AddSql(template, "sql4tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage,
                 sqlServer4TfsSecurityGroup);
@@ -1068,4 +1071,5 @@ namespace AWS.CloudFormation.Test
         //
         #endregion
     }
+
 }
