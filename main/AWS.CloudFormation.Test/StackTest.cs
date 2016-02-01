@@ -180,14 +180,11 @@ namespace AWS.CloudFormation.Test
                 LicenseModelType.LicenseIncluded,
                 "sqlserveruser", "Hy77tttt.", 20, subnetGroupSqlExpress4Build, securityGroupSqlSever4Build);
 
-            HostedZone hz = new HostedZone(template, $"hostedZone{DomainDnsName}Private".Replace(".", string.Empty), $"{DomainDnsName}.private.");
-            hz.AddVpc(template.Vpcs.First(), Region.UsEast1);
-            var target = RecordSet.AddByHostedZone(template,
+            var target = RecordSet.AddByHostedZoneName(template,
                 $"recordset4{rdsSqlExpress4Build.LogicalId}".Replace('.', '-'),
-                hz,
+                "yadayada.software.private.",
                 $"sqlserver.{DomainDnsName}.private.",
                 RecordSet.RecordSetTypeEnum.CNAME);
-            target.DependsOn.Add(hz.LogicalId);
             target.TTL = "60";
             target.AddResourceRecord(new FnGetAtt(rdsSqlExpress4Build, "Endpoint.Address"));
 

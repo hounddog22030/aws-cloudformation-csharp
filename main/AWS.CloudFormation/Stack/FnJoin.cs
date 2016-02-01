@@ -84,7 +84,7 @@ namespace AWS.CloudFormation.Stack
             var temp = new List<object>();
             var commandLine = "powershell.exe ";
             bool remoteSigned = false;
-            elements.ToList().ForEach(e=>remoteSigned=remoteSigned||e.ToString().ToLowerInvariant().Contains(".ps"));
+            elements.ToList().ForEach(e=>remoteSigned=remoteSigned||e.ToString().ToLowerInvariant().Contains(".ps1"));
             if (remoteSigned)
             {
                 commandLine += "-ExecutionPolicy RemoteSigned ";
