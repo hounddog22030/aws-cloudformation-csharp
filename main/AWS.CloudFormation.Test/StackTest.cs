@@ -469,7 +469,7 @@ namespace AWS.CloudFormation.Test
         public void UpdateStackWithSimpleCommand()
         {
             var template = GetCreateStackWithSimpleCommand();
-            var name = "CreateStackWithSimpleCommand-2016-01-31T2040132655759-0500";
+            var name = "CreateStackWithSimpleCommand-2016-01-31T2108151519427-0500";
             Stack.Stack.UpdateStack(name,template);
         }
 
@@ -486,9 +486,9 @@ namespace AWS.CloudFormation.Test
             Dir1 d = new Dir1();
             w.Packages.Add(d);
             WaitCondition wc = d.WaitCondition;
-            Dir2 d2 = new Dir2();
-            w.Packages.Add(d2);
-            WaitCondition wc2 = d2.WaitCondition;
+            //Dir2 d2 = new Dir2();
+            //w.Packages.Add(d2);
+            //WaitCondition wc2 = d2.WaitCondition;
             w.AddSecurityGroup(rdp);
             w.AddElasticIp();
             return template;

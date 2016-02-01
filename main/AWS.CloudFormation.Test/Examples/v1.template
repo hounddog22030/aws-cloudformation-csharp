@@ -127,9 +127,6 @@
             ],
             "AWSCloudFormationConfigurationPackagesDir1": [
               "AWSCloudFormationConfigurationPackagesDir1"
-            ],
-            "AWSCloudFormationConfigurationPackagesDir2": [
-              "AWSCloudFormationConfigurationPackagesDir2"
             ]
           },
           "setup": {
@@ -168,7 +165,7 @@
                       "path=Resources.Windows1.Metadata.AWS::CloudFormation::Init\n",
                       "action=",
                       "cfn-init.exe -v -c ",
-                      "config,AWSCloudFormationConfigurationPackagesDir1,AWSCloudFormationConfigurationPackagesDir2",
+                      "config,AWSCloudFormationConfigurationPackagesDir1",
                       " -s ",
                       {
                         "Ref": "AWS::StackName"
@@ -228,34 +225,6 @@
             "sources": {},
             "packages": {},
             "ignoreErrors": "True"
-          },
-          "AWSCloudFormationConfigurationPackagesDir2": {
-            "commands": {
-              "dir2": {
-                "waitAfterCompletion": "0",
-                "command": "dir>dir2.txt"
-              },
-              "signalCompletewaitConditionWindows1AWSCloudFormationConfigurationPackagesDir2": {
-                "waitAfterCompletion": "0",
-                "command": {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "cfn-signal.exe -e 0 \"",
-                      {
-                        "Ref": "waitConditionWindows1AWSCloudFormationConfigurationPackagesDir2Handle"
-                      },
-                      "\""
-                    ]
-                  ]
-                }
-              }
-            },
-            "files": {},
-            "services": {},
-            "sources": {},
-            "packages": {},
-            "ignoreErrors": "True"
           }
         }
       },
@@ -270,7 +239,7 @@
               [
                 "<script>",
                 "cfn-init.exe -v -c ",
-                "config,AWSCloudFormationConfigurationPackagesDir1,AWSCloudFormationConfigurationPackagesDir2",
+                "config,AWSCloudFormationConfigurationPackagesDir1",
                 " -s ",
                 {
                   "Ref": "AWS::StackId"
@@ -311,19 +280,6 @@
       }
     },
     "waitConditionWindows1AWSCloudFormationConfigurationPackagesDir1Handle": {
-      "Type": "AWS::CloudFormation::WaitConditionHandle",
-      "Properties": {}
-    },
-    "waitConditionWindows1AWSCloudFormationConfigurationPackagesDir2": {
-      "Type": "AWS::CloudFormation::WaitCondition",
-      "Properties": {
-        "Timeout": 43200,
-        "Handle": {
-          "Ref": "waitConditionWindows1AWSCloudFormationConfigurationPackagesDir2Handle"
-        }
-      }
-    },
-    "waitConditionWindows1AWSCloudFormationConfigurationPackagesDir2Handle": {
       "Type": "AWS::CloudFormation::WaitConditionHandle",
       "Properties": {}
     },
@@ -397,16 +353,6 @@
     "waitConditionWindows1AWSCloudFormationConfigurationPackagesDir1Handle": {
       "Value": {
         "Ref": "waitConditionWindows1AWSCloudFormationConfigurationPackagesDir1Handle"
-      }
-    },
-    "waitConditionWindows1AWSCloudFormationConfigurationPackagesDir2": {
-      "Value": {
-        "Ref": "waitConditionWindows1AWSCloudFormationConfigurationPackagesDir2"
-      }
-    },
-    "waitConditionWindows1AWSCloudFormationConfigurationPackagesDir2Handle": {
-      "Value": {
-        "Ref": "waitConditionWindows1AWSCloudFormationConfigurationPackagesDir2Handle"
       }
     },
     "Windows1EIP": {
