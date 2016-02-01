@@ -43,6 +43,8 @@ namespace AWS.CloudFormation.Configuration.Packages
             routing.AddResourceRecord(new ReferenceProperty(new ElasticIp(this.Instance)));
 
             routing.TTL = "60";
+
+            AddSecurityGroup();
         }
         private void InstallRemoteDesktopGateway()
         {
@@ -65,6 +67,18 @@ namespace AWS.CloudFormation.Configuration.Packages
                                             "-DomainNetBiosName",
                                             this.DomainInfo.DomainNetBiosName,
                                             "-GroupName 'domain admins'");
+        }
+        private void AddSecurityGroup()
+        {
+            var launchConfigurationAsInstance = this.Instance as Instance;
+            var rdgwSecurityGroup = new SecurityGroup(this.Instance.Template, $"securityGroup{this.Instance.LogicalId}", "Remote Desktop Security Group", launchConfigurationAsInstance.Subnet.Vpc);
+
+            rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol, Ports.Ssl);
+            rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Http);
+            rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Udp, Ports.RdpAdmin);
+            rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
+
+            this.Instance.AddSecurityGroup(rdgwSecurityGroup);
         }
     }
 }
