@@ -23,15 +23,25 @@ namespace AWS.CloudFormation.Stack
         public const string CIDR_IP_THE_WORLD = "0.0.0.0/0";
 
 
-        public Template(string defaultKeyName, string vpcName, string vpcCidrBlock )
+        public Template(string defaultKeyName, string vpcName, string vpcCidrBlock ) : this(defaultKeyName,vpcName,vpcCidrBlock,null)
+        {
+        }
+
+        public Template(string keyPairName, string vpcName, string vpcCidrBlock, string description)
         {
             Outputs = new CloudFormationDictionary();
             AwsTemplateFormatVersion = AwsTemplateFormatVersion20100909;
             this.Resources = new Dictionary<string, ResourceBase>();
             this.Parameters = new Dictionary<string, ParameterBase>();
-            this.Parameters.Add(Instance.ParameterNameDefaultKeyPairKeyName, new ParameterBase(Instance.ParameterNameDefaultKeyPairKeyName, "AWS::EC2::KeyPair::KeyName", defaultKeyName));
-            Vpc vpc = new Vpc(this,vpcName,vpcCidrBlock);
+            this.Parameters.Add(Instance.ParameterNameDefaultKeyPairKeyName, new ParameterBase(Instance.ParameterNameDefaultKeyPairKeyName, "AWS::EC2::KeyPair::KeyName", keyPairName));
+            Vpc vpc = new Vpc(this, vpcName, vpcCidrBlock);
+            if (!string.IsNullOrEmpty(description))
+            {
+                this.Description = description;
+            }
         }
+
+        public string Description { get; }
 
         [JsonIgnore]
         public string StackName { get; set; }

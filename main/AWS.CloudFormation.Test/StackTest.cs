@@ -63,7 +63,10 @@ namespace AWS.CloudFormation.Test
 
         public static Template GetTemplateFullStack()
         {
-            var template = GetNewBlankTemplateWithVpc("Vpc");
+            Assert.IsFalse(HasGitDifferences());
+            var gitHash = GetGitHash();
+            var template = new Template(KeyPairName, "Vpc", CidrVpc,gitHash);
+            //GetNewBlankTemplateWithVpc("Vpc", gitHash);
             Vpc vpc = template.Vpcs.First();
             vpc.EnableDnsHostnames = true;
             vpc.EnableDnsSupport = true;
@@ -126,9 +129,14 @@ namespace AWS.CloudFormation.Test
             securityGroupDb4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MySql);
             subnetWorkstation.AddNatGateway(nat1, natSecurityGroup);
 
-            var domainInfo = new DomainController.DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
+            var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
 
-            var instanceDomainController = new DomainController(template, NetBiosNameDomainController1, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnetDomainController1, domainInfo);
+            var instanceDomainController = new Instance(template, NetBiosNameDomainController1, InstanceTypes.T2Nano,
+                UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
+            {
+                Subnet = subnetDomainController1
+            };
+            
             DomainControllerPackage dcPackage = new DomainControllerPackage(domainInfo, subnetDomainController1);
             instanceDomainController.Packages.Add(dcPackage);
 
@@ -223,16 +231,14 @@ namespace AWS.CloudFormation.Test
             return sqlServer;
         }
 
-        private static DomainController AddDomainController(Template template, Subnet subnet)
+        private static Instance AddDomainController(Template template, Subnet subnet)
         {
             //"ami-805d79ea",
-            var DomainController = new DomainController(template,
-                NetBiosNameDomainController1,
-                InstanceTypes.T2Micro,
-                UsEast1AWindows2012R2Ami,
-                subnet,
-                new DomainController.DomainInfo(DomainDnsName, DomainAdminUser,
-                    DomainAdminPassword));
+            var DomainController = new Instance(template, NetBiosNameDomainController1, InstanceTypes.T2Micro,
+                UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
+            {
+                Subnet = subnet
+            };
             return DomainController;
         }
 
@@ -305,10 +311,10 @@ namespace AWS.CloudFormation.Test
         public void GetGitDiffTest()
         {
             //
-            Assert.IsTrue(GetGitDiff());
+            Assert.IsTrue(HasGitDifferences());
         }
 
-        public static bool GetGitDiff()
+        public static bool HasGitDifferences()
         {
             Process p = new Process();
             p.StartInfo.UseShellExecute = false;
@@ -321,7 +327,7 @@ namespace AWS.CloudFormation.Test
             string output = p.StandardOutput.ReadToEnd();
             p.WaitForExit();
 
-            return output.Length == 0;
+            return output.Length != 0;
         }
 
         [TestMethod]
@@ -538,7 +544,7 @@ namespace AWS.CloudFormation.Test
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template,"PrivateSubnet", vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A,true);
 
-            WindowsInstance w = AddDomainController(template, DMZSubnet);
+            Instance w = AddDomainController(template, DMZSubnet);
             w.AddSecurityGroup(rdp);
 
             w.AddElasticIp();
@@ -746,7 +752,7 @@ namespace AWS.CloudFormation.Test
 
             var chefNode = buildServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
-            var domainInfo = new DomainController.DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
+            var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
 
             domainAdminUserInfoNode.Add("name", domainInfo.DomainNetBiosName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
@@ -813,7 +819,7 @@ namespace AWS.CloudFormation.Test
             tfsServer.AddDependsOn(sqlServer4Tfs);
             var chefNode = tfsServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
-            var domainInfo = new DomainController.DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
+            var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
             domainAdminUserInfoNode.Add("name", domainInfo.DomainNetBiosName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             tfsServer.AddSecurityGroup(tfsServerSecurityGroup);

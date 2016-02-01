@@ -19,13 +19,13 @@ namespace AWS.CloudFormation.Configuration.Packages
     public class DomainControllerPackage : PackageBase<ConfigSet>
     {
 
-        public DomainControllerPackage(DomainController.DomainInfo domainInfo, Subnet subnet)
+        public DomainControllerPackage(DomainInfo domainInfo, Subnet subnet)
         {
             this.DomainInfo = domainInfo;
             Subnet = subnet;
         }
 
-        private DomainController.DomainInfo DomainInfo { get; }
+        private DomainInfo DomainInfo { get; }
 
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
