@@ -14,8 +14,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
     public class DomainController : WindowsInstance
     {
 
-        public const string DefaultConfigSetRenameConfigSetDnsServers = "a-set-dns-servers";
-
         public class DomainInfo
         {
             public DomainInfo(string domainDnsName, string adminUserName, string adminPassword)
@@ -66,33 +64,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         [JsonIgnore]
         public ParameterBase DomainAdminPassword { get; set; }
-
-        private WaitCondition _domainAvailable = null;
-
-        private WaitCondition DomainAvailable
-        {
-            get
-            {
-                if (_domainAvailable == null)
-                {
-                    _domainAvailable = new WaitCondition(this.Template, $"{this.LogicalId}DomainAvailableWaitCondition", new TimeSpan(4,0,0));
-                }
-                return _domainAvailable;
-            }
-        }
-
-
-
-        private SecurityGroup CreateDomainMemberSecurityGroup()
-        {
-            SecurityGroup domainMemberSg = new SecurityGroup(this.Template, "DomainMemberSG", "For All Domain Members", this.Subnet.Vpc);
-            domainMemberSg.GroupDescription = "Domain Member Security Group";
-            return domainMemberSg;
-        }
-
-
-        [JsonIgnore]
-        public SecurityGroup DomainMemberSecurityGroup { get; }
 
 
     }
