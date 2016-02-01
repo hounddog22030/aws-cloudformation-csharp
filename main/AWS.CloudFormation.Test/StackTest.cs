@@ -963,7 +963,7 @@ namespace AWS.CloudFormation.Test
 
             foreach (var thisGreek in Enum.GetNames(typeof(Greek)))
             {
-                if (!stacks.Any(s => s.Name.StartsWith(version.Replace('.', '-'))))
+                if (!stacks.Any(s => s.Name.StartsWith(thisGreek.Replace('.', '-'))))
                 {
                     version = thisGreek.ToLowerInvariant();
                     break;
