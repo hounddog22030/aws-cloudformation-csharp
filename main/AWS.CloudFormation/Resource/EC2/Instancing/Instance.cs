@@ -205,10 +205,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         //}
 
-        public void AddDependsOn(WaitCondition waitConditionHandle)
-        {
-            this.DependsOn.Add(waitConditionHandle.LogicalId);
-        }
 
         //public WaitCondition AddFinalizer(string logicalName, TimeSpan timeout)
         //{

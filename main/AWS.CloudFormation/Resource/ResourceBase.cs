@@ -6,6 +6,7 @@ using System.Runtime.Serialization;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
+using AWS.CloudFormation.Resource.Wait;
 using AWS.CloudFormation.Serialization;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
@@ -70,6 +71,11 @@ namespace AWS.CloudFormation.Resource
                 this.Tags.Add(new Tag("Name",name));
             }
         }
+        public void AddDependsOn(WaitCondition waitConditionHandle)
+        {
+            this.DependsOn.Add(waitConditionHandle.LogicalId);
+        }
+
         protected abstract bool SupportsTags { get; }
 
         [JsonIgnore]

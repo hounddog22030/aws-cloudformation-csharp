@@ -4,20 +4,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Property;
+using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.AutoScaling;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
+using AWS.CloudFormation.Resource.EC2.Networking;
+using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Stack;
 
 namespace AWS.CloudFormation.Configuration.Packages
 {
     public class DomainControllerPackage : PackageBase<ConfigSet>
     {
-        public DomainControllerPackage(DomainController.DomainInfo domainInfo)
+
+        public DomainControllerPackage(DomainController.DomainInfo domainInfo, Subnet subnet)
         {
             this.DomainInfo = domainInfo;
+            Subnet = subnet;
         }
 
         private DomainController.DomainInfo DomainInfo { get; }
@@ -80,8 +85,149 @@ namespace AWS.CloudFormation.Configuration.Packages
                 "\"");
             currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
+            currentCommand = currentConfig.Commands.AddCommand<Command>("a-rename-default-site");
+            currentCommand.WaitAfterCompletion = 0.ToString();
+            currentCommand.Command =
+                new PowershellFnJoin(
+                    "\"Get-ADObject -SearchBase (Get-ADRootDSE).ConfigurationNamingContext -filter {{Name -eq 'Default-First-Site-Name'}} | Rename-ADObject -NewName",
+                    new ReferenceProperty(this.Subnet.LogicalId),
+                    "\"");
+
+
             currentConfig.Commands.AddCommand<Command>(this.WaitCondition);
 
+            this.CreateDomainControllerSecurityGroup();
+
+        }
+
+        public Subnet Subnet { get; }
+
+        private SecurityGroup _domainMemberSecurityGroup;
+
+        public SecurityGroup DomainMemberSecurityGroup {
+            get
+            {
+                if (_domainMemberSecurityGroup == null)
+                {
+                    _domainMemberSecurityGroup = new SecurityGroup(this.Instance.Template, "DomainMemberSG", "For All Domain Members", this.Subnet.Vpc);
+                    _domainMemberSecurityGroup.GroupDescription = "Domain Member Security Group";
+                }
+                return _domainMemberSecurityGroup;
+
+            }
+        }
+
+
+        private void CreateDomainControllerSecurityGroup()
+        {
+            // ReSharper disable once InconsistentNaming
+            SecurityGroup DomainControllerSG1 = new SecurityGroup(this.Instance.Template, "DomainControllerSG1", "Domain Controller", this.Subnet.Vpc);
+            DomainControllerSG1.AddIngress(this.Subnet.Vpc as ICidrBlock, Protocol.Tcp,
+                Ports.WsManagementPowerShell);
+            DomainControllerSG1.AddIngress(this.Subnet.Vpc as ICidrBlock, Protocol.Tcp, Ports.Http);
+
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Udp,
+                Ports.Ntp);
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
+                Ports.WinsManager);
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
+                Ports.ActiveDirectoryManagement);
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Udp,
+                Ports.NetBios);
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
+                Protocol.Tcp | Protocol.Udp, Ports.Smb);
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
+                Protocol.Tcp | Protocol.Udp, Ports.ActiveDirectoryManagement2);
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
+                Protocol.Tcp | Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
+                Protocol.Tcp | Protocol.Udp, Ports.Ldap);
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
+                Ports.Ldaps);
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
+                Ports.Ldap2Begin, Ports.Ldap2End);
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
+                Protocol.Tcp | Protocol.Udp, Ports.DnsQuery);
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
+                Protocol.Tcp | Protocol.Udp, Ports.KerberosKeyDistribution);
+            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
+                Protocol.Tcp | Protocol.Udp, Ports.RemoteDesktopProtocol);
+
+            this.Instance.AddSecurityGroup(DomainControllerSG1);
+
+        }
+
+        public override void Participate(ResourceBase participant)
+        {
+            Instance participantAsLaunchConfiguration = participant as Instance;
+
+            var joinCommandConfig = participant.Metadata.Init.ConfigSets.GetConfigSet("joinDomain").GetConfig("joinDomain");
+
+            var joinCommand = joinCommandConfig.Commands.AddCommand<Command>("joinDomain");
+
+
+            joinCommand.Command = new FnJoin(FnJoinDelimiter.None,
+                "-Command \"",
+                    "if ((gwmi win32_computersystem).partofdomain -eq $true)             {",
+                        "write-host -fore green \"I am domain joined!\"",
+                    "} else {",
+                "Add-Computer -DomainName ",
+                this.DomainInfo.DomainDnsName,
+                " -Credential (New-Object System.Management.Automation.PSCredential('",
+                this.DomainInfo.DomainNetBiosName,
+                "\\",
+                this.DomainInfo.AdminUserName,
+                "',(ConvertTo-SecureString ",
+                this.DomainInfo.AdminPassword,
+                " -AsPlainText -Force))) ",
+                "-Restart\"",
+                " }");
+            joinCommand.WaitAfterCompletion = "90";
+            joinCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
+
+            participant.AddDependsOn(this.WaitCondition);
+            this.AddToDomainMemberSecurityGroup((Instance)participant);
+            participantAsLaunchConfiguration.DomainNetBiosName = this.DomainInfo.DomainNetBiosName;
+            participantAsLaunchConfiguration.DomainDnsName = this.DomainInfo.DomainDnsName;
+            this.AddReplicationSite(participantAsLaunchConfiguration.Subnet);
+            var nodeJson = participantAsLaunchConfiguration.GetChefNodeJsonContent();
+            nodeJson.Add("domain", this.DomainInfo.DomainNetBiosName);
+
+        }
+        public void AddReplicationSite(Subnet subnet)
+        {
+            var currentConfig = this.Instance.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("configureSites");
+            string commandName = $"create-site-{subnet.LogicalId}";
+            if (!currentConfig.Commands.ContainsKey(commandName))
+            {
+                ConfigCommand currentCommand = currentConfig.Commands.AddCommand<Command>(commandName);
+                currentCommand.WaitAfterCompletion = 0.ToString();
+                currentCommand.Command = new PowershellFnJoin("-Command \"New-ADReplicationSite",
+                    new ReferenceProperty(subnet),
+                    "\"");
+
+                currentCommand = currentConfig.Commands.AddCommand<Command>($"create-subnet-{subnet.LogicalId}");
+                currentCommand.WaitAfterCompletion = 0.ToString();
+                currentCommand.Command = new PowershellFnJoin($"-Command New-ADReplicationSubnet -Name {subnet.CidrBlock} -Site ",
+                    new ReferenceProperty(subnet));
+            }
+        }
+
+        public void AddToDomainMemberSecurityGroup(Instance domainMember)
+        {
+            //az1Subnet
+            DomainMemberSecurityGroup.AddIngress(domainMember.Subnet as ICidrBlock,
+                Protocol.Tcp | Protocol.Udp, Ports.DnsQuery);
+            DomainMemberSecurityGroup.AddIngress(domainMember.Subnet,
+                Protocol.Tcp | Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
+            //DMZSubnet
+            // this is questionable overkill
+            DomainMemberSecurityGroup.AddIngress(domainMember.Subnet as ICidrBlock, Protocol.Tcp,
+                Ports.RemoteDesktopProtocol);
+            DomainMemberSecurityGroup.AddIngress(domainMember.Subnet as ICidrBlock, Protocol.Tcp,
+                Ports.RemoteDesktopProtocol);
+
+            domainMember.AddSecurityGroup(DomainMemberSecurityGroup);
         }
     }
 }

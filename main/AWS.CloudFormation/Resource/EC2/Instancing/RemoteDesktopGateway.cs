@@ -66,7 +66,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         {
             base.OnAddedToDomain(domainName);
 
-            var domainParts = this.DomainDnsName.Default.ToString().Split('.');
+            var domainParts = this.DomainDnsName.Split('.');
             var tldDomain = $"{domainParts[domainParts.Length - 2]}.{domainParts[domainParts.Length - 1]}.";
 
 
@@ -75,7 +75,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 this.Template, 
                 this.LogicalId + "Record",
                 tldDomain,
-                $"{this.LogicalId}.{this.DomainDnsName.Default}.",
+                $"{this.LogicalId}.{this.DomainDnsName}.",
                 RecordSet.RecordSetTypeEnum.A);
             routing.AddResourceRecord(new ReferenceProperty(this.ElasticIp));
 

@@ -129,7 +129,7 @@ namespace AWS.CloudFormation.Test
             var domainInfo = new DomainController.DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
 
             var instanceDomainController = new DomainController(template, NetBiosNameDomainController1, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnetDomainController1, domainInfo);
-            DomainControllerPackage dcPackage = new DomainControllerPackage(domainInfo);
+            DomainControllerPackage dcPackage = new DomainControllerPackage(domainInfo, subnetDomainController1);
             instanceDomainController.Packages.Add(dcPackage);
 
             FnGetAtt dc1PrivateIp = new FnGetAtt(instanceDomainController, "PrivateIp");
@@ -145,12 +145,12 @@ namespace AWS.CloudFormation.Test
 
 
             var instanceRdp = new RemoteDesktopGateway(template, "rdp", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, subnetDmz1);
-            instanceDomainController.AddToDomain(instanceRdp, TimeoutMax);
+            dcPackage.Participate(instanceRdp);
 
-            var instanceTfsSqlServer = AddSql(template, "sql4tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, instanceDomainController, sqlServer4TfsSecurityGroup);
+            var instanceTfsSqlServer = AddSql(template, "sql4tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
             var sqlPackage = instanceTfsSqlServer.Packages.OfType<SqlServerExpress>().Single();
 
-            var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, sqlPackage.WaitCondition, instanceDomainController, tfsServerSecurityGroup);
+            var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, sqlPackage.WaitCondition, dcPackage, tfsServerSecurityGroup);
             var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
 
 
@@ -206,17 +206,17 @@ namespace AWS.CloudFormation.Test
             //////the below is a remote desktop gateway server that can
             ////// be uncommented to debug domain setup problems
             var instanceRdp2 = new RemoteDesktopGateway(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
-            instanceDomainController.AddToDomainMemberSecurityGroup(instanceRdp2);
+            dcPackage.AddToDomainMemberSecurityGroup(instanceRdp2);
 
 
             return template;
         }
 
-        private static LaunchConfiguration AddSql(Template template, string instanceName, InstanceTypes instanceSize, Subnet subnet, DomainController domainController, SecurityGroup sqlServerSecurityGroup)
+        private static LaunchConfiguration AddSql(Template template, string instanceName, InstanceTypes instanceSize, Subnet subnet, DomainControllerPackage domainControllerPackage, SecurityGroup sqlServerSecurityGroup)
         {
             var sqlServer = new WindowsInstance(template, instanceName, instanceSize, UsEast1AWindows2012R2Ami, subnet, true);
 
-            domainController.AddToDomain(sqlServer, TimeoutMax);
+            domainControllerPackage.Participate(sqlServer);
             var sqlServerPackage = new SqlServerExpress(BucketNameSoftware);
             sqlServer.Packages.Add(sqlServerPackage);
             sqlServer.AddSecurityGroup(sqlServerSecurityGroup);
@@ -519,9 +519,10 @@ namespace AWS.CloudFormation.Test
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template,"DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A,true);
             var dc1 = AddDomainController(template, DMZSubnet);
+            var dcPackage = dc1.Packages.First() as DomainControllerPackage;
             dc1.AddElasticIp();
             dc1.AddSecurityGroup(rdp);
-            WindowsInstance w = AddBuildServer(template, InstanceTypes.T2Nano,  DMZSubnet, null, null, dc1, rdp,null);
+            WindowsInstance w = AddBuildServer(template, InstanceTypes.T2Nano,  DMZSubnet, null, null, dcPackage, rdp,null);
             w.AddElasticIp();
 
             CreateTestStack(template, this.TestContext);
@@ -722,7 +723,7 @@ namespace AWS.CloudFormation.Test
             Subnet subnet, 
             WindowsInstance tfsServer,
             WaitCondition tfsServerComplete, 
-            DomainController domainController, 
+            DomainControllerPackage domainControllerPackage, 
             SecurityGroup buildServerSecurityGroup, 
             params ResourceBase[] dependsOn)
         {
@@ -750,7 +751,7 @@ namespace AWS.CloudFormation.Test
             domainAdminUserInfoNode.Add("name", domainInfo.DomainNetBiosName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             buildServer.AddSecurityGroup(buildServerSecurityGroup);
-            domainController.AddToDomain(buildServer, TimeoutMax);
+            domainControllerPackage.Participate(buildServer);
             //var waitConditionBuildServerAvailable = buildServer.AddFinalizer("waitConditionBuildServerAvailable",TimeoutMax);
 
             AutoScalingGroup launchGroup = new AutoScalingGroup(template, "BuildServerAutoScalingGroup");
@@ -766,7 +767,7 @@ namespace AWS.CloudFormation.Test
         private static WindowsInstance AddWorkstation(  Template template, 
                                                         string name, 
                                                         Subnet subnet, 
-                                                        DomainController instanceDomainController, 
+                                                        DomainControllerPackage instanceDomainControllerPackage, 
                                                         SecurityGroup workstationSecurityGroup, 
                                                         bool rename)
         {
@@ -784,9 +785,9 @@ namespace AWS.CloudFormation.Test
 
             //var waitConditionWorkstationAvailable = workstation.AddFinalizer("waitConditionWorkstationAvailable",TimeoutMax);
 
-            if (instanceDomainController != null)
+            if (instanceDomainControllerPackage != null)
             {
-                instanceDomainController.AddToDomain(workstation, TimeoutMax);
+                instanceDomainControllerPackage.Participate(workstation);
             }
 
             return workstation;
@@ -796,7 +797,7 @@ namespace AWS.CloudFormation.Test
             InstanceTypes instanceSize, 
             Subnet privateSubnet1, 
             WaitCondition sqlServer4Tfs, 
-            DomainController dc1, 
+            DomainControllerPackage dc1, 
             SecurityGroup tfsServerSecurityGroup)
         {
             var tfsServer = new WindowsInstance(    template, 
@@ -818,7 +819,7 @@ namespace AWS.CloudFormation.Test
             tfsServer.AddSecurityGroup(tfsServerSecurityGroup);
             var packageTfsApplicationTier = new TeamFoundationServerApplicationTier(BucketNameSoftware);
             tfsServer.Packages.Add(packageTfsApplicationTier);
-            dc1.AddToDomain(tfsServer, TimeoutMax);
+            dc1.Participate(tfsServer);
             return tfsServer;
         }
 

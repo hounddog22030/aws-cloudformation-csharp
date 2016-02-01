@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Stack;
 using AWS.CloudFormation.Resource.AutoScaling;
@@ -26,6 +27,11 @@ namespace AWS.CloudFormation.Configuration.Packages
     public abstract class PackageBase<T> : IAddToLaunchConfiguration where T : ConfigSet, new()
     {
         public static readonly TimeSpan TimeoutMax = new TimeSpan(12, 0, 0);
+
+        public virtual void Participate(ResourceBase participant)
+        {
+            throw new NotSupportedException();
+        }
 
         protected PackageBase()
         {

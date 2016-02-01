@@ -82,11 +82,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         }
 
 
-        [JsonIgnore]
-        public ParameterBase DomainDnsName { get; protected internal set; }
-        [JsonIgnore]
-        public ParameterBase DomainNetBiosName { get; protected internal set; }
-
 
         private void Rename()
         {

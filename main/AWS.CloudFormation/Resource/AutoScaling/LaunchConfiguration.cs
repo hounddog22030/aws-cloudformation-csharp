@@ -13,6 +13,7 @@ using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
+using AWS.CloudFormation.Resource.Wait;
 using AWS.CloudFormation.Stack;
 using OperatingSystem = AWS.CloudFormation.Resource.EC2.Instancing.OperatingSystem;
 using Newtonsoft.Json;
@@ -52,6 +53,17 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             ShouldEnableHup = operatingSystem==OperatingSystem.Windows;
             this.EnableHup();
             SetUserData();
+        }
+
+        [JsonIgnore]
+        public string DomainDnsName { get; internal set; }
+        [JsonIgnore]
+        public string DomainNetBiosName { get; internal set; }
+
+
+        public void AddDependsOn(WaitCondition waitConditionHandle)
+        {
+            this.DependsOn.Add(waitConditionHandle.LogicalId);
         }
 
         private void Packages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
