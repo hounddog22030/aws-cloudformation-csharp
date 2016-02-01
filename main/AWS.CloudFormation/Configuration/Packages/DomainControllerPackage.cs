@@ -41,13 +41,13 @@ namespace AWS.CloudFormation.Configuration.Packages
                 "https://s3.amazonaws.com/quickstart-reference/microsoft/activedirectory/latest/scripts/ConvertTo-EnterpriseAdmin.ps1";
 
             var currentConfig = this.Instance.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("installADDS");
-            var currentCommand = currentConfig.Commands.AddCommand<Command>("InstallPrequisites");
+            var currentCommand = currentConfig.Commands.AddCommand<Command>("01-InstallPrequisites");
 
             currentCommand.WaitAfterCompletion = 0.ToString();
             currentCommand.Command = new PowershellFnJoin("-Command \"Install-WindowsFeature AD-Domain-Services, rsat-adds -IncludeAllSubFeature\"");
             
 
-            currentCommand = currentConfig.Commands.AddCommand<Command>("InstallActiveDirectoryDomainServices");
+            currentCommand = currentConfig.Commands.AddCommand<Command>("02-InstallActiveDirectoryDomainServices");
             currentCommand.WaitAfterCompletion = new TimeSpan(0, 4, 0).TotalSeconds.ToString(CultureInfo.InvariantCulture);
             currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
             currentCommand.Command = new PowershellFnJoin("-Command \"Install-ADDSForest -DomainName",
@@ -65,7 +65,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             //currentCommand.Command = new PowershellFnJoin("-Command \"Restart-Service NetLogon -EA 0\"");
             //currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
-            currentCommand = currentConfig.Commands.AddCommand<Command>("CreateAdminUser");
+            currentCommand = currentConfig.Commands.AddCommand<Command>("04-CreateAdminUser");
             currentCommand.WaitAfterCompletion = "0";
             currentCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None, "\"New-ADUser -Name ",
                 this.DomainInfo.AdminUserName,
@@ -79,14 +79,14 @@ namespace AWS.CloudFormation.Configuration.Packages
             currentCommand.Test =
                 $"if \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
-            currentCommand = currentConfig.Commands.AddCommand<Command>("UpdateAdminUser");
+            currentCommand = currentConfig.Commands.AddCommand<Command>("05-UpdateAdminUser");
             currentCommand.WaitAfterCompletion = "0";
             currentCommand.Command = new PowershellFnJoin("-Command \"c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1 -Members",
                 this.DomainInfo.AdminUserName,
                 "\"");
             currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
-            currentCommand = currentConfig.Commands.AddCommand<Command>("RenameDefaultSite");
+            currentCommand = currentConfig.Commands.AddCommand<Command>("06-RenameDefaultSite");
             currentCommand.WaitAfterCompletion = 0.ToString();
             currentCommand.Command =
                 new PowershellFnJoin(

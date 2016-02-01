@@ -85,7 +85,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         private void Rename()
         {
-            if (OperatingSystem == OperatingSystem.Windows)
+            if (OperatingSystem == OperatingSystem.Windows && false)
             {
                 var renameConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetRenameConfig);
                 var renameCommandConfig = renameConfig.Commands.AddCommand<Command>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
