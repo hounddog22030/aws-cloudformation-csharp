@@ -79,14 +79,20 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         private Config GetChefConfig(string s3bucketName, string cookbookFileName)
         {
+            var appSettingsReader = new AppSettingsReader();
+            string accessKeyString = (string)appSettingsReader.GetValue("S3AccessKey", typeof(string));
+            string secretKeyString = (string)appSettingsReader.GetValue("S3SecretKey", typeof(string));
+
             if (!this.Metadata.Authentication.ContainsKey("S3AccessCreds"))
             {
-                var appSettingsReader = new AppSettingsReader();
-                string accessKeyString = (string)appSettingsReader.GetValue("S3AccessKey", typeof(string));
-                string secretKeyString = (string)appSettingsReader.GetValue("S3SecretKey", typeof(string));
                 var auth = this.Metadata.Authentication.Add("S3AccessCreds", new S3Authentication(accessKeyString, secretKeyString, new string[] { s3bucketName }));
                 auth.Type = "S3";
-                var chefConfigContent = GetChefNodeJsonContent();
+            }
+
+            var chefConfigContent = GetChefNodeJsonContent();
+
+            if (chefConfigContent.ContainsKey("s3_file"))
+            {
                 var s3FileNode = chefConfigContent.Add("s3_file");
                 s3FileNode.Add("key", accessKeyString);
                 s3FileNode.Add("secret", secretKeyString);

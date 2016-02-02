@@ -37,7 +37,7 @@ namespace AWS.CloudFormation.Test
         public const string DomainDnsName = "yadayada.software";
 
         private const string DomainAdminUser = "johnny";
-        private const string UsEast1AWindows2012R2Ami = "ami-e4034a8e";
+        private const string UsEast1AWindows2012R2Ami = "ami-9a0558f0";
         private const string NetBiosNameDomainController1 = "dc1";
         private const string BucketNameSoftware = "gtbb";
         private static readonly TimeSpan Timeout3Hours = new TimeSpan(3, 0, 0);
@@ -102,7 +102,6 @@ namespace AWS.CloudFormation.Test
 
             var subnetDatabase4BuildServer2 = new Subnet(template, "subnetDatabase4BuildServer2", vpc, CidrDatabase4BuildSubnet2, AvailabilityZone.UsEast1E);
             securityGroupDb4Build.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.MySql);
-            securityGroupSqlSever4Build.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.MsSqlServer);
 
             SecurityGroup securityGroupBuildServer = new SecurityGroup(template, "BuildServerSecurityGroup", "Allows build controller to build agent communication", vpc);
             securityGroupBuildServer.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -143,17 +142,17 @@ namespace AWS.CloudFormation.Test
             dhcpOptions.NetbiosNodeType = "2";
 
 
-            var instanceRdp = new Instance(template, $"rdp{version}", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
-            {
-                Subnet = subnetDmz1,
+            //var instanceRdp = new Instance(template, $"rdp{version}", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
+            //{
+            //    Subnet = subnetDmz1,
 
-            };
-            dcPackage.Participate(instanceRdp);
-            instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage(domainInfo));
+            //};
+            //dcPackage.Participate(instanceRdp);
+            //instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage(domainInfo));
 
-            var instanceTfsSqlServer = AddSql(template, "sql4tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage,
-                sqlServer4TfsSecurityGroup);
-            var sqlPackage = instanceTfsSqlServer.Packages.OfType<SqlServerExpress>().Single();
+            //var instanceTfsSqlServer = AddSql(template, "sql4tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage,
+            //    sqlServer4TfsSecurityGroup);
+            //var sqlPackage = instanceTfsSqlServer.Packages.OfType<SqlServerExpress>().Single();
 
             //var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
             //var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
