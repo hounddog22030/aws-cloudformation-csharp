@@ -181,7 +181,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 " -AsPlainText -Force))) ",
                 "-Restart\"",
                 " }");
-            joinCommand.WaitAfterCompletion = 60.ToString();
+            joinCommand.WaitAfterCompletion = "forever";
             joinCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToString().ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
             participant.AddDependsOn(this.WaitCondition);

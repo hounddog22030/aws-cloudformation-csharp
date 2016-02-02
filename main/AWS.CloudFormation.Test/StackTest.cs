@@ -1,25 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
-using System.Threading;
-using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Configuration.Packages;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.AutoScaling;
 using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing;
-using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
-using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
-using AWS.CloudFormation.Resource.RDS;
-using AWS.CloudFormation.Resource.Route53;
 using AWS.CloudFormation.Resource.Wait;
 using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -161,9 +153,9 @@ namespace AWS.CloudFormation.Test
 
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage(domainInfo));
 
-            var instanceTfsSqlServer = AddSql(template, "sql4tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage,
-                sqlServer4TfsSecurityGroup);
-            var sqlPackage = instanceTfsSqlServer.Packages.OfType<SqlServerExpress>().Single();
+            //var instanceTfsSqlServer = AddSql(template, "sql4tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage,
+            //    sqlServer4TfsSecurityGroup);
+            //var sqlPackage = instanceTfsSqlServer.Packages.OfType<SqlServerExpress>().Single();
 
             //var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
             //var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
