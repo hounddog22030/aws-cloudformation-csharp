@@ -54,7 +54,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             {
                 throw new InvalidOperationException($"Name length is limited to {NetBiosMaxLength} characters.");
             }
-            this.DisableFirewall();
         }
 
         public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, bool rename)
@@ -62,13 +61,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         {
         }
 
-        private void DisableFirewall()
-        {
-                var setup = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("setup");
-                var disableFirewallCommand = setup.Commands.AddCommand<Command>("a-disable-win-fw");
-                disableFirewallCommand.WaitAfterCompletion = 0.ToString();
-                disableFirewallCommand.Command = "powershell.exe -Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\"";
-        }
 
         protected internal virtual void OnAddedToDomain(string domainName)
         {

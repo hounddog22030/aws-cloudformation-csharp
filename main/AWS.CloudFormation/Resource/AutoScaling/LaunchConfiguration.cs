@@ -56,13 +56,10 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             KeyName = keyName.Default.ToString();
             UserData = new CloudFormationDictionary(this);
             UserData.Add("Fn::Base64", "");
-            ShouldEnableHup = operatingSystem==OperatingSystem.Windows;
             this.EnableHup();
             SetUserData();
-            if (this.OperatingSystem == OperatingSystem.Windows)
-            {
-                this.AddRename();
-            }
+            this.DisableFirewall();
+            this.AddRename();
         }
 
         private void AddRename()
@@ -70,13 +67,10 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             if (OperatingSystem == OperatingSystem.Windows)
             {
                 var renameConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetRenameConfig);
-                if (!renameConfig.Commands.ContainsKey(DefaultConfigSetRenameConfigRenamePowerShellCommand))
-                {
-                    var renameCommandConfig = renameConfig.Commands.AddCommand<Command>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
-                    renameCommandConfig.Command = new PowershellFnJoin($"\"Rename-Computer -NewName {this.LogicalId.ToUpper()} -Restart\"");
-                    renameCommandConfig.WaitAfterCompletion = "forever";
-                    renameCommandConfig.Test = $"if \"%COMPUTERNAME%\"==\"{this.LogicalId.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
-                }
+                var renameCommandConfig = renameConfig.Commands.AddCommand<Command>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
+                renameCommandConfig.Command = new PowershellFnJoin($"\"Rename-Computer -NewName {this.LogicalId} -Restart\"");
+                renameCommandConfig.WaitAfterCompletion = "forever";
+                renameCommandConfig.Test = $"IF /I \"%COMPUTERNAME%\"==\"{this.LogicalId}\" EXIT /B 1 ELSE EXIT /B 0";
             }
         }
 
@@ -138,13 +132,14 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             return nodeJson.Content;
         }
 
-        protected readonly List<string> _availableDevices;
+        private readonly List<string> _availableDevices;
         internal string GetAvailableDevice()
         {
             var returnValue = _availableDevices.First();
             _availableDevices.Remove(returnValue);
             return returnValue;
         }
+
         [JsonIgnore]
         public bool AssociatePublicIpAddress
         {
@@ -177,11 +172,6 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             temp.Add(new ReferenceProperty(securityGroup));
             this.Properties.SetValue(propertyName, temp.ToArray());
         }
-
-        private string _waitConditionName = null;
-
-        [JsonIgnore]
-        public bool ShouldEnableHup { get; set; }
 
         protected override bool SupportsTags => false;
 
@@ -279,6 +269,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
 
         [JsonIgnore]
         public OperatingSystem OperatingSystem { get; set; }
+
         internal void SetUserData()
         {
             switch (this.OperatingSystem)
@@ -303,7 +294,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         }
         internal void EnableHup()
         {
-            if (this.ShouldEnableHup)
+            if (this.OperatingSystem==OperatingSystem.Windows)
             {
 
                 var setup = Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("setup");
@@ -337,6 +328,17 @@ namespace AWS.CloudFormation.Resource.AutoScaling
                 cfnHup.Add("enabled", true);
                 cfnHup.Add("ensureRunning", true);
                 cfnHup.Add("files", new string[] { "c:\\cfn\\cfn-hup.conf", "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf" });
+            }
+        }
+
+        private void DisableFirewall()
+        {
+            if (OperatingSystem == OperatingSystem.Windows)
+            {
+                var setup = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig("setup");
+                var disableFirewallCommand = setup.Commands.AddCommand<Command>("a-disable-win-fw");
+                disableFirewallCommand.Command = new PowershellFnJoin("-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\"");
+                disableFirewallCommand.WaitAfterCompletion = 0.ToString();
             }
         }
 
