@@ -233,11 +233,11 @@ namespace AWS.CloudFormation.Test
 
         private static LaunchConfiguration AddSql(Template template, string instanceName, InstanceTypes instanceSize, Subnet subnet, DomainControllerPackage domainControllerPackage, SecurityGroup sqlServerSecurityGroup)
         {
-            var sqlServer = new WindowsInstance(template, instanceName, instanceSize, UsEast1AWindows2012R2SqlExpressAmi, subnet, true);
+            var sqlServer = new WindowsInstance(template, instanceName, instanceSize, UsEast1AWindows2012R2Ami, subnet, true);
 
             domainControllerPackage.Participate(sqlServer);
-            //var sqlServerPackage = new SqlServerExpress(BucketNameSoftware);
-            //sqlServer.Packages.Add(sqlServerPackage);
+            var sqlServerPackage = new SqlServerExpress(BucketNameSoftware);
+            sqlServer.Packages.Add(sqlServerPackage);
             sqlServer.AddSecurityGroup(sqlServerSecurityGroup);
             return sqlServer;
         }
