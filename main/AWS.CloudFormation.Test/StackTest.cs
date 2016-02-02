@@ -121,13 +121,16 @@ namespace AWS.CloudFormation.Test
 
             var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
 
+
             var instanceDomainController = new Instance(template, NetBiosNameDomainController1, InstanceTypes.C4Large,
                 UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
             {
                 Subnet = subnetDomainController1,
                 
             };
-            
+
+            instanceDomainController.DependsOn.Add(nat1.LogicalId);
+
             DomainControllerPackage dcPackage = new DomainControllerPackage(domainInfo, subnetDomainController1);
             instanceDomainController.Packages.Add(dcPackage);
 
@@ -153,6 +156,7 @@ namespace AWS.CloudFormation.Test
 
             var instanceTfsSqlServer = AddSql(template, "sql4tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage,
                 sqlServer4TfsSecurityGroup);
+            dcPackage.Participate(instanceTfsSqlServer);
             //var sqlPackage = instanceTfsSqlServer.Packages.OfType<SqlServerExpress>().Single();
 
             //var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
