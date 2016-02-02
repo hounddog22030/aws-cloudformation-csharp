@@ -83,8 +83,8 @@ namespace AWS.CloudFormation.Configuration.Packages
             get { return this.Instance.Metadata.Init.ConfigSets.GetConfigSet<T>(this.ConfigSetName); }
         }
 
-        protected string ConfigSetName => $"{this.GetType().FullName.Replace(".", string.Empty)}";
-        protected string ConfigName => $"{this.GetType().FullName.Replace(".", string.Empty)}";
+        protected string ConfigSetName => $"{this.GetType().Name.Replace(".", string.Empty)}";
+        protected string ConfigName => $"{this.GetType().Name.Replace(".", string.Empty)}";
 
         protected Config Config
         {
@@ -99,7 +99,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 if (_waitCondition == null)
                 {
                     _waitCondition = new WaitCondition(this.Instance.Template,
-                        $"waitCondition{this.Instance.LogicalId}{this.GetType().FullName}".Replace(".", string.Empty)
+                        $"waitCondition{this.Instance.LogicalId}{this.GetType().Name}".Replace(".", string.Empty)
                             .Replace(":", string.Empty), TimeoutMax);
 
                     this.Config.Commands.AddCommand<Command>(_waitCondition);
