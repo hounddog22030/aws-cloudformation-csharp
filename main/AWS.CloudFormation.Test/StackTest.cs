@@ -977,8 +977,8 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateDevelopmentTest()
         {
-            var stackName = "gammayadayada-software";
-            Stack.Stack.UpdateStack(stackName, GetTemplateFullStack("gamma"));
+            var stackName = "alphayadayada-software";
+            Stack.Stack.UpdateStack(stackName, GetTemplateFullStack("alpha"));
         }
 
 
