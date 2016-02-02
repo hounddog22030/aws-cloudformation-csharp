@@ -38,6 +38,7 @@ namespace AWS.CloudFormation.Test
 
         private const string DomainAdminUser = "johnny";
         private const string UsEast1AWindows2012R2Ami = "ami-9a0558f0";
+        private const string UsEast1AWindows2012R2SqlExpressAmi = "ami-a3005dc9";
         private const string NetBiosNameDomainController1 = "dc1";
         private const string BucketNameSoftware = "gtbb";
         private static readonly TimeSpan Timeout3Hours = new TimeSpan(3, 0, 0);
@@ -142,16 +143,16 @@ namespace AWS.CloudFormation.Test
             dhcpOptions.NetbiosNodeType = "2";
 
 
-            //var instanceRdp = new Instance(template, $"rdp{version}", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
-            //{
-            //    Subnet = subnetDmz1,
+            var instanceRdp = new Instance(template, $"rdp{version}", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
+            {
+                Subnet = subnetDmz1,
 
-            //};
-            //dcPackage.Participate(instanceRdp);
-            //instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage(domainInfo));
+            };
+            dcPackage.Participate(instanceRdp);
+            instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage(domainInfo));
 
-            //var instanceTfsSqlServer = AddSql(template, "sql4tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage,
-            //    sqlServer4TfsSecurityGroup);
+            var instanceTfsSqlServer = AddSql(template, "sql4tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage,
+                sqlServer4TfsSecurityGroup);
             //var sqlPackage = instanceTfsSqlServer.Packages.OfType<SqlServerExpress>().Single();
 
             //var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
@@ -229,11 +230,11 @@ namespace AWS.CloudFormation.Test
 
         private static LaunchConfiguration AddSql(Template template, string instanceName, InstanceTypes instanceSize, Subnet subnet, DomainControllerPackage domainControllerPackage, SecurityGroup sqlServerSecurityGroup)
         {
-            var sqlServer = new WindowsInstance(template, instanceName, instanceSize, UsEast1AWindows2012R2Ami, subnet, true);
+            var sqlServer = new WindowsInstance(template, instanceName, instanceSize, UsEast1AWindows2012R2SqlExpressAmi, subnet, true);
 
             domainControllerPackage.Participate(sqlServer);
-            var sqlServerPackage = new SqlServerExpress(BucketNameSoftware);
-            sqlServer.Packages.Add(sqlServerPackage);
+            //var sqlServerPackage = new SqlServerExpress(BucketNameSoftware);
+            //sqlServer.Packages.Add(sqlServerPackage);
             sqlServer.AddSecurityGroup(sqlServerSecurityGroup);
             return sqlServer;
         }
