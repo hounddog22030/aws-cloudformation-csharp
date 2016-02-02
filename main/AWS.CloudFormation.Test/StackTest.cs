@@ -165,74 +165,74 @@ namespace AWS.CloudFormation.Test
                 sqlServer4TfsSecurityGroup);
             var sqlPackage = instanceTfsSqlServer.Packages.OfType<SqlServerExpress>().Single();
 
-            var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
-            var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
+            //var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
+            //var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
 
 
-            DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup(template, "mySqlSubnetGroupForDatabaseForBuild", "Second subnet for database for build server");
-            mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
-            mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
-            DbInstance mySql4Build = null;
-            mySql4Build = new DbInstance(
-                template, 
-                "sql4build", 
-                DbInstanceClassEnum.DbT2Micro, 
-                EngineType.MySql, 
-                LicenseModelType.GeneralPublicLicense, 
-                "masterusername", 
-                "Hy77tttt.", 
-                20, 
-                mySqlSubnetGroupForDatabaseForBuild, 
-                securityGroupDb4Build,
-                Ebs.VolumeTypes.GeneralPurpose);
+            //DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup(template, "mySqlSubnetGroupForDatabaseForBuild", "Second subnet for database for build server");
+            //mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
+            //mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
+            //DbInstance mySql4Build = null;
+            //mySql4Build = new DbInstance(
+            //    template, 
+            //    "sql4build", 
+            //    DbInstanceClassEnum.DbT2Micro, 
+            //    EngineType.MySql, 
+            //    LicenseModelType.GeneralPublicLicense, 
+            //    "masterusername", 
+            //    "Hy77tttt.", 
+            //    20, 
+            //    mySqlSubnetGroupForDatabaseForBuild, 
+            //    securityGroupDb4Build,
+            //    Ebs.VolumeTypes.GeneralPurpose);
 
-            DbSubnetGroup subnetGroupSqlExpress4Build = new DbSubnetGroup(template, "subnetGroupSqlExpress4Build", "DbSubnet Group for SQL Server database for build server");
-            subnetGroupSqlExpress4Build.AddSubnet(subnetBuildServer);
-            subnetGroupSqlExpress4Build.AddSubnet(subnetDatabase4BuildServer2);
+            //DbSubnetGroup subnetGroupSqlExpress4Build = new DbSubnetGroup(template, "subnetGroupSqlExpress4Build", "DbSubnet Group for SQL Server database for build server");
+            //subnetGroupSqlExpress4Build.AddSubnet(subnetBuildServer);
+            //subnetGroupSqlExpress4Build.AddSubnet(subnetDatabase4BuildServer2);
 
-            DbInstance rdsSqlExpress4Build = null;
-            rdsSqlExpress4Build = new DbInstance(template,
-                "sqlserver4build",
-                DbInstanceClassEnum.DbT2Micro,
-                EngineType.SqlServerExpress,
-                LicenseModelType.LicenseIncluded,
-                "sqlserveruser", "Hy77tttt.", 20, subnetGroupSqlExpress4Build, securityGroupSqlSever4Build,
-                Ebs.VolumeTypes.GeneralPurpose);
+            //DbInstance rdsSqlExpress4Build = null;
+            //rdsSqlExpress4Build = new DbInstance(template,
+            //    "sqlserver4build",
+            //    DbInstanceClassEnum.DbT2Micro,
+            //    EngineType.SqlServerExpress,
+            //    LicenseModelType.LicenseIncluded,
+            //    "sqlserveruser", "Hy77tttt.", 20, subnetGroupSqlExpress4Build, securityGroupSqlSever4Build,
+            //    Ebs.VolumeTypes.GeneralPurpose);
 
-            //string privateDomain = $"{StackTest.DomainNetBiosName}.yadayada.software.private.";
+            ////string privateDomain = $"{StackTest.DomainNetBiosName}.yadayada.software.private.";
 
-            //var target = RecordSet.AddByHostedZoneName(template,
-            //    $"recordset4{rdsSqlExpress4Build.LogicalId}".Replace('.', '-'),
-            //    privateDomain,
-            //    $"sql4tfs.{privateDomain}",
-            //    RecordSet.RecordSetTypeEnum.CNAME);
-            //target.TTL = "60";
-            //target.AddResourceRecord(new FnGetAtt(rdsSqlExpress4Build, "Endpoint.Address"));
+            ////var target = RecordSet.AddByHostedZoneName(template,
+            ////    $"recordset4{rdsSqlExpress4Build.LogicalId}".Replace('.', '-'),
+            ////    privateDomain,
+            ////    $"sql4tfs.{privateDomain}",
+            ////    RecordSet.RecordSetTypeEnum.CNAME);
+            ////target.TTL = "60";
+            ////target.AddResourceRecord(new FnGetAtt(rdsSqlExpress4Build, "Endpoint.Address"));
 
-            var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, mySql4Build, rdsSqlExpress4Build);
+            //var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, mySql4Build, rdsSqlExpress4Build);
 
-            // uses 33gb
-            //var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
-            //var workstationChrome = new Chrome(workstation);
-            //var workstationReSharper = new ReSharper(workstation);
-            //workstation.AddFinalizer(TimeoutMax);
+            //// uses 33gb
+            ////var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
+            ////var workstationChrome = new Chrome(workstation);
+            ////var workstationReSharper = new ReSharper(workstation);
+            ////workstation.AddFinalizer(TimeoutMax);
 
 
-            //SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
-            //elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
-            //tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            ////SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
+            ////elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            ////tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
-            //////////LoadBalancer elb = new LoadBalancer(template, "elb1");
-            //////////elb.AddInstance(tfsServer);
-            //////////elb.AddListener("8080", "8080", "http");
-            //////////elb.AddSubnet(DMZSubnet);
-            //////////elb.AddSecurityGroup(elbSecurityGroup);
-            //////////template.AddResource(elb);
+            ////////////LoadBalancer elb = new LoadBalancer(template, "elb1");
+            ////////////elb.AddInstance(tfsServer);
+            ////////////elb.AddListener("8080", "8080", "http");
+            ////////////elb.AddSubnet(DMZSubnet);
+            ////////////elb.AddSecurityGroup(elbSecurityGroup);
+            ////////////template.AddResource(elb);
 
-            //////the below is a remote desktop gateway server that can
-            ////// be uncommented to debug domain setup problems
-            var instanceRdp2 = new RemoteDesktopGateway(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
-            dcPackage.AddToDomainMemberSecurityGroup(instanceRdp2);
+            ////////the below is a remote desktop gateway server that can
+            //////// be uncommented to debug domain setup problems
+            //var instanceRdp2 = new RemoteDesktopGateway(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
+            //dcPackage.AddToDomainMemberSecurityGroup(instanceRdp2);
 
 
             return template;

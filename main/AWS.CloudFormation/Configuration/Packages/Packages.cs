@@ -196,7 +196,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             this.ChefConfig.Sources.Add($"c:/chef/{CookbookName}/",
                 $"https://{BucketName}.s3.amazonaws.com/{CookbookName}.tar.gz");
 
-            chefCommandConfig.Command = "C:/opscode/chef/bin/chef-client.bat -z -o {RecipeList} -c c:/chef/{CookbookName}/client.rb";
+            chefCommandConfig.Command = $"C:/opscode/chef/bin/chef-client.bat -z -o {RecipeList} -c c:/chef/{CookbookName}/client.rb";
         }
     }
 
