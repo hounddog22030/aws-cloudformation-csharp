@@ -91,7 +91,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             if (this.Rename && OperatingSystem == OperatingSystem.Windows)
             {
                 var renameConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetRenameConfig);
-                if (renameConfig.Commands.ContainsKey(DefaultConfigSetRenameConfigRenamePowerShellCommand))
+                if (!renameConfig.Commands.ContainsKey(DefaultConfigSetRenameConfigRenamePowerShellCommand))
                 {
                     var renameCommandConfig = renameConfig.Commands.AddCommand<Command>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
                     renameCommandConfig.Command = new PowershellFnJoin($"\"Rename-Computer -NewName {this.LogicalId.ToUpper()} -Restart\"");
