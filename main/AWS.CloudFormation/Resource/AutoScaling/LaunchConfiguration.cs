@@ -25,6 +25,12 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         internal const string ParameterNameDefaultKeyPairKeyName = "DefaultKeyPairKeyName";
         public const string ChefNodeJsonConfigSetName = "ChefNodeJsonConfigSetName";
         public const string ChefNodeJsonConfigName = "ChefNodeJsonConfigName";
+        public const string DefaultConfigSetName = "config";
+        public const string DefaultConfigSetRenameConfig = "rename";
+        public const string DefaultConfigSetJoinConfig = "join";
+        public const string DefaultConfigSetRenameConfigRenamePowerShellCommand = "1-execute-powershell-script-RenameComputer";
+        public const string DefaultConfigSetRenameConfigJoinDomain = "b-join-domain";
+        public const int NetBiosMaxLength = 15;
 
 
         public LaunchConfiguration(Template template,
@@ -53,7 +59,28 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             ShouldEnableHup = operatingSystem==OperatingSystem.Windows;
             this.EnableHup();
             SetUserData();
+            if (this.OperatingSystem == OperatingSystem.Windows)
+            {
+                this.AddRename();
+            }
         }
+
+        private void AddRename()
+        {
+            if (OperatingSystem == OperatingSystem.Windows)
+            {
+                var renameConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetRenameConfig);
+                if (renameConfig.Commands.ContainsKey(DefaultConfigSetRenameConfigRenamePowerShellCommand))
+                {
+                    var renameCommandConfig = renameConfig.Commands.AddCommand<Command>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
+                    renameCommandConfig.Command = new PowershellFnJoin($"\"Rename-Computer -NewName {this.LogicalId.ToUpper()} -Restart\"");
+                    renameCommandConfig.WaitAfterCompletion = "forever";
+                    renameCommandConfig.Test =
+                        $"if \"%COMPUTERNAME%\"==\"{this.LogicalId.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
+                }
+            }
+        }
+
 
         [JsonIgnore]
         public string DomainDnsName { get; internal set; }

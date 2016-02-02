@@ -143,15 +143,13 @@ namespace AWS.CloudFormation.Test
             dhcpOptions.NetbiosNodeType = "2";
 
 
-            var instanceRdp = new Instance(template, $"rdp{version}", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
-            {
-                Subnet = subnetDmz1
-            };
-
-
-            dcPackage.Participate(instanceRdp);
-
-            instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage(domainInfo));
+            //var instanceRdp = new Instance(template, $"rdp{version}", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
+            //{
+            //    Subnet = subnetDmz1,
+                
+            //};
+            //dcPackage.Participate(instanceRdp);
+            //instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage(domainInfo));
 
             var instanceTfsSqlServer = AddSql(template, "sql4tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage,
                 sqlServer4TfsSecurityGroup);
