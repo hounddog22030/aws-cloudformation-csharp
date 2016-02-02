@@ -188,7 +188,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             var chefDict = new CloudFormationDictionary();
             chefDict.Add("chef","https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");)
 
-            this.ChefConfig.Packages.AddPackage("msi", chefDict);
+            this.ChefConfig.Add("msi", chefDict);
             var chefCommandConfig = this.ChefConfig.Commands.AddCommand<Command>(RecipeList.Replace(':', '-'));
 
             var clientRbFileKey = $"c:/chef/{CookbookName}/client.rb";
