@@ -48,6 +48,10 @@ namespace AWS.CloudFormation.Configuration.Packages
         {
             SnapshotId = snapshotId;
         }
+        protected PackageBase(Uri msi, string snapshotId) : this(msi)
+        {
+             SnapshotId = snapshotId;
+        }
 
         public LaunchConfiguration Instance { get; internal set; }
 
@@ -134,7 +138,7 @@ namespace AWS.CloudFormation.Configuration.Packages
     {
 
         public PackageChef(string snapshotId, string bucketName, string cookbookName, string recipeName)
-            : base(snapshotId)
+            : base(new Uri("https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi"), snapshotId)
         {
             CookbookName = cookbookName;
             BucketName = bucketName;
@@ -185,10 +189,10 @@ namespace AWS.CloudFormation.Configuration.Packages
                 s3FileNode.Add("secret", secretKeyString);
             }
 
-            var chefDict = new CloudFormationDictionary();
-            chefDict.Add("chef","https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");
+            //var chefDict = new CloudFormationDictionary();
+            //chefDict.Add("chef","https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");
 
-            this.ChefConfig.Add("msi", chefDict);
+            //this.ChefConfig.Add("msi", chefDict);
             var chefCommandConfig = this.ChefConfig.Commands.AddCommand<Command>(RecipeList.Replace(':', '-'));
 
             var clientRbFileKey = $"c:/chef/{CookbookName}/client.rb";
