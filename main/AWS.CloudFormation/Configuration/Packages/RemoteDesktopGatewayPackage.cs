@@ -61,14 +61,14 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             installRdsCommand = installRdsConfig.Commands.AddCommand<Command>("b-configure-rdgw");
             installRdsCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None,
-                                            "-ExecutionPolicy RemoteSigned",
-                                            "C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN ",
+                                            " -ExecutionPolicy RemoteSigned ",
+                                            " C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN ",
                                             this.Instance.LogicalId,
                                             ".",
                                             this.DomainInfo.DomainDnsName,
-                                            "-DomainNetBiosName",
+                                            " -DomainNetBiosName ",
                                             this.DomainInfo.DomainNetBiosName,
-                                            "-GroupName 'domain admins'");
+                                            " -GroupName 'domain admins'");
         }
         private void AddSecurityGroup()
         {

@@ -156,7 +156,6 @@ namespace AWS.CloudFormation.Test
 
             var instanceTfsSqlServer = AddSql(template, "sql4tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage,
                 sqlServer4TfsSecurityGroup);
-            dcPackage.Participate(instanceTfsSqlServer);
             //var sqlPackage = instanceTfsSqlServer.Packages.OfType<SqlServerExpress>().Single();
 
             //var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
