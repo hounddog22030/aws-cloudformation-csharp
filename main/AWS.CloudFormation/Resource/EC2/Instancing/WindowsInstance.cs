@@ -16,12 +16,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 {
     public class WindowsInstance : Instance
     {
-        public const string DefaultConfigSetName = "config";
-        public const string DefaultConfigSetRenameConfig = "rename";
-        public const string DefaultConfigSetJoinConfig = "join";
-        public const string DefaultConfigSetRenameConfigRenamePowerShellCommand = "1-execute-powershell-script-RenameComputer";
-        public const string DefaultConfigSetRenameConfigJoinDomain = "b-join-domain";
-        public const int NetBiosMaxLength = 15;
 
 
         
@@ -60,7 +54,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             {
                 throw new InvalidOperationException($"Name length is limited to {NetBiosMaxLength} characters.");
             }
-            Rename = rename;
             this.DisableFirewall();
         }
 
@@ -75,31 +68,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 var disableFirewallCommand = setup.Commands.AddCommand<Command>("a-disable-win-fw");
                 disableFirewallCommand.WaitAfterCompletion = 0.ToString();
                 disableFirewallCommand.Command = "powershell.exe -Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\"";
-        }
-
-        private bool _rename;
-        [JsonIgnore] public bool Rename {
-            get { return _rename; }
-            set
-            {
-                _rename = value;
-                this.AddRename();
-            }
-        }
-        private void AddRename()
-        {
-            if (this.Rename && OperatingSystem == OperatingSystem.Windows)
-            {
-                var renameConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetRenameConfig);
-                if (!renameConfig.Commands.ContainsKey(DefaultConfigSetRenameConfigRenamePowerShellCommand))
-                {
-                    var renameCommandConfig = renameConfig.Commands.AddCommand<Command>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
-                    renameCommandConfig.Command = new PowershellFnJoin($"\"Rename-Computer -NewName {this.LogicalId.ToUpper()} -Restart\"");
-                    renameCommandConfig.WaitAfterCompletion = "forever";
-                    renameCommandConfig.Test =
-                        $"if \"%COMPUTERNAME%\"==\"{this.LogicalId.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
-                }
-            }
         }
 
         protected internal virtual void OnAddedToDomain(string domainName)
