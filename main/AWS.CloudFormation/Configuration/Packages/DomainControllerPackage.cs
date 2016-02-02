@@ -50,6 +50,8 @@ namespace AWS.CloudFormation.Configuration.Packages
             currentCommand = currentConfig.Commands.AddCommand<Command>("02-InstallActiveDirectoryDomainServices");
             currentCommand.WaitAfterCompletion = new TimeSpan(0, 4, 0).TotalSeconds.ToString(CultureInfo.InvariantCulture);
             currentCommand.Test = $"IF /I \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName}\" EXIT /B 1 ELSE EXIT /B 0";
+
+
             currentCommand.Command = new PowershellFnJoin("-Command \"Install-ADDSForest -DomainName",
                 this.DomainInfo.DomainDnsName,
                 "-SafeModeAdministratorPassword (convertto-securestring jhkjhsdf338! -asplaintext -force) -DomainMode Win2012 -DomainNetbiosName",
@@ -182,7 +184,8 @@ namespace AWS.CloudFormation.Configuration.Packages
                 "-Restart\"",
                 " }");
             joinCommand.WaitAfterCompletion = "forever";
-            joinCommand.Test = $"IF /I \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName}\" EXIT /B 1 ELSE EXIT /B 0";
+
+            joinCommand.Test = $"IF \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToUpperInvariant()}\" EXIT /B 1 ELSE EXIT /B 0";
 
             participant.AddDependsOn(this.WaitCondition);
             this.AddToDomainMemberSecurityGroup((Instance)participant);
