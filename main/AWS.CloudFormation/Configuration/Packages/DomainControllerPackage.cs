@@ -217,9 +217,12 @@ namespace AWS.CloudFormation.Configuration.Packages
             if (!currentConfig.Commands.ContainsKey(commandName))
             {
                 const string checkAdReplicationSite = "c:/cfn/scripts/check-ADReplicationSite-exists.ps1";
+                const string checkAdReplicationSubnet = "c:/cfn/scripts/check-ADReplicationSubnet-exists.ps1";
 
-                var fileCheckAdReplicationSite =  currentConfig.Files.GetFile(checkAdReplicationSite);
+                var fileCheckAdReplicationSite = currentConfig.Files.GetFile(checkAdReplicationSite);
                 fileCheckAdReplicationSite.Source = "https://s3.amazonaws.com/gtbb/check-ADReplicationSite-exists.ps1";
+                fileCheckAdReplicationSite = currentConfig.Files.GetFile(checkAdReplicationSubnet);
+                fileCheckAdReplicationSite.Source = "https://s3.amazonaws.com/gtbb/check-ADReplicationSubnet-exists.ps1";
 
 
                 ConfigCommand currentCommand = currentConfig.Commands.AddCommand<Command>(commandName);
@@ -237,6 +240,9 @@ namespace AWS.CloudFormation.Configuration.Packages
                 currentCommand.WaitAfterCompletion = 0.ToString();
                 currentCommand.Command = new PowershellFnJoin($"-Command New-ADReplicationSubnet -Name {subnet.CidrBlock} -Site ",
                     new ReferenceProperty(subnet));
+                currentCommand.Test = new PowershellFnJoin(
+                        checkAdReplicationSubnet,
+                        subnet.CidrBlock);
             }
         }
 
