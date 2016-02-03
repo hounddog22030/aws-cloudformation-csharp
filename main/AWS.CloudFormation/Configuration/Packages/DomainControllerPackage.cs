@@ -82,7 +82,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 "@",
                 this.DomainInfo.DomainDnsName,
                 " -AccountPassword (ConvertTo-SecureString ",
-                this.DomainInfo.AdminPassword,
+                new ReferenceProperty((ILogicalId)this.Instance.Template.Parameters[Template.ParameterDomainAdminPassword]),
                 " -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
 
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkIfUserExists} {this.DomainInfo.AdminUserName}";
