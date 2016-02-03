@@ -281,7 +281,12 @@ namespace AWS.CloudFormation.Test
 
             ////////the below is a remote desktop gateway server that can
             //////// be uncommented to debug domain setup problems
-            var instanceRdp2 = new RemoteDesktopGateway(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
+            var instanceRdp2 = new Instance(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", OperatingSystem.Windows, true)
+            {
+                Subnet = subnetDmz1
+            };
+            instanceRdp2.AddElasticIp();
+
             dcPackage.AddToDomainMemberSecurityGroup(instanceRdp2);
 
 
@@ -1035,8 +1040,10 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateDevelopmentTest()
         {
-            var stackName = "betayadayada-software";
-            Stack.Stack.UpdateStack(stackName, GetTemplateFullStack("beta"));
+            var stackName = "alphayadayada-software";
+            var template = GetTemplateFullStack("alpha");
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "OUGN1875xnsr";
+            Stack.Stack.UpdateStack(stackName,template );
         }
 
 

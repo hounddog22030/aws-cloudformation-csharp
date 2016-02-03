@@ -87,7 +87,12 @@ namespace AWS.CloudFormation.Stack
         }
 
         public string Type => this["Type"].ToString();
-        public object Default => this["Default"];
+
+        public object Default
+        {
+            get { return this["Default"]; }
+            set { this["Default"] = value; }
+        }
         public string Description => this["Description"].ToString();
 
         public string LogicalId { get; }
