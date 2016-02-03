@@ -62,7 +62,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             currentCommand.Command = new PowershellFnJoin("-Command \"Install-ADDSForest -DomainName",
                 this.DomainInfo.DomainDnsName,
-                "-SafeModeAdministratorPassword (convertto-securestring jhkjhsdf338! -asplaintext -force) -DomainMode Win2012 -DomainNetbiosName",
+                "-SafeModeAdministratorPassword (convertto-securestring \"jhkjhsdf338!\" -asplaintext -force) -DomainMode Win2012 -DomainNetbiosName",
                 this.DomainInfo.DomainNetBiosName,
                 "-ForestMode Win2012 -Confirm:$false -Force\"");
 
@@ -81,9 +81,9 @@ namespace AWS.CloudFormation.Configuration.Packages
                 this.DomainInfo.AdminUserName,
                 "@",
                 this.DomainInfo.DomainDnsName,
-                " -AccountPassword (ConvertTo-SecureString ",
+                " -AccountPassword (ConvertTo-SecureString \"",
                 new ReferenceProperty((ILogicalId)this.Instance.Template.Parameters[Template.ParameterDomainAdminPassword]),
-                " -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
+                "\" -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
 
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkIfUserExists} {this.DomainInfo.AdminUserName}";
 
@@ -192,9 +192,9 @@ namespace AWS.CloudFormation.Configuration.Packages
                 this.DomainInfo.DomainNetBiosName,
                 "\\",
                 this.DomainInfo.AdminUserName,
-                "',(ConvertTo-SecureString ",
+                "',(ConvertTo-SecureString \"",
                 this.DomainInfo.AdminPassword,
-                " -AsPlainText -Force))) ",
+                "\" -AsPlainText -Force))) ",
                 "-Restart\"",
                 " }");
             joinCommand.WaitAfterCompletion = "forever";
