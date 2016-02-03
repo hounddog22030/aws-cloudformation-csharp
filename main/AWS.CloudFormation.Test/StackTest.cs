@@ -58,7 +58,7 @@ namespace AWS.CloudFormation.Test
         public static Template GetTemplateWithParameters()
         {
             var template = new Template(KeyPairName, "Vpc", CidrVpc);
-            var password = System.Web.Security.Membership.GeneratePassword(8, 4);
+            var password = System.Web.Security.Membership.GeneratePassword(8, 0);
             var domainPassword = new ParameterBase(Template.ParameterDomainAdminPassword, "String", password, "Password for domain administrator.")
             {
                 NoEcho = true
