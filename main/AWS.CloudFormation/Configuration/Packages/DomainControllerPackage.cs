@@ -218,7 +218,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         }
         public void AddReplicationSite(Subnet subnet)
         {
-            var currentConfig = this.Instance.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("configureSites");
+            var currentConfig = this.Config;
             string commandName = $"create-site-{subnet.LogicalId}";
             if (!currentConfig.Commands.ContainsKey(commandName))
             {
