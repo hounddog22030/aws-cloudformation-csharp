@@ -75,7 +75,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             if (this.Msi != null)
             {
                 var fileName = System.IO.Path.GetFileNameWithoutExtension(Msi.AbsolutePath).Replace(".",string.Empty).Replace("-",String.Empty);
-                var configSet = configuration.Metadata.Init.ConfigSets.GetConfigSet(fileName).GetConfig(fileName);
+                var configSet = this.Config; // configuration.Metadata.Init.ConfigSets.GetConfigSet(fileName).GetConfig(fileName);
                 if (!configSet.Packages.ContainsKey("msi"))
                 {
                     var msi = new CloudFormationDictionary();
