@@ -23,7 +23,7 @@ namespace AWS.CloudFormation.Test
     [TestClass]
     public class StackTest
     {
-        private const string DomainAdminPassword = "kasdfiajs!!9";
+        //private const string DomainAdminPassword = "kasdfiajs!!9";
         private const string CidrDmz1 = "10.0.127.0/28";
         private const string CidrDmz2 = "10.0.255.0/28";
         private const string CidrDomainController1Subnet = "10.0.0.0/24";
@@ -149,7 +149,9 @@ namespace AWS.CloudFormation.Test
             securityGroupDb4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MySql);
             subnetWorkstation.AddNatGateway(nat1, natSecurityGroup);
 
-            var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
+            var domainAdminPasswordReference = new ReferenceProperty(Template.ParameterDomainAdminPassword);
+
+            var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, domainAdminPasswordReference);
 
 
             var instanceDomainController = new Instance(template, NetBiosNameDomainController1, InstanceTypes.C4Large,
@@ -794,10 +796,10 @@ namespace AWS.CloudFormation.Test
 
             var chefNode = buildServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
-            var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
+            var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, new ReferenceProperty(Template.ParameterDomainAdminPassword));
 
             domainAdminUserInfoNode.Add("name", domainInfo.DomainNetBiosName + "\\" + DomainAdminUser);
-            domainAdminUserInfoNode.Add("password", DomainAdminPassword);
+            domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
             buildServer.AddSecurityGroup(buildServerSecurityGroup);
             //var waitConditionBuildServerAvailable = buildServer.AddFinalizer("waitConditionBuildServerAvailable",TimeoutMax);
 
@@ -863,9 +865,9 @@ namespace AWS.CloudFormation.Test
 
             var chefNode = tfsServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
-            var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
+            var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, new ReferenceProperty(Template.ParameterDomainAdminPassword));
             domainAdminUserInfoNode.Add("name", domainInfo.DomainNetBiosName + "\\" + DomainAdminUser);
-            domainAdminUserInfoNode.Add("password", DomainAdminPassword);
+            domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
             tfsServer.AddSecurityGroup(tfsServerSecurityGroup);
             var packageTfsApplicationTier = new TeamFoundationServerApplicationTier(BucketNameSoftware,sqlServer4Tfs);
             tfsServer.Packages.Add(packageTfsApplicationTier);

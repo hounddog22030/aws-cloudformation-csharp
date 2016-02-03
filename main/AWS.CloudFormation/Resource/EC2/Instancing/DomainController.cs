@@ -16,7 +16,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         public class DomainInfo
         {
-            public DomainInfo(string domainDnsName, string adminUserName, string adminPassword)
+            public DomainInfo(string domainDnsName, string adminUserName, ReferenceProperty adminPassword)
             {
                 DomainDnsName = domainDnsName;
                 DomainNetBiosName = domainDnsName.Split('.')[0];
@@ -28,7 +28,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             public string DomainDnsName { get; }
             public string DomainNetBiosName { get; }
             public string AdminUserName { get; }
-            public string AdminPassword { get; }
+            public ReferenceProperty AdminPassword { get; }
         }
 
     //    public const string ParameterNameDomainAdminPassword = "DomainAdminPassword";
