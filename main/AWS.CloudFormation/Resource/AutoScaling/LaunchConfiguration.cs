@@ -22,7 +22,6 @@ namespace AWS.CloudFormation.Resource.AutoScaling
 {
     public class LaunchConfiguration : ResourceBase
     {
-        internal const string ParameterNameDefaultKeyPairKeyName = "DefaultKeyPairKeyName";
         public const string ChefNodeJsonConfigSetName = "ChefNodeJsonConfigSetName";
         public const string ChefNodeJsonConfigName = "ChefNodeJsonConfigName";
         public const string DefaultConfigSetName = "config";
@@ -48,12 +47,12 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             this.ImageId = imageId;
             this.PopulateAvailableDevices();
 
-            if (!this.Template.Parameters.ContainsKey(ParameterNameDefaultKeyPairKeyName))
+            if (!this.Template.Parameters.ContainsKey(Template.ParameterNameDefaultKeyPairKeyName))
             {
-                throw new InvalidOperationException($"Template must contain a Parameter named {ParameterNameDefaultKeyPairKeyName} which contains the default encryption key name for the instance.");
+                throw new InvalidOperationException($"Template must contain a Parameter named {Template.ParameterNameDefaultKeyPairKeyName} which contains the default encryption key name for the instance.");
             }
-            var keyName = this.Template.Parameters[ParameterNameDefaultKeyPairKeyName];
-            KeyName = keyName.Default.ToString();
+            var keyName = this.Template.Parameters[Template.ParameterNameDefaultKeyPairKeyName];
+            KeyName = new ReferenceProperty(Template.ParameterNameDefaultKeyPairKeyName);
             UserData = new CloudFormationDictionary(this);
             UserData.Add("Fn::Base64", "");
             this.EnableHup();
@@ -242,11 +241,11 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         }
 
         [JsonIgnore]
-        public string KeyName
+        public object KeyName
         {
             get
             {
-                return this.Properties.GetValue<string>();
+                return this.Properties.GetValue<object>();
             }
             set
             {
