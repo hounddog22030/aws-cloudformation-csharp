@@ -76,9 +76,13 @@ namespace AWS.CloudFormation.Configuration.Packages
             {
                 var fileName = System.IO.Path.GetFileNameWithoutExtension(Msi.AbsolutePath).Replace(".",string.Empty).Replace("-",String.Empty);
                 var configSet = configuration.Metadata.Init.ConfigSets.GetConfigSet(fileName).GetConfig(fileName);
-                var msi = new CloudFormationDictionary();
-                msi.Add(fileName, Msi.AbsoluteUri);
-                configSet.Packages.Add("msi", msi);
+                if (!configSet.Packages.ContainsKey("msi"))
+                {
+                    var msi = new CloudFormationDictionary();
+                    msi.Add(fileName, Msi.AbsoluteUri);
+                    configSet.Packages.Add("msi", msi);
+
+                }
             }
         }
 
