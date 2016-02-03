@@ -166,15 +166,15 @@ namespace AWS.CloudFormation.Configuration.Packages
         public string RecipeList { get; private set; }
 
 
-        protected Resource.EC2.Instancing.Metadata.Config.Config ChefConfig
-        {
-            get
-            {
-                return
-                    this.Instance.Metadata.Init.ConfigSets.GetConfigSet<ChefConfigSet>(RecipeList.Replace(":",
-                        string.Empty)).Run;
-            }
-        }
+        //protected Resource.EC2.Instancing.Metadata.Config.Config ChefConfig
+        //{
+        //    get
+        //    {
+        //        return
+        //            this.Instance.Metadata.Init.ConfigSets.GetConfigSet<ChefConfigSet>(RecipeList.Replace(":",
+        //                string.Empty)).Run;
+        //    }
+        //}
 
 
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
@@ -199,13 +199,13 @@ namespace AWS.CloudFormation.Configuration.Packages
             //chefDict.Add("chef","https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");
 
             //this.ChefConfig.Add("msi", chefDict);
-            var chefCommandConfig = this.ChefConfig.Commands.AddCommand<Command>(RecipeList.Replace(':', '-'));
+            var chefCommandConfig = this.Config.Commands.AddCommand<Command>(RecipeList.Replace(':', '-'));
 
             var clientRbFileKey = $"c:/chef/{CookbookName}/client.rb";
-            this.ChefConfig.Files.GetFile(clientRbFileKey)
+            this.Config.Files.GetFile(clientRbFileKey)
                 .Content.SetFnJoin(
                     $"cache_path 'c:/chef'\ncookbook_path 'c:/chef/{CookbookName}/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
-            this.ChefConfig.Sources.Add($"c:/chef/{CookbookName}/",
+            this.Config.Sources.Add($"c:/chef/{CookbookName}/",
                 $"https://{BucketName}.s3.amazonaws.com/{CookbookName}.tar.gz");
 
             chefCommandConfig.Command = $"C:/opscode/chef/bin/chef-client.bat -z -o {RecipeList} -c c:/chef/{CookbookName}/client.rb";
