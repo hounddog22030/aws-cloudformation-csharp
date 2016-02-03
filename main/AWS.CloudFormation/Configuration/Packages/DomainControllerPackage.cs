@@ -227,7 +227,9 @@ namespace AWS.CloudFormation.Configuration.Packages
                 currentCommand.Command = new PowershellFnJoin("-Command \"New-ADReplicationSite",
                     new ReferenceProperty(subnet),
                     "\"");
-                currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkAdReplicationSite}";
+                currentCommand.Test = new PowershellFnJoin(
+                        checkAdReplicationSite,
+                        new ReferenceProperty(subnet));
 
 
 

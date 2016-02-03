@@ -56,7 +56,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
             }
         }
 
-        public string Test
+        public object Test
         {
             get
             {
