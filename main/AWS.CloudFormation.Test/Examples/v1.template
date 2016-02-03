@@ -1,0 +1,364 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "VpcCreateStackWithVisualStudio": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "VpcCreateStackWithVisualStudio"
+          }
+        ],
+        "CidrBlock": "10.0.0.0/16"
+      }
+    },
+    "VpcCreateStackWithVisualStudioInternetGateway": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "VpcCreateStackWithVisualStudioInternetGateway"
+          }
+        ]
+      }
+    },
+    "VpcCreateStackWithVisualStudioInternetGatewayAttachment": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "InternetGatewayId": {
+          "Ref": "VpcCreateStackWithVisualStudioInternetGateway"
+        },
+        "VpcId": {
+          "Ref": "VpcCreateStackWithVisualStudio"
+        }
+      }
+    },
+    "rdp": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "rdp"
+          }
+        ],
+        "VpcId": {
+          "Ref": "VpcCreateStackWithVisualStudio"
+        },
+        "GroupDescription": "rdp",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 3389,
+            "IpProtocol": "tcp",
+            "ToPort": 3389
+          }
+        ]
+      }
+    },
+    "DMZSubnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "DMZSubnet"
+          }
+        ],
+        "VpcId": {
+          "Ref": "VpcCreateStackWithVisualStudio"
+        },
+        "CidrBlock": "10.0.127.0/28",
+        "AvailabilityZone": "us-east-1a"
+      }
+    },
+    "DMZSubnetRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "DependsOn": [
+        "VpcCreateStackWithVisualStudioInternetGateway"
+      ],
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "DMZSubnetRouteTable"
+          }
+        ],
+        "VpcId": {
+          "Ref": "VpcCreateStackWithVisualStudio"
+        }
+      }
+    },
+    "DMZSubnetRoute": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": [
+        "VpcCreateStackWithVisualStudioInternetGateway"
+      ],
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "DMZSubnetRouteTable"
+        },
+        "GatewayId": {
+          "Ref": "VpcCreateStackWithVisualStudioInternetGateway"
+        }
+      }
+    },
+    "SubnetRouteTableAssociation4DMZSubnet4DMZSubnetRouteTable": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "DMZSubnetRouteTable"
+        },
+        "SubnetId": {
+          "Ref": "DMZSubnet"
+        }
+      }
+    },
+    "Windows1": {
+      "Type": "AWS::EC2::Instance",
+      "Metadata": {
+        "AWS::CloudFormation::Init": {
+          "configSets": {
+            "config": [
+              "setup"
+            ],
+            "AWSCloudFormationConfigurationPackagesDir1": [
+              "AWSCloudFormationConfigurationPackagesDir1"
+            ]
+          },
+          "setup": {
+            "commands": {
+              "a-disable-win-fw": {
+                "waitAfterCompletion": "0",
+                "command": "powershell.exe -Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\""
+              }
+            },
+            "files": {
+              "c:\\cfn\\cfn-hup.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[main]\nstack=",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      "\nregion=",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\ninterval=1\nverbose=true"
+                    ]
+                  ]
+                }
+              },
+              "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[cfn-auto-reloader-hook]\n",
+                      "triggers=post.update\n",
+                      "path=Resources.Windows1.Metadata.AWS::CloudFormation::Init\n",
+                      "action=",
+                      "cfn-init.exe -v -c ",
+                      "config,AWSCloudFormationConfigurationPackagesDir1",
+                      " -s ",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      " -r ",
+                      "Windows1",
+                      " --region ",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\n"
+                    ]
+                  ]
+                }
+              }
+            },
+            "services": {
+              "windows": {
+                "cfn-hup": {
+                  "enabled": true,
+                  "ensureRunning": true,
+                  "files": [
+                    "c:\\cfn\\cfn-hup.conf",
+                    "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf"
+                  ]
+                }
+              }
+            },
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "True"
+          },
+          "AWSCloudFormationConfigurationPackagesDir1": {
+            "commands": {
+              "dir1": {
+                "waitAfterCompletion": "0",
+                "command": "dir>dir1.txt"
+              },
+              "signalCompletewaitConditionWindows1AWSCloudFormationConfigurationPackagesDir1": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "cfn-signal.exe -e 0 \"",
+                      {
+                        "Ref": "waitConditionWindows1AWSCloudFormationConfigurationPackagesDir1Handle"
+                      },
+                      "\""
+                    ]
+                  ]
+                }
+              }
+            },
+            "files": {},
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "True"
+          }
+        }
+      },
+      "Properties": {
+        "InstanceType": "t2.nano",
+        "ImageId": "ami-e4034a8e",
+        "KeyName": "corp.getthebuybox.com",
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "<script>",
+                "cfn-init.exe -v -c ",
+                "config,AWSCloudFormationConfigurationPackagesDir1",
+                " -s ",
+                {
+                  "Ref": "AWS::StackId"
+                },
+                " -r Windows1 --region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "</script>"
+              ]
+            ]
+          }
+        },
+        "SourceDestCheck": true,
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Windows1"
+          }
+        ],
+        "SubnetId": {
+          "Ref": "DMZSubnet"
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "rdp"
+          }
+        ]
+      }
+    },
+    "waitConditionWindows1AWSCloudFormationConfigurationPackagesDir1": {
+      "Type": "AWS::CloudFormation::WaitCondition",
+      "Properties": {
+        "Timeout": 43200,
+        "Handle": {
+          "Ref": "waitConditionWindows1AWSCloudFormationConfigurationPackagesDir1Handle"
+        }
+      }
+    },
+    "waitConditionWindows1AWSCloudFormationConfigurationPackagesDir1Handle": {
+      "Type": "AWS::CloudFormation::WaitConditionHandle",
+      "Properties": {}
+    },
+    "Windows1EIP": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "InstanceId": {
+          "Ref": "Windows1"
+        },
+        "Domain": "vpc"
+      }
+    }
+  },
+  "Parameters": {
+    "DefaultKeyPairKeyName": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Default": "corp.getthebuybox.com"
+    }
+  },
+  "Outputs": {
+    "VpcCreateStackWithVisualStudio": {
+      "Value": {
+        "Ref": "VpcCreateStackWithVisualStudio"
+      }
+    },
+    "VpcCreateStackWithVisualStudioInternetGateway": {
+      "Value": {
+        "Ref": "VpcCreateStackWithVisualStudioInternetGateway"
+      }
+    },
+    "VpcCreateStackWithVisualStudioInternetGatewayAttachment": {
+      "Value": {
+        "Ref": "VpcCreateStackWithVisualStudioInternetGatewayAttachment"
+      }
+    },
+    "rdp": {
+      "Value": {
+        "Ref": "rdp"
+      }
+    },
+    "DMZSubnet": {
+      "Value": {
+        "Ref": "DMZSubnet"
+      }
+    },
+    "DMZSubnetRouteTable": {
+      "Value": {
+        "Ref": "DMZSubnetRouteTable"
+      }
+    },
+    "DMZSubnetRoute": {
+      "Value": {
+        "Ref": "DMZSubnetRoute"
+      }
+    },
+    "SubnetRouteTableAssociation4DMZSubnet4DMZSubnetRouteTable": {
+      "Value": {
+        "Ref": "SubnetRouteTableAssociation4DMZSubnet4DMZSubnetRouteTable"
+      }
+    },
+    "Windows1": {
+      "Value": {
+        "Ref": "Windows1"
+      }
+    },
+    "waitConditionWindows1AWSCloudFormationConfigurationPackagesDir1": {
+      "Value": {
+        "Ref": "waitConditionWindows1AWSCloudFormationConfigurationPackagesDir1"
+      }
+    },
+    "waitConditionWindows1AWSCloudFormationConfigurationPackagesDir1Handle": {
+      "Value": {
+        "Ref": "waitConditionWindows1AWSCloudFormationConfigurationPackagesDir1Handle"
+      }
+    },
+    "Windows1EIP": {
+      "Value": {
+        "Ref": "Windows1EIP"
+      }
+    }
+  }
+}

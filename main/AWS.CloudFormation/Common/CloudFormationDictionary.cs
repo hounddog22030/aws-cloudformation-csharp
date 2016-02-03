@@ -100,7 +100,7 @@ namespace AWS.CloudFormation.Common
             StackFrame propertyStackFrame = null;
             MethodBase propertyMethod = null;
             PropertyInfo theActualProperty = null;
-            for (int i = 1; i < stackFrames.Length -1; i++)
+            for (int i = 1; i < stackFrames.Length - 1; i++)
             {
                 propertyStackFrame = stackFrames[i];
                 propertyMethod = propertyStackFrame.GetMethod();

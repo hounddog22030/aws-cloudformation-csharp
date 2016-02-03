@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
+using AWS.CloudFormation.Resource.Wait;
 using AWS.CloudFormation.Serialization;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
@@ -58,7 +61,6 @@ namespace AWS.CloudFormation.Resource
             LogicalId = name;
             DependsOn = new List<string>();
             this.Template.Resources.Add(name, this);
-            Properties = new CloudFormationDictionary();
             Metadata = new Metadata(this);
             if (template.Outputs.Count < 60)
             {
@@ -69,6 +71,11 @@ namespace AWS.CloudFormation.Resource
                 this.Tags.Add(new Tag("Name",name));
             }
         }
+        public void AddDependsOn(WaitCondition waitConditionHandle)
+        {
+            this.DependsOn.Add(waitConditionHandle.LogicalId);
+        }
+
         protected abstract bool SupportsTags { get; }
 
         [JsonIgnore]
@@ -76,18 +83,63 @@ namespace AWS.CloudFormation.Resource
 
         public ResourceType Type { get; protected set; }
 
+        public bool ShouldSerializeMetadata()
+        {
+            return this.Metadata != null && this.Metadata.Any();
+        }
+
         public Metadata Metadata { get; }
 
 
         [JsonIgnore]
         public string LogicalId { get ; }
 
+        public bool ShouldSerializeDependsOn()
+        {
+            return this.DependsOn.Any();
+        }
 
-        public List<string> DependsOn { get; }
+        public List<string> DependsOn { get; private set; }
 
         //public string[] DependsOn => this.DependsOn2.ToArray();
 
-        public CloudFormationDictionary Properties { get; }
+        private bool _serializing = false;
+        public bool ShouldSerializeProperties()
+        {
+            _serializing = true;
+            return true;
+        }
+
+        private CloudFormationDictionary _properties;
+        public CloudFormationDictionary Properties
+        {
+            get
+            {
+                if (_properties == null)
+                {
+                    _properties = new CloudFormationDictionary(this);
+                }
+                if (_serializing)
+                {
+                    CloudFormationDictionary clone = new CloudFormationDictionary(this);
+                    foreach (var key in _properties.Keys)
+                    {
+                        ICollection valueAsCollection = _properties[key] as ICollection;
+                        bool shouldAdd = valueAsCollection == null || valueAsCollection.Count > 0;
+                        if (shouldAdd)
+                        {
+                            clone.Add(key, _properties[key]);
+                        }
+                    }
+                    return clone;
+
+                }
+                else
+                {
+                    return _properties;
+                }
+            }
+        }
 
         [JsonIgnore]
         public TagDictionary Tags

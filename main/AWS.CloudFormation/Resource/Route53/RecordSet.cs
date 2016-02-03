@@ -42,7 +42,6 @@ namespace AWS.CloudFormation.Resource.Route53
         {
             TTL = "900";
             this.RecordSetType = recordSetType.ToString();
-            this.ResourceRecords = new IdCollection<object>();
         }
 
         [JsonIgnore]
@@ -88,23 +87,34 @@ namespace AWS.CloudFormation.Resource.Route53
         List<object> _resourceRecords = new List<object>();
 
         [JsonIgnore]
-        public IdCollection<object> ResourceRecords
+        public object[] ResourceRecords
         {
-            get { return this.Properties.GetValue<IdCollection<object>>(); }
+            get { return this.Properties.GetValue<object[]>(); }
             set { this.Properties.SetValue(value); }
         }
 
-        //public void AddResourceRecord(object resourceRecord)
-        //{
-        //    List<object> temp = new List<object>();
-        //    temp.AddRange(this.ResourceRecords);
-        //    temp.Add(resourceRecord);
-        //    this.ResourceRecords = temp.ToArray();
-        //}
+        public void AddResourceRecord(object resourceRecord)
+        {
+            List<object> temp = new List<object>();
+            if(this.ResourceRecords!=null&& this.ResourceRecords.Any())
+            {
+                temp.AddRange(this.ResourceRecords);
+            }
+            temp.Add(resourceRecord);
+            this.ResourceRecords = temp.ToArray();
+        }
 
         public static RecordSet AddByHostedZoneId(Template template, string resourceName, string hostedZoneId, string dnsName, RecordSetTypeEnum recordSetType)
         {
             return new RecordSet(template, resourceName, recordSetType) { HostedZoneId = hostedZoneId, Name = dnsName };
+        }
+
+        public static RecordSet AddByHostedZone(Template template, string name, HostedZone hostedZone, string dnsName, RecordSetTypeEnum recordSetType)
+        {
+            RecordSet recordSet = AddByHostedZoneName(template, name, hostedZone.Name, dnsName, recordSetType);
+            recordSet.Name = dnsName;
+            recordSet.DependsOn.Add(hostedZone.LogicalId);
+            return recordSet;
         }
 
         public static RecordSet AddByHostedZoneName(Template template, string name, string hostedZoneName, string dnsName, RecordSetTypeEnum recordSetType)

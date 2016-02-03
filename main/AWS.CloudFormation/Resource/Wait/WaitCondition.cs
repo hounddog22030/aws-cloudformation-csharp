@@ -34,7 +34,7 @@ namespace AWS.CloudFormation.Resource.Wait
         [JsonProperty(PropertyName = "Handle")]
         public WaitConditionHandle Handle
         {
-            get { return this.Properties.GetValue<WaitConditionHandle>(); }
+            get { return this.Properties.GetValue<WaitConditionHandle>("Handle"); }
             set { this.Properties.SetValue(value); }
         }
 

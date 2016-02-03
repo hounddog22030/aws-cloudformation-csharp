@@ -12,10 +12,11 @@ tfsconfigure_exe_file = "\"C:/Program Files/Microsoft Team Foundation Server 14.
 
 configurationFile = "#{Chef::Config['file_cache_path']}/configbasic.ini"
 
-cookbook_file "#{configurationFile}" do
-	path "#{Chef::Config['file_cache_path']}/configbasic.ini"
-	action :create_if_missing	
+template "#{configurationFile}" do
+  source 'configbasic.ini.erb'
+  variables( :application_server_sqlname => "#{node[:tfs][:application_server_sqlname]}")
 end
+
 
 # Installing Team Foundation Server Standard.
 execute 'Configure Team Foundation Server STD' do

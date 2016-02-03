@@ -1,4 +1,5 @@
-﻿using AWS.CloudFormation.Common;
+﻿using System.Linq;
+using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Resource.AutoScaling;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using Newtonsoft.Json;
@@ -36,7 +37,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config
             Services = this.Add("services", new CloudFormationDictionary(resource));
             Sources = this.Add("sources", new Sources(resource)) as Sources;
             Packages = this.Add("packages", new Packages(resource)) as Packages;
-            this.Add("ignoreErrors", true);
+            this.Add("ignoreErrors", true.ToString());
         }
 
         [JsonIgnore]
@@ -49,10 +50,10 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config
         public Sources Sources { get;  }
         public Packages Packages { get; set; }
 
-        public bool IgnoreErrors {
+        public string IgnoreErrors {
             get
             {
-                return (bool)this["ignoreErrors"];
+                return (string)this["ignoreErrors"];
             }
             set { this["ignoreErrors"] = value; }
         }
@@ -66,7 +67,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config
 
         public Package AddPackage(string type, string name, string source)
         {
-            Package newPackage = new Package(this.Resource) {{ name, source}};
+            Package newPackage = new Package(this.Resource) {name, source};
             this.Add(type, newPackage);
             return newPackage;
         }

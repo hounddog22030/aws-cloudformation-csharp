@@ -10,7 +10,7 @@ SendFeedback=True
 InstallSqlExpress=False
 
 ; Provide the configured SQL instance in the form of Server,  ServerName\InstanceName or Server,Port
-SqlInstance=sql4tfs
+SqlInstance=<%= @application_server_sqlname %>
 
 ; You can elect to create an existing set of empty databases (Tfs_<label>Configuration, Tfs_<label>Warehouse and Tfs_<label>Analysis)
 UseExistingEmptyDatabase=False

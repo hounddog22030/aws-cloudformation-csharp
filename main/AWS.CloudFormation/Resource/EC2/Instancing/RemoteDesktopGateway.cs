@@ -30,22 +30,22 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             var installRdsConfig =
                 this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName)
                     .GetConfig(InstallRds);
-            var installRdsCommand = installRdsConfig.Commands.AddCommand<PowerShellCommand>("a-install-rds");
-            installRdsCommand.Command.AddCommandLine("-Command \"Install-WindowsFeature RDS-Gateway,RSAT-RDS-Gateway\"");
+            var installRdsCommand = installRdsConfig.Commands.AddCommand<Command>("a-install-rds");
+            installRdsCommand.Command = new PowershellFnJoin("-Command \"Install-WindowsFeature RDS-Gateway,RSAT-RDS-Gateway\"");
 
             var configureRdgwPsScript = installRdsConfig.Files.GetFile("c:\\cfn\\scripts\\Configure-RDGW.ps1");
 
             configureRdgwPsScript.Source =
                 "https://s3.amazonaws.com/gtbb/Configure-RDGW.ps1";
 
-            installRdsCommand = installRdsConfig.Commands.AddCommand<PowerShellCommand>("b-configure-rdgw");
-            installRdsCommand.Command.AddCommandLine(
+            installRdsCommand = installRdsConfig.Commands.AddCommand<Command>("b-configure-rdgw");
+            installRdsCommand.Command = new PowershellFnJoin(
                                             "-ExecutionPolicy RemoteSigned",
-                                            " C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN " + this.LogicalId + ".",
-                                            this.DomainDnsName,
-                                            " -DomainNetBiosName ",
-                                            this.DomainNetBiosName,
-                                            " -GroupName 'domain admins'" );
+                                            "C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN " + new ReferenceProperty(this) + ".",
+                                            new ReferenceProperty(this.DomainDnsName),
+                                            "-DomainNetBiosName",
+                                            new ReferenceProperty(this.DomainNetBiosName),
+                                            "-GroupName 'domain admins'");
         }
 
 
@@ -66,7 +66,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         {
             base.OnAddedToDomain(domainName);
 
-            var domainParts = this.DomainDnsName.Default.ToString().Split('.');
+            var domainParts = this.DomainDnsName.Split('.');
             var tldDomain = $"{domainParts[domainParts.Length - 2]}.{domainParts[domainParts.Length - 1]}.";
 
 
@@ -75,9 +75,9 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 this.Template, 
                 this.LogicalId + "Record",
                 tldDomain,
-                $"{this.LogicalId}.{this.DomainDnsName.Default}.",
+                $"{this.LogicalId}.{this.DomainDnsName}.",
                 RecordSet.RecordSetTypeEnum.A);
-            routing.ResourceRecords.Add(this.ElasticIp);
+            routing.AddResourceRecord(new ReferenceProperty(this.ElasticIp));
 
             routing.TTL = "60";
 

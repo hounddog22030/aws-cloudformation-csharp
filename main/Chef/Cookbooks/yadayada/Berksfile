@@ -1,0 +1,8 @@
+source "https://supermarket.chef.io"
+
+
+
+metadata
+
+cookbook 'windows_ad', path: '../windows_ad'
+cookbook 'windows'

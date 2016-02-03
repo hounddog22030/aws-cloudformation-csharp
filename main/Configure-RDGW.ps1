@@ -51,4 +51,4 @@ dir cert:\localmachine\my | where-object { $_.Subject -eq "CN=$ServerFQDN” } |
 
 Restart-Service tsgateway
 
-copy "c:\$env:computername.cer" "c:\inetpub\wwwroot\$env:computername.cer.txt"
+copy "c:\$env:computername.cer" "c:\inetpub\wwwroot\rdp.cer.txt"

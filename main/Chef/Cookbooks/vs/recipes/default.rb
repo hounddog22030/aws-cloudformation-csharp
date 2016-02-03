@@ -28,6 +28,8 @@
 
 include_recipe 'ec2helper'
 
+sentinel_file = "C:/Program Files (x86)/Microsoft Visual Studio 14.0/Common7/IDE/DevEnv.exe"
+
 admin_xml = "#{Chef::Config['file_cache_path']}/AdminDeployment.xml"
 
 cookbook_file "AdminDeployment.xml" do
@@ -51,7 +53,7 @@ execute 'Install Visual Studio' do
 	command lazy { "#{exe_path} /quiet /ADMINFILE #{admin_xml}" }
 	timeout 43200
 	returns [0,3010]
-	not_if { File.exist?("C:/Program Files (x86)/Microsoft Visual Studio 14.0/Common7/IDE/DevEnv.exe") }
+	not_if { File.exist?("#{sentinel_file}") }
 	action :nothing
 	notifies :request_reboot, 'reboot[app_requires_reboot]', :immediately
 end

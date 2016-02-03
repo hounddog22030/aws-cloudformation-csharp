@@ -1,4 +1,5 @@
-﻿using AWS.CloudFormation.Resource.EC2.Instancing;
+﻿using AWS.CloudFormation.Resource.AutoScaling;
+using AWS.CloudFormation.Resource.EC2.Instancing;
 
 using Newtonsoft.Json;
 
@@ -6,16 +7,16 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 {
     public class ElasticIp : ResourceBase
     {
-        public ElasticIp(Instancing.Instance instance, string name) : base(instance.Template, name, ResourceType.AwsEc2Eip)
+        public ElasticIp(LaunchConfiguration instance) : base(instance.Template, $"Eip4{instance.LogicalId}", ResourceType.AwsEc2Eip)
         {
             Instance = instance;
             this.Domain = "vpc";
         }
 
         [JsonIgnore]
-        public Instance Instance
+        public LaunchConfiguration Instance
         {
-            get { return this.Properties.GetValue<Instance>(); }
+            get { return this.Properties.GetValue<LaunchConfiguration>(); }
             set { this.Properties.SetValue(value); }
         }
 

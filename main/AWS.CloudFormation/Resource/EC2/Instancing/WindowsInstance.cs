@@ -8,6 +8,7 @@ using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
+using AWS.CloudFormation.Resource.Wait;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
@@ -15,14 +16,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 {
     public class WindowsInstance : Instance
     {
-        public const string DefaultConfigSetName = "config";
-        public const string DefaultConfigSetRenameConfig = "rename";
-        public const string DefaultConfigSetJoinConfig = "join";
-        public const string DefaultConfigSetRenameConfigRenamePowerShellCommand = "1-execute-powershell-script-RenameComputer";
-        public const string DefaultConfigSetRenameConfigJoinDomain = "b-join-domain";
-        public const string InstallChefConfigSetName = "InstallChefConfigSet";
-        public const string InstallChefConfigName = "InstallChefConfig";
-        public const int NetBiosMaxLength = 15;
 
 
         
@@ -61,61 +54,13 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             {
                 throw new InvalidOperationException($"Name length is limited to {NetBiosMaxLength} characters.");
             }
-            var nodeJson = this.GetChefNodeJsonContent();
-            nodeJson.Add("nothing", "nothing");
-            //xvd[f - z]
-            _availableDevices = new List<string>();
-            for (char c = 'f'; c < 'z'; c++)
-            {
-                _availableDevices.Add($"xvd{c}");
-            }
-
-
-            if (rename)
-            {
-                this.Rename();
-            }
-
-            this.DisableFirewall();
-            //this.AddChrome();
-
         }
-
-
 
         public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, bool rename)
             : this(template, name, instanceType, imageId, rename, DefinitionType.Instance)
         {
         }
 
-        private void DisableFirewall()
-        {
-            var setup = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("setup");
-            var disableFirewallCommand = setup.Commands.AddCommand<PowerShellCommand>("a-disable-win-fw");
-            disableFirewallCommand.WaitAfterCompletion = 0.ToString();
-            disableFirewallCommand.Command.AddCommandLine(new object[]
-            {"-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\""});
-        }
-
-
-        [JsonIgnore]
-        public ParameterBase DomainDnsName { get; protected internal set; }
-        [JsonIgnore]
-        public ParameterBase DomainNetBiosName { get; protected internal set; }
-
-
-        private void Rename()
-        {
-            if (OperatingSystem == OperatingSystem.Windows)
-            {
-                var renameConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetRenameConfig);
-                var renameCommandConfig = renameConfig.Commands.AddCommand<PowerShellCommand>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
-                renameCommandConfig.Command.AddCommandLine("\"Rename-Computer -NewName ",
-                                                            this.LogicalId,
-                                                            " -Restart\"");
-                renameCommandConfig.WaitAfterCompletion = "forever";
-            }
-        }
 
         protected internal virtual void OnAddedToDomain(string domainName)
         {
@@ -134,14 +79,20 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         private Config GetChefConfig(string s3bucketName, string cookbookFileName)
         {
+            var appSettingsReader = new AppSettingsReader();
+            string accessKeyString = (string)appSettingsReader.GetValue("S3AccessKey", typeof(string));
+            string secretKeyString = (string)appSettingsReader.GetValue("S3SecretKey", typeof(string));
+
             if (!this.Metadata.Authentication.ContainsKey("S3AccessCreds"))
             {
-                var appSettingsReader = new AppSettingsReader();
-                string accessKeyString = (string)appSettingsReader.GetValue("S3AccessKey", typeof(string));
-                string secretKeyString = (string)appSettingsReader.GetValue("S3SecretKey", typeof(string));
                 var auth = this.Metadata.Authentication.Add("S3AccessCreds", new S3Authentication(accessKeyString, secretKeyString, new string[] { s3bucketName }));
                 auth.Type = "S3";
-                var chefConfigContent = GetChefNodeJsonContent();
+            }
+
+            var chefConfigContent = GetChefNodeJsonContent();
+
+            if (chefConfigContent.ContainsKey("s3_file"))
+            {
                 var s3FileNode = chefConfigContent.Add("s3_file");
                 s3FileNode.Add("key", accessKeyString);
                 s3FileNode.Add("secret", secretKeyString);
@@ -169,45 +120,39 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             return chefConfig;
         }
 
-        public void AddChefExec(string s3bucketName, string cookbookFileName,string recipeList)
+        public WaitCondition AddChefExec(string s3bucketName, string cookbookFileName,string recipeList)
         {
             var chefConfig = this.GetChefConfig(s3bucketName, cookbookFileName);
             var chefCommandConfig = chefConfig.Commands.AddCommand<Command>(recipeList.Replace(':','-'));
-            chefCommandConfig.Command.SetFnJoin($"C:/opscode/chef/bin/chef-client.bat -z -o {recipeList} -c c:/chef/{cookbookFileName}/client.rb");
+            throw new NotImplementedException();
+            //chefCommandConfig.Command.SetFnJoin($"C:/opscode/chef/bin/chef-client.bat -z -o {recipeList} -c c:/chef/{cookbookFileName}/client.rb");
+            //WaitCondition chefComplete = new WaitCondition(this.Template,
+            //    $"waitCondition{this.LogicalId}{cookbookFileName}{recipeList}".Replace(".",string.Empty).Replace(":",string.Empty),
+            //    new TimeSpan(4,0,0));
+            //chefConfig.Commands.AddCommand<Command>(chefComplete);
+            //return chefComplete;
+
         }
 
-        public ConfigFileContent GetChefNodeJsonContent()
+
+        //public WaitCondition AddPackage(string s3BucketName, PackageBase package)
+        //{
+            
+        //    var cookbookFileName = $"{package.CookbookName}.tar.gz";
+        //    var chefComplete = this.AddChefExec(s3BucketName, cookbookFileName, package.RecipeName);
+        //    BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this, this.GetAvailableDevice());
+        //    blockDeviceMapping.Ebs.SnapshotId = package.SnapshotId;
+        //    this.AddBlockDeviceMapping(blockDeviceMapping);
+        //    return chefComplete;
+        //}
+        public T AddPackage<T>() where T :PackageBase<ConfigSet>, new()
         {
-
-            var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet(InstallChefConfigSetName).GetConfig(InstallChefConfigSetName);
-            var nodeJson = chefConfig.Files.GetFile("c:/chef/node.json");
-            return nodeJson.Content;
+            T package = new T();
+            return package;
         }
 
-        public void AddPackage(string s3BucketName, PackageBase package)
-        {
-            var cookbookFileName = $"{package.CookbookName}.tar.gz";
-            this.AddChefExec(s3BucketName, cookbookFileName,package.RecipeName);
-            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this, this.GetAvailableDevice());
-            blockDeviceMapping.Ebs.SnapshotId = package.SnapshotId;
-            this.AddBlockDeviceMapping(blockDeviceMapping);
-        }
 
-        readonly List<string> _availableDevices;
 
-        protected string GetAvailableDevice()
-        {
-            var returnValue = _availableDevices.First();
-            _availableDevices.Remove(returnValue);
-            return returnValue;
-        }
 
-        public void AddDisk(Ebs.VolumeTypes ec2DiskType, int sizeInGigabytes)
-        {
-            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this,this.GetAvailableDevice());
-            blockDeviceMapping.Ebs.VolumeSize = sizeInGigabytes;
-            blockDeviceMapping.Ebs.VolumeType = ec2DiskType;
-            this.AddBlockDeviceMapping(blockDeviceMapping);
-        }
     }
 }
