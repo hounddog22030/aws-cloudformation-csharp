@@ -44,7 +44,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             file.Source = "https://s3.amazonaws.com/gtbb/check-for-user-exists.ps1";
 
 
-            var currentConfig = this.Instance.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("installADDS");
+            var currentConfig = this.Config; // this.Instance.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("installADDS");
 
             var currentCommand = currentConfig.Commands.AddCommand<Command>("01-InstallPrequisites");
             currentCommand.WaitAfterCompletion = 0.ToString();
