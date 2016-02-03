@@ -80,7 +80,7 @@ namespace AWS.CloudFormation.Test
             Assert.IsFalse(HasGitDifferences());
             var gitHash = GetGitHash();
             var template = new Template(KeyPairName, "Vpc", CidrVpc,gitHash);
-            var password = System.Web.Security.Membership.GeneratePassword(8, 4);
+            var password = System.Web.Security.Membership.GeneratePassword(8, 0);
             var domainPassword = new ParameterBase("DomainAdminPassword", "String", password,
                 "Password for domain administrator.")
             {
