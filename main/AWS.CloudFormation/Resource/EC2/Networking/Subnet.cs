@@ -70,7 +70,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         public void AddNatGateway(Instance nat, SecurityGroup natSecurityGroup)
         {
             RouteTable routeTable = new RouteTable(this.Template, $"routeTableFor{this.LogicalId}", this.Vpc);
-            Route route = new Route(this.Template, $"routeFor{this.LogicalId}", Template.CIDR_IP_THE_WORLD, routeTable);
+            Route route = new Route(this.Template, $"routeFor{this.LogicalId}", Template.CidrIpTheWorld, routeTable);
             SubnetRouteTableAssociation routeTableAssociation = new SubnetRouteTableAssociation(this.Template, this, routeTable);
             route.Instance = nat;
             

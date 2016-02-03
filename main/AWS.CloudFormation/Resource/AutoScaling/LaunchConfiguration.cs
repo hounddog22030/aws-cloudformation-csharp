@@ -47,12 +47,12 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             this.ImageId = imageId;
             this.PopulateAvailableDevices();
 
-            if (!this.Template.Parameters.ContainsKey(Template.ParameterNameDefaultKeyPairKeyName))
+            if (!this.Template.Parameters.ContainsKey(Template.ParameterKeyPairName))
             {
-                throw new InvalidOperationException($"Template must contain a Parameter named {Template.ParameterNameDefaultKeyPairKeyName} which contains the default encryption key name for the instance.");
+                throw new InvalidOperationException($"Template must contain a Parameter named {Template.ParameterKeyPairName} which contains the default encryption key name for the instance.");
             }
-            var keyName = this.Template.Parameters[Template.ParameterNameDefaultKeyPairKeyName];
-            KeyName = new ReferenceProperty(Template.ParameterNameDefaultKeyPairKeyName);
+            var keyName = this.Template.Parameters[Template.ParameterKeyPairName];
+            KeyName = new ReferenceProperty(Template.ParameterKeyPairName);
             UserData = new CloudFormationDictionary(this);
             UserData.Add("Fn::Base64", "");
             this.EnableHup();
