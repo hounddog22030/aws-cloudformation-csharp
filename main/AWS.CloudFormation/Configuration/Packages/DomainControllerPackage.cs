@@ -100,7 +100,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                     "\"");
 
 
-            currentConfig.Commands.AddCommand<Command>(this.WaitCondition);
+            //currentConfig.Commands.AddCommand<Command>(this.WaitCondition);
 
             this.CreateDomainControllerSecurityGroup();
 
