@@ -130,6 +130,7 @@
     <Compile Include="TemplateEngine.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="check-for-domain.ps1" />
     <None Include="Configure-RDGW.ps1" />
     <None Include="ConvertTo-EnterpriseAdmin.ps1" />
     <None Include="New-LabADUser.ps1" />

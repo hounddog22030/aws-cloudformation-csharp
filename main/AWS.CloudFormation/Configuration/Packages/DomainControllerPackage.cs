@@ -36,9 +36,8 @@ namespace AWS.CloudFormation.Configuration.Packages
             var setupFiles = setup.Files;
 
             ConfigFile file = setupFiles.GetFile("c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1");
+            file.Source = "https://s3.amazonaws.com/quickstart-reference/microsoft/activedirectory/latest/scripts/ConvertTo-EnterpriseAdmin.ps1";
 
-            file.Source =
-                "https://s3.amazonaws.com/quickstart-reference/microsoft/activedirectory/latest/scripts/ConvertTo-EnterpriseAdmin.ps1";
 
             var currentConfig = this.Instance.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("installADDS");
             var currentCommand = currentConfig.Commands.AddCommand<Command>("01-InstallPrequisites");
@@ -160,11 +159,12 @@ namespace AWS.CloudFormation.Configuration.Packages
         {
             LaunchConfiguration participantLaunchConfiguration = participant as LaunchConfiguration;
 
-
             var joinCommandConfig = participant.Metadata.Init.ConfigSets.GetConfigSet($"JoinDomain{this.DomainInfo.DomainNetBiosName}").GetConfig("JoinDomain");
+            const string checkForDomainPsPath = "c:/cfn/scripts/check-for-domain.ps1";
+            var checkForDomainPs = joinCommandConfig.Files.GetFile(checkForDomainPsPath);
+            checkForDomainPs.Source = "https://s3.amazonaws.com/gtbb/check-for-domain.ps1";
 
             var joinCommand = joinCommandConfig.Commands.AddCommand<Command>("JoinDomain");
-
 
             joinCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None,
                 "-Command \"",
@@ -184,7 +184,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 " }");
             joinCommand.WaitAfterCompletion = "forever";
 
-            joinCommand.Test = $"EXIT /B 1";
+            joinCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkForDomainPsPath} {this.DomainInfo.DomainDnsName}";
 
             participant.AddDependsOn(this.WaitCondition);
             this.AddToDomainMemberSecurityGroup((Instance)participant);
