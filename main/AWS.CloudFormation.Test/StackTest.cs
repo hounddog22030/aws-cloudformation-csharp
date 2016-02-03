@@ -123,7 +123,7 @@ namespace AWS.CloudFormation.Test
             var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, DomainAdminPassword);
 
 
-            var instanceDomainController = new Instance(template, NetBiosNameDomainController1, InstanceTypes.C4Large,
+            var instanceDomainController = new Instance(template, NetBiosNameDomainController1, InstanceTypes.T2Nano,
                 UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
             {
                 Subnet = subnetDomainController1,
@@ -226,8 +226,8 @@ namespace AWS.CloudFormation.Test
 
             ////////the below is a remote desktop gateway server that can
             //////// be uncommented to debug domain setup problems
-            var instanceRdp2 = new RemoteDesktopGateway(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
-            dcPackage.AddToDomainMemberSecurityGroup(instanceRdp2);
+            //var instanceRdp2 = new RemoteDesktopGateway(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", subnetDmz1);
+            //dcPackage.AddToDomainMemberSecurityGroup(instanceRdp2);
 
 
             return template;
