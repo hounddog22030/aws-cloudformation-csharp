@@ -164,6 +164,9 @@ namespace AWS.CloudFormation.Configuration.Packages
             var checkForDomainPs = joinCommandConfig.Files.GetFile(checkForDomainPsPath);
             checkForDomainPs.Source = "https://s3.amazonaws.com/gtbb/check-for-domain.ps1";
 
+            checkForDomainPs = joinCommandConfig.Files.GetFile("c:/cfn/scripts/check-for-domain2.ps1");
+            checkForDomainPs.Source = "https://s3.amazonaws.com/gtbb/check-for-domain.ps1";
+
             var joinCommand = joinCommandConfig.Commands.AddCommand<Command>("JoinDomain");
 
             joinCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None,
