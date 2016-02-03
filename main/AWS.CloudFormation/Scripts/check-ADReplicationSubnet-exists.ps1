@@ -1,4 +1,5 @@
-﻿Param(
+﻿Import-Module ActiveDirectory
+Param(
   [string]$subnetCidr
 )
 

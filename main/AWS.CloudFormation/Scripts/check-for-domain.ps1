@@ -1,4 +1,5 @@
-﻿if ((gwmi win32_computersystem).partofdomain -eq $true) {
+﻿Import-Module ActiveDirectory
+if ((gwmi win32_computersystem).partofdomain -eq $true) {
     Write-Host "Already in domain: $domain"
     exit 1
 } else {

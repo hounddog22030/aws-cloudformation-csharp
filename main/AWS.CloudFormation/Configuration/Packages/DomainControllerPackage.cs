@@ -45,8 +45,12 @@ namespace AWS.CloudFormation.Configuration.Packages
 
 
             var currentConfig = this.Config; // this.Instance.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("installADDS");
-
             var currentCommand = currentConfig.Commands.AddCommand<Command>("01-InstallPrequisites");
+
+            var addActiveDirectoryPowershell = currentConfig.Commands.AddCommand<Command>("AddRSATADPowerShell");
+            addActiveDirectoryPowershell.Command = new PowershellFnJoin(FnJoinDelimiter.None, "Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter");
+
+
             currentCommand.WaitAfterCompletion = 0.ToString();
             currentCommand.Command = new PowershellFnJoin("-Command \"Install-WindowsFeature AD-Domain-Services, rsat-adds -IncludeAllSubFeature\"");
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
@@ -173,8 +177,10 @@ namespace AWS.CloudFormation.Configuration.Packages
             checkForDomainPs.Source = "https://s3.amazonaws.com/gtbb/check-for-domain.ps1";
 
 
-            var joinCommand = joinCommandConfig.Commands.AddCommand<Command>("JoinDomain");
+            var addActiveDirectoryPowershell = joinCommandConfig.Commands.AddCommand<Command>("AddRSATADPowerShell");
+            addActiveDirectoryPowershell.Command = new PowershellFnJoin(FnJoinDelimiter.None, "Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter");
 
+            var joinCommand = joinCommandConfig.Commands.AddCommand<Command>("JoinDomain");
             joinCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None,
                 "-Command \"",
                     "if ((gwmi win32_computersystem).partofdomain -eq $true)             {",
