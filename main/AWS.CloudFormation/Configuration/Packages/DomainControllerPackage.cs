@@ -224,7 +224,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
                 ConfigCommand currentCommand = currentConfig.Commands.AddCommand<Command>(commandName);
                 currentCommand.WaitAfterCompletion = 0.ToString();
-                currentCommand.Command = new PowershellFnJoin("-Command \"New-ADReplicationSite",
+                currentCommand.Command = new PowershellFnJoin("-Command  \"New-ADReplicationSite",
                     new ReferenceProperty(subnet),
                     "\"");
                 currentCommand.Test = new PowershellFnJoin(
