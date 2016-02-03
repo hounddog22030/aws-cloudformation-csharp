@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using Amazon;
 using Amazon.CloudFormation;
@@ -27,6 +28,8 @@ namespace AWS.CloudFormation.Stack
                 StackName = name,
                 TemplateURL = templateUri.AbsoluteUri
             };
+
+            
 
             try
             {
