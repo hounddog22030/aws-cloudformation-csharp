@@ -35,8 +35,9 @@ namespace AWS.CloudFormation.Stack
             AwsTemplateFormatVersion = AwsTemplateFormatVersion20100909;
             this.Resources = new Dictionary<string, ResourceBase>();
             this.Parameters = new Dictionary<string, ParameterBase>();
-            this.Parameters.Add(ParameterKeyPairName, new ParameterBase(ParameterKeyPairName, "AWS::EC2::KeyPair::KeyName", keyPairName));
+            this.Parameters.Add(ParameterKeyPairName, new ParameterBase(ParameterKeyPairName, "AWS::EC2::KeyPair::KeyName", keyPairName,"Key Pair to decrypt instance password."));
             Vpc vpc = new Vpc(this, vpcName, vpcCidrBlock);
+
             if (!string.IsNullOrEmpty(description))
             {
                 this.Description = description;
@@ -77,17 +78,28 @@ namespace AWS.CloudFormation.Stack
 
     public class ParameterBase : Dictionary<string,object>, ILogicalId
     {
-        public ParameterBase(string name, string type, object defaultValue)
+        public ParameterBase(string name, string type, object defaultValue,string description)
         {
             LogicalId = name;
             this.Add("Type",type);
             this.Add("Default", defaultValue);
-
+            this.Add("Description", description);
         }
 
         public string Type => this["Type"].ToString();
         public object Default => this["Default"];
+        public string Description => this["Description"].ToString();
 
         public string LogicalId { get; }
+        public bool NoEcho {
+            get
+            {
+                return (bool)this["NoEcho"];
+            }
+            set
+            {
+                this["NoEcho"] = value;
+            }
+        }
     }
 }

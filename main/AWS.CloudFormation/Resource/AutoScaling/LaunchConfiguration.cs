@@ -241,11 +241,11 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         }
 
         [JsonIgnore]
-        public object KeyName
+        public ReferenceProperty KeyName
         {
             get
             {
-                return this.Properties.GetValue<object>();
+                return this.Properties.GetValue<ReferenceProperty>();
             }
             set
             {

@@ -55,11 +55,41 @@ namespace AWS.CloudFormation.Test
             Run
         }
 
+        public static Template GetTemplateWithParameters()
+        {
+            var template = new Template(KeyPairName, "Vpc", CidrVpc);
+            var password = System.Web.Security.Membership.GeneratePassword(8, 4);
+            var domainPassword = new ParameterBase("DomainAdminPassword", "String", password,
+                "Password for domain administrator.")
+            {
+                NoEcho = true
+            };
+
+            template.Parameters.Add("DomainAdminPassword", domainPassword);
+            return template;
+        }
+
+        [TestMethod]
+        public void TestParameters()
+        {
+            var template = GetTemplateWithParameters();
+            CreateTestStack(template, this.TestContext);
+        }
+
         public static Template GetTemplateFullStack(string version)
         {
             Assert.IsFalse(HasGitDifferences());
             var gitHash = GetGitHash();
             var template = new Template(KeyPairName, "Vpc", CidrVpc,gitHash);
+            var password = System.Web.Security.Membership.GeneratePassword(8, 4);
+            var domainPassword = new ParameterBase("DomainAdminPassword", "String", password,
+                "Password for domain administrator.")
+            {
+                NoEcho = true
+            };
+
+            template.Parameters.Add("DomainAdminPassword", domainPassword);
+
             Vpc vpc = template.Vpcs.First();
             vpc.EnableDnsHostnames = true;
             vpc.EnableDnsSupport = true;
