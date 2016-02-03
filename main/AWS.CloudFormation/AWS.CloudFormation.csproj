@@ -137,6 +137,7 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Scripts\check-ADReplicationSite-exists.ps1" />
     <None Include="Scripts\check-for-user-exists.ps1" />
     <None Include="users.csv" />
   </ItemGroup>

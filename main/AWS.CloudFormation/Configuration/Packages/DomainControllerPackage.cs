@@ -89,6 +89,8 @@ namespace AWS.CloudFormation.Configuration.Packages
                 this.DomainInfo.AdminUserName,
                 "\"");
 
+
+
             currentCommand = currentConfig.Commands.AddCommand<Command>("06-RenameDefaultSite");
             currentCommand.WaitAfterCompletion = 0.ToString();
             currentCommand.Command =
@@ -214,11 +216,20 @@ namespace AWS.CloudFormation.Configuration.Packages
             string commandName = $"create-site-{subnet.LogicalId}";
             if (!currentConfig.Commands.ContainsKey(commandName))
             {
+                const string checkAdReplicationSite = "c:/cfn/scripts/check-ADReplicationSite-exists.ps1";
+
+                var fileCheckAdReplicationSite =  currentConfig.Files.GetFile(checkAdReplicationSite);
+                fileCheckAdReplicationSite.Source = "https://s3.amazonaws.com/gtbb/check-ADReplicationSite-exists.ps1";
+
+
                 ConfigCommand currentCommand = currentConfig.Commands.AddCommand<Command>(commandName);
                 currentCommand.WaitAfterCompletion = 0.ToString();
                 currentCommand.Command = new PowershellFnJoin("-Command \"New-ADReplicationSite",
                     new ReferenceProperty(subnet),
                     "\"");
+                currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkAdReplicationSite}";
+
+
 
                 currentCommand = currentConfig.Commands.AddCommand<Command>($"create-subnet-{subnet.LogicalId}");
                 currentCommand.WaitAfterCompletion = 0.ToString();
