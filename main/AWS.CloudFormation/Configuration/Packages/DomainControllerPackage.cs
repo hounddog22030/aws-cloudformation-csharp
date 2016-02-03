@@ -20,6 +20,7 @@ namespace AWS.CloudFormation.Configuration.Packages
     public class DomainControllerPackage : PackageBase<ConfigSet>
     {
 
+        const string CheckForDomainPsPath = "c:/cfn/scripts/check-for-domain.ps1";
         public DomainControllerPackage(DomainInfo domainInfo, Subnet subnet)
         {
             this.DomainInfo = domainInfo;
@@ -32,23 +33,27 @@ namespace AWS.CloudFormation.Configuration.Packages
         {
             base.AddToLaunchConfiguration(configuration);
             var setup = this.Instance.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("setup");
-
             var setupFiles = setup.Files;
+            var checkForDomainPs = setup.Files.GetFile(CheckForDomainPsPath);
+            checkForDomainPs.Source = "https://s3.amazonaws.com/gtbb/check-for-domain.ps1";
 
             ConfigFile file = setupFiles.GetFile("c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1");
             file.Source = "https://s3.amazonaws.com/quickstart-reference/microsoft/activedirectory/latest/scripts/ConvertTo-EnterpriseAdmin.ps1";
+            const string checkIfUserExists = "c:/cfn/scripts/check-for-user-exists.ps1";
+            file = setupFiles.GetFile(checkIfUserExists);
+            file.Source = "https://s3.amazonaws.com/gtbb/check-for-user-exists.ps1";
 
 
             var currentConfig = this.Instance.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("installADDS");
-            var currentCommand = currentConfig.Commands.AddCommand<Command>("01-InstallPrequisites");
 
+            var currentCommand = currentConfig.Commands.AddCommand<Command>("01-InstallPrequisites");
             currentCommand.WaitAfterCompletion = 0.ToString();
             currentCommand.Command = new PowershellFnJoin("-Command \"Install-WindowsFeature AD-Domain-Services, rsat-adds -IncludeAllSubFeature\"");
-            
+            currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
 
             currentCommand = currentConfig.Commands.AddCommand<Command>("02-InstallActiveDirectoryDomainServices");
             currentCommand.WaitAfterCompletion = new TimeSpan(0, 4, 0).TotalSeconds.ToString(CultureInfo.InvariantCulture);
-            currentCommand.Test = $"IF \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
+            currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
 
 
             currentCommand.Command = new PowershellFnJoin("-Command \"Install-ADDSForest -DomainName",
@@ -57,8 +62,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 this.DomainInfo.DomainNetBiosName,
                 "-ForestMode Win2012 -Confirm:$false -Force\"");
 
-            currentCommand.Test = $"ECHO \"%USERDNSDOMAIN%\" IF \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
-
+            currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
 
             //currentCommand = currentConfig.Commands.AddCommand<Command>("3-restart-service");
             //currentCommand.WaitAfterCompletion = 0.ToString();
@@ -76,6 +80,8 @@ namespace AWS.CloudFormation.Configuration.Packages
                 " -AccountPassword (ConvertTo-SecureString ",
                 this.DomainInfo.AdminPassword,
                 " -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
+
+            currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkIfUserExists} {this.DomainInfo.AdminUserName}";
 
             currentCommand = currentConfig.Commands.AddCommand<Command>("05-UpdateAdminUser");
             currentCommand.WaitAfterCompletion = "0";
@@ -160,12 +166,10 @@ namespace AWS.CloudFormation.Configuration.Packages
             LaunchConfiguration participantLaunchConfiguration = participant as LaunchConfiguration;
 
             var joinCommandConfig = participant.Metadata.Init.ConfigSets.GetConfigSet($"JoinDomain{this.DomainInfo.DomainNetBiosName}").GetConfig("JoinDomain");
-            const string checkForDomainPsPath = "c:/cfn/scripts/check-for-domain.ps1";
-            var checkForDomainPs = joinCommandConfig.Files.GetFile(checkForDomainPsPath);
+
+            var checkForDomainPs = joinCommandConfig.Files.GetFile(CheckForDomainPsPath);
             checkForDomainPs.Source = "https://s3.amazonaws.com/gtbb/check-for-domain.ps1";
 
-            checkForDomainPs = joinCommandConfig.Files.GetFile("c:/cfn/scripts/check-for-domain2.ps1");
-            checkForDomainPs.Source = "https://s3.amazonaws.com/gtbb/check-for-domain.ps1";
 
             var joinCommand = joinCommandConfig.Commands.AddCommand<Command>("JoinDomain");
 
@@ -186,8 +190,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 "-Restart\"",
                 " }");
             joinCommand.WaitAfterCompletion = "forever";
-
-            joinCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkForDomainPsPath}";
+            joinCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
 
             participant.AddDependsOn(this.WaitCondition);
             this.AddToDomainMemberSecurityGroup((Instance)participant);
