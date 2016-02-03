@@ -746,9 +746,9 @@ namespace AWS.CloudFormation.Test
         {
 
             var buildServer = new WindowsInstance(template, $"build", instanceSize, UsEast1AWindows2012R2Ami, subnet, false, DefinitionType.LaunchConfiguration);
-
             buildServer.AddBlockDeviceMapping("/dev/sda1", 100, Ebs.VolumeTypes.GeneralPurpose);
 
+            domainControllerPackage.Participate(buildServer);
             buildServer.Packages.Add(new VisualStudio(BucketNameSoftware));
             buildServer.Packages.Add(new TeamFoundationServerBuildServerAgentOnly(tfsServer, BucketNameSoftware));
 
@@ -768,7 +768,6 @@ namespace AWS.CloudFormation.Test
             domainAdminUserInfoNode.Add("name", domainInfo.DomainNetBiosName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", DomainAdminPassword);
             buildServer.AddSecurityGroup(buildServerSecurityGroup);
-            domainControllerPackage.Participate(buildServer);
             //var waitConditionBuildServerAvailable = buildServer.AddFinalizer("waitConditionBuildServerAvailable",TimeoutMax);
 
             AutoScalingGroup launchGroup = new AutoScalingGroup(template, "BuildServerAutoScalingGroup");
