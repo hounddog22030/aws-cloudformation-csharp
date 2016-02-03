@@ -48,7 +48,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             var currentCommand = currentConfig.Commands.AddCommand<Command>("01-InstallPrequisites");
 
             var addActiveDirectoryPowershell = currentConfig.Commands.AddCommand<Command>("AddRSATADPowerShell");
-            addActiveDirectoryPowershell.Command = new PowershellFnJoin(FnJoinDelimiter.None, "Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter");
+            addActiveDirectoryPowershell.Command = new PowershellFnJoin(FnJoinDelimiter.None, "-Command \"Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter\"");
 
 
             currentCommand.WaitAfterCompletion = 0.ToString();
