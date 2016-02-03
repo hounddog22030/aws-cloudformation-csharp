@@ -77,15 +77,34 @@ namespace AWS.CloudFormation.Test
 
         public static Template GetTemplateFullStack(string version)
         {
-            Assert.IsFalse(HasGitDifferences());
-            var gitHash = GetGitHash();
-            var template = new Template(KeyPairName, "Vpc", CidrVpc,gitHash);
-            var guid = Guid.NewGuid().ToString().Replace("-",string.Empty);
+            var guid = Guid.NewGuid().ToString().Replace("-", string.Empty);
             var random = new Random(((int)DateTime.Now.Ticks % int.MaxValue));
             var startAt = random.Next(0, guid.Length - 9);
 
+            string password = string.Empty;
 
-            var password = guid.Substring(startAt, 8);
+            for (int i = 0; i < 4; i++)
+            {
+                char charToAdd = ((char)random.Next((int)'A', (int)'Z'));
+                password += charToAdd;
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                char charToAdd = ((char) random.Next((int) '0', (int) '9'));
+                password += charToAdd;
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                char charToAdd = ((char)random.Next((int)'a', (int)'z'));
+                password += charToAdd;
+            }
+
+            Assert.IsFalse(HasGitDifferences());
+            var gitHash = GetGitHash();
+            var template = new Template(KeyPairName, "Vpc", CidrVpc,gitHash);
+
             var domainPassword = new ParameterBase("DomainAdminPassword", "String", password,
                 "Password for domain administrator.")
             {
