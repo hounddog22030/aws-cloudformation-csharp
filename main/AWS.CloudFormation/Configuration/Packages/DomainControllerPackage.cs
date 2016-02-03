@@ -49,7 +49,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             currentCommand = currentConfig.Commands.AddCommand<Command>("02-InstallActiveDirectoryDomainServices");
             currentCommand.WaitAfterCompletion = new TimeSpan(0, 4, 0).TotalSeconds.ToString(CultureInfo.InvariantCulture);
-            currentCommand.Test = $"IF /I \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName}\" EXIT /B 1 ELSE EXIT /B 0";
+            currentCommand.Test = $"IF \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
 
             currentCommand.Command = new PowershellFnJoin("-Command \"Install-ADDSForest -DomainName",
@@ -58,8 +58,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 this.DomainInfo.DomainNetBiosName,
                 "-ForestMode Win2012 -Confirm:$false -Force\"");
 
-            currentCommand.Test =
-                $"IF /I \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName}\" EXIT /B 1 ELSE EXIT /B 0";
+            currentCommand.Test = $"ECHO \"%USERDNSDOMAIN%\" IF \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
 
             //currentCommand = currentConfig.Commands.AddCommand<Command>("3-restart-service");
@@ -185,7 +184,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 " }");
             joinCommand.WaitAfterCompletion = "forever";
 
-            joinCommand.Test = $"IF \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToUpperInvariant()}\" EXIT /B 1 ELSE EXIT /B 0";
+            joinCommand.Test = $"EXIT /B 1";
 
             participant.AddDependsOn(this.WaitCondition);
             this.AddToDomainMemberSecurityGroup((Instance)participant);
