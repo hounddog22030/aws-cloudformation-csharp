@@ -161,7 +161,7 @@ namespace AWS.CloudFormation.Test
             var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
             var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
 
-            var x = new Instance(template, "z", InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, OperatingSystem.Windows,
+            var x = new Instance(template, "xxx", InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, OperatingSystem.Windows,
                 true)
             {
                 Subnet = subnetBuildServer

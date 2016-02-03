@@ -184,7 +184,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 " }");
             joinCommand.WaitAfterCompletion = "forever";
 
-            joinCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkForDomainPsPath} {this.DomainInfo.DomainDnsName}";
+            joinCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkForDomainPsPath}";
 
             participant.AddDependsOn(this.WaitCondition);
             this.AddToDomainMemberSecurityGroup((Instance)participant);
