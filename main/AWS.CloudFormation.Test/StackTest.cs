@@ -135,6 +135,8 @@ namespace AWS.CloudFormation.Test
             DomainControllerPackage dcPackage = new DomainControllerPackage(domainInfo, subnetDomainController1);
             instanceDomainController.Packages.Add(dcPackage);
 
+            instanceDomainController.Packages.Add(new Chrome());
+
             FnGetAtt dc1PrivateIp = new FnGetAtt(instanceDomainController, "PrivateIp");
             object[] elements = new object[] { dc1PrivateIp, "10.0.0.2" };
             FnJoin dnsServers = new FnJoin(FnJoinDelimiter.Comma, elements);
@@ -202,7 +204,7 @@ namespace AWS.CloudFormation.Test
             //target.TTL = "60";
             //target.AddResourceRecord(new FnGetAtt(rdsSqlExpress4Build, "Endpoint.Address"));
 
-            var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, mySql4Build, rdsSqlExpress4Build);
+            //var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, mySql4Build, rdsSqlExpress4Build);
 
             // uses 33gb
             //var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
