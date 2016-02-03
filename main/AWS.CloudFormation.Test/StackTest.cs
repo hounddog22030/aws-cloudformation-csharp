@@ -178,7 +178,7 @@ namespace AWS.CloudFormation.Test
             var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, domainAdminPasswordReference);
 
 
-            var instanceDomainController = new Instance(template, NetBiosNameDomainController1, InstanceTypes.C4Large,
+            var instanceDomainController = new Instance(template, NetBiosNameDomainController1, InstanceTypes.T2Nano,
                 UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
             {
                 Subnet = subnetDomainController1,
@@ -216,7 +216,7 @@ namespace AWS.CloudFormation.Test
                 sqlServer4TfsSecurityGroup);
             var sqlPackage = instanceTfsSqlServer.Packages.OfType<SqlServerExpress>().Single();
 
-            var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
+            var tfsServer = AddTfsServer(template, InstanceTypes.C4Large, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
             var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
 
             DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup(template, "mySqlSubnetGroupForDatabaseForBuild", "Second subnet for database for build server");
