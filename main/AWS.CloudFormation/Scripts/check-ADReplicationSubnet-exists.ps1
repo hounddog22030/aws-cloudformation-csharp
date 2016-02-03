@@ -1,5 +1,6 @@
 ﻿Import-Module ActiveDirectory
-Param(
+
+param(
   [string]$subnetCidr
 )
 
