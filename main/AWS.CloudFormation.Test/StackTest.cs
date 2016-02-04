@@ -222,10 +222,10 @@ namespace AWS.CloudFormation.Test
 
 
 
-            //DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup(template, "mySqlSubnetGroupForDatabaseForBuild", "Second subnet for database for build server");
-            //mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
-            //mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
-            ////DbInstance mySql4Build = null;
+            DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup(template, "mySqlSubnetGroupForDatabaseForBuild", "Second subnet for database for build server");
+            mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
+            mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
+            //DbInstance mySql4Build = null;
 
             ////mySql4Build = new DbInstance(
             ////    template,
@@ -240,39 +240,28 @@ namespace AWS.CloudFormation.Test
             ////    mySqlSubnetGroupForDatabaseForBuild,
             ////    securityGroupDb4Build);
 
-            //DbSubnetGroup subnetGroupSqlExpress4Build = new DbSubnetGroup(template, "subnetGroupSqlExpress4Build", "DbSubnet Group for SQL Server database for build server");
-            //subnetGroupSqlExpress4Build.AddSubnet(subnetBuildServer);
-            //subnetGroupSqlExpress4Build.AddSubnet(subnetDatabase4BuildServer2);
+            DbSubnetGroup subnetGroupSqlExpress4Build = new DbSubnetGroup(template, "subnetGroupSqlExpress4Build", "DbSubnet Group for SQL Server database for build server");
+            subnetGroupSqlExpress4Build.AddSubnet(subnetBuildServer);
+            subnetGroupSqlExpress4Build.AddSubnet(subnetDatabase4BuildServer2);
 
-            //DbInstance rdsSqlExpress4Build = null;
-
-
-            //rdsSqlExpress4Build = new DbInstance(template,
-            //    "sqlserver4build",
-            //    DbInstanceClassEnum.DbT2Micro,
-            //    EngineType.SqlServerExpress,
-            //    LicenseModelType.LicenseIncluded,
-            //    Ebs.VolumeTypes.GeneralPurpose,
-            //    30,
-            //    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name),
-            //    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name) 
-            //    );
-
-            //template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
-            //template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd@!871!", "Password for Master User For RDS SqlServer") {NoEcho = true});
+            DbInstance rdsSqlExpress4Build = null;
 
 
-            ////string privateDomain = $"{StackTest.DomainNetBiosName}.yadayada.software.private.";
+            rdsSqlExpress4Build = new DbInstance(template,
+                "sqlserver4build",
+                DbInstanceClassEnum.DbT2Micro,
+                EngineType.SqlServerExpress,
+                LicenseModelType.LicenseIncluded,
+                Ebs.VolumeTypes.GeneralPurpose,
+                30,
+                new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name),
+                new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name)
+                );
 
-            ////var target = RecordSet.AddByHostedZoneName(template,
-            ////    $"recordset4{rdsSqlExpress4Build.LogicalId}".Replace('.', '-'),
-            ////    privateDomain,
-            ////    $"sql4tfs.{privateDomain}",
-            ////    RecordSet.RecordSetTypeEnum.CNAME);
-            ////target.TTL = "60";
-            ////target.AddResourceRecord(new FnGetAtt(rdsSqlExpress4Build, "Endpoint.Address"));
+            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
+            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd@!871!", "Password for Master User For RDS SqlServer") { NoEcho = true });
 
-            //var buildServer = AddBuildServer(template, InstanceTypes.C4Large, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
+            var buildServer = AddBuildServer(template, InstanceTypes.C4Large, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
 
             //// uses 33gb
             ////var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
