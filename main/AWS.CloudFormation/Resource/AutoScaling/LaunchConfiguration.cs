@@ -25,11 +25,9 @@ namespace AWS.CloudFormation.Resource.AutoScaling
     {
         public const string ChefNodeJsonConfigSetName = "ChefNodeJsonConfigSetName";
         public const string ChefNodeJsonConfigName = "ChefNodeJsonConfigName";
-        public const string DefaultConfigSetName = "config";
-        public const string DefaultConfigSetRenameConfig = "rename";
-        public const string DefaultConfigSetJoinConfig = "join";
-        public const string DefaultConfigSetRenameConfigRenamePowerShellCommand = "Execute-powershell-script-RenameComputer";
-        public const string DefaultConfigSetRenameConfigJoinDomain = "b-join-domain";
+        public const string DefaultConfigSetName = "ConfigLaunchConfiguration";
+        public const string DefaultConfigSetRenameConfig = "Rename";
+        public const string DefaultConfigSetRenameConfigRenamePowerShellCommand = "RenameComputer";
         public const int NetBiosMaxLength = 15;
 
 
@@ -355,7 +353,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             if (OperatingSystem == OperatingSystem.Windows)
             {
                 var setup = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig("setup");
-                var disableFirewallCommand = setup.Commands.AddCommand<Command>("a-disable-win-fw");
+                var disableFirewallCommand = setup.Commands.AddCommand<Command>("DisableWindowsFirewall");
                 disableFirewallCommand.Command = new PowershellFnJoin("-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\"");
                 disableFirewallCommand.WaitAfterCompletion = 0.ToString();
             }
