@@ -287,9 +287,9 @@ namespace AWS.CloudFormation.Configuration.Packages
     public class TeamFoundationServerBuildServerBase : TeamFoundationServer
     {
 
-        public const string sqlexpress4build_private_dns_name_parameter_name = "sqlexpress4build_private_dns_name_parameter_name";
-        public const string sqlexpress4build_username_parameter_name = "sqlexpress4build_username";
-        public const string sqlexpress4build_password_parameter_name = "sqlexpress4build_password";
+        public const string sqlexpress4build_private_dns_name_parameter_name = "sqlexpress4buildprivatednsnameparametername";
+        public const string sqlexpress4build_username_parameter_name = "sqlexpress4buildusername";
+        public const string sqlexpress4build_password_parameter_name = "sqlexpress4buildpassword";
 
         public TeamFoundationServerBuildServerBase( LaunchConfiguration applicationServer, 
                                                     string bucketName,
