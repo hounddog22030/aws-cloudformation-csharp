@@ -315,7 +315,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             if (this.OperatingSystem==OperatingSystem.Windows)
             {
 
-                var setup = Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("setup");
+                var setup = Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigName);
                 var setupFiles = setup.Files;
 
                 var cfnHupConfContent = setupFiles.GetFile("c:\\cfn\\cfn-hup.conf").Content;
