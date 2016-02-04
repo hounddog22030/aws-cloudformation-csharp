@@ -63,7 +63,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
 
         private void AddRename()
         {
-            if (OperatingSystem == OperatingSystem.Windows)
+            if (OperatingSystem == OperatingSystem.Windows  && this.Type != ResourceType.AwsAutoScalingLaunchConfiguration)
             {
                 var renameConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetRenameConfig);
                 var renameCommandConfig = renameConfig.Commands.AddCommand<Command>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
