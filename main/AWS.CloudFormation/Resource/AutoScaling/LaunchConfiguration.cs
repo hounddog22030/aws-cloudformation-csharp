@@ -67,11 +67,13 @@ namespace AWS.CloudFormation.Resource.AutoScaling
 
         }
 
+        private const int NetBiosMachineNameLengthLimit = 15;
+
         private void AddRename()
         {
             var renameConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetRenameConfig);
             var renameCommandConfig = renameConfig.Commands.AddCommand<Command>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
-            renameCommandConfig.Command = new PowershellFnJoin($"\"Rename-Computer -NewName {this.LogicalId.Substring(0,15)} -Restart -Force\"");
+            renameCommandConfig.Command = new PowershellFnJoin($"\"Rename-Computer -NewName {this.LogicalId.Substring(0, this.LogicalId.Length > NetBiosMachineNameLengthLimit ? NetBiosMachineNameLengthLimit : this.LogicalId.Length)} -Restart -Force\"");
             renameCommandConfig.WaitAfterCompletion = "forever";
             renameCommandConfig.Test = $"IF \"%COMPUTERNAME%\"==\"{this.LogicalId.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
         }
