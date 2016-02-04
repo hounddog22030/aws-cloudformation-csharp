@@ -219,35 +219,48 @@ namespace AWS.CloudFormation.Test
             var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
             var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
 
+
+
+
             DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup(template, "mySqlSubnetGroupForDatabaseForBuild", "Second subnet for database for build server");
             mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
             mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
-            DbInstance mySql4Build = null;
-            mySql4Build = new DbInstance(
-                template,
-                "sql4build",
-                DbInstanceClassEnum.DbT2Micro,
-                EngineType.MySql,
-                LicenseModelType.GeneralPublicLicense,
-                "masterusername",
-                "Hy77tttt.",
-                20,
-                mySqlSubnetGroupForDatabaseForBuild,
-                securityGroupDb4Build,
-                Ebs.VolumeTypes.GeneralPurpose);
+            //DbInstance mySql4Build = null;
+
+            //mySql4Build = new DbInstance(
+            //    template,
+            //    "sql4build",
+            //    DbInstanceClassEnum.DbT2Micro,
+            //    EngineType.MySql,
+            //    LicenseModelType.GeneralPublicLicense,
+            //    Ebs.VolumeTypes.GeneralPurpose,
+            //    20,
+            //    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name),
+            //    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name),
+            //    mySqlSubnetGroupForDatabaseForBuild,
+            //    securityGroupDb4Build);
 
             DbSubnetGroup subnetGroupSqlExpress4Build = new DbSubnetGroup(template, "subnetGroupSqlExpress4Build", "DbSubnet Group for SQL Server database for build server");
             subnetGroupSqlExpress4Build.AddSubnet(subnetBuildServer);
             subnetGroupSqlExpress4Build.AddSubnet(subnetDatabase4BuildServer2);
 
             DbInstance rdsSqlExpress4Build = null;
+
+
             rdsSqlExpress4Build = new DbInstance(template,
                 "sqlserver4build",
                 DbInstanceClassEnum.DbT2Micro,
                 EngineType.SqlServerExpress,
                 LicenseModelType.LicenseIncluded,
-                "sqlserveruser", "Hy77tttt.", 20, subnetGroupSqlExpress4Build, securityGroupSqlSever4Build,
-                Ebs.VolumeTypes.GeneralPurpose);
+                Ebs.VolumeTypes.GeneralPurpose,
+                30,
+                new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name),
+                new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name) 
+                );
+
+            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
+            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd@!871!", "Password for Master User For RDS SqlServer") {NoEcho = true});
+
 
             //string privateDomain = $"{StackTest.DomainNetBiosName}.yadayada.software.private.";
 
@@ -259,7 +272,7 @@ namespace AWS.CloudFormation.Test
             //target.TTL = "60";
             //target.AddResourceRecord(new FnGetAtt(rdsSqlExpress4Build, "Endpoint.Address"));
 
-            var buildServer = AddBuildServer(template, InstanceTypes.C4Large, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, mySql4Build, rdsSqlExpress4Build);
+            var buildServer = AddBuildServer(template, InstanceTypes.C4Large, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
 
             // uses 33gb
             //var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
@@ -804,7 +817,7 @@ namespace AWS.CloudFormation.Test
             WaitCondition tfsServerComplete, 
             DomainControllerPackage domainControllerPackage, 
             SecurityGroup buildServerSecurityGroup, 
-            params ResourceBase[] dependsOn)
+            LaunchConfiguration sqlExpress4Build)
         {
 
             var buildServer = new WindowsInstance(template, $"build", instanceSize, UsEast1AWindows2012R2Ami, subnet, false, DefinitionType.LaunchConfiguration);
@@ -812,15 +825,15 @@ namespace AWS.CloudFormation.Test
 
             domainControllerPackage.Participate(buildServer);
             buildServer.Packages.Add(new VisualStudio(BucketNameSoftware));
-            buildServer.Packages.Add(new TeamFoundationServerBuildServerAgentOnly(tfsServer, BucketNameSoftware));
+            buildServer.Packages.Add(new TeamFoundationServerBuildServerAgentOnly(tfsServer, BucketNameSoftware, sqlExpress4Build));
 
             if (tfsServerComplete != null)
             {
                 buildServer.AddDependsOn(tfsServerComplete);
             }
-            if (dependsOn != null & dependsOn.Length > 0)
+            if (sqlExpress4Build != null)
             {
-                dependsOn.ToList().ForEach(d=> buildServer.DependsOn.Add(d.LogicalId));
+                buildServer.DependsOn.Add(sqlExpress4Build.LogicalId);
             }
 
             var chefNode = buildServer.GetChefNodeJsonContent();

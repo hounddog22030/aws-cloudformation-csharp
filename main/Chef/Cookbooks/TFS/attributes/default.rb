@@ -14,3 +14,7 @@ default['tfs']['build_agent_zipfile_url'] = "https://s3.amazonaws.com/#{default[
 default['tfs']['build_agent_zipfile_path'] = "#{Chef::Config['file_cache_path']}/#{default['tfs']['build_agent_zipfile_filename']}"
 default['tfs']['build_agent_dir'] = "c:/agent"
 default['tfs']['build_agent_command_file_path'] = "#{default['tfs']['build_agent_dir']}/ConfigureAgent.cmd"
+
+default['tfs']['sqlexpress4build_private_dns_name'] = "invalid"
+default['tfs']['sqlexpress4build_username'] = "invalid"
+default['tfs']['sqlexpress4build_password'] = "invalid"

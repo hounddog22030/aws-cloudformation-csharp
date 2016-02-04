@@ -54,7 +54,16 @@ namespace AWS.CloudFormation.Resource.RDS
     //"license-included"
     public class DbInstance : ResourceBase
     {
-        public DbInstance(Template template, string name, DbInstanceClassEnum instanceType, EngineType engineType, LicenseModelType licenseType, string masterUserName, string masterPassword, int allocatedStorage, Ebs.VolumeTypes storageType) : base(template, name, ResourceType.AwsRdsDbInstance)
+        public DbInstance(Template template, 
+            string name, 
+            DbInstanceClassEnum instanceType, 
+            EngineType engineType, 
+            LicenseModelType licenseType,
+            Ebs.VolumeTypes storageType,
+            int allocatedStorage,
+            ReferenceProperty masterUserName,
+            ReferenceProperty masterPassword 
+            ) : base(template, name, ResourceType.AwsRdsDbInstance)
         {
             this.Type = ResourceType.AwsRdsDbInstance;
             this.DBInstanceClass = instanceType;
@@ -71,12 +80,13 @@ namespace AWS.CloudFormation.Resource.RDS
             DbInstanceClassEnum instanceType, 
             EngineType engineType,
             LicenseModelType licenseType,
-            string masterUserName, 
-            string masterPassword, 
-            int allocatedStorage, 
+            Ebs.VolumeTypes storageType,
+            int allocatedStorage,
+            ReferenceProperty masterUserName,
+            ReferenceProperty masterPassword,
             DbSubnetGroup subnetGroup, 
-            DbSecurityGroup dbSecurityGroup,
-            Ebs.VolumeTypes storageType) : this(template,name,instanceType,engineType,licenseType,masterUserName,masterPassword,allocatedStorage, storageType)
+            DbSecurityGroup dbSecurityGroup
+            ) : this(template,name,instanceType,engineType,licenseType, storageType, allocatedStorage, masterUserName, masterPassword)
         {
             this.DBSubnetGroupName = new ReferenceProperty(subnetGroup);
             this.AddDbSecurityGroup(dbSecurityGroup);
@@ -87,12 +97,13 @@ namespace AWS.CloudFormation.Resource.RDS
             DbInstanceClassEnum instanceType,
             EngineType engineType,
             LicenseModelType licenseType,
-            string masterUserName,
-            string masterPassword,
+            Ebs.VolumeTypes storageType,
             int allocatedStorage,
             DbSubnetGroup subnetGroup,
             SecurityGroup dbSecurityGroup,
-            Ebs.VolumeTypes storageType) : this(template, name, instanceType, engineType, licenseType, masterUserName, masterPassword, allocatedStorage, storageType)
+            ReferenceProperty masterUserName,
+            ReferenceProperty masterPassword
+            ) : this(template, name, instanceType, engineType, licenseType, storageType, allocatedStorage, masterUserName, masterPassword)
         {
             this.DBSubnetGroupName = new ReferenceProperty(subnetGroup);
             this.AddVpcSecurityGroup(dbSecurityGroup);
@@ -165,11 +176,11 @@ namespace AWS.CloudFormation.Resource.RDS
         }
 
         [JsonIgnore]
-        public string MasterUsername
+        public ReferenceProperty MasterUsername
         {
             get
             {
-                return this.Properties.GetValue<string>();
+                return this.Properties.GetValue<ReferenceProperty>();
             }
             set
             {
@@ -178,11 +189,11 @@ namespace AWS.CloudFormation.Resource.RDS
         }
 
         [JsonIgnore]
-        public string MasterUserPassword
+        public ReferenceProperty MasterUserPassword
         {
             get
             {
-                return this.Properties.GetValue<string>();
+                return this.Properties.GetValue<ReferenceProperty>();
             }
             set
             {

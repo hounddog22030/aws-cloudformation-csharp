@@ -105,7 +105,10 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         [EnumMember(Value = "PrivateDnsName")]
         AwsEc2InstancePrivateDnsName,
         [EnumMember(Value = "PrivateIp")]
-        AwsEc2InstancePrivateIp
+        AwsEc2InstancePrivateIp,
+        [EnumMember(Value = "Endpoint.Address")]
+        AwsRdsDbInstanceEndpointAddress
+        //
     }
 
     public class FnGetAtt : CloudFormationDictionary

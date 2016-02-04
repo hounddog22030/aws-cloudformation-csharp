@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Stack;
@@ -284,11 +285,18 @@ namespace AWS.CloudFormation.Configuration.Packages
 
     public class TeamFoundationServerBuildServerBase : TeamFoundationServer
     {
-        public TeamFoundationServerBuildServerBase(LaunchConfiguration applicationServer, string bucketName,
-            string recipeName) : base(bucketName, recipeName)
+
+        public const string sqlexpress4build_private_dns_name_parameter_name = "sqlexpress4build_private_dns_name_parameter_name";
+        public const string sqlexpress4build_username_parameter_name = "sqlexpress4build_username";
+        public const string sqlexpress4build_password_parameter_name = "sqlexpress4build_password";
+
+        public TeamFoundationServerBuildServerBase(LaunchConfiguration applicationServer, string bucketName, string recipeName, LaunchConfiguration sqlServer4Build) : base(bucketName, recipeName)
         {
             this.ApplicationServer = applicationServer;
+            this.SqlServer4Build = sqlServer4Build;
         }
+
+        public LaunchConfiguration SqlServer4Build { get; }
 
         public LaunchConfiguration ApplicationServer { get; }
 
@@ -298,6 +306,11 @@ namespace AWS.CloudFormation.Configuration.Packages
             var node = this.Instance.GetChefNodeJsonContent();
             var tfsNode = node.Add("tfs");
             tfsNode.Add("application_server_netbios_name", new FnGetAtt(this.ApplicationServer, FnGetAttAttribute.AwsEc2InstancePrivateDnsName));
+            tfsNode.Add("sqlexpress4build_private_dns_name_parameter_name", new FnGetAtt(this.SqlServer4Build, FnGetAttAttribute.AwsRdsDbInstanceEndpointAddress));
+            tfsNode.Add("sqlexpress4build_username_parameter_name",
+                new ReferenceProperty("sqlexpress4build_username_parameter_name"));
+            tfsNode.Add("sqlexpress4build_password_parameter_name",
+                new ReferenceProperty("sqlexpress4build_password_parameter_name"));
         }
     }
 
@@ -305,16 +318,16 @@ namespace AWS.CloudFormation.Configuration.Packages
 
     public class TeamFoundationServerBuildServer : TeamFoundationServerBuildServerBase
     {
-        public TeamFoundationServerBuildServer(LaunchConfiguration applicationServer, string bucketName)
-            : base(applicationServer, bucketName, "build")
+        public TeamFoundationServerBuildServer(LaunchConfiguration applicationServer, string bucketName, LaunchConfiguration sqlExpress4Build)
+            : base(applicationServer, bucketName, "build", sqlExpress4Build)
         {
         }
     }
 
     public class TeamFoundationServerBuildServerAgentOnly : TeamFoundationServerBuildServerBase
     {
-        public TeamFoundationServerBuildServerAgentOnly(WindowsInstance applicationServer, string bucketName)
-            : base(applicationServer, bucketName, "agent")
+        public TeamFoundationServerBuildServerAgentOnly(WindowsInstance applicationServer, string bucketName, LaunchConfiguration sqlExpress4Build)
+            : base(applicationServer, bucketName, "agent", sqlExpress4Build)
         {
         }
     }
