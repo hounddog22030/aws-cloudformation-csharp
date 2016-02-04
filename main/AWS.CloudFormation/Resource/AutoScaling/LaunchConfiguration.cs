@@ -25,7 +25,8 @@ namespace AWS.CloudFormation.Resource.AutoScaling
     {
         public const string ChefNodeJsonConfigSetName = "ChefNodeJsonConfigSetName";
         public const string ChefNodeJsonConfigName = "ChefNodeJsonConfigName";
-        public const string DefaultConfigSetName = "ConfigLaunchConfiguration";
+        public const string DefaultConfigSetName = "LaunchConfigurationConfigSet";
+        public const string DefaultConfigName = "LaunchConfigurationConfig";
         public const string DefaultConfigSetRenameConfig = "Rename";
         public const string DefaultConfigSetRenameConfigRenamePowerShellCommand = "RenameComputer";
         public const int NetBiosMaxLength = 15;
@@ -128,7 +129,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         public ConfigFileContent GetChefNodeJsonContent()
         {
 
-            var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("setup");
+            var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigName);
             var nodeJson = chefConfig.Files.GetFile("c:/chef/node.json");
             return nodeJson.Content;
         }
