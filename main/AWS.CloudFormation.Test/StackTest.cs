@@ -484,11 +484,12 @@ namespace AWS.CloudFormation.Test
             blockDeviceMapping = new BlockDeviceMapping(w, "xvdh");
             blockDeviceMapping.Ebs.SnapshotId = "snap-4e69d94b";
             w.AddBlockDeviceMapping(blockDeviceMapping);
-            w.AddChefExec(BucketNameSoftware, "MountDrives.tar.gz", "MountDrives");
-            w.AddSecurityGroup(rdp);
-            w.AddElasticIp();
-            var name = this.TestContext.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".",string.Empty) ;
-            Stack.Stack.CreateStack(template, name);
+            throw new NotImplementedException();
+            //w.AddChefExec(BucketNameSoftware, "MountDrives.tar.gz", "MountDrives");
+            //w.AddSecurityGroup(rdp);
+            //w.AddElasticIp();
+            //var name = this.TestContext.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".",string.Empty) ;
+            //Stack.Stack.CreateStack(template, name);
         }
 
         [TestMethod]
@@ -793,13 +794,14 @@ namespace AWS.CloudFormation.Test
             blockDeviceMapping = new BlockDeviceMapping(w, "xvdh");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
             w.AddBlockDeviceMapping(blockDeviceMapping);
-            w.AddChefExec(BucketNameSoftware, "MountDrives.tar.gz", "MountDrives");
+            throw new NotImplementedException();
+            //w.AddChefExec(BucketNameSoftware, "MountDrives.tar.gz", "MountDrives");
 
 
-            w.AddSecurityGroup(rdp);
-            w.AddElasticIp();
-            var name = "CreateStackWithMounterTest-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty);
-            Stack.Stack.CreateStack(template, name);
+            //w.AddSecurityGroup(rdp);
+            //w.AddElasticIp();
+            //var name = "CreateStackWithMounterTest-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty);
+            //Stack.Stack.CreateStack(template, name);
         }
 
 
