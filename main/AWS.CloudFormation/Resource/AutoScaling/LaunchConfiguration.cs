@@ -353,7 +353,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         {
             if (OperatingSystem == OperatingSystem.Windows)
             {
-                var setup = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig("setup");
+                var setup = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigName);
                 var disableFirewallCommand = setup.Commands.AddCommand<Command>("DisableWindowsFirewall");
                 disableFirewallCommand.Command = new PowershellFnJoin("-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\"");
                 disableFirewallCommand.WaitAfterCompletion = 0.ToString();
