@@ -1,4 +1,5 @@
-﻿using AWS.CloudFormation.Common;
+﻿using System;
+using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Resource.AutoScaling;
 
 namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config
@@ -72,5 +73,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config
             return returnValue;
 
         }
+
     }
 }

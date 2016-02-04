@@ -62,7 +62,7 @@ namespace AWS.CloudFormation.Resource
             DependsOn = new List<string>();
             this.Template.Resources.Add(name, this);
             Metadata = new Metadata(this);
-            if (template.Outputs.Count < 60)
+            if (template.Outputs.Count() < 60)
             {
                 template.Outputs.Add(name, new Output(name, new ReferenceProperty(this)));
             }

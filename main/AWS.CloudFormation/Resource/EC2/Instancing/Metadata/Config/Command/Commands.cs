@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Linq;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.AutoScaling;
@@ -62,7 +63,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
             {
                 throw new Exception(key);
             }
-            key = this.Count.ToString().PadLeft(3, '0') + key;
+            key = this.Count().ToString().PadLeft(3, '0') + key;
             ConfigCommand newConfigCommand = new ConfigCommand(this.Instance, key);
             this.Add(key, newConfigCommand);
             newConfigCommand.Command = new T() {Parent = newConfigCommand };

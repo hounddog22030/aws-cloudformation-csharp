@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -26,6 +27,7 @@ namespace AWS.CloudFormation.Stack
 
         public Template(string defaultKeyName, string vpcName, string vpcCidrBlock ) : this(defaultKeyName,vpcName,vpcCidrBlock,null)
         {
+            
         }
 
         public Template(string keyPairName, string vpcName, string vpcCidrBlock, string description) : base()
@@ -53,6 +55,7 @@ namespace AWS.CloudFormation.Stack
         public string AwsTemplateFormatVersion { get; }
 
         public Dictionary<string, ResourceBase> Resources { get; private set; }
+        
         public CloudFormationDictionary Parameters { get; private set; }
 
         [JsonIgnore]
@@ -60,13 +63,6 @@ namespace AWS.CloudFormation.Stack
         {
             get { return this.Resources.Where(r => r.Value is Vpc).Select(r=>r.Value).OfType<Vpc>(); }
         }
-
-        //public void AddResource(ResourceBase resource)
-        //{
-        //    this.Resources.Add(resource.LogicalId, resource);
-        //}
-
-
 
         public void AddParameter(ParameterBase parameter)
         {
