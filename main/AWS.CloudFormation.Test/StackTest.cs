@@ -39,6 +39,7 @@ namespace AWS.CloudFormation.Test
 
         private const string DomainAdminUser = "johnny";
         private const string UsEast1AWindows2012R2Ami = "ami-9a0558f0";
+        private const string UsEast1AWindows2012R2SqlServerExpressAmi = "ami-a3005dc9";
         private const string UsEast1AWindows2012R2SqlExpressAmi = "ami-a3005dc9";
         private const string NetBiosNameDomainController1 = "dc1";
         private const string BucketNameSoftware = "gtbb";
@@ -265,14 +266,12 @@ namespace AWS.CloudFormation.Test
             var buildServer = AddBuildServer(template, InstanceTypes.C4Large, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
 
             //uses 33gb
-            var workstation = AddWorkstation(template, 
-                "workstation", 
-                subnetWorkstation, 
-                dcPackage, 
-                workstationSecurityGroup, 
-                true);
-            workstation.Packages.Add(new Chrome());
-            workstation.Packages.Add(new ReSharper());
+            //var workstation = AddWorkstation(template, 
+            //    "workstation", 
+            //    subnetWorkstation, 
+            //    dcPackage, 
+            //    workstationSecurityGroup, 
+            //    true);
 
 
             ////SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
@@ -858,9 +857,14 @@ namespace AWS.CloudFormation.Test
         {
             if (subnet == null) throw new ArgumentNullException(nameof(subnet));
 
-            WindowsInstance workstation = new WindowsInstance(template, name, InstanceTypes.C4Large, UsEast1AWindows2012R2Ami, subnet, rename, Ebs.VolumeTypes.GeneralPurpose, 214);
+            WindowsInstance workstation = new WindowsInstance(template, name, InstanceTypes.C4Large, UsEast1AWindows2012R2SqlServerExpressAmi, subnet, rename, Ebs.VolumeTypes.GeneralPurpose, 214);
 
-            workstation.Packages.Add(new SqlServerExpress(BucketNameSoftware));
+            if (instanceDomainControllerPackage != null)
+            {
+                instanceDomainControllerPackage.Participate(workstation);
+            }
+
+            //workstation.Packages.Add(new SqlServerExpress(BucketNameSoftware));
             workstation.Packages.Add(new VisualStudio(BucketNameSoftware));
 
             if (workstationSecurityGroup != null)
@@ -870,11 +874,7 @@ namespace AWS.CloudFormation.Test
 
             //var waitConditionWorkstationAvailable = workstation.AddFinalizer("waitConditionWorkstationAvailable",TimeoutMax);
 
-            if (instanceDomainControllerPackage != null)
-            {
-                instanceDomainControllerPackage.Participate(workstation);
-            }
-
+ 
             return workstation;
         }
 
@@ -1047,9 +1047,9 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateDevelopmentTest()
         {
-            var stackName = "alphayadayada-software";
-            var template = GetTemplateFullStack("alpha");
-            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "OUGN1875xnsr";
+            var stackName = "betayadayada-software";
+            var template = GetTemplateFullStack("beta");
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "XAOI2802uoil";
             Stack.Stack.UpdateStack(stackName,template );
         }
 
