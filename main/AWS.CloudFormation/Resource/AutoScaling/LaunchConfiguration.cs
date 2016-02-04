@@ -36,8 +36,9 @@ namespace AWS.CloudFormation.Resource.AutoScaling
                                 string name,
                                 InstanceTypes instanceType,
                                 string imageId,
-                                OperatingSystem operatingSystem)
-            : base(template, name, ResourceType.AwsAutoScalingLaunchConfiguration)
+                                OperatingSystem operatingSystem,
+                                ResourceType resourceType)
+            : base(template, name, resourceType)
         {
             _availableDevices = new List<string>();
             this.InstanceType = instanceType;
@@ -58,19 +59,21 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             this.EnableHup();
             SetUserData();
             this.DisableFirewall();
-            this.AddRename();
+            if (OperatingSystem == OperatingSystem.Windows &&
+                this.Type != ResourceType.AwsAutoScalingLaunchConfiguration)
+            {
+                this.AddRename();
+            }
+
         }
 
         private void AddRename()
         {
-            if (OperatingSystem == OperatingSystem.Windows  && this.Type != ResourceType.AwsAutoScalingLaunchConfiguration)
-            {
-                var renameConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetRenameConfig);
-                var renameCommandConfig = renameConfig.Commands.AddCommand<Command>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
-                renameCommandConfig.Command = new PowershellFnJoin($"\"Rename-Computer -NewName {this.LogicalId} -Restart -Force\"");
-                renameCommandConfig.WaitAfterCompletion = "forever";
-                renameCommandConfig.Test = $"IF \"%COMPUTERNAME%\"==\"{this.LogicalId.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
-            }
+            var renameConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetRenameConfig);
+            var renameCommandConfig = renameConfig.Commands.AddCommand<Command>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
+            renameCommandConfig.Command = new PowershellFnJoin($"\"Rename-Computer -NewName {this.LogicalId} -Restart -Force\"");
+            renameCommandConfig.WaitAfterCompletion = "forever";
+            renameCommandConfig.Test = $"IF \"%COMPUTERNAME%\"==\"{this.LogicalId.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
         }
 
 

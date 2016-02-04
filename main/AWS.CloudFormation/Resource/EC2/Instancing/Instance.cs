@@ -35,7 +35,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         }
 
         public Instance(Template template, string name, InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem, bool enableHup, DefinitionType definitionType)
-            : base(template, name, instanceType, imageId, operatingSystem)
+            : base(template, name, instanceType, imageId, operatingSystem, ResourceType.AwsEc2Instance)
         {
             switch (definitionType)
             {

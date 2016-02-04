@@ -340,7 +340,7 @@ namespace AWS.CloudFormation.Test
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template, "DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
 
-            var launchConfig = new LaunchConfiguration(template, "Xyz", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
+            var launchConfig = new LaunchConfiguration(template, "Xyz", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration);
             launchConfig.AssociatePublicIpAddress = true;
             launchConfig.AddSecurityGroup(rdp);
 
@@ -607,10 +607,11 @@ namespace AWS.CloudFormation.Test
             var dcPackage = dc1.Packages.First() as DomainControllerPackage;
             dc1.AddElasticIp();
             dc1.AddSecurityGroup(rdp);
-            WindowsInstance w = AddBuildServer(template, InstanceTypes.T2Nano,  DMZSubnet, null, null, dcPackage, rdp,null);
-            w.AddElasticIp();
+            var w = AddBuildServer(template, InstanceTypes.T2Nano,  DMZSubnet, null, null, dcPackage, rdp,null);
+            throw new NotImplementedException();
+            //w.AddElasticIp();
 
-            CreateTestStack(template, this.TestContext);
+            //CreateTestStack(template, this.TestContext);
 
         }
 
@@ -802,7 +803,7 @@ namespace AWS.CloudFormation.Test
         }
 
 
-        private static WindowsInstance AddBuildServer(
+        private static LaunchConfiguration AddBuildServer(
             Template template, 
             InstanceTypes instanceSize, 
             Subnet subnet, 
@@ -813,7 +814,8 @@ namespace AWS.CloudFormation.Test
             DbInstance sqlExpress4Build)
         {
 
-            var buildServer = new WindowsInstance(template, $"build", instanceSize, UsEast1AWindows2012R2Ami, subnet, false, DefinitionType.LaunchConfiguration);
+            var buildServer = new LaunchConfiguration(template,"launchConfigurationBuildServer",instanceSize, UsEast1AWindows2012R2Ami,
+                OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration);
             buildServer.AddBlockDeviceMapping("/dev/sda1", 100, Ebs.VolumeTypes.GeneralPurpose);
 
             domainControllerPackage.Participate(buildServer);
