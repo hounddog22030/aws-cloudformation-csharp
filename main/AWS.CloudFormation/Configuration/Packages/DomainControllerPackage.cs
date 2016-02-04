@@ -58,7 +58,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             currentCommand = currentConfig.Commands.AddCommand<Command>("02-InstallActiveDirectoryDomainServices");
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
-            currentCommand.WaitAfterCompletion = new TimeSpan(0, 4, 0).TotalSeconds.ToString(CultureInfo.InvariantCulture);
+            currentCommand.WaitAfterCompletion = new TimeSpan(0, 12, 0).TotalSeconds.ToString(CultureInfo.InvariantCulture);
 
 
             currentCommand.Command = new PowershellFnJoin("-Command \"Install-ADDSForest -DomainName",
