@@ -235,8 +235,8 @@ namespace AWS.CloudFormation.Test
             //    LicenseModelType.GeneralPublicLicense,
             //    Ebs.VolumeTypes.GeneralPurpose,
             //    20,
-            //    new ReferenceProperty(TeamFoundationServerBuildServerBase.Sqlexpress4BuildUsernameParameterName),
-            //    new ReferenceProperty(TeamFoundationServerBuildServerBase.Sqlexpress4BuildPasswordParameterName),
+            //    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name),
+            //    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name),
             //    mySqlSubnetGroupForDatabaseForBuild,
             //    securityGroupDb4Build);
 
@@ -254,12 +254,12 @@ namespace AWS.CloudFormation.Test
                 LicenseModelType.LicenseIncluded,
                 Ebs.VolumeTypes.GeneralPurpose,
                 30,
-                new ReferenceProperty(TeamFoundationServerBuildServerBase.SqlExpress4BuildUsernameParameterName),
-                new ReferenceProperty(TeamFoundationServerBuildServerBase.SqlExpress4BuildPasswordParameterName) 
+                new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name),
+                new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name) 
                 );
 
-            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.SqlExpress4BuildUsernameParameterName, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
-            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.SqlExpress4BuildPasswordParameterName, "String", "askjd@!871!", "Password for Master User For RDS SqlServer") {NoEcho = true});
+            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
+            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd@!871!", "Password for Master User For RDS SqlServer") {NoEcho = true});
 
 
             //string privateDomain = $"{StackTest.DomainNetBiosName}.yadayada.software.private.";
