@@ -814,8 +814,18 @@ namespace AWS.CloudFormation.Test
             DbInstance sqlExpress4Build)
         {
 
+            AutoScalingGroup launchGroup = new AutoScalingGroup(template, "BuildServerAutoScalingGroup");
+            launchGroup.MinSize = 1.ToString();
+            launchGroup.MaxSize = 2.ToString();
+            launchGroup.AddAvailabilityZone(AvailabilityZone.UsEast1A);
+            launchGroup.AddSubnetToVpcZoneIdentifier(subnet);
+
+
             var buildServer = new LaunchConfiguration(template,"launchConfigurationBuildServer",instanceSize, UsEast1AWindows2012R2Ami,
                 OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration);
+
+            launchGroup.LaunchConfiguration = buildServer;
+
             buildServer.AddBlockDeviceMapping("/dev/sda1", 100, Ebs.VolumeTypes.GeneralPurpose);
 
             domainControllerPackage.Participate(buildServer);
@@ -839,14 +849,6 @@ namespace AWS.CloudFormation.Test
             domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
             buildServer.AddSecurityGroup(buildServerSecurityGroup);
             //var waitConditionBuildServerAvailable = buildServer.AddFinalizer("waitConditionBuildServerAvailable",TimeoutMax);
-
-            AutoScalingGroup launchGroup = new AutoScalingGroup(template, "BuildServerAutoScalingGroup");
-            launchGroup.LaunchConfiguration = buildServer;
-            //launchGroup.LaunchConfigurationName = new ReferenceProperty(buildServer);
-            launchGroup.MinSize = 1.ToString();
-            launchGroup.MaxSize = 2.ToString();
-            launchGroup.AddAvailabilityZone(AvailabilityZone.UsEast1A);
-            launchGroup.AddSubnetToVpcZoneIdentifier(subnet);
 
             return buildServer;
         }
