@@ -15,6 +15,7 @@ using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
+using AWS.CloudFormation.Resource.RDS;
 using AWS.CloudFormation.Resource.Wait;
 
 namespace AWS.CloudFormation.Configuration.Packages
@@ -290,13 +291,16 @@ namespace AWS.CloudFormation.Configuration.Packages
         public const string sqlexpress4build_username_parameter_name = "sqlexpress4build_username";
         public const string sqlexpress4build_password_parameter_name = "sqlexpress4build_password";
 
-        public TeamFoundationServerBuildServerBase(LaunchConfiguration applicationServer, string bucketName, string recipeName, LaunchConfiguration sqlServer4Build) : base(bucketName, recipeName)
+        public TeamFoundationServerBuildServerBase( LaunchConfiguration applicationServer, 
+                                                    string bucketName,
+                                                    string recipeName,
+                                                    DbInstance sqlServer4Build) : base(bucketName, recipeName)
         {
             this.ApplicationServer = applicationServer;
             this.SqlServer4Build = sqlServer4Build;
         }
 
-        public LaunchConfiguration SqlServer4Build { get; }
+        public DbInstance SqlServer4Build { get; }
 
         public LaunchConfiguration ApplicationServer { get; }
 
@@ -318,7 +322,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
     public class TeamFoundationServerBuildServer : TeamFoundationServerBuildServerBase
     {
-        public TeamFoundationServerBuildServer(LaunchConfiguration applicationServer, string bucketName, LaunchConfiguration sqlExpress4Build)
+        public TeamFoundationServerBuildServer(LaunchConfiguration applicationServer, string bucketName, DbInstance sqlExpress4Build)
             : base(applicationServer, bucketName, "build", sqlExpress4Build)
         {
         }
@@ -326,7 +330,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
     public class TeamFoundationServerBuildServerAgentOnly : TeamFoundationServerBuildServerBase
     {
-        public TeamFoundationServerBuildServerAgentOnly(WindowsInstance applicationServer, string bucketName, LaunchConfiguration sqlExpress4Build)
+        public TeamFoundationServerBuildServerAgentOnly(WindowsInstance applicationServer, string bucketName, DbInstance sqlExpress4Build)
             : base(applicationServer, bucketName, "agent", sqlExpress4Build)
         {
         }

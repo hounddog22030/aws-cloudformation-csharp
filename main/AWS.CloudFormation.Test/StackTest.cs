@@ -817,7 +817,7 @@ namespace AWS.CloudFormation.Test
             WaitCondition tfsServerComplete, 
             DomainControllerPackage domainControllerPackage, 
             SecurityGroup buildServerSecurityGroup, 
-            LaunchConfiguration sqlExpress4Build)
+            DbInstance sqlExpress4Build)
         {
 
             var buildServer = new WindowsInstance(template, $"build", instanceSize, UsEast1AWindows2012R2Ami, subnet, false, DefinitionType.LaunchConfiguration);

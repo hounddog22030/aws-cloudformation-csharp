@@ -61,8 +61,8 @@ namespace AWS.CloudFormation.Resource.RDS
             LicenseModelType licenseType,
             Ebs.VolumeTypes storageType,
             int allocatedStorage,
-            ReferenceProperty masterUserName,
-            ReferenceProperty masterPassword 
+            object masterUserName,
+            object masterPassword 
             ) : base(template, name, ResourceType.AwsRdsDbInstance)
         {
             this.Type = ResourceType.AwsRdsDbInstance;
@@ -82,8 +82,8 @@ namespace AWS.CloudFormation.Resource.RDS
             LicenseModelType licenseType,
             Ebs.VolumeTypes storageType,
             int allocatedStorage,
-            ReferenceProperty masterUserName,
-            ReferenceProperty masterPassword,
+            object masterUserName,
+            object masterPassword,
             DbSubnetGroup subnetGroup, 
             DbSecurityGroup dbSecurityGroup
             ) : this(template,name,instanceType,engineType,licenseType, storageType, allocatedStorage, masterUserName, masterPassword)
@@ -101,8 +101,8 @@ namespace AWS.CloudFormation.Resource.RDS
             int allocatedStorage,
             DbSubnetGroup subnetGroup,
             SecurityGroup dbSecurityGroup,
-            ReferenceProperty masterUserName,
-            ReferenceProperty masterPassword
+            object masterUserName,
+            object masterPassword
             ) : this(template, name, instanceType, engineType, licenseType, storageType, allocatedStorage, masterUserName, masterPassword)
         {
             this.DBSubnetGroupName = new ReferenceProperty(subnetGroup);
@@ -176,11 +176,11 @@ namespace AWS.CloudFormation.Resource.RDS
         }
 
         [JsonIgnore]
-        public ReferenceProperty MasterUsername
+        public object MasterUsername
         {
             get
             {
-                return this.Properties.GetValue<ReferenceProperty>();
+                return this.Properties.GetValue<object>();
             }
             set
             {
@@ -189,11 +189,11 @@ namespace AWS.CloudFormation.Resource.RDS
         }
 
         [JsonIgnore]
-        public ReferenceProperty MasterUserPassword
+        public object MasterUserPassword
         {
             get
             {
-                return this.Properties.GetValue<ReferenceProperty>();
+                return this.Properties.GetValue<object>();
             }
             set
             {
