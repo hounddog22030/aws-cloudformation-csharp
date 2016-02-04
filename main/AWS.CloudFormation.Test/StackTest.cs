@@ -113,7 +113,7 @@ namespace AWS.CloudFormation.Test
             template.Mappings.Add("Amis", regions);
 
             var domainPassword = new ParameterBase("DomainAdminPassword", "String", password,
-                "Password for domain administrator.")
+                "Password for domain administrator.  This is masked.")
             {
                 NoEcho = true
             };
