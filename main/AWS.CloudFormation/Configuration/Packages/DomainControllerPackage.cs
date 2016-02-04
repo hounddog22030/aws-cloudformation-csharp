@@ -45,7 +45,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
 
             var currentConfig = this.Config; // this.Instance.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("installADDS");
-            var currentCommand = currentConfig.Commands.AddCommand<Command>("01-InstallPrequisites");
+            var currentCommand = currentConfig.Commands.AddCommand<Command>("InstallPrequisites");
 
             var addActiveDirectoryPowershell = currentConfig.Commands.AddCommand<Command>("AddRSATADPowerShell");
             addActiveDirectoryPowershell.Command = new PowershellFnJoin(FnJoinDelimiter.None, "-Command \"Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter\"");
@@ -56,7 +56,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
             currentCommand.WaitAfterCompletion = 0.ToString();
 
-            currentCommand = currentConfig.Commands.AddCommand<Command>("02-InstallActiveDirectoryDomainServices");
+            currentCommand = currentConfig.Commands.AddCommand<Command>("InstallActiveDirectoryDomainServices");
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
             currentCommand.WaitAfterCompletion = new TimeSpan(0, 12, 0).TotalSeconds.ToString(CultureInfo.InvariantCulture);
 
@@ -74,7 +74,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             //currentCommand.Command = new PowershellFnJoin("-Command \"Restart-Service NetLogon -EA 0\"");
             //currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
 
-            currentCommand = currentConfig.Commands.AddCommand<Command>("04-CreateAdminUser");
+            currentCommand = currentConfig.Commands.AddCommand<Command>("CreateAdminUser");
             currentCommand.WaitAfterCompletion = "0";
             currentCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None, "\"New-ADUser -Name ",
                 this.DomainInfo.AdminUserName,
@@ -96,7 +96,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
 
 
-            currentCommand = currentConfig.Commands.AddCommand<Command>("06-RenameDefaultSite");
+            currentCommand = currentConfig.Commands.AddCommand<Command>("RenameDefaultSite");
             currentCommand.WaitAfterCompletion = 0.ToString();
             currentCommand.Command =
                 new PowershellFnJoin(
