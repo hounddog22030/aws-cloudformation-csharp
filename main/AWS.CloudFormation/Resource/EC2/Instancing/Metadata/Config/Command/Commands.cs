@@ -56,6 +56,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
 
         public ConfigCommand AddCommand<T>(string key) where T : Resource.EC2.Instancing.Metadata.Config.Command.Command,new()
         {
+            key = this.Count.ToString().PadLeft(3, '0') + key;
             ConfigCommand newConfigCommand = new ConfigCommand(this.Instance, key);
             this.Add(key, newConfigCommand);
             newConfigCommand.Command = new T() {Parent = newConfigCommand };
