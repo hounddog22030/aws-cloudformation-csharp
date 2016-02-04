@@ -219,9 +219,6 @@ namespace AWS.CloudFormation.Test
             var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
             var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
 
-
-
-
             DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup(template, "mySqlSubnetGroupForDatabaseForBuild", "Second subnet for database for build server");
             mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
             mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
@@ -255,8 +252,10 @@ namespace AWS.CloudFormation.Test
                 Ebs.VolumeTypes.GeneralPurpose,
                 30,
                 new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name),
-                new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name)
-                );
+                new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name))
+            {
+                DBSubnetGroupName = new ReferenceProperty(subnetGroupSqlExpress4Build)
+            };
 
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd@!871!", "Password for Master User For RDS SqlServer") { NoEcho = true });
