@@ -347,7 +347,7 @@ namespace AWS.CloudFormation.Test
 
 
             var launchGroup = new AutoScalingGroup(template, "AutoGroup");
-            launchGroup.LaunchConfigurationName = new ReferenceProperty(launchConfig);
+            launchGroup.LaunchConfiguration = launchConfig;
             launchGroup.MinSize = 1.ToString();
             launchGroup.MaxSize = 2.ToString();
             launchGroup.AddAvailabilityZone(AvailabilityZone.UsEast1A);
@@ -841,7 +841,8 @@ namespace AWS.CloudFormation.Test
             //var waitConditionBuildServerAvailable = buildServer.AddFinalizer("waitConditionBuildServerAvailable",TimeoutMax);
 
             AutoScalingGroup launchGroup = new AutoScalingGroup(template, "BuildServerAutoScalingGroup");
-            launchGroup.LaunchConfigurationName = new ReferenceProperty(buildServer);
+            launchGroup.LaunchConfiguration = buildServer;
+            //launchGroup.LaunchConfigurationName = new ReferenceProperty(buildServer);
             launchGroup.MinSize = 1.ToString();
             launchGroup.MaxSize = 2.ToString();
             launchGroup.AddAvailabilityZone(AvailabilityZone.UsEast1A);
@@ -1051,9 +1052,9 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateDevelopmentTest()
         {
-            var stackName = "betayadayada-software";
-            var template = GetTemplateFullStack("beta");
-            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "XAOI2802uoil";
+            var stackName = "alphayadayada-software";
+            var template = GetTemplateFullStack("alpha");
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "SWGP2720dtbt";
             Stack.Stack.UpdateStack(stackName,template );
         }
 

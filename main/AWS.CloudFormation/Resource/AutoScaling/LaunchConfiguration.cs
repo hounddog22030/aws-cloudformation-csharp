@@ -13,6 +13,7 @@ using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
+using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Resource.Wait;
 using AWS.CloudFormation.Stack;
 using OperatingSystem = AWS.CloudFormation.Resource.EC2.Instancing.OperatingSystem;
@@ -271,6 +272,22 @@ namespace AWS.CloudFormation.Resource.AutoScaling
 
         [JsonIgnore]
         public OperatingSystem OperatingSystem { get; set; }
+
+        [JsonIgnore]
+        public AutoScalingGroup AutoScalingGroup { get; set; }
+
+        [JsonIgnore]
+        public virtual Subnet Subnet {
+            get
+            {
+                var firstSubnet = this.AutoScalingGroup.VPCZoneIdentifier.First();
+                return (Subnet)this.Template.Resources[firstSubnet];
+            }
+            set
+            {
+                throw new NotSupportedException();
+            }
+        }
 
         internal void SetUserData()
         {

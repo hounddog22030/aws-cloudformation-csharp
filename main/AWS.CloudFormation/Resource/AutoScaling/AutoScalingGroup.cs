@@ -35,10 +35,6 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             {
                 return this.Properties.GetValue<object>();
             }
-            set
-            {
-                this.Properties.SetValue(value);
-            }
         }
 
         [JsonIgnore]
@@ -127,6 +123,21 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             set
             {
                 this.Properties.SetValue(value);
+            }
+        }
+
+        [JsonIgnore]
+        public LaunchConfiguration LaunchConfiguration {
+            get
+            {
+                var o = this.Properties.GetValue<ReferenceProperty>("LaunchConfigurationName");
+                string name = (string)o["Ref"];
+                return (LaunchConfiguration) this.Template.Resources[name];
+            }
+            set
+            {
+                value.AutoScalingGroup = this;
+                this.Properties.SetValue("LaunchConfigurationName",new ReferenceProperty(value));
             }
         }
 

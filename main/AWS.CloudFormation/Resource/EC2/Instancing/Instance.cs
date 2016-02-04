@@ -94,7 +94,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         private Subnet _subnet;
 
-        [JsonIgnore] public Subnet Subnet
+        [JsonIgnore] public override Subnet Subnet
         {
             get
             {

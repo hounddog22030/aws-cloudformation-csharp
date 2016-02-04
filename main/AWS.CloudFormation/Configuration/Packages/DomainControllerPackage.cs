@@ -203,7 +203,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             joinCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
 
             participant.AddDependsOn(this.WaitCondition);
-            this.AddToDomainMemberSecurityGroup((Instance)participant);
+            this.AddToDomainMemberSecurityGroup(participantLaunchConfiguration);
             participantLaunchConfiguration.DomainNetBiosName = this.DomainInfo.DomainNetBiosName;
             participantLaunchConfiguration.DomainDnsName = this.DomainInfo.DomainDnsName;
             var nodeJson = participantLaunchConfiguration.GetChefNodeJsonContent();
@@ -254,7 +254,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             }
         }
 
-        public void AddToDomainMemberSecurityGroup(Instance domainMember)
+        public void AddToDomainMemberSecurityGroup(LaunchConfiguration domainMember)
         {
             //az1Subnet
             DomainMemberSecurityGroup.AddIngress(domainMember.Subnet as ICidrBlock,
