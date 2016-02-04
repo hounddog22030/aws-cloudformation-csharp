@@ -39,8 +39,8 @@ namespace AWS.CloudFormation.Test
 
         private const string DomainAdminUser = "johnny";
         private const string UsEast1AWindows2012R2Ami = "ami-9a0558f0";
+        private const string UsEast1AWindows2012R2SqlServerExpressAmi = "ami-a3005dc9";
         private const string UsEast1AWindows2012R2SqlExpressAmi = "ami-a3005dc9";
-        private const string NetBiosNameDomainController1 = "dc1";
         private const string BucketNameSoftware = "gtbb";
         private static readonly TimeSpan Timeout3Hours = new TimeSpan(3, 0, 0);
         private static readonly TimeSpan Timeout2Hours = new TimeSpan(2, 0, 0);
@@ -117,55 +117,55 @@ namespace AWS.CloudFormation.Test
             vpc.EnableDnsHostnames = true;
             vpc.EnableDnsSupport = true;
 
-            var subnetDmz2 = new Subnet(template, "subnetDmz2", vpc, CidrDmz2, AvailabilityZone.UsEast1A, true);
+            var subnetDmz2 = new Subnet(template, "SubnetDmz2", vpc, CidrDmz2, AvailabilityZone.UsEast1A, true);
 
-            SecurityGroup natSecurityGroup = new SecurityGroup(template,"natSecurityGroup", "Enables Ssh access to NAT1 in AZ1 via port 22 and outbound internet access via private subnets", vpc);
+            SecurityGroup natSecurityGroup = new SecurityGroup(template,"SecurityGroup4Nat", "Enables Ssh access to NAT1 in AZ1 via port 22 and outbound internet access via private subnets", vpc);
             natSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Ssh);
             natSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
 
-            var subnetDmz1 = new Subnet(template, "subnetDmz1", vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
+            var subnetDmz1 = new Subnet(template, "SubnetDmz1", vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             var nat1 = AddNat1(template, subnetDmz1, natSecurityGroup);
 
-            var subnetDomainController1 = new Subnet(template, "subnetDomainController1", vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A);
+            var subnetDomainController1 = new Subnet(template, "Subnet4DomainController1", vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A);
             subnetDomainController1.AddNatGateway(nat1, natSecurityGroup);
 
-            SecurityGroup sqlServer4TfsSecurityGroup = new SecurityGroup(template, "SqlServer4TfsSecurityGroup", "Allows communication to SQLServer Service", vpc);
+            SecurityGroup sqlServer4TfsSecurityGroup = new SecurityGroup(template, "SecurityGroup4SqlServer4Tfs", "Allows communication to SQLServer Service", vpc);
             sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var subnetSqlServer4Tfs = new Subnet(template, "subnetSqlServer4Tfs", vpc, CidrSqlServer4TfsSubnet, AvailabilityZone.UsEast1A);
+            var subnetSqlServer4Tfs = new Subnet(template, "Subnet4SqlServer4Tfs", vpc, CidrSqlServer4TfsSubnet, AvailabilityZone.UsEast1A);
             subnetSqlServer4Tfs.AddNatGateway(nat1, natSecurityGroup);
 
-            var subnetTfsServer = new Subnet(template, "subnetTfsServer", vpc, CidrTfsServerSubnet, AvailabilityZone.UsEast1A);
+            var subnetTfsServer = new Subnet(template, "Subnet4TfsServer", vpc, CidrTfsServerSubnet, AvailabilityZone.UsEast1A);
             sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock)subnetTfsServer, Protocol.Tcp, Ports.MsSqlServer);
             sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock)subnetTfsServer, Protocol.Tcp, Ports.Smb);
             subnetTfsServer.AddNatGateway(nat1, natSecurityGroup);
 
-            SecurityGroup tfsServerSecurityGroup = new SecurityGroup(template, "TFSServerSecurityGroup", "Allows various TFS communication", vpc);
+            SecurityGroup tfsServerSecurityGroup = new SecurityGroup(template, "SecurityGroup4TfsServer", "Allows various TFS communication", vpc);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
 
-            var subnetBuildServer = new Subnet(template, "subnetBuildServer", vpc, CidrBuildServerSubnet, AvailabilityZone.UsEast1A);
+            var subnetBuildServer = new Subnet(template, "Subnet4BuildServer", vpc, CidrBuildServerSubnet, AvailabilityZone.UsEast1A);
 
-            SecurityGroup securityGroupDb4Build = new SecurityGroup(template, "securityGroupDb4Build", "Allows communication to Db", vpc);
+            SecurityGroup securityGroupDb4Build = new SecurityGroup(template, "SecurityGroup4Build2Db", "Allows communication to Db", vpc);
             securityGroupDb4Build.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.MySql);
-            SecurityGroup securityGroupSqlSever4Build = new SecurityGroup(template, "securityGroupSqlSever4Build", "Allows communication to SqlServer", vpc);
+            SecurityGroup securityGroupSqlSever4Build = new SecurityGroup(template, "SecurityGroup4Build2SqlSever", "Allows communication to SqlServer", vpc);
             securityGroupSqlSever4Build.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.MsSqlServer);
 
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.TeamFoundationServerBuild);
             subnetBuildServer.AddNatGateway(nat1, natSecurityGroup);
 
-            var subnetDatabase4BuildServer2 = new Subnet(template, "subnetDatabase4BuildServer2", vpc, CidrDatabase4BuildSubnet2, AvailabilityZone.UsEast1E);
+            var subnetDatabase4BuildServer2 = new Subnet(template, "Subnet4Build2Database", vpc, CidrDatabase4BuildSubnet2, AvailabilityZone.UsEast1E);
             securityGroupDb4Build.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.MySql);
 
-            SecurityGroup securityGroupBuildServer = new SecurityGroup(template, "BuildServerSecurityGroup", "Allows build controller to build agent communication", vpc);
+            SecurityGroup securityGroupBuildServer = new SecurityGroup(template, "SecurityGroup4BuildServer", "Allows build controller to build agent communication", vpc);
             securityGroupBuildServer.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             securityGroupBuildServer.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             securityGroupBuildServer.AddIngress((ICidrBlock)subnetTfsServer, Protocol.Tcp, Ports.TeamFoundationServerBuild);
 
-            SecurityGroup workstationSecurityGroup = new SecurityGroup(template, "WorkstationSecurityGroup", "Security Group To Contain Workstations", vpc);
+            SecurityGroup workstationSecurityGroup = new SecurityGroup(template, "SecurityGroup4Workstation", "Security Group To Contain Workstations", vpc);
             tfsServerSecurityGroup.AddIngress(workstationSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
-            var subnetWorkstation = new Subnet(template, "subnetWorkstation", vpc, CidrWorkstationSubnet, AvailabilityZone.UsEast1A);
+            var subnetWorkstation = new Subnet(template, "Subnet4Workstation", vpc, CidrWorkstationSubnet, AvailabilityZone.UsEast1A);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.TeamFoundationServerBuild);
             // give db access to the workstations
@@ -178,7 +178,7 @@ namespace AWS.CloudFormation.Test
             var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, domainAdminPasswordReference);
 
 
-            var instanceDomainController = new Instance(template, NetBiosNameDomainController1, InstanceTypes.T2Nano,
+            var instanceDomainController = new Instance(template, "DomainController", InstanceTypes.C4Large,
                 UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
             {
                 Subnet = subnetDomainController1,
@@ -200,11 +200,11 @@ namespace AWS.CloudFormation.Test
 
 
 
-            DhcpOptions dhcpOptions = new DhcpOptions(template, "dhcpOptions", $"{StackTest.DomainDnsName}", vpc, dnsServers, netBiosServers);
+            DhcpOptions dhcpOptions = new DhcpOptions(template, "DhcpOptions", $"{StackTest.DomainDnsName}", vpc, dnsServers, netBiosServers);
             dhcpOptions.NetbiosNodeType = "2";
 
 
-            var instanceRdp = new Instance(template, $"rdp{version}", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
+            var instanceRdp = new Instance(template, $"Rdp{version}", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
             {
                 Subnet = subnetDmz1,
 
@@ -212,14 +212,14 @@ namespace AWS.CloudFormation.Test
             dcPackage.Participate(instanceRdp);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage(domainInfo));
 
-            var instanceTfsSqlServer = AddSql(template, "sql4tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage,
+            var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage,
                 sqlServer4TfsSecurityGroup);
             var sqlPackage = instanceTfsSqlServer.Packages.OfType<SqlServerExpress>().Single();
 
             var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
             var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
 
-            DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup(template, "mySqlSubnetGroupForDatabaseForBuild", "Second subnet for database for build server");
+            DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup(template, "DbSubnetGroup4Build2Database", "Second subnet for database for build server");
             mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
             mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
             //DbInstance mySql4Build = null;
@@ -237,7 +237,7 @@ namespace AWS.CloudFormation.Test
             ////    mySqlSubnetGroupForDatabaseForBuild,
             ////    securityGroupDb4Build);
 
-            DbSubnetGroup subnetGroupSqlExpress4Build = new DbSubnetGroup(template, "subnetGroupSqlExpress4Build", "DbSubnet Group for SQL Server database for build server");
+            DbSubnetGroup subnetGroupSqlExpress4Build = new DbSubnetGroup(template, "SubnetGroup4Build2SqlServer", "DbSubnet Group for SQL Server database for build server");
             subnetGroupSqlExpress4Build.AddSubnet(subnetBuildServer);
             subnetGroupSqlExpress4Build.AddSubnet(subnetDatabase4BuildServer2);
 
@@ -245,7 +245,7 @@ namespace AWS.CloudFormation.Test
 
 
             rdsSqlExpress4Build = new DbInstance(template,
-                "sqlserver4build",
+                "SqlServer4Build",
                 DbInstanceClassEnum.DbT2Micro,
                 EngineType.SqlServerExpress,
                 LicenseModelType.LicenseIncluded,
@@ -262,17 +262,15 @@ namespace AWS.CloudFormation.Test
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd871hdj11", "Password for Master User For RDS SqlServer") { NoEcho = true });
 
-            var buildServer = AddBuildServer(template, InstanceTypes.C4Large, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
+            var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
 
             //uses 33gb
-            var workstation = AddWorkstation(template, 
-                "workstation", 
-                subnetWorkstation, 
-                dcPackage, 
-                workstationSecurityGroup, 
+            var workstation = AddWorkstation(template,
+                "Workstation",
+                subnetWorkstation,
+                dcPackage,
+                workstationSecurityGroup,
                 true);
-            workstation.Packages.Add(new Chrome());
-            workstation.Packages.Add(new ReSharper());
 
 
             ////SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
@@ -288,13 +286,13 @@ namespace AWS.CloudFormation.Test
 
             //////////the below is a remote desktop gateway server that can
             ////////// be uncommented to debug domain setup problems
-            //var instanceRdp2 = new Instance(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", OperatingSystem.Windows, true)
-            //{
-            //    Subnet = subnetDmz1
-            //};
-            //instanceRdp2.AddElasticIp();
+            var instanceRdp2 = new Instance(template, "rdp2", InstanceTypes.T2Micro, "ami-e4034a8e", OperatingSystem.Windows, true)
+            {
+                Subnet = subnetDmz1
+            };
+            instanceRdp2.AddElasticIp();
 
-            //dcPackage.AddToDomainMemberSecurityGroup(instanceRdp2);
+            dcPackage.AddToDomainMemberSecurityGroup(instanceRdp2);
 
 
             return template;
@@ -314,7 +312,7 @@ namespace AWS.CloudFormation.Test
         private static Instance AddDomainController(Template template, Subnet subnet)
         {
             //"ami-805d79ea",
-            var DomainController = new Instance(template, NetBiosNameDomainController1, InstanceTypes.T2Micro,
+            var DomainController = new Instance(template, "DomainController", InstanceTypes.T2Micro,
                 UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
             {
                 Subnet = subnet
@@ -341,14 +339,14 @@ namespace AWS.CloudFormation.Test
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             var DMZSubnet = new Subnet(template, "DMZSubnet", vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
 
-            var launchConfig = new LaunchConfiguration(template, "Xyz", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
+            var launchConfig = new LaunchConfiguration(template, "Xyz", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration);
             launchConfig.AssociatePublicIpAddress = true;
             launchConfig.AddSecurityGroup(rdp);
 
 
 
             var launchGroup = new AutoScalingGroup(template, "AutoGroup");
-            launchGroup.LaunchConfigurationName = new ReferenceProperty(launchConfig);
+            launchGroup.LaunchConfiguration = launchConfig;
             launchGroup.MinSize = 1.ToString();
             launchGroup.MaxSize = 2.ToString();
             launchGroup.AddAvailabilityZone(AvailabilityZone.UsEast1A);
@@ -485,11 +483,12 @@ namespace AWS.CloudFormation.Test
             blockDeviceMapping = new BlockDeviceMapping(w, "xvdh");
             blockDeviceMapping.Ebs.SnapshotId = "snap-4e69d94b";
             w.AddBlockDeviceMapping(blockDeviceMapping);
-            w.AddChefExec(BucketNameSoftware, "MountDrives.tar.gz", "MountDrives");
-            w.AddSecurityGroup(rdp);
-            w.AddElasticIp();
-            var name = this.TestContext.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".",string.Empty) ;
-            Stack.Stack.CreateStack(template, name);
+            throw new NotImplementedException();
+            //w.AddChefExec(BucketNameSoftware, "MountDrives.tar.gz", "MountDrives");
+            //w.AddSecurityGroup(rdp);
+            //w.AddElasticIp();
+            //var name = this.TestContext.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".",string.Empty) ;
+            //Stack.Stack.CreateStack(template, name);
         }
 
         [TestMethod]
@@ -608,10 +607,11 @@ namespace AWS.CloudFormation.Test
             var dcPackage = dc1.Packages.First() as DomainControllerPackage;
             dc1.AddElasticIp();
             dc1.AddSecurityGroup(rdp);
-            WindowsInstance w = AddBuildServer(template, InstanceTypes.T2Nano,  DMZSubnet, null, null, dcPackage, rdp,null);
-            w.AddElasticIp();
+            var w = AddBuildServer(template, InstanceTypes.T2Nano,  DMZSubnet, null, null, dcPackage, rdp,null);
+            throw new NotImplementedException();
+            //w.AddElasticIp();
 
-            CreateTestStack(template, this.TestContext);
+            //CreateTestStack(template, this.TestContext);
 
         }
 
@@ -793,17 +793,18 @@ namespace AWS.CloudFormation.Test
             blockDeviceMapping = new BlockDeviceMapping(w, "xvdh");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
             w.AddBlockDeviceMapping(blockDeviceMapping);
-            w.AddChefExec(BucketNameSoftware, "MountDrives.tar.gz", "MountDrives");
+            throw new NotImplementedException();
+            //w.AddChefExec(BucketNameSoftware, "MountDrives.tar.gz", "MountDrives");
 
 
-            w.AddSecurityGroup(rdp);
-            w.AddElasticIp();
-            var name = "CreateStackWithMounterTest-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty);
-            Stack.Stack.CreateStack(template, name);
+            //w.AddSecurityGroup(rdp);
+            //w.AddElasticIp();
+            //var name = "CreateStackWithMounterTest-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty);
+            //Stack.Stack.CreateStack(template, name);
         }
 
 
-        private static WindowsInstance AddBuildServer(
+        private static LaunchConfiguration AddBuildServer(
             Template template, 
             InstanceTypes instanceSize, 
             Subnet subnet, 
@@ -814,7 +815,18 @@ namespace AWS.CloudFormation.Test
             DbInstance sqlExpress4Build)
         {
 
-            var buildServer = new WindowsInstance(template, $"build", instanceSize, UsEast1AWindows2012R2Ami, subnet, false, DefinitionType.LaunchConfiguration);
+            AutoScalingGroup launchGroup = new AutoScalingGroup(template, "BuildServerAutoScalingGroup");
+            launchGroup.MinSize = 1.ToString();
+            launchGroup.MaxSize = 2.ToString();
+            launchGroup.AddAvailabilityZone(AvailabilityZone.UsEast1A);
+            launchGroup.AddSubnetToVpcZoneIdentifier(subnet);
+
+
+            var buildServer = new LaunchConfiguration(template,"LaunchConfigurationBuildServer",instanceSize, UsEast1AWindows2012R2Ami,
+                OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration);
+
+            launchGroup.LaunchConfiguration = buildServer;
+
             buildServer.AddBlockDeviceMapping("/dev/sda1", 100, Ebs.VolumeTypes.GeneralPurpose);
 
             domainControllerPackage.Participate(buildServer);
@@ -839,13 +851,6 @@ namespace AWS.CloudFormation.Test
             buildServer.AddSecurityGroup(buildServerSecurityGroup);
             //var waitConditionBuildServerAvailable = buildServer.AddFinalizer("waitConditionBuildServerAvailable",TimeoutMax);
 
-            AutoScalingGroup launchGroup = new AutoScalingGroup(template, "BuildServerAutoScalingGroup");
-            launchGroup.LaunchConfigurationName = new ReferenceProperty(buildServer);
-            launchGroup.MinSize = 1.ToString();
-            launchGroup.MaxSize = 2.ToString();
-            launchGroup.AddAvailabilityZone(AvailabilityZone.UsEast1A);
-            launchGroup.AddSubnetToVpcZoneIdentifier(subnet);
-
             return buildServer;
         }
 
@@ -858,22 +863,25 @@ namespace AWS.CloudFormation.Test
         {
             if (subnet == null) throw new ArgumentNullException(nameof(subnet));
 
-            WindowsInstance workstation = new WindowsInstance(template, name, InstanceTypes.C4Large, UsEast1AWindows2012R2Ami, subnet, rename, Ebs.VolumeTypes.GeneralPurpose, 214);
+            WindowsInstance workstation = new WindowsInstance(template, name, InstanceTypes.C4Large, UsEast1AWindows2012R2SqlServerExpressAmi, subnet, rename, Ebs.VolumeTypes.GeneralPurpose, 214);
 
-            workstation.Packages.Add(new SqlServerExpress(BucketNameSoftware));
-            workstation.Packages.Add(new VisualStudio(BucketNameSoftware));
+            if (instanceDomainControllerPackage != null)
+            {
+                instanceDomainControllerPackage.Participate(workstation);
+            }
 
             if (workstationSecurityGroup != null)
             {
                 workstation.AddSecurityGroup(workstationSecurityGroup);
             }
 
+            //workstation.Packages.Add(new SqlServerExpress(BucketNameSoftware));
+            workstation.Packages.Add(new VisualStudio(BucketNameSoftware));
+            workstation.Packages.Add(new ReSharper());
+            workstation.Packages.Add(new Chrome());
+
             //var waitConditionWorkstationAvailable = workstation.AddFinalizer("waitConditionWorkstationAvailable",TimeoutMax);
 
-            if (instanceDomainControllerPackage != null)
-            {
-                instanceDomainControllerPackage.Participate(workstation);
-            }
 
             return workstation;
         }
@@ -886,7 +894,7 @@ namespace AWS.CloudFormation.Test
             SecurityGroup tfsServerSecurityGroup)
         {
             var tfsServer = new WindowsInstance(    template, 
-                                                    "tfs",
+                                                    "Tfs",
                                                     instanceSize, 
                                                     UsEast1AWindows2012R2Ami, 
                                                     privateSubnet1, 
@@ -942,7 +950,7 @@ namespace AWS.CloudFormation.Test
             return nat1;
         }
 
-        private static void SetupDomainController1SecurityGround(SecurityGroup domainControllerSg1, Vpc vpc, Subnet az2Subnet, SecurityGroup domainMemberSg, Subnet DMZSubnet, Subnet dmzaz2Subnet)
+        private static void SetupDomainController1SecurityGround(SecurityGroup domainControllerSg1, Vpc vpc, Subnet az2Subnet, SecurityGroup SecurityGroup4DomainMember, Subnet DMZSubnet, Subnet dmzaz2Subnet)
         {
             domainControllerSg1.AddIngress((ICidrBlock)vpc, Protocol.Tcp, Ports.WsManagementPowerShell);
             domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Udp,Ports.Ntp);
@@ -968,22 +976,22 @@ namespace AWS.CloudFormation.Test
             domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Udp, Ports.NetBt);
             domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Tcp, Ports.NetBiosNameServices);
             domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryFileReplication);
-            domainControllerSg1.AddIngress(domainMemberSg, Protocol.Udp,Ports.Ntp);
-            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp,Ports.WinsManager);
-            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp,Ports.ActiveDirectoryManagement);
-            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Udp, Ports.NetBios);
-            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp|Protocol.Udp, Ports.Smb);
-            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp| Protocol.Udp, Ports.ActiveDirectoryManagement2);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember, Protocol.Udp,Ports.Ntp);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember,Protocol.Tcp,Ports.WinsManager);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember,Protocol.Tcp,Ports.ActiveDirectoryManagement);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember,Protocol.Udp, Ports.NetBios);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember,Protocol.Tcp|Protocol.Udp, Ports.Smb);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember,Protocol.Tcp| Protocol.Udp, Ports.ActiveDirectoryManagement2);
 
-            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp|Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
-            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp|Protocol.Udp, Ports.Ldap);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember,Protocol.Tcp|Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember,Protocol.Tcp|Protocol.Udp, Ports.Ldap);
 
-            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp, Ports.Ldaps);
-            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp, Ports.Ldap2Begin, Ports.Ldap2End);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember,Protocol.Tcp, Ports.Ldaps);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember,Protocol.Tcp, Ports.Ldap2Begin, Ports.Ldap2End);
 
-            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp|Protocol.Udp, Ports.DnsQuery);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember,Protocol.Tcp|Protocol.Udp, Ports.DnsQuery);
 
-            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp|Protocol.Udp,Ports.KerberosKeyDistribution);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember,Protocol.Tcp|Protocol.Udp,Ports.KerberosKeyDistribution);
 
             domainControllerSg1.AddIngress((ICidrBlock)DMZSubnet, Protocol.Tcp|Protocol.Udp, Ports.RemoteDesktopProtocol);
 
@@ -1049,7 +1057,7 @@ namespace AWS.CloudFormation.Test
         {
             var stackName = "alphayadayada-software";
             var template = GetTemplateFullStack("alpha");
-            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "OUGN1875xnsr";
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "SWGP2720dtbt";
             Stack.Stack.UpdateStack(stackName,template );
         }
 

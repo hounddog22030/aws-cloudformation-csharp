@@ -28,8 +28,8 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         {
             if (addInternetGatewayRoute)
             {
-                RouteTable routeTable = new RouteTable(template, $"{this.LogicalId}RouteTable", vpc);
-                Route route = new Route(template, $"{this.LogicalId}Route", vpc.InternetGateway, "0.0.0.0/0", routeTable);
+                RouteTable routeTable = new RouteTable(template, $"RouteTable4{this.LogicalId}", vpc);
+                Route route = new Route(template, $"Route4{this.LogicalId}", vpc.InternetGateway, "0.0.0.0/0", routeTable);
                 SubnetRouteTableAssociation routeTableAssociation = new SubnetRouteTableAssociation(template, this, routeTable);
             }
         }
@@ -69,8 +69,8 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 
         public void AddNatGateway(Instance nat, SecurityGroup natSecurityGroup)
         {
-            RouteTable routeTable = new RouteTable(this.Template, $"routeTableFor{this.LogicalId}", this.Vpc);
-            Route route = new Route(this.Template, $"routeFor{this.LogicalId}", Template.CidrIpTheWorld, routeTable);
+            RouteTable routeTable = new RouteTable(this.Template, $"RouteTable4{this.LogicalId}", this.Vpc);
+            Route route = new Route(this.Template, $"Route4{this.LogicalId}", Template.CidrIpTheWorld, routeTable);
             SubnetRouteTableAssociation routeTableAssociation = new SubnetRouteTableAssociation(this.Template, this, routeTable);
             route.Instance = nat;
             

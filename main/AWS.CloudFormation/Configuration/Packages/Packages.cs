@@ -92,7 +92,10 @@ namespace AWS.CloudFormation.Configuration.Packages
 
         protected T ConfigSet
         {
-            get { return this.Instance.Metadata.Init.ConfigSets.GetConfigSet<T>(this.ConfigSetName); }
+            get
+            {
+                return this.Instance.Metadata.Init.ConfigSets.GetConfigSet<T>(this.ConfigSetName);
+            }
         }
 
         protected string ConfigSetName => $"{this.GetType().Name.Replace(".", string.Empty)}";
@@ -111,7 +114,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 if (_waitCondition == null)
                 {
                     _waitCondition = new WaitCondition(this.Instance.Template,
-                        $"waitCondition{this.Instance.LogicalId}{this.GetType().Name}".Replace(".", string.Empty)
+                        $"WaitCondition4{this.Instance.LogicalId}4{this.GetType().Name}".Replace(".", string.Empty)
                             .Replace(":", string.Empty), TimeoutMax);
 
                     this.Config.Commands.AddCommand<Command>(_waitCondition);
@@ -291,9 +294,9 @@ namespace AWS.CloudFormation.Configuration.Packages
     public class TeamFoundationServerBuildServerBase : TeamFoundationServer
     {
 
-        public const string sqlexpress4build_private_dns_name_parameter_name = "sqlexpress4buildprivatednsnameparametername";
-        public const string sqlexpress4build_username_parameter_name = "sqlexpress4buildusername";
-        public const string sqlexpress4build_password_parameter_name = "sqlexpress4buildpassword";
+
+        public const string sqlexpress4build_username_parameter_name = "SqlExpress4BuildUsername";
+        public const string sqlexpress4build_password_parameter_name = "SqlExpress4BuildPassword";
 
         public TeamFoundationServerBuildServerBase( LaunchConfiguration applicationServer, 
                                                     string bucketName,

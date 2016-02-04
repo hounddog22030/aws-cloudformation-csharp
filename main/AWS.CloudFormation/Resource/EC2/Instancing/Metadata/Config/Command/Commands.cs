@@ -45,7 +45,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
         }
         public ConfigCommand AddCommand<T>(WaitCondition waitCondition) where T : Resource.EC2.Instancing.Metadata.Config.Command.Command, new()
         {
-            var returnValue = this.AddCommand<Resource.EC2.Instancing.Metadata.Config.Command.Command>($"ZZZ-signalComplete{waitCondition.LogicalId}");
+            
+            var returnValue = this.AddCommand<Resource.EC2.Instancing.Metadata.Config.Command.Command>($"SignalComplete{waitCondition.LogicalId}");
             returnValue.Command = new FnJoin(FnJoinDelimiter.None,
                 "cfn-signal.exe -e 0 \"",
                 new ReferenceProperty(waitCondition.Handle),
@@ -56,6 +57,12 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
 
         public ConfigCommand AddCommand<T>(string key) where T : Resource.EC2.Instancing.Metadata.Config.Command.Command,new()
         {
+            char firstChar = key.ToCharArray()[0];
+            if (firstChar >= '0' && firstChar <= '9')
+            {
+                throw new Exception(key);
+            }
+            key = this.Count.ToString().PadLeft(3, '0') + key;
             ConfigCommand newConfigCommand = new ConfigCommand(this.Instance, key);
             this.Add(key, newConfigCommand);
             newConfigCommand.Command = new T() {Parent = newConfigCommand };

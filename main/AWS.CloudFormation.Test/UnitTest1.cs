@@ -61,9 +61,9 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void TestMethod1()
         {
-            //
-            // TODO: Add test logic here
-            //
+            string vs = "vs--default";
+            string signal = "ZZZ-signalCompletewaitConditionlaunchConfigurationBuildServerVisualStudio";
+            Assert.AreEqual(0,String.CompareOrdinal(vs,signal));
         }
     }
 }

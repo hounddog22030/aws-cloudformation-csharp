@@ -32,9 +32,8 @@ namespace AWS.CloudFormation.Configuration.Packages
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
             base.AddToLaunchConfiguration(configuration);
-            var setup = this.Instance.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("setup");
-            var setupFiles = setup.Files;
-            var checkForDomainPs = setup.Files.GetFile(CheckForDomainPsPath);
+            var setupFiles = this.Config.Files;
+            var checkForDomainPs = this.Config.Files.GetFile(CheckForDomainPsPath);
             checkForDomainPs.Source = "https://s3.amazonaws.com/gtbb/check-for-domain.ps1";
 
             ConfigFile file = setupFiles.GetFile("c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1");
@@ -44,10 +43,9 @@ namespace AWS.CloudFormation.Configuration.Packages
             file.Source = "https://s3.amazonaws.com/gtbb/check-for-user-exists.ps1";
 
 
-            var currentConfig = this.Config; // this.Instance.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("installADDS");
-            var currentCommand = currentConfig.Commands.AddCommand<Command>("01-InstallPrequisites");
+            var currentCommand = this.Config.Commands.AddCommand<Command>("InstallPrequisites");
 
-            var addActiveDirectoryPowershell = currentConfig.Commands.AddCommand<Command>("AddRSATADPowerShell");
+            var addActiveDirectoryPowershell = this.Config.Commands.AddCommand<Command>("AddRSATADPowerShell");
             addActiveDirectoryPowershell.Command = new PowershellFnJoin(FnJoinDelimiter.None, "-Command \"Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter\"");
             addActiveDirectoryPowershell.WaitAfterCompletion = 0.ToString();
 
@@ -56,9 +54,9 @@ namespace AWS.CloudFormation.Configuration.Packages
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
             currentCommand.WaitAfterCompletion = 0.ToString();
 
-            currentCommand = currentConfig.Commands.AddCommand<Command>("02-InstallActiveDirectoryDomainServices");
+            currentCommand = this.Config.Commands.AddCommand<Command>("InstallActiveDirectoryDomainServices");
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
-            currentCommand.WaitAfterCompletion = new TimeSpan(0, 4, 0).TotalSeconds.ToString(CultureInfo.InvariantCulture);
+            currentCommand.WaitAfterCompletion = TimeoutMax.TotalSeconds.ToString(CultureInfo.InvariantCulture);
 
 
             currentCommand.Command = new PowershellFnJoin("-Command \"Install-ADDSForest -DomainName",
@@ -69,12 +67,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
 
-            //currentCommand = currentConfig.Commands.AddCommand<Command>("3-restart-service");
-            //currentCommand.WaitAfterCompletion = 0.ToString();
-            //currentCommand.Command = new PowershellFnJoin("-Command \"Restart-Service NetLogon -EA 0\"");
-            //currentCommand.Test = $"if \"%USERDNSDOMAIN%\"==\"{this.DomainInfo.DomainDnsName.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
-
-            currentCommand = currentConfig.Commands.AddCommand<Command>("04-CreateAdminUser");
+            currentCommand = this.Config.Commands.AddCommand<Command>("CreateAdminUser");
             currentCommand.WaitAfterCompletion = "0";
             currentCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None, "\"New-ADUser -Name ",
                 this.DomainInfo.AdminUserName,
@@ -88,7 +81,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkIfUserExists} {this.DomainInfo.AdminUserName}";
 
-            currentCommand = currentConfig.Commands.AddCommand<Command>("05-UpdateAdminUser");
+            currentCommand = this.Config.Commands.AddCommand<Command>("UpdateAdminUser");
             currentCommand.WaitAfterCompletion = "0";
             currentCommand.Command = new PowershellFnJoin("-Command \"c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1 -Members",
                 this.DomainInfo.AdminUserName,
@@ -96,16 +89,13 @@ namespace AWS.CloudFormation.Configuration.Packages
 
 
 
-            currentCommand = currentConfig.Commands.AddCommand<Command>("06-RenameDefaultSite");
+            currentCommand = this.Config.Commands.AddCommand<Command>("RenameDefaultSite");
             currentCommand.WaitAfterCompletion = 0.ToString();
             currentCommand.Command =
                 new PowershellFnJoin(
                     "\"Get-ADObject -SearchBase (Get-ADRootDSE).ConfigurationNamingContext -filter {Name -eq 'Default-First-Site-Name'} | Rename-ADObject -NewName",
                     new ReferenceProperty(this.Subnet.LogicalId),
                     "\"");
-
-
-            //currentConfig.Commands.AddCommand<Command>(this.WaitCondition);
 
             this.CreateDomainControllerSecurityGroup();
 
@@ -120,7 +110,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             {
                 if (_domainMemberSecurityGroup == null)
                 {
-                    _domainMemberSecurityGroup = new SecurityGroup(this.Instance.Template, "DomainMemberSG", "For All Domain Members", this.Subnet.Vpc);
+                    _domainMemberSecurityGroup = new SecurityGroup(this.Instance.Template, "SecurityGroup4DomainMember", "For All Domain Members", this.Subnet.Vpc);
                     _domainMemberSecurityGroup.GroupDescription = "Domain Member Security Group";
                 }
                 return _domainMemberSecurityGroup;
@@ -132,39 +122,39 @@ namespace AWS.CloudFormation.Configuration.Packages
         private void CreateDomainControllerSecurityGroup()
         {
             // ReSharper disable once InconsistentNaming
-            SecurityGroup DomainControllerSG1 = new SecurityGroup(this.Instance.Template, "DomainControllerSG1", "Domain Controller", this.Subnet.Vpc);
-            DomainControllerSG1.AddIngress(this.Subnet.Vpc as ICidrBlock, Protocol.Tcp,
+            SecurityGroup SecurityGroup4DomainController = new SecurityGroup(this.Instance.Template, "SecurityGroup4DomainController", "Domain Controller", this.Subnet.Vpc);
+            SecurityGroup4DomainController.AddIngress(this.Subnet.Vpc as ICidrBlock, Protocol.Tcp,
                 Ports.WsManagementPowerShell);
-            DomainControllerSG1.AddIngress(this.Subnet.Vpc as ICidrBlock, Protocol.Tcp, Ports.Http);
+            SecurityGroup4DomainController.AddIngress(this.Subnet.Vpc as ICidrBlock, Protocol.Tcp, Ports.Http);
 
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Udp,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup, Protocol.Udp,
                 Ports.Ntp);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
                 Ports.WinsManager);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
                 Ports.ActiveDirectoryManagement);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Udp,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup, Protocol.Udp,
                 Ports.NetBios);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.Smb);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.ActiveDirectoryManagement2);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.Ldap);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
                 Ports.Ldaps);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
                 Ports.Ldap2Begin, Ports.Ldap2End);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.DnsQuery);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.KerberosKeyDistribution);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.RemoteDesktopProtocol);
 
-            this.Instance.AddSecurityGroup(DomainControllerSG1);
+            this.Instance.AddSecurityGroup(SecurityGroup4DomainController);
 
         }
 
@@ -203,7 +193,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             joinCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
 
             participant.AddDependsOn(this.WaitCondition);
-            this.AddToDomainMemberSecurityGroup((Instance)participant);
+            this.AddToDomainMemberSecurityGroup(participantLaunchConfiguration);
             participantLaunchConfiguration.DomainNetBiosName = this.DomainInfo.DomainNetBiosName;
             participantLaunchConfiguration.DomainDnsName = this.DomainInfo.DomainDnsName;
             var nodeJson = participantLaunchConfiguration.GetChefNodeJsonContent();
@@ -254,7 +244,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             }
         }
 
-        public void AddToDomainMemberSecurityGroup(Instance domainMember)
+        public void AddToDomainMemberSecurityGroup(LaunchConfiguration domainMember)
         {
             //az1Subnet
             DomainMemberSecurityGroup.AddIngress(domainMember.Subnet as ICidrBlock,

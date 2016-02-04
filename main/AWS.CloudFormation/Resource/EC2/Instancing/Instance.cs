@@ -35,7 +35,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         }
 
         public Instance(Template template, string name, InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem, bool enableHup, DefinitionType definitionType)
-            : base(template, name, instanceType, imageId, operatingSystem)
+            : base(template, name, instanceType, imageId, operatingSystem, ResourceType.AwsEc2Instance)
         {
             switch (definitionType)
             {
@@ -94,7 +94,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         private Subnet _subnet;
 
-        [JsonIgnore] public Subnet Subnet
+        [JsonIgnore] public override Subnet Subnet
         {
             get
             {
@@ -190,35 +190,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         {
             get { return this.Type == ResourceType.AwsEc2Instance; }
         }
-
-
-        //public void AddDependsOn(Instance dependsOn, TimeSpan timeout)
-        //{
-        //    if (dependsOn.OperatingSystem != OperatingSystem.Windows)
-        //    {
-        //        throw new NotSupportedException($"Cannot depend on instance of OperatingSystem:{dependsOn.OperatingSystem}");
-        //    }
-
-        //    var waitConditionHandleName = dependsOn.AddFinalizer(dependsOn.LogicalId,timeout);
-
-        //    this.DependsOn.Add(waitConditionHandleName.LogicalId);
-
-        //}
-
-
-        //public WaitCondition AddFinalizer(string logicalName, TimeSpan timeout)
-        //{
-        //    var finalizeConfig =
-        //        this.Metadata.Init.ConfigSets.GetConfigSet(Init.FinalizeConfigSetName)
-        //            .GetConfig(Init.FinalizeConfigName);
-
-        //    string finalizeKey = $"waitCondition{logicalName}{DateTime.Now.Ticks}";
-        //    WaitCondition wait = new WaitCondition(Template, finalizeKey, timeout);
-        //    var command = finalizeConfig.Commands.AddCommand<Command>(finalizeKey, Commands.CommandType.CompleteWaitHandle, $"{wait.Handle.LogicalId}");
-
-        //    command.WaitAfterCompletion = 0.ToString();
-        //    return wait;
-        //}
 
         [JsonIgnore]
         public string CidrBlock {

@@ -13,6 +13,7 @@ using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
+using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Resource.Wait;
 using AWS.CloudFormation.Stack;
 using OperatingSystem = AWS.CloudFormation.Resource.EC2.Instancing.OperatingSystem;
@@ -24,11 +25,10 @@ namespace AWS.CloudFormation.Resource.AutoScaling
     {
         public const string ChefNodeJsonConfigSetName = "ChefNodeJsonConfigSetName";
         public const string ChefNodeJsonConfigName = "ChefNodeJsonConfigName";
-        public const string DefaultConfigSetName = "config";
-        public const string DefaultConfigSetRenameConfig = "rename";
-        public const string DefaultConfigSetJoinConfig = "join";
-        public const string DefaultConfigSetRenameConfigRenamePowerShellCommand = "1-execute-powershell-script-RenameComputer";
-        public const string DefaultConfigSetRenameConfigJoinDomain = "b-join-domain";
+        public const string DefaultConfigSetName = "LaunchConfigurationConfigSet";
+        public const string DefaultConfigName = "LaunchConfigurationConfig";
+        public const string DefaultConfigSetRenameConfig = "Rename";
+        public const string DefaultConfigSetRenameConfigRenamePowerShellCommand = "RenameComputer";
         public const int NetBiosMaxLength = 15;
 
 
@@ -36,8 +36,9 @@ namespace AWS.CloudFormation.Resource.AutoScaling
                                 string name,
                                 InstanceTypes instanceType,
                                 string imageId,
-                                OperatingSystem operatingSystem)
-            : base(template, name, ResourceType.AwsAutoScalingLaunchConfiguration)
+                                OperatingSystem operatingSystem,
+                                ResourceType resourceType)
+            : base(template, name, resourceType)
         {
             _availableDevices = new List<string>();
             this.InstanceType = instanceType;
@@ -58,19 +59,23 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             this.EnableHup();
             SetUserData();
             this.DisableFirewall();
-            this.AddRename();
+            if (OperatingSystem == OperatingSystem.Windows &&
+                this.Type != ResourceType.AwsAutoScalingLaunchConfiguration)
+            {
+                this.AddRename();
+            }
+
         }
+
+        private const int NetBiosMachineNameLengthLimit = 15;
 
         private void AddRename()
         {
-            if (false && OperatingSystem == OperatingSystem.Windows)
-            {
-                var renameConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetRenameConfig);
-                var renameCommandConfig = renameConfig.Commands.AddCommand<Command>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
-                renameCommandConfig.Command = new PowershellFnJoin($"\"Rename-Computer -NewName {this.LogicalId} -Restart -Force\"");
-                renameCommandConfig.WaitAfterCompletion = "forever";
-                renameCommandConfig.Test = $"IF \"%COMPUTERNAME%\"==\"{this.LogicalId.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
-            }
+            var renameConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetRenameConfig);
+            var renameCommandConfig = renameConfig.Commands.AddCommand<Command>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
+            renameCommandConfig.Command = new PowershellFnJoin($"\"Rename-Computer -NewName {this.LogicalId.Substring(0, this.LogicalId.Length > NetBiosMachineNameLengthLimit ? NetBiosMachineNameLengthLimit : this.LogicalId.Length)} -Restart -Force\"");
+            renameCommandConfig.WaitAfterCompletion = "forever";
+            renameCommandConfig.Test = $"IF \"%COMPUTERNAME%\"==\"{this.LogicalId.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
         }
 
 
@@ -126,7 +131,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         public ConfigFileContent GetChefNodeJsonContent()
         {
 
-            var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("setup");
+            var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigName);
             var nodeJson = chefConfig.Files.GetFile("c:/chef/node.json");
             return nodeJson.Content;
         }
@@ -269,6 +274,22 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         [JsonIgnore]
         public OperatingSystem OperatingSystem { get; set; }
 
+        [JsonIgnore]
+        public AutoScalingGroup AutoScalingGroup { get; set; }
+
+        [JsonIgnore]
+        public virtual Subnet Subnet {
+            get
+            {
+                List<ReferenceProperty> subnetReferences = this.AutoScalingGroup.VPCZoneIdentifier as List<ReferenceProperty>;
+                return (Subnet)this.Template.Resources[subnetReferences.First().Reference.LogicalId];
+            }
+            set
+            {
+                throw new NotSupportedException();
+            }
+        }
+
         internal void SetUserData()
         {
             switch (this.OperatingSystem)
@@ -296,7 +317,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             if (this.OperatingSystem==OperatingSystem.Windows)
             {
 
-                var setup = Metadata.Init.ConfigSets.GetConfigSet("config").GetConfig("setup");
+                var setup = Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigName);
                 var setupFiles = setup.Files;
 
                 var cfnHupConfContent = setupFiles.GetFile("c:\\cfn\\cfn-hup.conf").Content;
@@ -334,8 +355,8 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         {
             if (OperatingSystem == OperatingSystem.Windows)
             {
-                var setup = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig("setup");
-                var disableFirewallCommand = setup.Commands.AddCommand<Command>("a-disable-win-fw");
+                var setup = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigName);
+                var disableFirewallCommand = setup.Commands.AddCommand<Command>("DisableWindowsFirewall");
                 disableFirewallCommand.Command = new PowershellFnJoin("-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\"");
                 disableFirewallCommand.WaitAfterCompletion = 0.ToString();
             }
