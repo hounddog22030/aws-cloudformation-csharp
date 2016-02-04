@@ -29,15 +29,11 @@ execute 'InstallAgent' do
 	not_if { File.exist?( LogFileInstallAgent ) }
 end
 
-default['tfs']['sqlexpress4build_private_dns_name'] = "invalid"
-default['tfs']['sqlexpress4build_username'] = "invalid"
-default['tfs']['sqlexpress4build_password'] = "invalid"
-
 machineConfigX86 = "C:/Windows/Microsoft.NET/Framework/v4.0.30319/Config/machine.config"
 
 template "#{machineConfigX86}" do
   source 'build.x86.machine.config'
-  variables( :sqlexpress4build_private_dns_name => "#{node[:tfs][:sqlexpress4build_private_dns_name]}",
-  variables( :sqlexpress4build_username => "#{node[:tfs][:sqlexpress4build_username]}",
-  variables( :sqlexpress4build_password => "#{node[:tfs][:sqlexpress4build_password]}" )
+  variables(	:sqlexpress4build_private_dns_name => "#{node[:tfs][:sqlexpress4build_private_dns_name]}",
+				:sqlexpress4build_username => "#{node[:tfs][:sqlexpress4build_username]}",
+				:sqlexpress4build_password => "#{node[:tfs][:sqlexpress4build_password]}" )
 end

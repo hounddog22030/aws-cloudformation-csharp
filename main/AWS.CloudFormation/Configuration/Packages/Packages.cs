@@ -183,20 +183,24 @@ namespace AWS.CloudFormation.Configuration.Packages
         {
             base.AddToLaunchConfiguration(configuration);
 
+            var appSettingsReader = new AppSettingsReader();
+            string accessKeyString = (string)appSettingsReader.GetValue("S3AccessKey", typeof(string));
+            string secretKeyString = (string)appSettingsReader.GetValue("S3SecretKey", typeof(string));
+
             if (!configuration.Metadata.Authentication.ContainsKey("S3AccessCreds"))
             {
-                var appSettingsReader = new AppSettingsReader();
-                string accessKeyString = (string) appSettingsReader.GetValue("S3AccessKey", typeof (string));
-                string secretKeyString = (string) appSettingsReader.GetValue("S3SecretKey", typeof (string));
                 var auth = configuration.Metadata.Authentication.Add("S3AccessCreds",
                     new S3Authentication(accessKeyString, secretKeyString, new string[] {BucketName}));
                 auth.Type = "S3";
-                var chefConfigContent = configuration.GetChefNodeJsonContent();
+            }
+
+            var chefConfigContent = configuration.GetChefNodeJsonContent();
+            if (!chefConfigContent.ContainsKey("s3_file"))
+            {
                 var s3FileNode = chefConfigContent.Add("s3_file");
                 s3FileNode.Add("key", accessKeyString);
                 s3FileNode.Add("secret", secretKeyString);
             }
-
             //var chefDict = new CloudFormationDictionary();
             //chefDict.Add("chef","https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");
 
