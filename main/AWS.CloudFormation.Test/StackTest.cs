@@ -867,8 +867,11 @@ namespace AWS.CloudFormation.Test
 
             WindowsInstance workstation = new WindowsInstance(template, name, InstanceTypes.C4Large, UsEast1AWindows2012R2Ami, subnet, rename, Ebs.VolumeTypes.GeneralPurpose, 214);
 
+
+
             workstation.Packages.Add(new SqlServerExpress(BucketNameSoftware));
-            workstation.Packages.Add(new VisualStudio(BucketNameSoftware));
+            var vs = new VisualStudio(BucketNameSoftware);
+            System.Diagnostics.Debug.Write(vs.WaitCondition);
 
             if (workstationSecurityGroup != null)
             {
