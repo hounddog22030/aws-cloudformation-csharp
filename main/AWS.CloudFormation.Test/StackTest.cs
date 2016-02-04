@@ -266,12 +266,12 @@ namespace AWS.CloudFormation.Test
             var buildServer = AddBuildServer(template, InstanceTypes.C4Large, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
 
             //uses 33gb
-            //var workstation = AddWorkstation(template, 
-            //    "workstation", 
-            //    subnetWorkstation, 
-            //    dcPackage, 
-            //    workstationSecurityGroup, 
-            //    true);
+            var workstation = AddWorkstation(template,
+                "workstation",
+                subnetWorkstation,
+                dcPackage,
+                workstationSecurityGroup,
+                true);
 
 
             ////SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
@@ -864,17 +864,19 @@ namespace AWS.CloudFormation.Test
                 instanceDomainControllerPackage.Participate(workstation);
             }
 
-            //workstation.Packages.Add(new SqlServerExpress(BucketNameSoftware));
-            workstation.Packages.Add(new VisualStudio(BucketNameSoftware));
-
             if (workstationSecurityGroup != null)
             {
                 workstation.AddSecurityGroup(workstationSecurityGroup);
             }
 
+            //workstation.Packages.Add(new SqlServerExpress(BucketNameSoftware));
+            workstation.Packages.Add(new VisualStudio(BucketNameSoftware));
+            workstation.Packages.Add(new Chrome());
+            workstation.Packages.Add(new ReSharper());
+
             //var waitConditionWorkstationAvailable = workstation.AddFinalizer("waitConditionWorkstationAvailable",TimeoutMax);
 
- 
+
             return workstation;
         }
 
