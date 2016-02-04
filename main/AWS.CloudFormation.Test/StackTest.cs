@@ -108,7 +108,9 @@ namespace AWS.CloudFormation.Test
             var amis = new CloudFormationDictionary();
             amis.Add("W2K12R264Base", "ami-9a0558f0");
             amis.Add("W2K12R264SQLServerExpress", "ami-a3005dc9");
-            template.Mappings.Add("Amis", amis);
+            var regions = new CloudFormationDictionary();
+            regions.Add("us-east-1a", amis);
+            template.Mappings.Add("Amis", regions);
 
             var domainPassword = new ParameterBase("DomainAdminPassword", "String", password,
                 "Password for domain administrator.")
