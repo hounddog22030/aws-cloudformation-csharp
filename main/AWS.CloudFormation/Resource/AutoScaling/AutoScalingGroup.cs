@@ -114,11 +114,11 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         }
 
         [JsonIgnore]
-        public object[] VPCZoneIdentifier
+        public object VPCZoneIdentifier
         {
             get
             {
-                return this.Properties.GetValue<List<object>>().ToArray();
+                return this.Properties.GetValue<object>();
             }
             set
             {
