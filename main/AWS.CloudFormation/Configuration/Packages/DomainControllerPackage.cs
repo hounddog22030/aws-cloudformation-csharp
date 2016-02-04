@@ -49,20 +49,21 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             var addActiveDirectoryPowershell = currentConfig.Commands.AddCommand<Command>("AddRSATADPowerShell");
             addActiveDirectoryPowershell.Command = new PowershellFnJoin(FnJoinDelimiter.None, "-Command \"Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter\"");
+            addActiveDirectoryPowershell.WaitAfterCompletion = 0.ToString();
 
 
-            currentCommand.WaitAfterCompletion = 0.ToString();
             currentCommand.Command = new PowershellFnJoin("-Command \"Install-WindowsFeature AD-Domain-Services, rsat-adds -IncludeAllSubFeature\"");
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
+            currentCommand.WaitAfterCompletion = 0.ToString();
 
             currentCommand = currentConfig.Commands.AddCommand<Command>("02-InstallActiveDirectoryDomainServices");
-            currentCommand.WaitAfterCompletion = new TimeSpan(0, 4, 0).TotalSeconds.ToString(CultureInfo.InvariantCulture);
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
+            currentCommand.WaitAfterCompletion = new TimeSpan(0, 4, 0).TotalSeconds.ToString(CultureInfo.InvariantCulture);
 
 
             currentCommand.Command = new PowershellFnJoin("-Command \"Install-ADDSForest -DomainName",
                 this.DomainInfo.DomainDnsName,
-                "-SafeModeAdministratorPassword (convertto-securestring jhkjhsdf338! -asplaintext -force) -DomainMode Win2012 -DomainNetbiosName",
+                "-SafeModeAdministratorPassword (convertto-securestring \"jhkjhsdf338!\" -asplaintext -force) -DomainMode Win2012 -DomainNetbiosName",
                 this.DomainInfo.DomainNetBiosName,
                 "-ForestMode Win2012 -Confirm:$false -Force\"");
 
@@ -81,9 +82,9 @@ namespace AWS.CloudFormation.Configuration.Packages
                 this.DomainInfo.AdminUserName,
                 "@",
                 this.DomainInfo.DomainDnsName,
-                " -AccountPassword (ConvertTo-SecureString ",
-                this.DomainInfo.AdminPassword,
-                " -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
+                " -AccountPassword (ConvertTo-SecureString \"",
+                new ReferenceProperty((ILogicalId)this.Instance.Template.Parameters[Template.ParameterDomainAdminPassword]),
+                "\" -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
 
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkIfUserExists} {this.DomainInfo.AdminUserName}";
 
@@ -179,6 +180,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             var addActiveDirectoryPowershell = joinCommandConfig.Commands.AddCommand<Command>("AddRSATADPowerShell");
             addActiveDirectoryPowershell.Command = new PowershellFnJoin(FnJoinDelimiter.None, "Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter");
+            addActiveDirectoryPowershell.WaitAfterCompletion = 0.ToString();
 
             var joinCommand = joinCommandConfig.Commands.AddCommand<Command>("JoinDomain");
             joinCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None,
@@ -192,9 +194,9 @@ namespace AWS.CloudFormation.Configuration.Packages
                 this.DomainInfo.DomainNetBiosName,
                 "\\",
                 this.DomainInfo.AdminUserName,
-                "',(ConvertTo-SecureString ",
+                "',(ConvertTo-SecureString \"",
                 this.DomainInfo.AdminPassword,
-                " -AsPlainText -Force))) ",
+                "\" -AsPlainText -Force))) ",
                 "-Restart\"",
                 " }");
             joinCommand.WaitAfterCompletion = "forever";

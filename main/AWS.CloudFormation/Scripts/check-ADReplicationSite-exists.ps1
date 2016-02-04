@@ -1,5 +1,5 @@
 ﻿Import-Module ActiveDirectory
-Param(
+param(
   [string]$subnetName
 )
 

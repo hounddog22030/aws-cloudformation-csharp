@@ -71,13 +71,13 @@ namespace AWS.CloudFormation.Test.Resource.RDS
                 "instanceBasicDbInstanceTest",
                 DbInstanceClassEnum.DbT2Micro,
                 EngineType.SqlServerExpress,
-                LicenseModelType.LicenseIncluded, 
+                LicenseModelType.LicenseIncluded,
+                Ebs.VolumeTypes.GeneralPurpose,
+                20,
                 "MyMasterUsername",
                 "YellowBeard123",
-                20,
                 subnetGroup,
-                dbSecurityGroup,
-                Ebs.VolumeTypes.GeneralPurpose);
+                dbSecurityGroup);
 
 
 
@@ -119,13 +119,13 @@ namespace AWS.CloudFormation.Test.Resource.RDS
                 "instanceBasicDbInstanceTest",
                 DbInstanceClassEnum.DbT2Micro,
                 EngineType.MySql,
-                LicenseModelType.GeneralPublicLicense, 
+                LicenseModelType.GeneralPublicLicense,
+                  Ebs.VolumeTypes.GeneralPurpose,
+                  20,
                 "MyMasterUsername",
                 "YellowBeard123",
-                20,
                 subnetGroup,
-                dbSecurityGroup,
-                Ebs.VolumeTypes.GeneralPurpose);
+                dbSecurityGroup);
 
             instance.PubliclyAccessible = true.ToString().ToLowerInvariant();
             return template;
@@ -165,13 +165,13 @@ namespace AWS.CloudFormation.Test.Resource.RDS
                 "instanceBasicDbInstanceTest",
                 DbInstanceClassEnum.DbR3Large,
                 EngineType.Aurora,
-                LicenseModelType.GeneralPublicLicense, 
+                LicenseModelType.GeneralPublicLicense,
+                Ebs.VolumeTypes.GeneralPurpose,
+                100,
                 "MyMasterUsername",
                 "YellowBeard123",
-                100,
                 subnetGroup,
-                dbSecurityGroup,
-                Ebs.VolumeTypes.GeneralPurpose);
+                dbSecurityGroup);
 
 
             instance.PubliclyAccessible = true.ToString().ToLowerInvariant();

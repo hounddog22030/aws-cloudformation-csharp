@@ -20,6 +20,12 @@ namespace AWS.CloudFormation.Common
             this.Resource = resource;
         }
 
+        public ILogicalId Add(ILogicalId objectToAdd)
+        {
+            this.Add(objectToAdd.LogicalId, objectToAdd);
+            return objectToAdd;
+        }
+
         public ResourceBase Resource { get; internal set; }
 
 

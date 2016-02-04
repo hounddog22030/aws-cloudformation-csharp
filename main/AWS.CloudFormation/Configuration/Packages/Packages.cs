@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Stack;
@@ -14,6 +15,7 @@ using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
+using AWS.CloudFormation.Resource.RDS;
 using AWS.CloudFormation.Resource.Wait;
 
 namespace AWS.CloudFormation.Configuration.Packages
@@ -181,20 +183,24 @@ namespace AWS.CloudFormation.Configuration.Packages
         {
             base.AddToLaunchConfiguration(configuration);
 
+            var appSettingsReader = new AppSettingsReader();
+            string accessKeyString = (string)appSettingsReader.GetValue("S3AccessKey", typeof(string));
+            string secretKeyString = (string)appSettingsReader.GetValue("S3SecretKey", typeof(string));
+
             if (!configuration.Metadata.Authentication.ContainsKey("S3AccessCreds"))
             {
-                var appSettingsReader = new AppSettingsReader();
-                string accessKeyString = (string) appSettingsReader.GetValue("S3AccessKey", typeof (string));
-                string secretKeyString = (string) appSettingsReader.GetValue("S3SecretKey", typeof (string));
                 var auth = configuration.Metadata.Authentication.Add("S3AccessCreds",
                     new S3Authentication(accessKeyString, secretKeyString, new string[] {BucketName}));
                 auth.Type = "S3";
-                var chefConfigContent = configuration.GetChefNodeJsonContent();
+            }
+
+            var chefConfigContent = configuration.GetChefNodeJsonContent();
+            if (!chefConfigContent.ContainsKey("s3_file"))
+            {
                 var s3FileNode = chefConfigContent.Add("s3_file");
                 s3FileNode.Add("key", accessKeyString);
                 s3FileNode.Add("secret", secretKeyString);
             }
-
             //var chefDict = new CloudFormationDictionary();
             //chefDict.Add("chef","https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");
 
@@ -277,18 +283,28 @@ namespace AWS.CloudFormation.Configuration.Packages
             base.AddToLaunchConfiguration(configuration);
             var node = this.Instance.GetChefNodeJsonContent();
             var tfsNode = node.Add("tfs");
-            tfsNode.Add("application_server_netbios_name", new FnGetAtt(this.SqlServer, "PrivateDnsName"));
+            tfsNode.Add("application_server_sqlname", new FnGetAtt(this.SqlServer, FnGetAttAttribute.AwsEc2InstancePrivateDnsName));
 
         }
     }
 
     public class TeamFoundationServerBuildServerBase : TeamFoundationServer
     {
-        public TeamFoundationServerBuildServerBase(LaunchConfiguration applicationServer, string bucketName,
-            string recipeName) : base(bucketName, recipeName)
+
+        public const string sqlexpress4build_private_dns_name_parameter_name = "sqlexpress4buildprivatednsnameparametername";
+        public const string sqlexpress4build_username_parameter_name = "sqlexpress4buildusername";
+        public const string sqlexpress4build_password_parameter_name = "sqlexpress4buildpassword";
+
+        public TeamFoundationServerBuildServerBase( LaunchConfiguration applicationServer, 
+                                                    string bucketName,
+                                                    string recipeName,
+                                                    DbInstance sqlServer4Build) : base(bucketName, recipeName)
         {
             this.ApplicationServer = applicationServer;
+            this.SqlServer4Build = sqlServer4Build;
         }
+
+        public DbInstance SqlServer4Build { get; }
 
         public LaunchConfiguration ApplicationServer { get; }
 
@@ -297,7 +313,12 @@ namespace AWS.CloudFormation.Configuration.Packages
             base.AddToLaunchConfiguration(configuration);
             var node = this.Instance.GetChefNodeJsonContent();
             var tfsNode = node.Add("tfs");
-            tfsNode.Add("application_server_netbios_name", this.ApplicationServer.LogicalId);
+            tfsNode.Add("application_server_netbios_name", new FnGetAtt(this.ApplicationServer, FnGetAttAttribute.AwsEc2InstancePrivateDnsName));
+            tfsNode.Add("sqlexpress4build_private_dns_name", new FnGetAtt(this.SqlServer4Build, FnGetAttAttribute.AwsRdsDbInstanceEndpointAddress));
+            tfsNode.Add("sqlexpress4build_username",
+                new ReferenceProperty(sqlexpress4build_username_parameter_name));
+            tfsNode.Add("sqlexpress4build_password",
+                new ReferenceProperty(sqlexpress4build_password_parameter_name));
         }
     }
 
@@ -305,16 +326,16 @@ namespace AWS.CloudFormation.Configuration.Packages
 
     public class TeamFoundationServerBuildServer : TeamFoundationServerBuildServerBase
     {
-        public TeamFoundationServerBuildServer(LaunchConfiguration applicationServer, string bucketName)
-            : base(applicationServer, bucketName, "build")
+        public TeamFoundationServerBuildServer(LaunchConfiguration applicationServer, string bucketName, DbInstance sqlExpress4Build)
+            : base(applicationServer, bucketName, "build", sqlExpress4Build)
         {
         }
     }
 
     public class TeamFoundationServerBuildServerAgentOnly : TeamFoundationServerBuildServerBase
     {
-        public TeamFoundationServerBuildServerAgentOnly(WindowsInstance applicationServer, string bucketName)
-            : base(applicationServer, bucketName, "agent")
+        public TeamFoundationServerBuildServerAgentOnly(WindowsInstance applicationServer, string bucketName, DbInstance sqlExpress4Build)
+            : base(applicationServer, bucketName, "agent", sqlExpress4Build)
         {
         }
     }

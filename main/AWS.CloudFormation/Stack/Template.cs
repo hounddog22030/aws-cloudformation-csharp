@@ -20,21 +20,24 @@ namespace AWS.CloudFormation.Stack
     {
 
         public const string AwsTemplateFormatVersion20100909 = "2010-09-09";
-        public const string CIDR_IP_THE_WORLD = "0.0.0.0/0";
-
+        public const string CidrIpTheWorld = "0.0.0.0/0";
+        public const string ParameterKeyPairName = "KeyPairName";
+        public const string ParameterDomainAdminPassword = "DomainAdminPassword";
 
         public Template(string defaultKeyName, string vpcName, string vpcCidrBlock ) : this(defaultKeyName,vpcName,vpcCidrBlock,null)
         {
         }
 
-        public Template(string keyPairName, string vpcName, string vpcCidrBlock, string description)
+        public Template(string keyPairName, string vpcName, string vpcCidrBlock, string description) : base()
         {
+
             Outputs = new CloudFormationDictionary();
             AwsTemplateFormatVersion = AwsTemplateFormatVersion20100909;
             this.Resources = new Dictionary<string, ResourceBase>();
-            this.Parameters = new Dictionary<string, ParameterBase>();
-            this.Parameters.Add(Instance.ParameterNameDefaultKeyPairKeyName, new ParameterBase(Instance.ParameterNameDefaultKeyPairKeyName, "AWS::EC2::KeyPair::KeyName", keyPairName));
+            this.Parameters = new CloudFormationDictionary();
+            this.Parameters.Add(ParameterKeyPairName, new ParameterBase(ParameterKeyPairName, "AWS::EC2::KeyPair::KeyName", keyPairName,"Key Pair to decrypt instance password."));
             Vpc vpc = new Vpc(this, vpcName, vpcCidrBlock);
+
             if (!string.IsNullOrEmpty(description))
             {
                 this.Description = description;
@@ -50,7 +53,7 @@ namespace AWS.CloudFormation.Stack
         public string AwsTemplateFormatVersion { get; }
 
         public Dictionary<string, ResourceBase> Resources { get; private set; }
-        public Dictionary<string, ParameterBase> Parameters { get; private set; }
+        public CloudFormationDictionary Parameters { get; private set; }
 
         [JsonIgnore]
         public IEnumerable<Vpc> Vpcs
@@ -75,17 +78,33 @@ namespace AWS.CloudFormation.Stack
 
     public class ParameterBase : Dictionary<string,object>, ILogicalId
     {
-        public ParameterBase(string name, string type, object defaultValue)
+        public ParameterBase(string name, string type, object defaultValue,string description)
         {
             LogicalId = name;
             this.Add("Type",type);
             this.Add("Default", defaultValue);
-
+            this.Add("Description", description);
         }
 
         public string Type => this["Type"].ToString();
-        public object Default => this["Default"];
+
+        public object Default
+        {
+            get { return this["Default"]; }
+            set { this["Default"] = value; }
+        }
+        public string Description => this["Description"].ToString();
 
         public string LogicalId { get; }
+        public bool NoEcho {
+            get
+            {
+                return (bool)this["NoEcho"];
+            }
+            set
+            {
+                this["NoEcho"] = value;
+            }
+        }
     }
 }

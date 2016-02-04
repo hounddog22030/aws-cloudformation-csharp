@@ -136,6 +136,7 @@
     <None Include="cookbooks\tfs\recipes\build.rb" />
     <None Include="cookbooks\tfs\recipes\install.rb" />
     <None Include="cookbooks\tfs\templates\build.ini.erb" />
+    <None Include="cookbooks\tfs\templates\build.x86.machine.config" />
     <None Include="cookbooks\tfs\Thorfile" />
     <None Include="cookbooks\tfs\Vagrantfile" />
     <None Include="cookbooks\vs\.kitchen.yml" />

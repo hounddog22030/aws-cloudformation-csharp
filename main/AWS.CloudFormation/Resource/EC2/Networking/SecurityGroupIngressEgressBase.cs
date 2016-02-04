@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Serialization;
+using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Resource.EC2.Networking
 {
@@ -96,12 +99,24 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         
     }
 
+    [JsonConverter(typeof(EnumConverter))]
+    public enum FnGetAttAttribute
+    {
+        [EnumMember(Value = "PrivateDnsName")]
+        AwsEc2InstancePrivateDnsName,
+        [EnumMember(Value = "PrivateIp")]
+        AwsEc2InstancePrivateIp,
+        [EnumMember(Value = "Endpoint.Address")]
+        AwsRdsDbInstanceEndpointAddress
+        //
+    }
+
     public class FnGetAtt : CloudFormationDictionary
     {
-        public FnGetAtt(ILogicalId resource, string attributeName)
+        public FnGetAtt(ILogicalId resource, FnGetAttAttribute attribute)
         {
-            var privateIp = new string[] { resource.LogicalId, attributeName };
-            this.Add("Fn::GetAtt", privateIp);
+            var info = new object[] { resource.LogicalId, attribute };
+            this.Add("Fn::GetAtt", info);
         }
     }
 }

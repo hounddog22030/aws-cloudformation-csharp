@@ -155,7 +155,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             switch (cidr)
             {
                     case PredefinedCidr.TheWorld:
-                    cidrAsString = Template.CIDR_IP_THE_WORLD;
+                    cidrAsString = Template.CidrIpTheWorld;
                     break;
                 default:
                     throw new InvalidEnumArgumentException();
