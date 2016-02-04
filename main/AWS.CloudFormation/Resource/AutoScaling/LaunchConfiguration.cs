@@ -281,7 +281,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             get
             {
                 var firstSubnet = this.AutoScalingGroup.VPCZoneIdentifier.First();
-                return (Subnet)this.Template.Resources[firstSubnet];
+                return (Subnet)this.Template.Resources[(string)firstSubnet];
             }
             set
             {
