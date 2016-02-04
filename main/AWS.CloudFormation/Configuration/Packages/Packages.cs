@@ -315,9 +315,9 @@ namespace AWS.CloudFormation.Configuration.Packages
             var tfsNode = node.Add("tfs");
             tfsNode.Add("application_server_netbios_name", new FnGetAtt(this.ApplicationServer, FnGetAttAttribute.AwsEc2InstancePrivateDnsName));
             tfsNode.Add("sqlexpress4build_private_dns_name", new FnGetAtt(this.SqlServer4Build, FnGetAttAttribute.AwsRdsDbInstanceEndpointAddress));
-            tfsNode.Add("sqlexpress4build_username_parameter_name",
+            tfsNode.Add("sqlexpress4build_username",
                 new ReferenceProperty(sqlexpress4build_username_parameter_name));
-            tfsNode.Add("sqlexpress4build_password_parameter_name",
+            tfsNode.Add("sqlexpress4build_password",
                 new ReferenceProperty(sqlexpress4build_password_parameter_name));
             tfsNode.Add("junk", "junk");
         }
