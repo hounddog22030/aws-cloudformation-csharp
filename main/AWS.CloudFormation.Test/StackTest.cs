@@ -192,7 +192,7 @@ namespace AWS.CloudFormation.Test
 
             instanceDomainController.Packages.Add(new Chrome());
 
-            FnGetAtt dc1PrivateIp = new FnGetAtt(instanceDomainController, "PrivateIp");
+            FnGetAtt dc1PrivateIp = new FnGetAtt(instanceDomainController, FnGetAttAttribute.AwsEc2InstancePrivateIp);
             object[] elements = new object[] { dc1PrivateIp, "10.0.0.2" };
             FnJoin dnsServers = new FnJoin(FnJoinDelimiter.Comma, elements);
             object[] netBiosServersElements = new object[] { dc1PrivateIp };
@@ -216,7 +216,7 @@ namespace AWS.CloudFormation.Test
                 sqlServer4TfsSecurityGroup);
             var sqlPackage = instanceTfsSqlServer.Packages.OfType<SqlServerExpress>().Single();
 
-            var tfsServer = AddTfsServer(template, InstanceTypes.C4Large, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
+            var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
             var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
 
             DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup(template, "mySqlSubnetGroupForDatabaseForBuild", "Second subnet for database for build server");
@@ -259,7 +259,7 @@ namespace AWS.CloudFormation.Test
             //target.TTL = "60";
             //target.AddResourceRecord(new FnGetAtt(rdsSqlExpress4Build, "Endpoint.Address"));
 
-            //var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, mySql4Build, rdsSqlExpress4Build);
+            var buildServer = AddBuildServer(template, InstanceTypes.C4Large, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, mySql4Build, rdsSqlExpress4Build);
 
             // uses 33gb
             //var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
