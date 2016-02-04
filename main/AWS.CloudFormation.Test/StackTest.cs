@@ -878,8 +878,8 @@ namespace AWS.CloudFormation.Test
 
             //workstation.Packages.Add(new SqlServerExpress(BucketNameSoftware));
             workstation.Packages.Add(new VisualStudio(BucketNameSoftware));
-            workstation.Packages.Add(new Chrome());
             workstation.Packages.Add(new ReSharper());
+            workstation.Packages.Add(new Chrome());
 
             //var waitConditionWorkstationAvailable = workstation.AddFinalizer("waitConditionWorkstationAvailable",TimeoutMax);
 

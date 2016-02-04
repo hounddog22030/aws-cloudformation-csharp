@@ -5,7 +5,6 @@
 # Copyright (c) 2014 Ryan Irujo, All Rights Reserved.
 
 include_recipe 'ec2helper'
-include_recipe 'PsTools'
 include_recipe 'tfs::install'
 
 tfsconfigure_exe_file = "\"C:/Program Files/Microsoft Team Foundation Server 14.0/Tools/TFSConfig.exe\""

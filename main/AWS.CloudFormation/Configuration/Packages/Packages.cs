@@ -92,7 +92,10 @@ namespace AWS.CloudFormation.Configuration.Packages
 
         protected T ConfigSet
         {
-            get { return this.Instance.Metadata.Init.ConfigSets.GetConfigSet<T>(this.ConfigSetName); }
+            get
+            {
+                return this.Instance.Metadata.Init.ConfigSets.GetConfigSet<T>(this.ConfigSetName);
+            }
         }
 
         protected string ConfigSetName => $"{this.GetType().Name.Replace(".", string.Empty)}";
