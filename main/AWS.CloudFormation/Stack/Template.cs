@@ -1,6 +1,9 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using AWS.CloudFormation.Common;
@@ -35,7 +38,8 @@ namespace AWS.CloudFormation.Stack
 
             Outputs = new CloudFormationDictionary();
             AwsTemplateFormatVersion = AwsTemplateFormatVersion20100909;
-            this.Resources = new Dictionary<string, ResourceBase>();
+            this.Resources = new ObservableDictionary<string,ResourceBase>();
+            this.Resources.CollectionChanged += Resources_CollectionChanged;
             this.Parameters = new CloudFormationDictionary();
             this.Parameters.Add(ParameterKeyPairName, new ParameterBase(ParameterKeyPairName, "AWS::EC2::KeyPair::KeyName", keyPairName,"Key Pair to decrypt instance password."));
             Vpc vpc = new Vpc(this, vpcName, vpcCidrBlock);
@@ -43,6 +47,17 @@ namespace AWS.CloudFormation.Stack
             if (!string.IsNullOrEmpty(description))
             {
                 this.Description = description;
+            }
+        }
+
+        private void Resources_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.NewItems != null)
+            {
+                foreach (KeyValuePair<string,ResourceBase> newItem in e.NewItems)
+                {
+                    newItem.Value.Template = this;
+                }
             }
         }
 
@@ -54,7 +69,7 @@ namespace AWS.CloudFormation.Stack
         [JsonProperty(PropertyName = "AWSTemplateFormatVersion")]
         public string AwsTemplateFormatVersion { get; }
 
-        public Dictionary<string, ResourceBase> Resources { get; private set; }
+        public ObservableDictionary<string, ResourceBase> Resources { get; }
         
         public CloudFormationDictionary Parameters { get; private set; }
 

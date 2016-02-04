@@ -79,7 +79,7 @@ namespace AWS.CloudFormation.Resource
         protected abstract bool SupportsTags { get; }
 
         [JsonIgnore]
-        internal Template Template { get; }
+        internal Template Template { get; set; }
 
         public ResourceType Type { get; protected set; }
 

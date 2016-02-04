@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -10,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Common
 {
-    public class CloudFormationDictionary : ObservableConcurrentDictionary<string,object>
+    public class CloudFormationDictionary : ObservableDictionary<string,object>
     {
         public CloudFormationDictionary()
         {
