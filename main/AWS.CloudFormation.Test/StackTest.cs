@@ -257,6 +257,8 @@ namespace AWS.CloudFormation.Test
                 DBSubnetGroupName = new ReferenceProperty(subnetGroupSqlExpress4Build)
             };
 
+            rdsSqlExpress4Build.AddVpcSecurityGroup(securityGroupSqlSever4Build);
+
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd871hdj11", "Password for Master User For RDS SqlServer") { NoEcho = true });
 
