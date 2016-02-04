@@ -24,13 +24,13 @@ namespace AWS.CloudFormation.Stack
         public const string ParameterKeyPairName = "KeyPairName";
         public const string ParameterDomainAdminPassword = "DomainAdminPassword";
 
-        public Template(string defaultKeyName, string vpcName, string vpcCidrBlock ) : this(defaultKeyName,vpcName,vpcCidrBlock,null)
+        public Template(string defaultKeyName, string vpcName, string vpcCidrBlock) : this(defaultKeyName,vpcName,vpcCidrBlock,null)
         {
         }
 
         public Template(string keyPairName, string vpcName, string vpcCidrBlock, string description) : base()
         {
-
+            Mappings = new CloudFormationDictionary();
             Outputs = new CloudFormationDictionary();
             AwsTemplateFormatVersion = AwsTemplateFormatVersion20100909;
             this.Resources = new Dictionary<string, ResourceBase>();
@@ -61,19 +61,9 @@ namespace AWS.CloudFormation.Stack
             get { return this.Resources.Where(r => r.Value is Vpc).Select(r=>r.Value).OfType<Vpc>(); }
         }
 
-        //public void AddResource(ResourceBase resource)
-        //{
-        //    this.Resources.Add(resource.LogicalId, resource);
-        //}
-
-
-
-        public void AddParameter(ParameterBase parameter)
-        {
-            Parameters.Add(parameter.LogicalId,parameter);
-        }
-
         public CloudFormationDictionary Outputs { get; }
+
+        public CloudFormationDictionary Mappings { get; }
     }
 
     public class ParameterBase : Dictionary<string,object>, ILogicalId

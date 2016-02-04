@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Configuration.Packages;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource;
@@ -104,6 +105,10 @@ namespace AWS.CloudFormation.Test
             Assert.IsFalse(HasGitDifferences());
             var gitHash = GetGitHash();
             var template = new Template(KeyPairName, "Vpc", CidrVpc,gitHash);
+            var amis = new CloudFormationDictionary();
+            amis.Add("W2K12R264Base", "ami-9a0558f0");
+            amis.Add("W2K12R264SQLServerExpress", "ami-a3005dc9");
+            template.Mappings.Add("Amis", amis);
 
             var domainPassword = new ParameterBase("DomainAdminPassword", "String", password,
                 "Password for domain administrator.")
