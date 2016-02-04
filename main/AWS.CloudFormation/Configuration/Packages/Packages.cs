@@ -319,7 +319,6 @@ namespace AWS.CloudFormation.Configuration.Packages
                 new ReferenceProperty(sqlexpress4build_username_parameter_name));
             tfsNode.Add("sqlexpress4build_password",
                 new ReferenceProperty(sqlexpress4build_password_parameter_name));
-            tfsNode.Add("junk", "junk");
         }
     }
 

@@ -264,11 +264,15 @@ namespace AWS.CloudFormation.Test
 
             var buildServer = AddBuildServer(template, InstanceTypes.C4Large, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
 
-            //// uses 33gb
-            ////var workstation = AddWorkstation(template, "workstation", subnetWorkstation, instanceDomainController, workstationSecurityGroup, true);
-            ////var workstationChrome = new Chrome(workstation);
-            ////var workstationReSharper = new ReSharper(workstation);
-            ////workstation.AddFinalizer(TimeoutMax);
+            //uses 33gb
+            var workstation = AddWorkstation(template, 
+                "workstation", 
+                subnetWorkstation, 
+                dcPackage, 
+                workstationSecurityGroup, 
+                true);
+            workstation.Packages.Add(new Chrome());
+            workstation.Packages.Add(new ReSharper());
 
 
             ////SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
