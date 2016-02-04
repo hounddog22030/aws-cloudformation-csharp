@@ -873,7 +873,7 @@ namespace AWS.CloudFormation.Test
             var vs = new VisualStudio(BucketNameSoftware);
             workstation.Packages.Add(vs);
             System.Diagnostics.Debug.Write(vs.WaitCondition);
-
+            workstation.DependsOn.Add(subnet.LogicalId);
             if (workstationSecurityGroup != null)
             {
                 workstation.AddSecurityGroup(workstationSecurityGroup);
