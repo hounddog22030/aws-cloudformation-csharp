@@ -19,7 +19,7 @@ namespace AWS.CloudFormation.Resource.EC2
             this.DomainName = domainName;
             this.AddDomainNameServer(dnsServers);
             this.AddNetBiosNameServers(netBiosNameServers);
-            VpcDhcpOptionsAssociation association = new VpcDhcpOptionsAssociation(template,$"vpcDhcpOptionsAssociationFor{name}",this,vpc);
+            VpcDhcpOptionsAssociation association = new VpcDhcpOptionsAssociation(template,$"VpcDhcpOptionsAssociation4{name}",this,vpc);
         }
 
 

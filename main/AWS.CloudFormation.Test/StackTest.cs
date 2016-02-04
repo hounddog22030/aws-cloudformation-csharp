@@ -41,7 +41,7 @@ namespace AWS.CloudFormation.Test
         private const string UsEast1AWindows2012R2Ami = "ami-9a0558f0";
         private const string UsEast1AWindows2012R2SqlServerExpressAmi = "ami-a3005dc9";
         private const string UsEast1AWindows2012R2SqlExpressAmi = "ami-a3005dc9";
-        private const string NetBiosNameDomainController1 = "dc1";
+        private const string NetBiosNameDomainController1 = "DomainControl";
         private const string BucketNameSoftware = "gtbb";
         private static readonly TimeSpan Timeout3Hours = new TimeSpan(3, 0, 0);
         private static readonly TimeSpan Timeout2Hours = new TimeSpan(2, 0, 0);
@@ -823,7 +823,7 @@ namespace AWS.CloudFormation.Test
             launchGroup.AddSubnetToVpcZoneIdentifier(subnet);
 
 
-            var buildServer = new LaunchConfiguration(template,"launchConfigurationBuildServer",instanceSize, UsEast1AWindows2012R2Ami,
+            var buildServer = new LaunchConfiguration(template,"LaunchConfigurationBuildServer",instanceSize, UsEast1AWindows2012R2Ami,
                 OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration);
 
             launchGroup.LaunchConfiguration = buildServer;
@@ -895,7 +895,7 @@ namespace AWS.CloudFormation.Test
             SecurityGroup tfsServerSecurityGroup)
         {
             var tfsServer = new WindowsInstance(    template, 
-                                                    "tfs",
+                                                    "Tfs",
                                                     instanceSize, 
                                                     UsEast1AWindows2012R2Ami, 
                                                     privateSubnet1, 
@@ -951,7 +951,7 @@ namespace AWS.CloudFormation.Test
             return nat1;
         }
 
-        private static void SetupDomainController1SecurityGround(SecurityGroup domainControllerSg1, Vpc vpc, Subnet az2Subnet, SecurityGroup domainMemberSg, Subnet DMZSubnet, Subnet dmzaz2Subnet)
+        private static void SetupDomainController1SecurityGround(SecurityGroup domainControllerSg1, Vpc vpc, Subnet az2Subnet, SecurityGroup SecurityGroup4DomainMember, Subnet DMZSubnet, Subnet dmzaz2Subnet)
         {
             domainControllerSg1.AddIngress((ICidrBlock)vpc, Protocol.Tcp, Ports.WsManagementPowerShell);
             domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Udp,Ports.Ntp);
@@ -977,22 +977,22 @@ namespace AWS.CloudFormation.Test
             domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Udp, Ports.NetBt);
             domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Tcp, Ports.NetBiosNameServices);
             domainControllerSg1.AddIngress((ICidrBlock)az2Subnet, Protocol.Tcp, Ports.ActiveDirectoryFileReplication);
-            domainControllerSg1.AddIngress(domainMemberSg, Protocol.Udp,Ports.Ntp);
-            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp,Ports.WinsManager);
-            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp,Ports.ActiveDirectoryManagement);
-            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Udp, Ports.NetBios);
-            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp|Protocol.Udp, Ports.Smb);
-            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp| Protocol.Udp, Ports.ActiveDirectoryManagement2);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember, Protocol.Udp,Ports.Ntp);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember,Protocol.Tcp,Ports.WinsManager);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember,Protocol.Tcp,Ports.ActiveDirectoryManagement);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember,Protocol.Udp, Ports.NetBios);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember,Protocol.Tcp|Protocol.Udp, Ports.Smb);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember,Protocol.Tcp| Protocol.Udp, Ports.ActiveDirectoryManagement2);
 
-            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp|Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
-            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp|Protocol.Udp, Ports.Ldap);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember,Protocol.Tcp|Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember,Protocol.Tcp|Protocol.Udp, Ports.Ldap);
 
-            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp, Ports.Ldaps);
-            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp, Ports.Ldap2Begin, Ports.Ldap2End);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember,Protocol.Tcp, Ports.Ldaps);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember,Protocol.Tcp, Ports.Ldap2Begin, Ports.Ldap2End);
 
-            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp|Protocol.Udp, Ports.DnsQuery);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember,Protocol.Tcp|Protocol.Udp, Ports.DnsQuery);
 
-            domainControllerSg1.AddIngress(domainMemberSg,Protocol.Tcp|Protocol.Udp,Ports.KerberosKeyDistribution);
+            domainControllerSg1.AddIngress(SecurityGroup4DomainMember,Protocol.Tcp|Protocol.Udp,Ports.KerberosKeyDistribution);
 
             domainControllerSg1.AddIngress((ICidrBlock)DMZSubnet, Protocol.Tcp|Protocol.Udp, Ports.RemoteDesktopProtocol);
 

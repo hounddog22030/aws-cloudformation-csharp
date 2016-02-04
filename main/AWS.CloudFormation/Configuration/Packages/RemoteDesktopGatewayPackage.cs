@@ -35,7 +35,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             this.InstallRemoteDesktopGateway();
             RecordSet routing = RecordSet.AddByHostedZoneName(
                 this.Instance.Template,
-                this.Instance.LogicalId + "Record",
+                $"RecordSet4{this.Instance.LogicalId}",
                 tldDomain,
                 $"{this.Instance.LogicalId}.{this.DomainInfo.DomainDnsName}.",
                 RecordSet.RecordSetTypeEnum.A);
@@ -73,7 +73,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         private void AddSecurityGroup()
         {
             var launchConfigurationAsInstance = this.Instance as Instance;
-            var rdgwSecurityGroup = new SecurityGroup(this.Instance.Template, $"securityGroup{this.Instance.LogicalId}", "Remote Desktop Security Group", launchConfigurationAsInstance.Subnet.Vpc);
+            var rdgwSecurityGroup = new SecurityGroup(this.Instance.Template, $"SecurityGroup4{this.Instance.LogicalId}", "Remote Desktop Security Group", launchConfigurationAsInstance.Subnet.Vpc);
 
             rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol, Ports.Ssl);
             rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Http);

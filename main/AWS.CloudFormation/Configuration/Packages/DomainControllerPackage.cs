@@ -110,7 +110,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             {
                 if (_domainMemberSecurityGroup == null)
                 {
-                    _domainMemberSecurityGroup = new SecurityGroup(this.Instance.Template, "DomainMemberSG", "For All Domain Members", this.Subnet.Vpc);
+                    _domainMemberSecurityGroup = new SecurityGroup(this.Instance.Template, "SecurityGroup4DomainMember", "For All Domain Members", this.Subnet.Vpc);
                     _domainMemberSecurityGroup.GroupDescription = "Domain Member Security Group";
                 }
                 return _domainMemberSecurityGroup;
@@ -122,39 +122,39 @@ namespace AWS.CloudFormation.Configuration.Packages
         private void CreateDomainControllerSecurityGroup()
         {
             // ReSharper disable once InconsistentNaming
-            SecurityGroup DomainControllerSG1 = new SecurityGroup(this.Instance.Template, "DomainControllerSG1", "Domain Controller", this.Subnet.Vpc);
-            DomainControllerSG1.AddIngress(this.Subnet.Vpc as ICidrBlock, Protocol.Tcp,
+            SecurityGroup SecurityGroup4DomainController = new SecurityGroup(this.Instance.Template, "SecurityGroup4DomainController", "Domain Controller", this.Subnet.Vpc);
+            SecurityGroup4DomainController.AddIngress(this.Subnet.Vpc as ICidrBlock, Protocol.Tcp,
                 Ports.WsManagementPowerShell);
-            DomainControllerSG1.AddIngress(this.Subnet.Vpc as ICidrBlock, Protocol.Tcp, Ports.Http);
+            SecurityGroup4DomainController.AddIngress(this.Subnet.Vpc as ICidrBlock, Protocol.Tcp, Ports.Http);
 
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Udp,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup, Protocol.Udp,
                 Ports.Ntp);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
                 Ports.WinsManager);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
                 Ports.ActiveDirectoryManagement);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Udp,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup, Protocol.Udp,
                 Ports.NetBios);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.Smb);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.ActiveDirectoryManagement2);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.Ldap);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
                 Ports.Ldaps);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
                 Ports.Ldap2Begin, Ports.Ldap2End);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.DnsQuery);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.KerberosKeyDistribution);
-            DomainControllerSG1.AddIngress(DomainMemberSecurityGroup,
+            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup,
                 Protocol.Tcp | Protocol.Udp, Ports.RemoteDesktopProtocol);
 
-            this.Instance.AddSecurityGroup(DomainControllerSG1);
+            this.Instance.AddSecurityGroup(SecurityGroup4DomainController);
 
         }
 
