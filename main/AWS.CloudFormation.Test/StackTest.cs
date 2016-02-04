@@ -41,7 +41,6 @@ namespace AWS.CloudFormation.Test
         private const string UsEast1AWindows2012R2Ami = "ami-9a0558f0";
         private const string UsEast1AWindows2012R2SqlServerExpressAmi = "ami-a3005dc9";
         private const string UsEast1AWindows2012R2SqlExpressAmi = "ami-a3005dc9";
-        private const string NetBiosNameDomainController1 = "DomainControl";
         private const string BucketNameSoftware = "gtbb";
         private static readonly TimeSpan Timeout3Hours = new TimeSpan(3, 0, 0);
         private static readonly TimeSpan Timeout2Hours = new TimeSpan(2, 0, 0);
@@ -179,7 +178,7 @@ namespace AWS.CloudFormation.Test
             var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, domainAdminPasswordReference);
 
 
-            var instanceDomainController = new Instance(template, NetBiosNameDomainController1, InstanceTypes.C4Large,
+            var instanceDomainController = new Instance(template, "DomainController", InstanceTypes.C4Large,
                 UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
             {
                 Subnet = subnetDomainController1,
@@ -313,7 +312,7 @@ namespace AWS.CloudFormation.Test
         private static Instance AddDomainController(Template template, Subnet subnet)
         {
             //"ami-805d79ea",
-            var DomainController = new Instance(template, NetBiosNameDomainController1, InstanceTypes.T2Micro,
+            var DomainController = new Instance(template, "DomainController", InstanceTypes.T2Micro,
                 UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
             {
                 Subnet = subnet
