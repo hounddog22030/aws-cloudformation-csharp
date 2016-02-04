@@ -28,7 +28,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         public const string DefaultConfigSetName = "config";
         public const string DefaultConfigSetRenameConfig = "rename";
         public const string DefaultConfigSetJoinConfig = "join";
-        public const string DefaultConfigSetRenameConfigRenamePowerShellCommand = "1-execute-powershell-script-RenameComputer";
+        public const string DefaultConfigSetRenameConfigRenamePowerShellCommand = "Execute-powershell-script-RenameComputer";
         public const string DefaultConfigSetRenameConfigJoinDomain = "b-join-domain";
         public const int NetBiosMaxLength = 15;
 
