@@ -287,9 +287,9 @@ namespace AWS.CloudFormation.Configuration.Packages
     public class TeamFoundationServerBuildServerBase : TeamFoundationServer
     {
 
-        public const string sqlexpress4build_private_dns_name_parameter_name = "sqlexpress4build_private_dns_name_parameter_name";
-        public const string sqlexpress4build_username_parameter_name = "sqlexpress4build_username";
-        public const string sqlexpress4build_password_parameter_name = "sqlexpress4build_password";
+        public const string SqlExpress4BuildPrivateDnsNameParameterName = "Sqlexpress4BuildPrivateDnsName";
+        public const string SqlExpress4BuildUsernameParameterName = "SqlExpress4BuildUsername";
+        public const string SqlExpress4BuildPasswordParameterName = "SqlExpress4BuildPassword";
 
         public TeamFoundationServerBuildServerBase( LaunchConfiguration applicationServer, 
                                                     string bucketName,
@@ -310,11 +310,11 @@ namespace AWS.CloudFormation.Configuration.Packages
             var node = this.Instance.GetChefNodeJsonContent();
             var tfsNode = node.Add("tfs");
             tfsNode.Add("application_server_netbios_name", new FnGetAtt(this.ApplicationServer, FnGetAttAttribute.AwsEc2InstancePrivateDnsName));
-            tfsNode.Add("sqlexpress4build_private_dns_name_parameter_name", new FnGetAtt(this.SqlServer4Build, FnGetAttAttribute.AwsRdsDbInstanceEndpointAddress));
-            tfsNode.Add("sqlexpress4build_username_parameter_name",
-                new ReferenceProperty("sqlexpress4build_username_parameter_name"));
-            tfsNode.Add("sqlexpress4build_password_parameter_name",
-                new ReferenceProperty("sqlexpress4build_password_parameter_name"));
+            tfsNode.Add("Sqlexpress4BuildPrivateDnsNameParameterName", new FnGetAtt(this.SqlServer4Build, FnGetAttAttribute.AwsRdsDbInstanceEndpointAddress));
+            tfsNode.Add("Sqlexpress4BuildUsernameParameterName",
+                new ReferenceProperty("Sqlexpress4BuildUsernameParameterName"));
+            tfsNode.Add("Sqlexpress4BuildPasswordParameterName",
+                new ReferenceProperty("Sqlexpress4BuildPasswordParameterName"));
         }
     }
 
