@@ -118,7 +118,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         {
             get
             {
-                return this.Properties.GetValue<List<string>>().ToArray();
+                return this.Properties.GetValue<string[]>();
             }
             set
             {
