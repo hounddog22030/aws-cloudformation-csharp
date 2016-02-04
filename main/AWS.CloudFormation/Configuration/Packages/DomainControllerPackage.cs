@@ -88,7 +88,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkIfUserExists} {this.DomainInfo.AdminUserName}";
 
-            currentCommand = currentConfig.Commands.AddCommand<Command>("05-UpdateAdminUser");
+            currentCommand = currentConfig.Commands.AddCommand<Command>("UpdateAdminUser");
             currentCommand.WaitAfterCompletion = "0";
             currentCommand.Command = new PowershellFnJoin("-Command \"c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1 -Members",
                 this.DomainInfo.AdminUserName,
