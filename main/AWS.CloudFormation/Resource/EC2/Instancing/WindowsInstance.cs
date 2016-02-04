@@ -120,31 +120,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             return chefConfig;
         }
 
-        public WaitCondition AddChefExec(string s3bucketName, string cookbookFileName,string recipeList)
-        {
-            var chefConfig = this.GetChefConfig(s3bucketName, cookbookFileName);
-            var chefCommandConfig = chefConfig.Commands.AddCommand<Command>(recipeList.Replace(':','-'));
-            throw new NotImplementedException();
-            //chefCommandConfig.Command.SetFnJoin($"C:/opscode/chef/bin/chef-client.bat -z -o {recipeList} -c c:/chef/{cookbookFileName}/client.rb");
-            //WaitCondition chefComplete = new WaitCondition(this.Template,
-            //    $"waitCondition{this.LogicalId}{cookbookFileName}{recipeList}".Replace(".",string.Empty).Replace(":",string.Empty),
-            //    new TimeSpan(4,0,0));
-            //chefConfig.Commands.AddCommand<Command>(chefComplete);
-            //return chefComplete;
-
-        }
-
-
-        //public WaitCondition AddPackage(string s3BucketName, PackageBase package)
-        //{
-            
-        //    var cookbookFileName = $"{package.CookbookName}.tar.gz";
-        //    var chefComplete = this.AddChefExec(s3BucketName, cookbookFileName, package.RecipeName);
-        //    BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this, this.GetAvailableDevice());
-        //    blockDeviceMapping.Ebs.SnapshotId = package.SnapshotId;
-        //    this.AddBlockDeviceMapping(blockDeviceMapping);
-        //    return chefComplete;
-        //}
         public T AddPackage<T>() where T :PackageBase<ConfigSet>, new()
         {
             T package = new T();
