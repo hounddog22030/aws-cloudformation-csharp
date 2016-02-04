@@ -871,6 +871,7 @@ namespace AWS.CloudFormation.Test
 
             workstation.Packages.Add(new SqlServerExpress(BucketNameSoftware));
             var vs = new VisualStudio(BucketNameSoftware);
+            workstation.Packages.Add(vs);
             System.Diagnostics.Debug.Write(vs.WaitCondition);
 
             if (workstationSecurityGroup != null)
