@@ -232,8 +232,7 @@ namespace AWS.CloudFormation.Test
             dcPackage.Participate(instanceRdp);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage(domainInfo));
 
-            //var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
-            var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.C48XLarge, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
+            var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
 
             var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
             var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
