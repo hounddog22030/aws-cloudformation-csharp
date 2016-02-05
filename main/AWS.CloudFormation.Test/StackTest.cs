@@ -40,7 +40,6 @@ namespace AWS.CloudFormation.Test
         private const string DomainAdminUser = "johnny";
         private const string UsEast1AWindows2012R2Ami = "ami-9a0558f0";
         private const string UsEast1AWindows2012R2SqlServerExpressAmi = "ami-a3005dc9";
-        private const string UsEast1AWindows2012R2SqlExpressAmi = "ami-a3005dc9";
         private const string BucketNameSoftware = "gtbb";
         private static readonly TimeSpan Timeout3Hours = new TimeSpan(3, 0, 0);
         private static readonly TimeSpan Timeout2Hours = new TimeSpan(2, 0, 0);
@@ -337,11 +336,10 @@ namespace AWS.CloudFormation.Test
         private static LaunchConfiguration AddSql(Template template, string instanceName, InstanceTypes instanceSize, 
             Subnet subnet, DomainControllerPackage domainControllerPackage, SecurityGroup sqlServerSecurityGroup)
         {
-            var sqlServer = new Instance(subnet, instanceSize, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
+            var sqlServer = new Instance(subnet, instanceSize, UsEast1AWindows2012R2SqlServerExpressAmi, OperatingSystem.Windows);
             template.Resources.Add(instanceName,sqlServer);
-
             domainControllerPackage.Participate(sqlServer);
-            var sqlServerPackage = new SqlServerExpress(BucketNameSoftware);
+            var sqlServerPackage = new SqlServerExpressFromAmi(BucketNameSoftware);
             sqlServer.Packages.Add(sqlServerPackage);
             sqlServer.AddSecurityGroup(sqlServerSecurityGroup);
             return sqlServer;
@@ -1036,7 +1034,7 @@ namespace AWS.CloudFormation.Test
 
 
             dc1.Participate(tfsServer);
-            tfsServer.AddDependsOn(sqlServer4Tfs.Packages.First().WaitCondition);
+            tfsServer.AddDependsOn(sqlServer4Tfs.Packages.Last().WaitCondition);
 
             var chefNode = tfsServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
