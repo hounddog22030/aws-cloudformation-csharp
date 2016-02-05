@@ -92,33 +92,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         //}
 
 
-        private Subnet _subnet;
-
-        [JsonIgnore] public override Subnet Subnet
-        {
-            get
-            {
-                if (this.Type==ResourceType.AwsEc2Instance)
-                {
-                    return this.Properties.GetValue<Subnet>();
-                }
-                else
-                {
-                    return _subnet;
-                }
-            }
-            set
-            {
-                if (this.Type == ResourceType.AwsEc2Instance)
-                {
-                    this.Properties.SetValue(value);
-                }
-                else
-                {
-                    _subnet = value;
-                }
-            }
-        }
+        
 
         [JsonIgnore]
         public bool SourceDestCheck
