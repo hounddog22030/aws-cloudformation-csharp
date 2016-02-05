@@ -12,7 +12,7 @@ namespace AWS.CloudFormation.Resource.EC2
 {
     public class Volume : ResourceBase
     {
-        public Volume(Template template, string name) : base(template, name, ResourceType.AwsEc2Volume)
+        public Volume() : base(ResourceType.AwsEc2Volume)
         {
         }
 

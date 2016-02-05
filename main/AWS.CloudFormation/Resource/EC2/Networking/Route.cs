@@ -9,14 +9,14 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 {
     public class Route : ResourceBase
     {
-        public Route(Template template, string routeName, InternetGateway gateway, string destinationCidrBlock, RouteTable routeTable)
-            : this(template, routeName, destinationCidrBlock, routeTable)
+        public Route(InternetGateway gateway, string destinationCidrBlock, RouteTable routeTable)
+            : this(destinationCidrBlock, routeTable)
         {
             Gateway = gateway;
             this.DependsOn.Add(Gateway.LogicalId);
         }
 
-        public Route(Template template, string routeName, string destinationCidrBlock, RouteTable routeTable) : base(template, routeName, ResourceType.AwsEc2Route)
+        public Route(string destinationCidrBlock, RouteTable routeTable) : base(ResourceType.AwsEc2Route)
         {
             DestinationCidrBlock = destinationCidrBlock;
             RouteTable = routeTable;

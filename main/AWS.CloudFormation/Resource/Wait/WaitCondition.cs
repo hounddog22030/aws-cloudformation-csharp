@@ -12,10 +12,23 @@ namespace AWS.CloudFormation.Resource.Wait
 {
     public class WaitCondition : ResourceBase
     {
-        public WaitCondition(Template template, string name, TimeSpan timeout) : base(template,name, ResourceType.AwsCloudFormationWaitCondition)
+
+        public static readonly TimeSpan TimeoutMax = new TimeSpan(12,0,0);
+        public WaitCondition(TimeSpan timeout) : base(ResourceType.AwsCloudFormationWaitCondition)
         {
             Timeout = (int)timeout.TotalSeconds;
-            Handle = new WaitConditionHandle(template, this.LogicalId + "Handle");
+        }
+
+        public WaitCondition() : this(TimeoutMax)
+        {
+        }
+
+        protected override void OnTemplateSet(Template template)
+        {
+            base.OnTemplateSet(template);
+            var name = this.LogicalId + "Handle";
+            Handle = new WaitConditionHandle(name);
+            template.Resources.Add(name, Handle);
         }
 
         protected override bool SupportsTags => false;

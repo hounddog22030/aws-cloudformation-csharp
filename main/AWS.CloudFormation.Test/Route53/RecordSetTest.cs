@@ -50,8 +50,11 @@ namespace AWS.CloudFormation.Test.Route53
         public void RecordSetMappedToEipTest()
         {
             Template template = StackTest.GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
-            var DMZSubnet = new Subnet(template,"DMZSubnet", template.Vpcs.First(), "10.0.0.0/20", AvailabilityZone.UsEast1A);
-            Instance testBox = new Instance(template, "testbox", InstanceTypes.T2Micro, "ami-60b6c60a", OperatingSystem.Linux, false);
+            var DMZSubnet = new Subnet(template.Vpcs.First(), "10.0.0.0/20", AvailabilityZone.UsEast1A, true);
+            template.Resources.Add("DMZSubnet", DMZSubnet);
+
+            Instance testBox = new Instance(InstanceTypes.T2Micro, "ami-60b6c60a", OperatingSystem.Linux, false);
+            template.Resources.Add("testbox", testBox);
             testBox.Subnet = DMZSubnet;
             var eip = testBox.AddElasticIp();
             var target = RecordSet.AddByHostedZoneName(template, "test", "getthebuybox.com.", "test.test.getthebuybox.com.", RecordSet.RecordSetTypeEnum.A);
@@ -65,13 +68,18 @@ namespace AWS.CloudFormation.Test.Route53
         public void RecordSetByNewHostZoneTest()
         {
             Template template = StackTest.GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
-            HostedZone hz = new HostedZone(template, "hostedZoneRecordSetByNewHostZoneTest", "zeta.yadayada.software.");
+            HostedZone hz = new HostedZone("zeta.yadayada.software.");
+            template.Resources.Add("hostedZoneRecordSetByNewHostZoneTest", hz);
             hz.AddVpc(template.Vpcs.First(), Region.UsEast1);
             var target = RecordSet.AddByHostedZone(template, "test", hz, "test.zeta.yadayada.software.", RecordSet.RecordSetTypeEnum.A);
             target.TTL = "60";
             target.RecordSetType = RecordSet.RecordSetTypeEnum.A.ToString();
-            var DMZSubnet = new Subnet(template, "DMZSubnet", template.Vpcs.First(), "10.0.0.0/20", AvailabilityZone.UsEast1A);
-            Instance testBox = new Instance(template, "testbox", InstanceTypes.T2Micro, "ami-60b6c60a", OperatingSystem.Linux, false);
+            var DMZSubnet = new Subnet(template.Vpcs.First(), "10.0.0.0/20", AvailabilityZone.UsEast1A, true);
+            template.Resources.Add("DMZSubnet", DMZSubnet);
+
+            Instance testBox = new Instance(InstanceTypes.T2Micro, "ami-60b6c60a", OperatingSystem.Linux, false);
+
+            template.Resources.Add("testbox", testBox);
             testBox.Subnet = DMZSubnet;
             var eip = testBox.AddElasticIp();
             target.AddResourceRecord(eip);

@@ -20,7 +20,8 @@ namespace AWS.CloudFormation.Test.Route53
         {
             Template template = StackTest.GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
             string hostedZoneName = $"{this.TestContext.TestName}{Guid.NewGuid().ToString().Replace("-", string.Empty)}.com";
-            HostedZone hz = new HostedZone(template, hostedZoneName, hostedZoneName);
+            HostedZone hz = new HostedZone(hostedZoneName);
+            template.Resources.Add(hostedZoneName,hz);
             StackTest.CreateTestStack(template, this.TestContext);
         }
 
@@ -29,7 +30,8 @@ namespace AWS.CloudFormation.Test.Route53
         {
             Template template = StackTest.GetNewBlankTemplateWithVpc($"VpcCreatePrivateHostedZone");
             string hostedZoneName = $"{this.TestContext.TestName}{Guid.NewGuid().ToString().Replace("-", string.Empty)}";
-            HostedZone hz = new HostedZone(template, hostedZoneName, "example.com");
+            HostedZone hz = new HostedZone("example.com");
+            template.Resources.Add(hostedZoneName,hz);
             hz.AddVpc(template.Vpcs.First(),Region.UsEast1);
             StackTest.CreateTestStack(template, this.TestContext);
         }

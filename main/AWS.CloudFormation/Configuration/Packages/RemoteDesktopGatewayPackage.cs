@@ -40,7 +40,10 @@ namespace AWS.CloudFormation.Configuration.Packages
                 $"{this.Instance.LogicalId}.{this.DomainInfo.DomainDnsName}.",
                 RecordSet.RecordSetTypeEnum.A);
 
-            routing.AddResourceRecord(new ReferenceProperty(new ElasticIp(this.Instance)));
+            var eip = new ElasticIp(this.Instance);
+            this.Instance.Template.Resources.Add(eip.LogicalId,eip);
+
+            routing.AddResourceRecord(new ReferenceProperty(eip));
 
             routing.TTL = "60";
 
@@ -73,7 +76,9 @@ namespace AWS.CloudFormation.Configuration.Packages
         private void AddSecurityGroup()
         {
             var launchConfigurationAsInstance = this.Instance as Instance;
-            var rdgwSecurityGroup = new SecurityGroup(this.Instance.Template, $"SecurityGroup4{this.Instance.LogicalId}", "Remote Desktop Security Group", launchConfigurationAsInstance.Subnet.Vpc);
+            var rdgwSecurityGroup = new SecurityGroup("Remote Desktop Security Group", launchConfigurationAsInstance.Subnet.Vpc);
+            this.Instance.Template.Resources.Add($"SecurityGroup4{this.Instance.LogicalId}", rdgwSecurityGroup);
+
 
             rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol, Ports.Ssl);
             rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Http);

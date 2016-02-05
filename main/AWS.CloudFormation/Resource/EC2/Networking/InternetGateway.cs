@@ -5,7 +5,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 
     public class InternetGateway : ResourceBase
     {
-        public InternetGateway(Template template, string name) : base(template, name, ResourceType.AwsEc2InternetGateway)
+        public InternetGateway() : base(ResourceType.AwsEc2InternetGateway)
         {
             
         }

@@ -13,7 +13,8 @@ namespace AWS.CloudFormation.Resource.RDS
 {
     public class DbSecurityGroup : ResourceBase
     {
-        public DbSecurityGroup(Template template, string name, Vpc vpc, string description) : base(template, name, ResourceType.AwsRdsDbSecurityGroup)
+        public DbSecurityGroup(Vpc vpc, string description) 
+            : base(ResourceType.AwsRdsDbSecurityGroup)
         {
             this.GroupDescription = description;
             this.EC2VpcId = new ReferenceProperty(vpc);

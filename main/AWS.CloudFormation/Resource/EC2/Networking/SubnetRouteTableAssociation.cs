@@ -8,11 +8,13 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 {
     public class SubnetRouteTableAssociation : ResourceBase
     {
-        public SubnetRouteTableAssociation(Template template, Subnet subnet, RouteTable routeTable)
-            : base(template, $"SubnetRouteTableAssociation4{subnet.LogicalId}4{routeTable.LogicalId}", ResourceType.AwsEc2SubnetRouteTableAssociation)
+        //$"SubnetRouteTableAssociation4{subnet.LogicalId}4{routeTable.LogicalId}"
+        public SubnetRouteTableAssociation(Subnet subnet, RouteTable routeTable)
+            : base(ResourceType.AwsEc2SubnetRouteTableAssociation)
         {
             RouteTable = routeTable;
             Subnet = subnet;
+            this.LogicalId = $"SubnetRouteTableAssociation4{subnet.LogicalId}{routeTable.LogicalId}";
         }
         [JsonIgnore] public Subnet Subnet
         {

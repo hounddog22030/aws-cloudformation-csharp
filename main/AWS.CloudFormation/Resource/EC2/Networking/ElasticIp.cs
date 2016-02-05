@@ -7,10 +7,12 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 {
     public class ElasticIp : ResourceBase
     {
-        public ElasticIp(LaunchConfiguration instance) : base(instance.Template, $"Eip4{instance.LogicalId}", ResourceType.AwsEc2Eip)
+        //$"Eip4{instance.LogicalId}"
+        public ElasticIp(LaunchConfiguration instance) : base(ResourceType.AwsEc2Eip)
         {
             Instance = instance;
             this.Domain = "vpc";
+            this.LogicalId = $"Eip4{this.Instance.LogicalId}";
         }
 
         [JsonIgnore]

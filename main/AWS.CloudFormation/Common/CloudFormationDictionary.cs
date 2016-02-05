@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -9,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Common
 {
-    public class CloudFormationDictionary : Dictionary<string, object>
+    public class CloudFormationDictionary : ObservableDictionary<string,object>
     {
         public CloudFormationDictionary()
         {
@@ -186,47 +188,4 @@ namespace AWS.CloudFormation.Common
             return returnValue;
         }
     }
-
-    //public class CloudFormationDictionaryConverter : JsonConverter
-    //{
-    //    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-    //    {
-    //        CloudFormationDictionary valueAsCloudFormationDictionary = value as CloudFormationDictionary;
-
-    //        writer.WriteStartObject();
-
-    //        foreach (var thisValue in valueAsCloudFormationDictionary)
-    //        {
-    //            ILogicalId valueAsLogicalId = thisValue.Value as ILogicalId;
-
-    //            if (valueAsLogicalId == null)
-    //            {
-
-    //                writer.WritePropertyName(thisValue.Key);
-    //                writer.WriteValue(thisValue.Value);
-    //            }
-    //            else
-    //            {
-    //                writer.WritePropertyName(thisValue.Key);
-    //                writer.WriteStartObject();
-    //                writer.WritePropertyName("Ref");
-    //                writer.WriteValue(valueAsLogicalId.LogicalId);
-    //                writer.WriteEndObject();
-    //            }
-
-    //        }
-
-    //        writer.WriteEndObject();
-    //    }
-
-    //    public override bool CanConvert(Type objectType)
-    //    {
-    //        throw new System.NotImplementedException();
-    //    }
-
-    //    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-    //    {
-    //        throw new System.NotImplementedException();
-    //    }
-    //}
 }

@@ -15,7 +15,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
 {
     public class AutoScalingGroup : ResourceBase
     {
-        public AutoScalingGroup(Template template, string name) : base(template, name, ResourceType.AwsAutoScalingAutoScalingGroup)
+        public AutoScalingGroup() : base(ResourceType.AwsAutoScalingAutoScalingGroup)
         {
             this.Properties["AvailabilityZones"] = new List<string>();
             this.Properties["VPCZoneIdentifier"] = new List<ReferenceProperty>();

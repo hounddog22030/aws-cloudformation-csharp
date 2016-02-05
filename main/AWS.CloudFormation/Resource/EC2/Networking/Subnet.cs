@@ -3,6 +3,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
+using AWS.CloudFormation.Resource.AutoScaling;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Resource.Networking;
 
@@ -17,22 +18,22 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
     {
 
 
-        public Subnet(Template template, string logicalId, Vpc vpc, string cidr, AvailabilityZone availabilityZone) : base(template, logicalId, ResourceType.AwsEc2Subnet)
+        public Subnet(Vpc vpc, string cidr, AvailabilityZone availabilityZone, Instance nat, SecurityGroup natSecurityGroup) : this(vpc, cidr, availabilityZone, false)
         {
+            this.Nat = nat;
+            this.NatSecurityGroup = natSecurityGroup;
+        }
+
+        private bool _addInternetGatewayRoute;
+
+        public Subnet(Vpc vpc, string cidr, AvailabilityZone availabilityZone, bool addInternetGatewayRoute) : base(ResourceType.AwsEc2Subnet)
+        {
+            _addInternetGatewayRoute = addInternetGatewayRoute;
             Vpc = vpc;
             CidrBlock = cidr;
             AvailabilityZone = availabilityZone;
         }
 
-        public Subnet(Template template, string logicalId, Vpc vpc, string cidr, AvailabilityZone availabilityZone, bool addInternetGatewayRoute ) : this(template,logicalId,vpc,cidr,availabilityZone)
-        {
-            if (addInternetGatewayRoute)
-            {
-                RouteTable routeTable = new RouteTable(template, $"RouteTable4{this.LogicalId}", vpc);
-                Route route = new Route(template, $"Route4{this.LogicalId}", vpc.InternetGateway, "0.0.0.0/0", routeTable);
-                SubnetRouteTableAssociation routeTableAssociation = new SubnetRouteTableAssociation(template, this, routeTable);
-            }
-        }
 
         [JsonIgnore]
         public Vpc Vpc
@@ -67,15 +68,42 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             }
         }
 
-        public void AddNatGateway(Instance nat, SecurityGroup natSecurityGroup)
+
+        [JsonIgnore]
+        public SecurityGroup NatSecurityGroup { get; private set; }
+
+        [JsonIgnore]
+        public Instance Nat { get; private set; }
+
+        protected override void OnTemplateSet(Template template)
         {
-            RouteTable routeTable = new RouteTable(this.Template, $"RouteTable4{this.LogicalId}", this.Vpc);
-            Route route = new Route(this.Template, $"Route4{this.LogicalId}", Template.CidrIpTheWorld, routeTable);
-            SubnetRouteTableAssociation routeTableAssociation = new SubnetRouteTableAssociation(this.Template, this, routeTable);
-            route.Instance = nat;
-            
-            natSecurityGroup.AddIngress((ICidrBlock)this, Protocol.All, Ports.Min, Ports.Max);
-            natSecurityGroup.AddIngress((ICidrBlock)this, Protocol.Icmp, Ports.All);
+            base.OnTemplateSet(template);
+
+
+
+            if (this.Nat != null)
+            {
+                RouteTable routeTable = new RouteTable(this.Vpc);
+                template.Resources.Add($"RouteTable4{this.LogicalId}", routeTable);
+                Route route = new Route(Template.CidrIpTheWorld, routeTable);
+                template.Resources.Add($"Route4{this.LogicalId}", route);
+                SubnetRouteTableAssociation routeTableAssociation = new SubnetRouteTableAssociation(this, routeTable);
+                this.Template.Resources.Add(routeTableAssociation.LogicalId, routeTableAssociation);
+                route.Instance = this.Nat;
+                this.NatSecurityGroup.AddIngress((ICidrBlock)this, Protocol.All, Ports.Min, Ports.Max);
+                this.NatSecurityGroup.AddIngress((ICidrBlock)this, Protocol.Icmp, Ports.All);
+            }
+
+
+            if (_addInternetGatewayRoute)
+            {
+                RouteTable routeTable4 = new RouteTable(this.Vpc);
+                template.Resources.Add($"RouteTable4{this.LogicalId}", routeTable4);
+                Route route2 = new Route(this.Vpc.InternetGateway, "0.0.0.0/0", routeTable4);
+                template.Resources.Add($"Route4{this.LogicalId}", route2);
+                SubnetRouteTableAssociation routeTableAssociation2 = new SubnetRouteTableAssociation(this, routeTable4);
+                template.Resources.Add(routeTableAssociation2.LogicalId, routeTableAssociation2);
+            }
         }
 
         protected override bool SupportsTags => true;

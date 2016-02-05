@@ -12,7 +12,8 @@ namespace AWS.CloudFormation.Resource.RDS
 {
     public class DbSubnetGroup : ResourceBase
     {
-        public DbSubnetGroup(Template template, string name, string description) : base(template, name, ResourceType.AwsRdsDbSubnetGroup)
+        public DbSubnetGroup(string description) 
+            : base(ResourceType.AwsRdsDbSubnetGroup)
         {
             this.DBSubnetGroupDescription = description;
         }

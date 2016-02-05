@@ -83,5 +83,18 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
             set { this["VolumeType"] = value; }
         }
+
+        public bool DeleteOnTermination
+        {
+            get
+            {
+                if (this.ContainsKey("DeleteOnTermination"))
+                {
+                    return (bool)this["DeleteOnTermination"];
+                }
+                return true;
+            }
+            set { this["DeleteOnTermination"] = value; }
+        }
     }
 }

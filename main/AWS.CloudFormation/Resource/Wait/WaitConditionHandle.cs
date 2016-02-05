@@ -9,10 +9,18 @@ namespace AWS.CloudFormation.Resource.Wait
 {
     public class WaitConditionHandle : ResourceBase
     {
-        public WaitConditionHandle(Template template, string name) : base(template, name, ResourceType.AwsCloudFormationWaitConditionHandle)
-        {
+        //private string name;
+
+        //public WaitConditionHandle() : base(ResourceType.AwsCloudFormationWaitConditionHandle)
+        //{
             
+        //}
+
+        public WaitConditionHandle(string name) : base(ResourceType.AwsCloudFormationWaitConditionHandle)
+        {
+            this.LogicalId = name;
         }
+
         protected override bool SupportsTags => false;
 
     }

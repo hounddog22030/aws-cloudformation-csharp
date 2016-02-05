@@ -54,23 +54,18 @@ namespace AWS.CloudFormation.Resource
     public abstract class ResourceBase : ILogicalId
     {
 
-        protected ResourceBase(Template template, string name, ResourceType type)
+        protected ResourceBase(ResourceType type)
         {
-            Template = template;
             Type = type;
-            LogicalId = name;
             DependsOn = new List<string>();
-            this.Template.Resources.Add(name, this);
             Metadata = new Metadata(this);
-            if (template.Outputs.Count < 60)
-            {
-                template.Outputs.Add(name, new Output(name, new ReferenceProperty(this)));
-            }
-            if (SupportsTags)
-            {
-                this.Tags.Add(new Tag("Name",name));
-            }
         }
+
+        protected virtual void OnTemplateSet(Template template)
+        {
+            
+        }
+
         public void AddDependsOn(WaitCondition waitConditionHandle)
         {
             this.DependsOn.Add(waitConditionHandle.LogicalId);
@@ -78,8 +73,17 @@ namespace AWS.CloudFormation.Resource
 
         protected abstract bool SupportsTags { get; }
 
+        private Template _template;
+
         [JsonIgnore]
-        internal Template Template { get; }
+        internal Template Template {
+            get { return _template; }
+            set
+            {
+                _template = value;
+                OnTemplateSet(value);
+            }
+        }
 
         public ResourceType Type { get; protected set; }
 
@@ -91,8 +95,22 @@ namespace AWS.CloudFormation.Resource
         public Metadata Metadata { get; }
 
 
+        private string _logicalId;
+
         [JsonIgnore]
-        public string LogicalId { get ; }
+        public string LogicalId
+        {
+            get { return _logicalId; }
+            internal set
+            {
+                _logicalId = value;
+                if (SupportsTags)
+                {
+                    this.Tags.Add(new Tag("Name", value));
+                }
+
+            }
+        }
 
         public bool ShouldSerializeDependsOn()
         {

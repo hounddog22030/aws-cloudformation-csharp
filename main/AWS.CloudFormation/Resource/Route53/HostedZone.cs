@@ -13,7 +13,8 @@ namespace AWS.CloudFormation.Resource.Route53
 {
     public class HostedZone : ResourceBase
     {
-        public HostedZone(Template template, string resourceName,string hostedZoneName) : base(template, resourceName, ResourceType.AwsRoute53HostedZone)
+        public HostedZone(string hostedZoneName) 
+            : base(ResourceType.AwsRoute53HostedZone)
         {
             Name = hostedZoneName;
         }

@@ -1,5 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using AWS.CloudFormation.Common;
@@ -26,6 +30,7 @@ namespace AWS.CloudFormation.Stack
 
         public Template(string defaultKeyName, string vpcName, string vpcCidrBlock ) : this(defaultKeyName,vpcName,vpcCidrBlock,null)
         {
+            
         }
 
         public Template(string keyPairName, string vpcName, string vpcCidrBlock, string description) : base()
@@ -33,14 +38,29 @@ namespace AWS.CloudFormation.Stack
 
             Outputs = new CloudFormationDictionary();
             AwsTemplateFormatVersion = AwsTemplateFormatVersion20100909;
-            this.Resources = new Dictionary<string, ResourceBase>();
+            this.Resources = new ObservableDictionary<string,ResourceBase>();
+            this.Resources.CollectionChanged += Resources_CollectionChanged;
             this.Parameters = new CloudFormationDictionary();
             this.Parameters.Add(ParameterKeyPairName, new ParameterBase(ParameterKeyPairName, "AWS::EC2::KeyPair::KeyName", keyPairName,"Key Pair to decrypt instance password."));
-            Vpc vpc = new Vpc(this, vpcName, vpcCidrBlock);
+            Vpc vpc = new Vpc(vpcCidrBlock);
+            this.Resources.Add(vpcName, vpc);
+
 
             if (!string.IsNullOrEmpty(description))
             {
                 this.Description = description;
+            }
+        }
+
+        private void Resources_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.NewItems != null)
+            {
+                foreach (KeyValuePair<string,ResourceBase> newItem in e.NewItems)
+                {
+                    newItem.Value.LogicalId = newItem.Key;
+                    newItem.Value.Template = this;
+                }
             }
         }
 
@@ -52,7 +72,8 @@ namespace AWS.CloudFormation.Stack
         [JsonProperty(PropertyName = "AWSTemplateFormatVersion")]
         public string AwsTemplateFormatVersion { get; }
 
-        public Dictionary<string, ResourceBase> Resources { get; private set; }
+        public ObservableDictionary<string, ResourceBase> Resources { get; }
+        
         public CloudFormationDictionary Parameters { get; private set; }
 
         [JsonIgnore]
@@ -60,13 +81,6 @@ namespace AWS.CloudFormation.Stack
         {
             get { return this.Resources.Where(r => r.Value is Vpc).Select(r=>r.Value).OfType<Vpc>(); }
         }
-
-        //public void AddResource(ResourceBase resource)
-        //{
-        //    this.Resources.Add(resource.LogicalId, resource);
-        //}
-
-
 
         public void AddParameter(ParameterBase parameter)
         {

@@ -12,11 +12,9 @@ namespace AWS.CloudFormation.Resource.EC2
 {
     public class VolumeAttachment : ResourceBase
     {
-        public VolumeAttachment(    Template template, 
-                                    string name, 
-                                    string device, 
+        public VolumeAttachment(    string device, 
                                     Instance instance, 
-                                    string volumeId) : base(template, name, ResourceType.AwsEc2VolumeAttachment)
+                                    string volumeId) : base(ResourceType.AwsEc2VolumeAttachment)
         {
             Device = device;
             Instance = instance;

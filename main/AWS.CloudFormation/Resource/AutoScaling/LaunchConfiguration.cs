@@ -32,13 +32,11 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         public const int NetBiosMaxLength = 15;
 
 
-        public LaunchConfiguration(Template template,
-                                string name,
-                                InstanceTypes instanceType,
+        public LaunchConfiguration(InstanceTypes instanceType,
                                 string imageId,
                                 OperatingSystem operatingSystem,
                                 ResourceType resourceType)
-            : base(template, name, resourceType)
+            : base(resourceType)
         {
             _availableDevices = new List<string>();
             this.InstanceType = instanceType;
@@ -48,12 +46,16 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             this.ImageId = imageId;
             this.PopulateAvailableDevices();
 
+            KeyName = new ReferenceProperty(Template.ParameterKeyPairName);
+        }
+
+        protected override void OnTemplateSet(Template template)
+        {
+            base.OnTemplateSet(template);
             if (!this.Template.Parameters.ContainsKey(Template.ParameterKeyPairName))
             {
                 throw new InvalidOperationException($"Template must contain a Parameter named {Template.ParameterKeyPairName} which contains the default encryption key name for the instance.");
             }
-            var keyName = this.Template.Parameters[Template.ParameterKeyPairName];
-            KeyName = new ReferenceProperty(Template.ParameterKeyPairName);
             UserData = new CloudFormationDictionary(this);
             UserData.Add("Fn::Base64", "");
             this.EnableHup();
@@ -64,7 +66,6 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             {
                 this.AddRename();
             }
-
         }
 
         private const int NetBiosMachineNameLengthLimit = 15;
@@ -85,11 +86,6 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         public string DomainNetBiosName { get; internal set; }
 
 
-        public void AddDependsOn(WaitCondition waitConditionHandle)
-        {
-            this.DependsOn.Add(waitConditionHandle.LogicalId);
-        }
-
         private void Packages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             foreach (var newItem in e.NewItems)
@@ -103,12 +99,13 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         [JsonIgnore]
         public ObservableCollection<PackageBase<ConfigSet>> Packages { get; }
 
-        public void AddDisk(Ebs.VolumeTypes ec2DiskType, int sizeInGigabytes)
+        public BlockDeviceMapping AddDisk(Ebs.VolumeTypes ec2DiskType, int sizeInGigabytes)
         {
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this, this.GetAvailableDevice());
             blockDeviceMapping.Ebs.VolumeSize = sizeInGigabytes;
             blockDeviceMapping.Ebs.VolumeType = ec2DiskType;
             this.AddBlockDeviceMapping(blockDeviceMapping);
+            return blockDeviceMapping;
         }
 
         protected void PopulateAvailableDevices()

@@ -13,23 +13,28 @@ namespace AWS.CloudFormation.Resource.EC2
 
     public class DhcpOptions : ResourceBase
     {
-        public DhcpOptions(Template template, string name, string domainName, Vpc vpc, FnJoin dnsServers, FnJoin netBiosNameServers) 
-            : base(template, name, ResourceType.DhcpOptions)
+        public DhcpOptions(string domainName, Vpc vpc, FnJoin dnsServers, FnJoin netBiosNameServers) 
+            : base(ResourceType.DhcpOptions)
         {
+            this.Vpc = vpc;
             this.DomainName = domainName;
             this.AddDomainNameServer(dnsServers);
             this.AddNetBiosNameServers(netBiosNameServers);
-            VpcDhcpOptionsAssociation association = new VpcDhcpOptionsAssociation(template,$"VpcDhcpOptionsAssociation4{name}",this,vpc);
+        }
+
+        [JsonIgnore]
+        public Vpc Vpc { get;  }
+
+        protected override void OnTemplateSet(Template template)
+        {
+            base.OnTemplateSet(template);
+            VpcDhcpOptionsAssociation association = new VpcDhcpOptionsAssociation(this, this.Vpc);
+            template.Resources.Add($"VpcDhcpOptionsAssociation4{this.LogicalId}", association);
         }
 
 
         protected override bool SupportsTags => true;
-        //"DomainName" : String,
-        //      "DomainNameServers" : [String, ... ],
-        //      "NetbiosNameServers" : [String, ... ],
-        //      "NetbiosNodeType" : Number,
-        //      "NtpServers" : [String, ... ],
-        //      "Tags" : [Resource Tag, ... ]
+
         [JsonIgnore]
         public object DomainName
         {

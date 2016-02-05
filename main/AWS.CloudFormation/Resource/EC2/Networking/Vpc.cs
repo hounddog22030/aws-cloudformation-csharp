@@ -9,11 +9,18 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 {
     public class Vpc : ResourceBase, ICidrBlock
     {
-        public Vpc(Template template, string name, string cidrBlock) : base(template, name, ResourceType.AwsEc2Vpc)
+        public Vpc(string cidrBlock) : base(ResourceType.AwsEc2Vpc)
         {
             CidrBlock = cidrBlock;
-            InternetGateway = new InternetGateway(template, $"{this.LogicalId}InternetGateway");
-            VpcGatewayAttachment attachment = new VpcGatewayAttachment(template, $"{InternetGateway.LogicalId}Attachment", InternetGateway, this);
+        }
+
+        protected override void OnTemplateSet(Template template)
+        {
+            base.OnTemplateSet(template);
+            InternetGateway = new InternetGateway();
+            template.Resources.Add($"{this.LogicalId}InternetGateway", InternetGateway);
+            VpcGatewayAttachment attachment = new VpcGatewayAttachment(InternetGateway, this);
+            template.Resources.Add($"{InternetGateway.LogicalId}Attachment", attachment);
         }
 
         [JsonIgnore]
@@ -31,7 +38,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         }
 
         [JsonIgnore]
-        public InternetGateway InternetGateway { get; }
+        public InternetGateway InternetGateway { get; set; }
 
         [JsonIgnore]
         public string CidrBlock {
@@ -42,12 +49,12 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         public class VpcGatewayAttachment : ResourceBase
         {
 
-            public VpcGatewayAttachment(Template template, string name) : base(template, name, ResourceType.AwsEc2VpcGatewayAttachment)
+            public VpcGatewayAttachment() : base(ResourceType.AwsEc2VpcGatewayAttachment)
             {
 
             }
 
-            public VpcGatewayAttachment(Template template, string name, InternetGateway internetGateway, Vpc vpc) : this(template,name)
+            public VpcGatewayAttachment(InternetGateway internetGateway, Vpc vpc) : this()
             {
                 InternetGateway = internetGateway;
                 Vpc = vpc;

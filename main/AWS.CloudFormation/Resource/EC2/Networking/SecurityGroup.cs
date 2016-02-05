@@ -14,7 +14,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
     
     public class SecurityGroup : ResourceBase
     {
-        public SecurityGroup(Template template, string name, string description, Vpc vpc) : base(template, name, ResourceType.AwsEc2SecurityGroup)
+        public SecurityGroup(string description, Vpc vpc) : base(ResourceType.AwsEc2SecurityGroup)
         {
             Vpc = vpc;
             GroupDescription = description;
