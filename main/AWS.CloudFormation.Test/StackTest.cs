@@ -318,6 +318,14 @@ namespace AWS.CloudFormation.Test
 
             //////////the below is a remote desktop gateway server that can
             ////////// be uncommented to debug domain setup problems
+            //AddRdp2(subnetDmz1, template, vpc, dcPackage);
+
+
+            return template;
+        }
+
+        private static void AddRdp2(Subnet subnetDmz1, Template template, Vpc vpc, DomainControllerPackage dcPackage)
+        {
             var instanceRdp2 = new Instance(InstanceTypes.T2Micro, "ami-e4034a8e", OperatingSystem.Windows, true)
             {
                 Subnet = subnetDmz1
@@ -336,9 +344,6 @@ namespace AWS.CloudFormation.Test
             instanceRdp2.AddElasticIp();
 
             dcPackage.AddToDomainMemberSecurityGroup(instanceRdp2);
-
-
-            return template;
         }
 
         private static LaunchConfiguration AddSql(Template template, string instanceName, InstanceTypes instanceSize, Subnet subnet, DomainControllerPackage domainControllerPackage, SecurityGroup sqlServerSecurityGroup)
