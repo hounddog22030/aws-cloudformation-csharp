@@ -50,7 +50,7 @@ namespace AWS.CloudFormation.Test.Route53
         public void RecordSetMappedToEipTest()
         {
             Template template = StackTest.GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
-            var DMZSubnet = new Subnet(template.Vpcs.First(), "10.0.0.0/20", AvailabilityZone.UsEast1A);
+            var DMZSubnet = new Subnet(template.Vpcs.First(), "10.0.0.0/20", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             Instance testBox = new Instance(InstanceTypes.T2Micro, "ami-60b6c60a", OperatingSystem.Linux, false);
@@ -74,7 +74,7 @@ namespace AWS.CloudFormation.Test.Route53
             var target = RecordSet.AddByHostedZone(template, "test", hz, "test.zeta.yadayada.software.", RecordSet.RecordSetTypeEnum.A);
             target.TTL = "60";
             target.RecordSetType = RecordSet.RecordSetTypeEnum.A.ToString();
-            var DMZSubnet = new Subnet(template.Vpcs.First(), "10.0.0.0/20", AvailabilityZone.UsEast1A);
+            var DMZSubnet = new Subnet(template.Vpcs.First(), "10.0.0.0/20", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             Instance testBox = new Instance(InstanceTypes.T2Micro, "ami-60b6c60a", OperatingSystem.Linux, false);

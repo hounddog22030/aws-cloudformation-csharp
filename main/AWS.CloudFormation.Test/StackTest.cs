@@ -117,7 +117,7 @@ namespace AWS.CloudFormation.Test
             vpc.EnableDnsHostnames = true;
             vpc.EnableDnsSupport = true;
 
-            var subnetDmz2 = new Subnet(vpc, CidrDmz2, AvailabilityZone.UsEast1A);
+            var subnetDmz2 = new Subnet(vpc, CidrDmz2, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("SubnetDmz2", subnetDmz2);
 
 
@@ -127,7 +127,7 @@ namespace AWS.CloudFormation.Test
             natSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Ssh);
             natSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
 
-            var subnetDmz1 = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A);
+            var subnetDmz1 = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("SubnetDmz1", subnetDmz1);
 
             var nat1 = AddNat1(template, subnetDmz1, natSecurityGroup);
@@ -172,7 +172,7 @@ namespace AWS.CloudFormation.Test
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.TeamFoundationServerBuild);
 
-            var subnetDatabase4BuildServer2 = new Subnet(vpc, CidrDatabase4BuildSubnet2, AvailabilityZone.UsEast1E);
+            var subnetDatabase4BuildServer2 = new Subnet(vpc, CidrDatabase4BuildSubnet2, AvailabilityZone.UsEast1E, true);
             template.Resources.Add("Subnet4Build2Database", subnetDatabase4BuildServer2);
 
             securityGroupDb4Build.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.MySql);
@@ -385,7 +385,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A);
+            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
 
@@ -483,7 +483,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A);
+            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             WindowsInstance w = new WindowsInstance("Windows1",InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, DMZSubnet);
@@ -504,7 +504,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A);
+            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             WindowsInstance w = new WindowsInstance("Windows1", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, DMZSubnet);
@@ -535,7 +535,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet( vpc, CidrDmz1, AvailabilityZone.UsEast1A);
+            var DMZSubnet = new Subnet( vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             WindowsInstance w = new WindowsInstance("Windows1", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, DMZSubnet);
@@ -569,7 +569,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A);
+            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             WindowsInstance w = new WindowsInstance("Windows1", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, DMZSubnet);
@@ -608,7 +608,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A);
+            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             WindowsInstance w = new WindowsInstance( "Windows1", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, DMZSubnet);
@@ -635,7 +635,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A);
+            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             WindowsInstance w = new WindowsInstance("Windows1", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, DMZSubnet);
@@ -658,7 +658,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A);
+            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             WindowsInstance w = AddWorkstation(template, "Windows1", DMZSubnet, null, rdp);
@@ -676,7 +676,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A);
+            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             WindowsInstance w = new WindowsInstance("Windows1", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami,DMZSubnet);
@@ -697,7 +697,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A);
+            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             var dc1 = AddDomainController(template, DMZSubnet);
@@ -721,7 +721,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A);
+            var DMZSubnet = new Subnet(vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("PrivateSubnet", DMZSubnet);
 
 
@@ -743,7 +743,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A);
+            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
 
@@ -768,7 +768,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A);
+            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
 
@@ -798,16 +798,16 @@ namespace AWS.CloudFormation.Test
         {
             var template = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
             var vpc = template.Vpcs.First();
-            var subnet1 = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A);
+            var subnet1 = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("subnet1", subnet1);
 
-            var subnet2 = new Subnet(vpc, CidrDmz2, AvailabilityZone.UsEast1A);
+            var subnet2 = new Subnet(vpc, CidrDmz2, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("subnet2", subnet2);
 
-            var subnet3 = new Subnet(vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A);
+            var subnet3 = new Subnet(vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("subnet3", subnet3);
 
-            var subnet4 = new Subnet(vpc, CidrDomainController2Subnet, AvailabilityZone.UsEast1A);
+            var subnet4 = new Subnet(vpc, CidrDomainController2Subnet, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("subnet4", subnet4);
 
 
@@ -825,7 +825,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A);
+            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
 
@@ -859,7 +859,7 @@ namespace AWS.CloudFormation.Test
             System.Diagnostics.Debug.WriteLine(rdp.Vpc);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             
-            Subnet DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A);
+            Subnet DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             RouteTable dmzRouteTable = new RouteTable(vpc);
@@ -920,7 +920,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A);
+            var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             WindowsInstance w = new WindowsInstance("Windows1", InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, DMZSubnet);
@@ -1213,7 +1213,7 @@ namespace AWS.CloudFormation.Test
             var v = new Vpc("10.0.0.0/16");
             t.Resources.Add("X", v);
 
-            var s = new Subnet(v,null,AvailabilityZone.UsEast1A);
+            var s = new Subnet(v,null,AvailabilityZone.UsEast1A, true);
             t.Resources.Add("Vpc1", s);
 
 
@@ -1221,7 +1221,7 @@ namespace AWS.CloudFormation.Test
 
             try
             {
-                s = new Subnet(v, null, AvailabilityZone.UsEast1A);
+                s = new Subnet(v, null, AvailabilityZone.UsEast1A, true);
                 t.Resources.Add("Vpc1", s);
 
             }

@@ -45,7 +45,7 @@ namespace AWS.CloudFormation.Test.Resource.RDS
             vpc.EnableDnsHostnames = true;
             vpc.EnableDnsSupport = true;
 
-            var subnet1 = new Subnet(vpc, "10.0.128.0/28", AvailabilityZone.UsEast1A);
+            var subnet1 = new Subnet(vpc, "10.0.128.0/28", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("subnetDb1",subnet1);
             RouteTable routeTable4Subnet1 = new RouteTable(vpc);
             template.Resources.Add("routeTable4Subnet1", routeTable4Subnet1);
@@ -57,7 +57,7 @@ namespace AWS.CloudFormation.Test.Resource.RDS
             template.Resources.Add(subnetRouteTableAssociationSubnet1.LogicalId, subnetRouteTableAssociationSubnet1);
 
 
-            var subnet2 = new Subnet(template.Vpcs.First(), "10.0.64.0/28", AvailabilityZone.UsEast1E);
+            var subnet2 = new Subnet(template.Vpcs.First(), "10.0.64.0/28", AvailabilityZone.UsEast1E, true);
             template.Resources.Add("subnetDb2", subnet2);
 
             RouteTable routeTable4Subnet2 = new RouteTable(vpc);
@@ -113,7 +113,7 @@ namespace AWS.CloudFormation.Test.Resource.RDS
             vpc.EnableDnsHostnames = true;
             vpc.EnableDnsSupport = true;
 
-            var subnet1 = new Subnet(vpc, "10.0.128.0/28", AvailabilityZone.UsEast1A);
+            var subnet1 = new Subnet(vpc, "10.0.128.0/28", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("subnetDb1", subnet1);
 
             RouteTable routeTable4Subnet1 = new RouteTable(vpc);
@@ -125,7 +125,7 @@ namespace AWS.CloudFormation.Test.Resource.RDS
             SubnetRouteTableAssociation subnetRouteTableAssociationSubnet1 = new SubnetRouteTableAssociation(subnet1, routeTable4Subnet1);
             template.Resources.Add(subnetRouteTableAssociationSubnet1.LogicalId, subnetRouteTableAssociationSubnet1);
 
-            var subnet2 = new Subnet(template.Vpcs.First(), "10.0.64.0/28", AvailabilityZone.UsEast1E);
+            var subnet2 = new Subnet(template.Vpcs.First(), "10.0.64.0/28", AvailabilityZone.UsEast1E, true);
             template.Resources.Add("subnetDb2", subnet2);
 
             RouteTable routeTable4Subnet2 = new RouteTable(vpc);
@@ -176,7 +176,7 @@ namespace AWS.CloudFormation.Test.Resource.RDS
             vpc.EnableDnsHostnames = true;
             vpc.EnableDnsSupport = true;
 
-            var subnet1 = new Subnet(vpc, "10.0.128.0/28", AvailabilityZone.UsEast1A);
+            var subnet1 = new Subnet(vpc, "10.0.128.0/28", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("subnetDb1", subnet1);
 
             RouteTable routeTable4Subnet1 = new RouteTable(vpc);
@@ -188,7 +188,7 @@ namespace AWS.CloudFormation.Test.Resource.RDS
             SubnetRouteTableAssociation subnetRouteTableAssociationSubnet1 = new SubnetRouteTableAssociation(subnet1, routeTable4Subnet1);
             template.Resources.Add(subnetRouteTableAssociationSubnet1.LogicalId, subnetRouteTableAssociationSubnet1);
 
-            var subnet2 = new Subnet(template.Vpcs.First(), "10.0.64.0/28", AvailabilityZone.UsEast1E);
+            var subnet2 = new Subnet(template.Vpcs.First(), "10.0.64.0/28", AvailabilityZone.UsEast1E, true);
             template.Resources.Add("subnetDb2", subnet2);
 
             RouteTable routeTable4Subnet2 = new RouteTable(vpc);

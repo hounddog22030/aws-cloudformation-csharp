@@ -18,23 +18,22 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
     {
 
 
-        public Subnet(Vpc vpc, string cidr, AvailabilityZone availabilityZone, Instance nat, SecurityGroup natSecurityGroup) : this(vpc, cidr, availabilityZone)
+        public Subnet(Vpc vpc, string cidr, AvailabilityZone availabilityZone, Instance nat, SecurityGroup natSecurityGroup) : this(vpc, cidr, availabilityZone, false)
         {
             this.Nat = nat;
             this.NatSecurityGroup = natSecurityGroup;
         }
 
-        public Subnet(Vpc vpc, string cidr, AvailabilityZone availabilityZone) : base(ResourceType.AwsEc2Subnet)
+        private bool _addInternetGatewayRoute;
+
+        public Subnet(Vpc vpc, string cidr, AvailabilityZone availabilityZone, bool addInternetGatewayRoute) : base(ResourceType.AwsEc2Subnet)
         {
-            this.AddInternetGatewayRoute = true;
+            _addInternetGatewayRoute = addInternetGatewayRoute;
             Vpc = vpc;
             CidrBlock = cidr;
             AvailabilityZone = availabilityZone;
         }
 
-
-        [JsonIgnore]
-        public bool AddInternetGatewayRoute { get; }
 
         [JsonIgnore]
         public Vpc Vpc
@@ -96,7 +95,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             }
 
 
-            if (this.AddInternetGatewayRoute)
+            if (_addInternetGatewayRoute)
             {
                 RouteTable routeTable4 = new RouteTable(this.Vpc);
                 template.Resources.Add($"RouteTable4{this.LogicalId}", routeTable4);
