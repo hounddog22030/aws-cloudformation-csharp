@@ -53,9 +53,8 @@ namespace AWS.CloudFormation.Test.Route53
             var DMZSubnet = new Subnet(template.Vpcs.First(), "10.0.0.0/20", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
-            Instance testBox = new Instance(InstanceTypes.T2Micro, "ami-60b6c60a", OperatingSystem.Linux, false);
+            Instance testBox = new Instance(DMZSubnet,InstanceTypes.T2Micro, "ami-60b6c60a", OperatingSystem.Linux);
             template.Resources.Add("testbox", testBox);
-            testBox.Subnet = DMZSubnet;
             var eip = testBox.AddElasticIp();
             var target = RecordSet.AddByHostedZoneName(template, "test", "getthebuybox.com.", "test.test.getthebuybox.com.", RecordSet.RecordSetTypeEnum.A);
             target.TTL = "60";
@@ -77,10 +76,8 @@ namespace AWS.CloudFormation.Test.Route53
             var DMZSubnet = new Subnet(template.Vpcs.First(), "10.0.0.0/20", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
-            Instance testBox = new Instance(InstanceTypes.T2Micro, "ami-60b6c60a", OperatingSystem.Linux, false);
-
+            Instance testBox = new Instance(DMZSubnet,InstanceTypes.T2Micro, "ami-60b6c60a", OperatingSystem.Linux);
             template.Resources.Add("testbox", testBox);
-            testBox.Subnet = DMZSubnet;
             var eip = testBox.AddElasticIp();
             target.AddResourceRecord(eip);
             StackTest.CreateTestStack(template, this.TestContext);

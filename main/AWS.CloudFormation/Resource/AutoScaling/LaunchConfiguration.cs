@@ -32,13 +32,14 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         public const int NetBiosMaxLength = 15;
 
 
-        public LaunchConfiguration(InstanceTypes instanceType,
-                                string imageId,
-                                OperatingSystem operatingSystem,
-                                ResourceType resourceType)
+        public LaunchConfiguration(Subnet subnet, InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem, ResourceType resourceType)
             : base(resourceType)
         {
             _availableDevices = new List<string>();
+            if (subnet != null)
+            {
+                this.Subnet = subnet;
+            }
             this.InstanceType = instanceType;
             this.OperatingSystem = operatingSystem;
             Packages = new ObservableCollection<PackageBase<ConfigSet>>();
@@ -61,6 +62,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             this.EnableHup();
             SetUserData();
             this.DisableFirewall();
+            this.SetTimeZone();
             if (OperatingSystem == OperatingSystem.Windows &&
                 this.Type != ResourceType.AwsAutoScalingLaunchConfiguration)
             {
@@ -174,7 +176,6 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             this.Properties.SetValue(propertyName, temp.ToArray());
         }
 
-        protected override bool SupportsTags => false;
 
         [JsonIgnore]
         public InstanceTypes InstanceType
@@ -278,12 +279,26 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         public virtual Subnet Subnet {
             get
             {
-                List<ReferenceProperty> subnetReferences = this.AutoScalingGroup.VPCZoneIdentifier as List<ReferenceProperty>;
-                return (Subnet)this.Template.Resources[subnetReferences.First().Reference.LogicalId];
+                if (this.Type == ResourceType.AwsAutoScalingLaunchConfiguration)
+                {
+                    List<ReferenceProperty> subnetReferences = this.AutoScalingGroup.VPCZoneIdentifier as List<ReferenceProperty>;
+                    return (Subnet)this.Template.Resources[subnetReferences.First().Reference.LogicalId];
+                }
+                else
+                {
+                    return this.Properties.GetValue<Subnet>();
+                }
             }
             set
             {
-                throw new NotSupportedException();
+                if (this.Type == ResourceType.AwsAutoScalingLaunchConfiguration)
+                {
+                    throw new NotSupportedException();
+                }
+                else
+                {
+                    this.Properties.SetValue(value);
+                }
             }
         }
 
@@ -358,6 +373,17 @@ namespace AWS.CloudFormation.Resource.AutoScaling
                 disableFirewallCommand.WaitAfterCompletion = 0.ToString();
             }
         }
+        private void SetTimeZone()
+        {
+            if (OperatingSystem == OperatingSystem.Windows)
+            {
+                var setup = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigName);
+                var disableFirewallCommand = setup.Commands.AddCommand<Command>("SetTimeZone");
+                disableFirewallCommand.Command = "tzutil /s \"Eastern Standard Time\"";
+                disableFirewallCommand.WaitAfterCompletion = 0.ToString();
+            }
+        }
 
+        protected override bool SupportsTags => this.Type == ResourceType.AwsEc2Instance;
     }
 }

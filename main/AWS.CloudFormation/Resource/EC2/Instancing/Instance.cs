@@ -18,106 +18,23 @@ using Newtonsoft.Json;
 namespace AWS.CloudFormation.Resource.EC2.Instancing
 {
 
-    public enum DefinitionType
-    {
-
-        Instance,
-        LaunchConfiguration
-    }
     public class Instance : LaunchConfiguration, ICidrBlock
     {
 
-        public Instance(InstanceTypes instanceType, string imageId,
-            OperatingSystem operatingSystem, bool enableHup)
-            : this(instanceType,imageId,operatingSystem,enableHup,DefinitionType.Instance)
+        public Instance(Subnet subnet, InstanceTypes instanceType, string imageId,
+            OperatingSystem operatingSystem, Ebs.VolumeTypes volumeType, int volumeSize)
+            : this(subnet, instanceType, imageId, operatingSystem)
         {
-            
+            this.AddDisk(volumeType, volumeSize);
         }
 
-        public Instance(InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem, bool enableHup, DefinitionType definitionType)
-            : base(instanceType, imageId, operatingSystem, ResourceType.AwsEc2Instance)
+
+        public Instance(Subnet subnet, InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem)
+            : base(subnet,instanceType, imageId, operatingSystem, ResourceType.AwsEc2Instance)
         {
-            switch (definitionType)
-            {
-                    case DefinitionType.Instance:
-                    this.Type = ResourceType.AwsEc2Instance;
-                    // only applies to instances
-                    SourceDestCheck = true;
-                    break;
-                case DefinitionType.LaunchConfiguration:
-                    this.Type = ResourceType.AwsAutoScalingLaunchConfiguration;
-                    
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(definitionType));
-            }
-
-
+            SourceDestCheck = true;
             NetworkInterfaces = new List<NetworkInterface>();
-
-            if (this.SupportsTags)
-            {
-                this.Tags.Add( new Tag("Name", this.LogicalId) );
-            }
-        }
-
-        
-
-
-
-        //public IdCollection<SecurityGroup> SecurityGroupIds
-        //{
-        //    get
-        //    {
-        //        if (this.Type.Contains("Instance"))
-        //        {
-        //            return this.Properties.GetValue<IdCollection<SecurityGroup>>();
-        //        }
-        //        else
-        //        {
-        //            return _securityGroupIds;
-        //        }
-        //    }
-        //    set
-        //    {
-        //        if (this.Type.Contains("Instance"))
-        //        {
-        //            this.Properties.SetValue(value);
-        //        }
-        //        else
-        //        {
-        //            _securityGroupIds = value;
-        //        }
-        //    }
-        //}
-
-
-        private Subnet _subnet;
-
-        [JsonIgnore] public override Subnet Subnet
-        {
-            get
-            {
-                if (this.Type==ResourceType.AwsEc2Instance)
-                {
-                    return this.Properties.GetValue<Subnet>();
-                }
-                else
-                {
-                    return _subnet;
-                }
-            }
-            set
-            {
-                if (this.Type == ResourceType.AwsEc2Instance)
-                {
-                    this.Properties.SetValue(value);
-                }
-                else
-                {
-                    _subnet = value;
-                }
-            }
+            this.Tags.Add( new Tag("Name", this.LogicalId) );
         }
 
         [JsonIgnore]
@@ -187,10 +104,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             return ElasticIp;
         }
 
-        protected override bool SupportsTags
-        {
-            get { return this.Type == ResourceType.AwsEc2Instance; }
-        }
 
         [JsonIgnore]
         public string CidrBlock {
