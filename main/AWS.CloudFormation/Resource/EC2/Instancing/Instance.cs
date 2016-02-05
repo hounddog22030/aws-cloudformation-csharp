@@ -18,81 +18,24 @@ using Newtonsoft.Json;
 namespace AWS.CloudFormation.Resource.EC2.Instancing
 {
 
-    public enum DefinitionType
-    {
-
-        Instance,
-        LaunchConfiguration
-    }
     public class Instance : LaunchConfiguration, ICidrBlock
     {
 
         public Instance(Subnet subnet, InstanceTypes instanceType, string imageId,
-            OperatingSystem operatingSystem)
-            : this(subnet,instanceType, imageId,operatingSystem,DefinitionType.Instance)
+            OperatingSystem operatingSystem, Ebs.VolumeTypes volumeType, int volumeSize)
+            : this(subnet, instanceType, imageId, operatingSystem)
         {
-            
+            this.AddDisk(volumeType, volumeSize);
         }
 
-        public Instance(Subnet subnet, InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem, DefinitionType definitionType)
+
+        public Instance(Subnet subnet, InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem)
             : base(subnet,instanceType, imageId, operatingSystem, ResourceType.AwsEc2Instance)
         {
-            switch (definitionType)
-            {
-                    case DefinitionType.Instance:
-                    this.Type = ResourceType.AwsEc2Instance;
-                    // only applies to instances
-                    SourceDestCheck = true;
-                    break;
-                case DefinitionType.LaunchConfiguration:
-                    this.Type = ResourceType.AwsAutoScalingLaunchConfiguration;
-                    
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(definitionType));
-            }
-
-
+            SourceDestCheck = true;
             NetworkInterfaces = new List<NetworkInterface>();
-
-            if (this.SupportsTags)
-            {
-                this.Tags.Add( new Tag("Name", this.LogicalId) );
-            }
+            this.Tags.Add( new Tag("Name", this.LogicalId) );
         }
-
-        
-
-
-
-        //public IdCollection<SecurityGroup> SecurityGroupIds
-        //{
-        //    get
-        //    {
-        //        if (this.Type.Contains("Instance"))
-        //        {
-        //            return this.Properties.GetValue<IdCollection<SecurityGroup>>();
-        //        }
-        //        else
-        //        {
-        //            return _securityGroupIds;
-        //        }
-        //    }
-        //    set
-        //    {
-        //        if (this.Type.Contains("Instance"))
-        //        {
-        //            this.Properties.SetValue(value);
-        //        }
-        //        else
-        //        {
-        //            _securityGroupIds = value;
-        //        }
-        //    }
-        //}
-
-
-        
 
         [JsonIgnore]
         public bool SourceDestCheck
@@ -108,13 +51,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         }
 
         private List<NetworkInterface> _networkInterfaces;
-
-        public Instance(Subnet subnet, InstanceTypes instanceType, string imageId, 
-            OperatingSystem operatingSystem, Ebs.VolumeTypes volumeType, int volumeSize) 
-            : this(subnet,instanceType,imageId,operatingSystem,DefinitionType.Instance)
-        {
-            this.AddDisk(volumeType, volumeSize);
-        }
 
         [JsonIgnore]
         public List<NetworkInterface> NetworkInterfaces

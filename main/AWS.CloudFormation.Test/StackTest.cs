@@ -339,7 +339,7 @@ namespace AWS.CloudFormation.Test
         private static LaunchConfiguration AddSql(Template template, string instanceName, InstanceTypes instanceSize, 
             Subnet subnet, DomainControllerPackage domainControllerPackage, SecurityGroup sqlServerSecurityGroup)
         {
-            var sqlServer = new Instance(subnet, instanceSize, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, DefinitionType.Instance);
+            var sqlServer = new Instance(subnet, instanceSize, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add(instanceName,sqlServer);
 
             domainControllerPackage.Participate(sqlServer);
@@ -1001,7 +1001,7 @@ namespace AWS.CloudFormation.Test
             if (subnet == null) throw new ArgumentNullException(nameof(subnet));
 
             Instance workstation = new Instance(subnet, InstanceTypes.T2Large, UsEast1AWindows2012R2SqlServerExpressAmi, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 214);
-            template.Resources.Add("workstation",workstation);
+            template.Resources.Add("Workstation",workstation);
 
             if (instanceDomainControllerPackage != null)
             {
