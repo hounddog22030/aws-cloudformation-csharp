@@ -36,7 +36,10 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             : base(resourceType)
         {
             _availableDevices = new List<string>();
-            this.Subnet = subnet;
+            if (subnet != null)
+            {
+                this.Subnet = subnet;
+            }
             this.InstanceType = instanceType;
             this.OperatingSystem = operatingSystem;
             Packages = new ObservableCollection<PackageBase<ConfigSet>>();
@@ -277,12 +280,26 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         public virtual Subnet Subnet {
             get
             {
-                List<ReferenceProperty> subnetReferences = this.AutoScalingGroup.VPCZoneIdentifier as List<ReferenceProperty>;
-                return (Subnet)this.Template.Resources[subnetReferences.First().Reference.LogicalId];
+                if (this.Type == ResourceType.AwsAutoScalingLaunchConfiguration)
+                {
+                    List<ReferenceProperty> subnetReferences = this.AutoScalingGroup.VPCZoneIdentifier as List<ReferenceProperty>;
+                    return (Subnet)this.Template.Resources[subnetReferences.First().Reference.LogicalId];
+                }
+                else
+                {
+                    return this.Properties.GetValue<Subnet>();
+                }
             }
             set
             {
-                throw new NotSupportedException();
+                if (this.Type == ResourceType.AwsAutoScalingLaunchConfiguration)
+                {
+                    throw new NotSupportedException();
+                }
+                else
+                {
+                    this.Properties.SetValue(value);
+                }
             }
         }
 
