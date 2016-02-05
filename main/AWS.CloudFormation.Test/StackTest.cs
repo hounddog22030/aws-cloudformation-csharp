@@ -1188,7 +1188,6 @@ namespace AWS.CloudFormation.Test
                 if (stacks.Any(s => s.Name.ToLowerInvariant().StartsWith(thisGreek.ToString().ToLowerInvariant().Replace('.', '-'))))
                 {
                     maxVersion = (Greek)thisGreek;
-                    break;
                 }
             }
             version = ((Greek)((int) maxVersion + 1)).ToString();
