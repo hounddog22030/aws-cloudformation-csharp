@@ -40,7 +40,10 @@ namespace AWS.CloudFormation.Configuration.Packages
                 $"{this.Instance.LogicalId}.{this.DomainInfo.DomainDnsName}.",
                 RecordSet.RecordSetTypeEnum.A);
 
-            routing.AddResourceRecord(new ReferenceProperty(new ElasticIp(this.Instance)));
+            var eip = new ElasticIp(this.Instance);
+            this.Instance.Template.Resources.Add(eip.LogicalId,eip);
+
+            routing.AddResourceRecord(new ReferenceProperty(eip));
 
             routing.TTL = "60";
 

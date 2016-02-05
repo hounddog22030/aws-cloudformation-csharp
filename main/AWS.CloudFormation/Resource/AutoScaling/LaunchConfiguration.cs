@@ -47,11 +47,6 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             this.PopulateAvailableDevices();
 
             KeyName = new ReferenceProperty(Template.ParameterKeyPairName);
-            UserData = new CloudFormationDictionary(this);
-            UserData.Add("Fn::Base64", "");
-            this.EnableHup();
-            SetUserData();
-            this.DisableFirewall();
         }
 
         protected override void OnTemplateSet(Template template)
@@ -66,6 +61,11 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             {
                 this.AddRename();
             }
+            UserData = new CloudFormationDictionary(this);
+            UserData.Add("Fn::Base64", "");
+            this.EnableHup();
+            SetUserData();
+            this.DisableFirewall();
         }
 
         private const int NetBiosMachineNameLengthLimit = 15;
