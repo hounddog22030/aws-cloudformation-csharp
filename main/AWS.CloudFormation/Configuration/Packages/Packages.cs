@@ -255,8 +255,9 @@ namespace AWS.CloudFormation.Configuration.Packages
             backup.Ebs.DeleteOnTermination = false;
             var command = this.Config.Commands.AddCommand<Command>("CreateBackupShare");
             command.Command = new PowershellFnJoin(FnJoinDelimiter.Space,
-                "New-Item \"d:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"d:\\Backups\" -FullAccess @(\"NT AUTHORITY\\NETWORK SERVICE\", \"YADAYADA\\johnny\")");
+                "New-Item \"d:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"d:\\Backups\" -FullAccess @('NT AUTHORITY\\NETWORK SERVICE', 'YADAYADA\\johnny')");
             command.WaitAfterCompletion = 0.ToString();
+            this.Config.IgnoreErrors = true.ToString();
             command.Test = "IF EXIST d:power\\BACKUPS EXIT /B 1";
             const string AddNetworkLocalPath = "c:/cfn/scripts/add-network-to-sysadmin.ps1";
             var sysadminFile = this.Config.Files.GetFile(AddNetworkLocalPath);
