@@ -12,6 +12,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         {
             Instance = instance;
             this.Domain = "vpc";
+            this.LogicalId = $"Eip4{this.Instance.LogicalId}";
         }
 
         [JsonIgnore]
