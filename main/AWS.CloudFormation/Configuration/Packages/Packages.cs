@@ -239,6 +239,20 @@ namespace AWS.CloudFormation.Configuration.Packages
         public VisualStudio(string bucketName) : base("snap-5e27a85a", bucketName, "vs")
         {
         }
+
+        public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
+        {
+            base.AddToLaunchConfiguration(configuration);
+            var command = this.Config.Commands.AddCommand<Command>("DeleteFirstFolder");
+            command.Command = "rmdir /q /s c:\\users\\default\\AppData\\Local\\Microsoft\\VisualStudio";
+            command.WaitAfterCompletion = 0.ToString();
+
+            command = this.Config.Commands.AddCommand<Command>("DeleteSecondFolder");
+            command.Command = "rmdir /q /s  c:\\users\\default\\AppData\\Roaming\\Microsoft\\VisualStudio";
+            command.WaitAfterCompletion = 0.ToString();
+
+            this.Config.IgnoreErrors = true.ToString();
+        }
     }
 
     public class SqlServerExpressFromAmi : PackageBase<ConfigSet>
