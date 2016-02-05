@@ -1180,7 +1180,7 @@ namespace AWS.CloudFormation.Test
 
             foreach (var thisGreek in Enum.GetValues(typeof(Greek)))
             {
-                if (!stacks.Any(s => s.Name.StartsWith(thisGreek.ToString().ToLowerInvariant().Replace('.', '-'))))
+                if (!stacks.Any(s => s.Name.ToLowerInvariant().StartsWith(thisGreek.ToString().ToLowerInvariant().Replace('.', '-'))))
                 {
                     maxVersion = (Greek)thisGreek;
                     break;
