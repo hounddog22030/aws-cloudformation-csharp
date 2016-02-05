@@ -1176,15 +1176,18 @@ namespace AWS.CloudFormation.Test
         {
             var stacks = Stack.Stack.GetActiveStacks();
             var version = string.Empty;
+            Greek maxVersion = Greek.Alpha;
 
-            foreach (var thisGreek in Enum.GetNames(typeof(Greek)))
+            foreach (var thisGreek in Enum.GetValues(typeof(Greek)))
             {
-                if (!stacks.Any(s => s.Name.StartsWith(thisGreek.ToLowerInvariant().Replace('.', '-'))))
+                if (!stacks.Any(s => s.Name.StartsWith(thisGreek.ToString().ToLowerInvariant().Replace('.', '-'))))
                 {
-                    version = thisGreek.ToLowerInvariant();
+                    maxVersion = (Greek)thisGreek;
                     break;
                 }
             }
+            version = ((Greek)((int) maxVersion + 1)).ToString();
+
 
             var templateToCreateStack = GetTemplateFullStack(version);
             templateToCreateStack.StackName = $"{version}-{StackTest.DomainDnsName}".Replace('.', '-');
