@@ -269,7 +269,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             backup.Ebs.DeleteOnTermination = false;
             var command = this.Config.Commands.AddCommand<Command>("CreateBackupShare");
             command.Command = new PowershellFnJoin(FnJoinDelimiter.Space,
-                "New-Item \"g:\\Backups\" –type directory;New-SMBShare –Name \"Backups\" –Path \"g:\\Backups\" –FullAccess \"NT AUTHORITY\\NETWORK SERVICE\", \"YADAYADA\\johnny\", \"YADAYADA\\TFS$\"");
+                "New-Item \"g:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"g:\\Backups\" -FullAccess \"NT AUTHORITY\\NETWORK SERVICE\", \"YADAYADA\\johnny\", \"YADAYADA\\TFS$\"");
             command.WaitAfterCompletion = 0.ToString();
             command.Test = "IF EXIST G:\\BACKUPS EXIT /B 1";
 
