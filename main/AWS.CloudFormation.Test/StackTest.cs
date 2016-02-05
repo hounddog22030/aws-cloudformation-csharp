@@ -202,11 +202,7 @@ namespace AWS.CloudFormation.Test
             var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, domainAdminPasswordReference);
 
 
-            var instanceDomainController = new Instance(InstanceTypes.T2Small,UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
-            {
-                Subnet = subnetDomainController1,
-                
-            };
+            var instanceDomainController = new Instance(subnetDomainController1,InstanceTypes.T2Small,UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true);
             template.Resources.Add("DomainController", instanceDomainController);
 
 
@@ -230,11 +226,8 @@ namespace AWS.CloudFormation.Test
             dhcpOptions.NetbiosNodeType = "2";
 
 
-            var instanceRdp = new Instance(InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
-            {
-                Subnet = subnetDmz1,
-
-            };
+            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami,
+                OperatingSystem.Windows, true);
             template.Resources.Add($"Rdp{version}", instanceRdp);
 
             dcPackage.Participate(instanceRdp);
@@ -326,10 +319,8 @@ namespace AWS.CloudFormation.Test
 
         private static void AddRdp2(Subnet subnetDmz1, Template template, Vpc vpc, DomainControllerPackage dcPackage)
         {
-            var instanceRdp2 = new Instance(InstanceTypes.T2Micro, "ami-e4034a8e", OperatingSystem.Windows, true)
-            {
-                Subnet = subnetDmz1
-            };
+            var instanceRdp2 = new Instance(subnetDmz1, InstanceTypes.T2Micro, "ami-e4034a8e", OperatingSystem.Windows,
+                true);
 
             template.Resources.Add("rdp2", instanceRdp2);
 
@@ -361,10 +352,7 @@ namespace AWS.CloudFormation.Test
         private static Instance AddDomainController(Template template, Subnet subnet)
         {
             //"ami-805d79ea",
-            var DomainController = new Instance(InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
-            {
-                Subnet = subnet
-            };
+            var DomainController = new Instance(subnet,InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true);
             template.Resources.Add("DomainController", DomainController);
 
             return DomainController;
@@ -394,7 +382,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
 
-            var launchConfig = new LaunchConfiguration(InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration);
+            var launchConfig = new LaunchConfiguration(null, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration);
             template.Resources.Add("Xyz", launchConfig );
             launchConfig.AssociatePublicIpAddress = true;
             launchConfig.AddSecurityGroup(rdp);
@@ -972,7 +960,7 @@ namespace AWS.CloudFormation.Test
             launchGroup.AddSubnetToVpcZoneIdentifier(subnet);
 
 
-            var buildServer = new LaunchConfiguration(instanceSize, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration);
+            var buildServer = new LaunchConfiguration(null,instanceSize, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration);
             template.Resources.Add("LaunchConfigurationBuildServer",buildServer);
 
             launchGroup.LaunchConfiguration = buildServer;
@@ -1079,7 +1067,7 @@ namespace AWS.CloudFormation.Test
                                                     Subnet DMZSubnet,
                                                     SecurityGroup natSecurityGroup)
         {
-            var nat1 = new Instance(InstanceTypes.T2Micro,"ami-4c9e4b24",OperatingSystem.Linux, false)
+            var nat1 = new Instance(null,InstanceTypes.T2Micro,"ami-4c9e4b24",OperatingSystem.Linux, false)
             {
                 SourceDestCheck = false
             };

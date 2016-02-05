@@ -32,7 +32,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
 
         public WindowsInstance(string name, InstanceTypes instanceType, string imageId, Subnet subnet)
-            : this(name, instanceType, imageId,DefinitionType.Instance)
+            : base(subnet,instanceType, imageId, OperatingSystem.Windows, true, DefinitionType.Instance)
         {
             if (subnet != null)
             {
@@ -40,30 +40,14 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
 
         }
-        public WindowsInstance(string name, InstanceTypes instanceType, string imageId, 
-            DefinitionType definitionType): base(instanceType, imageId, OperatingSystem.Windows, true, definitionType)
-        {
-            if (name.Length > NetBiosMaxLength)
-            {
-                throw new InvalidOperationException($"Name length is limited to {NetBiosMaxLength} characters.");
-            }
-        }
-
-        protected internal virtual void OnAddedToDomain(string domainName)
-        {
-
-            var nodeJson = this.GetChefNodeJsonContent();
-            nodeJson.Add("domain", domainName);
-        }
-
-        public T AddPackage<T>() where T :PackageBase<ConfigSet>, new()
-        {
-            T package = new T();
-            return package;
-        }
-
-
-
+        //public WindowsInstance(string name, InstanceTypes instanceType, string imageId, 
+        //    DefinitionType definitionType): base(instanceType, imageId, OperatingSystem.Windows, true, definitionType)
+        //{
+        //    if (name.Length > NetBiosMaxLength)
+        //    {
+        //        throw new InvalidOperationException($"Name length is limited to {NetBiosMaxLength} characters.");
+        //    }
+        //}
 
     }
 }

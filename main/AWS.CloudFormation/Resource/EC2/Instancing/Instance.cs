@@ -27,15 +27,15 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
     public class Instance : LaunchConfiguration, ICidrBlock
     {
 
-        public Instance(InstanceTypes instanceType, string imageId,
+        public Instance(Subnet subnet, InstanceTypes instanceType, string imageId,
             OperatingSystem operatingSystem, bool enableHup)
-            : this(instanceType,imageId,operatingSystem,enableHup,DefinitionType.Instance)
+            : this(subnet,instanceType, imageId,operatingSystem,enableHup,DefinitionType.Instance)
         {
             
         }
 
-        public Instance(InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem, bool enableHup, DefinitionType definitionType)
-            : base(instanceType, imageId, operatingSystem, ResourceType.AwsEc2Instance)
+        public Instance(Subnet subnet, InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem, bool enableHup, DefinitionType definitionType)
+            : base(subnet,instanceType, imageId, operatingSystem, ResourceType.AwsEc2Instance)
         {
             switch (definitionType)
             {

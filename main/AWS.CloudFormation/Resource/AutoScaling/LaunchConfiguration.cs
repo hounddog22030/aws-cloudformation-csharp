@@ -32,13 +32,11 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         public const int NetBiosMaxLength = 15;
 
 
-        public LaunchConfiguration(InstanceTypes instanceType,
-                                string imageId,
-                                OperatingSystem operatingSystem,
-                                ResourceType resourceType)
+        public LaunchConfiguration(Subnet subnet, InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem, ResourceType resourceType)
             : base(resourceType)
         {
             _availableDevices = new List<string>();
+            this.Subnet = subnet;
             this.InstanceType = instanceType;
             this.OperatingSystem = operatingSystem;
             Packages = new ObservableCollection<PackageBase<ConfigSet>>();
