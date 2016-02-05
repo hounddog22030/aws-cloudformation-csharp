@@ -103,7 +103,6 @@
     <Compile Include="Resource\EC2\Instancing\Metadata\Metadata.cs" />
     <Compile Include="Resource\EC2\Networking\NetworkInterface.cs" />
     <Compile Include="Resource\EC2\Instancing\OperatingSystem.cs" />
-    <Compile Include="Resource\EC2\Instancing\WindowsInstance.cs" />
     <Compile Include="Resource\Networking\ICidrBlock.cs" />
     <Compile Include="Resource\EC2\Networking\SubnetRouteTableAssociation.cs" />
     <Compile Include="Common\Tag.cs" />

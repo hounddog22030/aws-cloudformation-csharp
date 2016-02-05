@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Resource.EC2.Instancing
 {
-    //public class DomainController : WindowsInstance
+    //public class DomainController : Instance
     //{
 
     public class DomainInfo

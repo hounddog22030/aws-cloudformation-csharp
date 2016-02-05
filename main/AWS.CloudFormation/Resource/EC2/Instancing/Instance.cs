@@ -109,6 +109,13 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         private List<NetworkInterface> _networkInterfaces;
 
+        public Instance(Subnet subnet, InstanceTypes instanceType, string imageId, 
+            OperatingSystem operatingSystem, bool enableHup, Ebs.VolumeTypes volumeType, int volumeSize) 
+            : this(subnet,instanceType,imageId,operatingSystem,enableHup,DefinitionType.Instance)
+        {
+            this.AddDisk(volumeType, volumeSize);
+        }
+
         [JsonIgnore]
         public List<NetworkInterface> NetworkInterfaces
         {
@@ -161,10 +168,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             return ElasticIp;
         }
 
-        protected override bool SupportsTags
-        {
-            get { return this.Type == ResourceType.AwsEc2Instance; }
-        }
 
         [JsonIgnore]
         public string CidrBlock {

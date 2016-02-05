@@ -32,7 +32,8 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         public const int NetBiosMaxLength = 15;
 
 
-        public LaunchConfiguration(Subnet subnet, InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem, ResourceType resourceType)
+        public LaunchConfiguration(Subnet subnet, InstanceTypes instanceType, string imageId, 
+            OperatingSystem operatingSystem, ResourceType resourceType)
             : base(resourceType)
         {
             _availableDevices = new List<string>();
@@ -176,7 +177,6 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             this.Properties.SetValue(propertyName, temp.ToArray());
         }
 
-        protected override bool SupportsTags => false;
 
         [JsonIgnore]
         public InstanceTypes InstanceType
@@ -385,7 +385,6 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             }
         }
 
-        //tzutil /s "Eastern Standard Time"
-
+        protected override bool SupportsTags => this.Type == ResourceType.AwsEc2Instance;
     }
 }
