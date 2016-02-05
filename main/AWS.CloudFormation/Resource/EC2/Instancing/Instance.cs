@@ -28,13 +28,13 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
     {
 
         public Instance(Subnet subnet, InstanceTypes instanceType, string imageId,
-            OperatingSystem operatingSystem, bool enableHup)
-            : this(subnet,instanceType, imageId,operatingSystem,enableHup,DefinitionType.Instance)
+            OperatingSystem operatingSystem)
+            : this(subnet,instanceType, imageId,operatingSystem,DefinitionType.Instance)
         {
             
         }
 
-        public Instance(Subnet subnet, InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem, bool enableHup, DefinitionType definitionType)
+        public Instance(Subnet subnet, InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem, DefinitionType definitionType)
             : base(subnet,instanceType, imageId, operatingSystem, ResourceType.AwsEc2Instance)
         {
             switch (definitionType)
@@ -110,8 +110,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         private List<NetworkInterface> _networkInterfaces;
 
         public Instance(Subnet subnet, InstanceTypes instanceType, string imageId, 
-            OperatingSystem operatingSystem, bool enableHup, Ebs.VolumeTypes volumeType, int volumeSize) 
-            : this(subnet,instanceType,imageId,operatingSystem,enableHup,DefinitionType.Instance)
+            OperatingSystem operatingSystem, Ebs.VolumeTypes volumeType, int volumeSize) 
+            : this(subnet,instanceType,imageId,operatingSystem,DefinitionType.Instance)
         {
             this.AddDisk(volumeType, volumeSize);
         }

@@ -202,7 +202,7 @@ namespace AWS.CloudFormation.Test
             var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, domainAdminPasswordReference);
 
 
-            var instanceDomainController = new Instance(subnetDomainController1,InstanceTypes.T2Small,UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true);
+            var instanceDomainController = new Instance(subnetDomainController1,InstanceTypes.T2Small,UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add("DomainController", instanceDomainController);
 
 
@@ -227,7 +227,7 @@ namespace AWS.CloudFormation.Test
 
 
             var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami,
-                OperatingSystem.Windows, true);
+                OperatingSystem.Windows);
             template.Resources.Add($"Rdp{version}", instanceRdp);
 
             dcPackage.Participate(instanceRdp);
@@ -319,8 +319,7 @@ namespace AWS.CloudFormation.Test
 
         private static void AddRdp2(Subnet subnetDmz1, Template template, Vpc vpc, DomainControllerPackage dcPackage)
         {
-            var instanceRdp2 = new Instance(subnetDmz1, InstanceTypes.T2Micro, "ami-e4034a8e", OperatingSystem.Windows,
-                true);
+            var instanceRdp2 = new Instance(subnetDmz1, InstanceTypes.T2Micro, "ami-e4034a8e", OperatingSystem.Windows);
 
             template.Resources.Add("rdp2", instanceRdp2);
 
@@ -340,7 +339,7 @@ namespace AWS.CloudFormation.Test
         private static LaunchConfiguration AddSql(Template template, string instanceName, InstanceTypes instanceSize, 
             Subnet subnet, DomainControllerPackage domainControllerPackage, SecurityGroup sqlServerSecurityGroup)
         {
-            var sqlServer = new Instance(subnet, instanceSize, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true, DefinitionType.Instance);
+            var sqlServer = new Instance(subnet, instanceSize, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, DefinitionType.Instance);
             template.Resources.Add(instanceName,sqlServer);
 
             domainControllerPackage.Participate(sqlServer);
@@ -353,7 +352,7 @@ namespace AWS.CloudFormation.Test
         private static Instance AddDomainController(Template template, Subnet subnet)
         {
             //"ami-805d79ea",
-            var DomainController = new Instance(subnet,InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true);
+            var DomainController = new Instance(subnet,InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add("DomainController", DomainController);
 
             return DomainController;
@@ -480,7 +479,7 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
-            Instance w = new Instance(DMZSubnet,InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami,OperatingSystem.Windows, true);
+            Instance w = new Instance(DMZSubnet,InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami,OperatingSystem.Windows);
             template.Resources.Add(w.LogicalId, w);
             w.AddSecurityGroup(rdp);
             w.AddElasticIp();
@@ -501,7 +500,7 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
-            Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true);
+            Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add(w.LogicalId,w);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "/dev/xvdf");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
@@ -532,7 +531,7 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet( vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
-            Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true);
+            Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add(w.LogicalId, w);
 
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "xvdf");
@@ -566,7 +565,7 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
-            Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true );
+            Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows );
             template.Resources.Add(w.LogicalId, w);
 
 
@@ -605,7 +604,7 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
-            Instance w = new Instance(DMZSubnet,InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true);
+            Instance w = new Instance(DMZSubnet,InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add(w.LogicalId,w);
 
             Dir1 d = new Dir1();
@@ -632,7 +631,7 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
-            Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true );
+            Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows );
             template.Resources.Add(w.LogicalId, w);
 
 
@@ -673,7 +672,7 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
-            Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true);
+            Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add(w.LogicalId,w);
             w.AddSecurityGroup(rdp);
             w.AddElasticIp();
@@ -741,7 +740,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
 
-            Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true);
+            Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add(w.LogicalId, w);
 
             w.AddSecurityGroup(rdp);
@@ -766,7 +765,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
 
-            Instance workstation = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true);
+            Instance workstation = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add(workstation.LogicalId, workstation);
 
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
@@ -823,7 +822,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
 
-            Instance workstation = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true);
+            Instance workstation = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add(workstation.LogicalId, workstation);
 
             workstation.AddSecurityGroup(rdp);
@@ -864,7 +863,7 @@ namespace AWS.CloudFormation.Test
 
             SubnetRouteTableAssociation DMZSubnetRouteTableAssociation = new SubnetRouteTableAssociation(DMZSubnet, dmzRouteTable);
             template.Resources.Add(DMZSubnetRouteTableAssociation.LogicalId, DMZSubnetRouteTableAssociation);
-            Instance workstation = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true);
+            Instance workstation = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add(workstation.LogicalId, workstation);
 
             workstation.AddSecurityGroup(rdp);
@@ -917,7 +916,7 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
-            Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true);
+            Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add(w.LogicalId, w);
 
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "xvdf");
@@ -1001,7 +1000,7 @@ namespace AWS.CloudFormation.Test
         {
             if (subnet == null) throw new ArgumentNullException(nameof(subnet));
 
-            Instance workstation = new Instance(subnet, InstanceTypes.T2Large, UsEast1AWindows2012R2SqlServerExpressAmi, OperatingSystem.Windows, true, Ebs.VolumeTypes.GeneralPurpose, 214);
+            Instance workstation = new Instance(subnet, InstanceTypes.T2Large, UsEast1AWindows2012R2SqlServerExpressAmi, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 214);
             template.Resources.Add("workstation",workstation);
 
             if (instanceDomainControllerPackage != null)
@@ -1032,7 +1031,7 @@ namespace AWS.CloudFormation.Test
             DomainControllerPackage dc1, 
             SecurityGroup tfsServerSecurityGroup)
         {
-            var tfsServer = new Instance(privateSubnet1,instanceSize,UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true,Ebs.VolumeTypes.GeneralPurpose,
+            var tfsServer = new Instance(privateSubnet1,instanceSize,UsEast1AWindows2012R2Ami, OperatingSystem.Windows,Ebs.VolumeTypes.GeneralPurpose,
                                                     214);
 
             template.Resources.Add("Tfs",tfsServer);
@@ -1064,7 +1063,7 @@ namespace AWS.CloudFormation.Test
                                                     Subnet DMZSubnet,
                                                     SecurityGroup natSecurityGroup)
         {
-            var nat1 = new Instance(null,InstanceTypes.T2Micro,"ami-4c9e4b24",OperatingSystem.Linux, false)
+            var nat1 = new Instance(null,InstanceTypes.T2Micro,"ami-4c9e4b24",OperatingSystem.Linux)
             {
                 SourceDestCheck = false
             };
