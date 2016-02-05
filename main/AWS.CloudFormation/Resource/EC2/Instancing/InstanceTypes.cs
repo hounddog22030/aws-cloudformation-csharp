@@ -15,6 +15,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         T2Micro,
         [EnumMember(Value = "t2.small")]
         T2Small,
+        [EnumMember(Value = "t2.large")]
+        T2Large,
         [EnumMember(Value = "m4.xlarge")]
         M4XLarge,
         [EnumMember(Value = "c4.large")]

@@ -202,7 +202,7 @@ namespace AWS.CloudFormation.Test
             var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, domainAdminPasswordReference);
 
 
-            var instanceDomainController = new Instance(InstanceTypes.C4Large,UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
+            var instanceDomainController = new Instance(InstanceTypes.T2Small,UsEast1AWindows2012R2Ami, OperatingSystem.Windows, true)
             {
                 Subnet = subnetDomainController1,
                 
@@ -747,7 +747,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
 
-            WindowsInstance workstation = new WindowsInstance("ISOMaker", InstanceTypes.C4Large, UsEast1AWindows2012R2Ami, DMZSubnet);
+            WindowsInstance workstation = new WindowsInstance("ISOMaker", InstanceTypes.T2Small, UsEast1AWindows2012R2Ami, DMZSubnet);
             template.Resources.Add(workstation.LogicalId, workstation);
 
             workstation.AddSecurityGroup(rdp);
@@ -1007,7 +1007,7 @@ namespace AWS.CloudFormation.Test
         {
             if (subnet == null) throw new ArgumentNullException(nameof(subnet));
 
-            WindowsInstance workstation = new WindowsInstance(name, InstanceTypes.C4Large, UsEast1AWindows2012R2SqlServerExpressAmi, subnet, Ebs.VolumeTypes.GeneralPurpose, 214);
+            WindowsInstance workstation = new WindowsInstance(name, InstanceTypes.T2Large, UsEast1AWindows2012R2SqlServerExpressAmi, subnet, Ebs.VolumeTypes.GeneralPurpose, 214);
             template.Resources.Add("workstation",workstation);
 
             if (instanceDomainControllerPackage != null)
@@ -1187,9 +1187,7 @@ namespace AWS.CloudFormation.Test
             }
 
             var templateToCreateStack = GetTemplateFullStack(version);
-            templateToCreateStack.StackName = version.ToString() + StackTest.DomainDnsName.Replace('.', '-');
-
-
+            templateToCreateStack.StackName = $"{version}-{StackTest.DomainDnsName}".Replace('.', '-');
 
             CreateTestStack(templateToCreateStack, this.TestContext);
         }
