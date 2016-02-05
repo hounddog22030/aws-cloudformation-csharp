@@ -60,7 +60,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         public Uri Msi { get; }
 
 
-        public string SnapshotId { get; }
+        public string SnapshotId { get; protected set; }
 
 
         public virtual void AddToLaunchConfiguration(LaunchConfiguration configuration)
@@ -267,6 +267,11 @@ namespace AWS.CloudFormation.Configuration.Packages
             sqlServerNode.Add("INSTALLSQLDATADIR", "f:\\SqlData");
             var backup = configuration.AddDisk(Ebs.VolumeTypes.Magnetic, 20);
             backup.Ebs.DeleteOnTermination = false;
+            var command = this.Config.Commands.AddCommand<Command>("CreateBackupShare");
+            command.Command = new PowershellFnJoin(FnJoinDelimiter.Space,
+                "New-Item \"g:\\Backups\" –type directory;New-SMBShare –Name \"Backups\" –Path \"g:\\Backups\" –FullAccess \"NT AUTHORITY\\NETWORK SERVICE\", \"YADAYADA\\johnny\", \"YADAYADA\\TFS$\"");
+            command.WaitAfterCompletion = 0.ToString();
+            command.Test = "IF EXIST G:\\BACKUPS EXIT /B 1";
 
             // volume for backups
         }
@@ -350,6 +355,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         public TeamFoundationServerBuildServerAgentOnly(WindowsInstance applicationServer, string bucketName, DbInstance sqlExpress4Build)
             : base(applicationServer, bucketName, "agent", sqlExpress4Build)
         {
+            this.SnapshotId = string.Empty;
         }
     }
 }

@@ -61,6 +61,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             this.EnableHup();
             SetUserData();
             this.DisableFirewall();
+            this.SetTimeZone();
             if (OperatingSystem == OperatingSystem.Windows &&
                 this.Type != ResourceType.AwsAutoScalingLaunchConfiguration)
             {
@@ -358,6 +359,18 @@ namespace AWS.CloudFormation.Resource.AutoScaling
                 disableFirewallCommand.WaitAfterCompletion = 0.ToString();
             }
         }
+        private void SetTimeZone()
+        {
+            if (OperatingSystem == OperatingSystem.Windows)
+            {
+                var setup = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigName);
+                var disableFirewallCommand = setup.Commands.AddCommand<Command>("SetTimeZone");
+                disableFirewallCommand.Command = "tzutil /s \"Eastern Standard Time\"";
+                disableFirewallCommand.WaitAfterCompletion = 0.ToString();
+            }
+        }
+
+        //tzutil /s "Eastern Standard Time"
 
     }
 }
