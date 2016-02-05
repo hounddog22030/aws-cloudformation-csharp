@@ -68,7 +68,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata
                     {
                         //writer.WritePropertyName(configSetKeyValuePair.Key);
                         //writer.WriteStartObject();
-                        foreach (var configKeyValuePair in ((ConfigSet)configSetKeyValuePair.Value))
+                        foreach (var configKeyValuePair in (ConfigSet)configSetKeyValuePair.Value)
                         {
                             writer.WritePropertyName(configKeyValuePair.Key);
                             serializer.Serialize(writer, configKeyValuePair.Value);

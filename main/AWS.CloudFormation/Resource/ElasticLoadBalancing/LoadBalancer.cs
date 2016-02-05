@@ -48,7 +48,7 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
 
     public class LoadBalancer : ResourceBase
     {
-        public LoadBalancer(Template template, string name) : base(template, name, ResourceType.AwsElasticLoadBalancingLoadBalancer)
+        public LoadBalancer() : base(ResourceType.AwsElasticLoadBalancingLoadBalancer)
         {
             SecurityGroups = new IdCollection<SecurityGroup>();
 

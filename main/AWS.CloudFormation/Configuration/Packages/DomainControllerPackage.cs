@@ -110,7 +110,8 @@ namespace AWS.CloudFormation.Configuration.Packages
             {
                 if (_domainMemberSecurityGroup == null)
                 {
-                    _domainMemberSecurityGroup = new SecurityGroup(this.Instance.Template, "SecurityGroup4DomainMember", "For All Domain Members", this.Subnet.Vpc);
+                    _domainMemberSecurityGroup = new SecurityGroup("For All Domain Members", this.Subnet.Vpc);
+                    this.Instance.Template.Resources.Add("SecurityGroup4DomainMember", _domainMemberSecurityGroup);
                     _domainMemberSecurityGroup.GroupDescription = "Domain Member Security Group";
                 }
                 return _domainMemberSecurityGroup;
@@ -122,7 +123,8 @@ namespace AWS.CloudFormation.Configuration.Packages
         private void CreateDomainControllerSecurityGroup()
         {
             // ReSharper disable once InconsistentNaming
-            SecurityGroup SecurityGroup4DomainController = new SecurityGroup(this.Instance.Template, "SecurityGroup4DomainController", "Domain Controller", this.Subnet.Vpc);
+            SecurityGroup SecurityGroup4DomainController = new SecurityGroup("Domain Controller", this.Subnet.Vpc);
+            this.Instance.Template.Resources.Add("SecurityGroup4DomainController", SecurityGroup4DomainController);
             SecurityGroup4DomainController.AddIngress(this.Subnet.Vpc as ICidrBlock, Protocol.Tcp,
                 Ports.WsManagementPowerShell);
             SecurityGroup4DomainController.AddIngress(this.Subnet.Vpc as ICidrBlock, Protocol.Tcp, Ports.Http);

@@ -19,22 +19,20 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
 
         
-        public WindowsInstance(Template template,
-                                string name,
+        public WindowsInstance( string name,
                                 InstanceTypes instanceType,
                                 string imageId,
                                 Subnet subnet,
-                                bool rename,
                                 Ebs.VolumeTypes volumeType,
                                 uint volumeSize)
-            : this(template, name, instanceType, imageId, subnet, rename)
+            : this(name, instanceType, imageId, subnet)
         {
             this.AddBlockDeviceMapping("/dev/sda1", volumeSize, volumeType);
         }
 
 
-        public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, Subnet subnet, bool rename, DefinitionType definitionType)
-            : this(template, name, instanceType, imageId, rename, definitionType)
+        public WindowsInstance(string name, InstanceTypes instanceType, string imageId, Subnet subnet)
+            : this(name, instanceType, imageId,DefinitionType.Instance)
         {
             if (subnet != null)
             {
@@ -42,13 +40,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
 
         }
-        public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, Subnet subnet, bool rename)
-            : this(template, name, instanceType, imageId, subnet, rename, DefinitionType.Instance)
-        {
-        }
-
-        public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, bool rename,
-            DefinitionType definitionType): base(template, name, instanceType, imageId, OperatingSystem.Windows, true, definitionType)
+        public WindowsInstance(string name, InstanceTypes instanceType, string imageId, 
+            DefinitionType definitionType): base(instanceType, imageId, OperatingSystem.Windows, true, definitionType)
         {
             if (name.Length > NetBiosMaxLength)
             {
@@ -56,68 +49,11 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
         }
 
-        public WindowsInstance(Template template, string name, InstanceTypes instanceType, string imageId, bool rename)
-            : this(template, name, instanceType, imageId, rename, DefinitionType.Instance)
-        {
-        }
-
-
         protected internal virtual void OnAddedToDomain(string domainName)
         {
 
             var nodeJson = this.GetChefNodeJsonContent();
             nodeJson.Add("domain", domainName);
-        }
-
-        private void AddChrome()
-        {
-            //https://s3.amazonaws.com/gtbb/googlechromestandaloneenterprise.msi
-            var config =  this.Metadata.Init.ConfigSets.GetConfigSet("chrome").GetConfig("chrome");
-            config.Packages.AddPackage("msi", "chrome", "https://s3.amazonaws.com/gtbb/googlechromestandaloneenterprise.msi");
-
-        }
-
-        private Config GetChefConfig(string s3bucketName, string cookbookFileName)
-        {
-            var appSettingsReader = new AppSettingsReader();
-            string accessKeyString = (string)appSettingsReader.GetValue("S3AccessKey", typeof(string));
-            string secretKeyString = (string)appSettingsReader.GetValue("S3SecretKey", typeof(string));
-
-            if (!this.Metadata.Authentication.ContainsKey("S3AccessCreds"))
-            {
-                var auth = this.Metadata.Authentication.Add("S3AccessCreds", new S3Authentication(accessKeyString, secretKeyString, new string[] { s3bucketName }));
-                auth.Type = "S3";
-            }
-
-            var chefConfigContent = GetChefNodeJsonContent();
-
-            if (chefConfigContent.ContainsKey("s3_file"))
-            {
-                var s3FileNode = chefConfigContent.Add("s3_file");
-                s3FileNode.Add("key", accessKeyString);
-                s3FileNode.Add("secret", secretKeyString);
-            }
-
-            var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet(cookbookFileName).GetConfig(cookbookFileName);
-
-            if (!chefConfig.Packages.ContainsKey("msi") || (chefConfig.Packages.ContainsKey("msi") && !((CloudFormationDictionary) chefConfig.Packages["msi"]).ContainsKey("chef")))
-            {
-                chefConfig.Packages.AddPackage("msi", "chef", "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");
-            }
-
-            var sourcesKey = $"c:/chef/{cookbookFileName}/";
-            if (!chefConfig.Sources.ContainsKey(sourcesKey))
-            {
-                chefConfig.Sources.Add(sourcesKey, $"https://{s3bucketName}.s3.amazonaws.com/{cookbookFileName}");
-            }
-
-            var clientRbFileKey = $"c:/chef/{cookbookFileName}/client.rb";
-            if (!chefConfig.Files.ContainsKey(clientRbFileKey))
-            {
-                chefConfig.Files.GetFile(clientRbFileKey).Content.SetFnJoin($"cache_path 'c:/chef'\ncookbook_path 'c:/chef/{cookbookFileName}/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
-            }
-
-            return chefConfig;
         }
 
         public T AddPackage<T>() where T :PackageBase<ConfigSet>, new()

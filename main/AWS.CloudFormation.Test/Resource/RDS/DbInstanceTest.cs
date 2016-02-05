@@ -45,31 +45,49 @@ namespace AWS.CloudFormation.Test.Resource.RDS
             vpc.EnableDnsHostnames = true;
             vpc.EnableDnsSupport = true;
 
-            var subnet1 = new Subnet(template, "subnetDb1", vpc, "10.0.128.0/28", AvailabilityZone.UsEast1A);
-            RouteTable routeTable4Subnet1 = new RouteTable(template, "routeTable4Subnet1", vpc);
-            Route route4subnet1 = new Route(template, "route4subnet1", vpc.InternetGateway, "0.0.0.0/0", routeTable4Subnet1);
-            SubnetRouteTableAssociation subnetRouteTableAssociationSubnet1 = new SubnetRouteTableAssociation(template, subnet1, routeTable4Subnet1);
+            var subnet1 = new Subnet(vpc, "10.0.128.0/28", AvailabilityZone.UsEast1A);
+            template.Resources.Add("subnetDb1",subnet1);
+            RouteTable routeTable4Subnet1 = new RouteTable(vpc);
+            template.Resources.Add("routeTable4Subnet1", routeTable4Subnet1);
 
-            var subnet2 = new Subnet(template, "subnetDb2", template.Vpcs.First(), "10.0.64.0/28", AvailabilityZone.UsEast1E);
-            RouteTable routeTable4Subnet2 = new RouteTable(template, "routeTable4Subnet2", vpc);
-            Route route4subnet2 = new Route(template, "route4subnet2", vpc.InternetGateway, "0.0.0.0/0", routeTable4Subnet2);
-            SubnetRouteTableAssociation subnetRouteTableAssociationSubnet2 = new SubnetRouteTableAssociation(template, subnet2, routeTable4Subnet2);
+            Route route4subnet1 = new Route(vpc.InternetGateway, "0.0.0.0/0", routeTable4Subnet1);
+            template.Resources.Add("route4subnet1", route4subnet1);
 
-            var subnetGroup = new DbSubnetGroup(template, "dbSubnetGroup", "this is my subnet group description");
+            SubnetRouteTableAssociation subnetRouteTableAssociationSubnet1 = new SubnetRouteTableAssociation(subnet1, routeTable4Subnet1);
+            template.Resources.Add(subnetRouteTableAssociationSubnet1.LogicalId, subnetRouteTableAssociationSubnet1);
+
+
+            var subnet2 = new Subnet(template.Vpcs.First(), "10.0.64.0/28", AvailabilityZone.UsEast1E);
+            template.Resources.Add("subnetDb2", subnet2);
+
+            RouteTable routeTable4Subnet2 = new RouteTable(vpc);
+            template.Resources.Add("routeTable4Subnet2", routeTable4Subnet2);
+
+            Route route4subnet2 = new Route(vpc.InternetGateway, "0.0.0.0/0", routeTable4Subnet2);
+            template.Resources.Add("route4subnet2", route4subnet2);
+
+
+            SubnetRouteTableAssociation subnetRouteTableAssociationSubnet2 = new SubnetRouteTableAssociation(subnet2, routeTable4Subnet2);
+            template.Resources.Add(subnetRouteTableAssociationSubnet2.LogicalId, subnetRouteTableAssociationSubnet2);
+
+
+            var subnetGroup = new DbSubnetGroup("this is my subnet group description");
+            template.Resources.Add("dbSubnetGroup", subnetGroup);
             subnetGroup.AddSubnet(subnet1);
             subnetGroup.AddSubnet(subnet2);
 
-            SecurityGroup securityGroup = new SecurityGroup(template, "securityGroupWorldWide", "Allows access to SqlServer from everywhere", vpc);
+            SecurityGroup securityGroup = new SecurityGroup("Allows access to SqlServer from everywhere", vpc);
+            template.Resources.Add("securityGroupWorldWide", securityGroup);
+
             securityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.MsSqlServer);
 
-            var dbSecurityGroup = new DbSecurityGroup(template, "dbSecurityGroup", vpc, "Why is a description required?");
+            var dbSecurityGroup = new DbSecurityGroup(vpc, "Why is a description required?");
+            template.Resources.Add("dbSecurityGroup", dbSecurityGroup);
             var dbSecurityGroupIngress = new DbSecurityGroupIngress();
             dbSecurityGroupIngress.CIDRIP = "0.0.0.0/0";
             dbSecurityGroup.AddDbSecurityGroupIngress(dbSecurityGroupIngress);
 
-            DbInstance instance = new DbInstance(template,
-                "instanceBasicDbInstanceTest",
-                DbInstanceClassEnum.DbT2Micro,
+            DbInstance instance = new DbInstance(DbInstanceClassEnum.DbT2Micro,
                 EngineType.SqlServerExpress,
                 LicenseModelType.LicenseIncluded,
                 Ebs.VolumeTypes.GeneralPurpose,
@@ -78,6 +96,8 @@ namespace AWS.CloudFormation.Test.Resource.RDS
                 "YellowBeard123",
                 subnetGroup,
                 dbSecurityGroup);
+
+            template.Resources.Add("instanceBasicDbInstanceTest",instance);
 
 
 
@@ -93,31 +113,48 @@ namespace AWS.CloudFormation.Test.Resource.RDS
             vpc.EnableDnsHostnames = true;
             vpc.EnableDnsSupport = true;
 
-            var subnet1 = new Subnet(template, "subnetDb1", vpc, "10.0.128.0/28", AvailabilityZone.UsEast1A);
-            RouteTable routeTable4Subnet1 = new RouteTable(template, "routeTable4Subnet1", vpc);
-            Route route4subnet1 = new Route(template, "route4subnet1", vpc.InternetGateway, "0.0.0.0/0", routeTable4Subnet1);
-            SubnetRouteTableAssociation subnetRouteTableAssociationSubnet1 = new SubnetRouteTableAssociation(template, subnet1, routeTable4Subnet1);
+            var subnet1 = new Subnet(vpc, "10.0.128.0/28", AvailabilityZone.UsEast1A);
+            template.Resources.Add("subnetDb1", subnet1);
 
-            var subnet2 = new Subnet(template, "subnetDb2", template.Vpcs.First(), "10.0.64.0/28", AvailabilityZone.UsEast1E);
-            RouteTable routeTable4Subnet2 = new RouteTable(template, "routeTable4Subnet2", vpc);
-            Route route4subnet2 = new Route(template, "route4subnet2", vpc.InternetGateway, "0.0.0.0/0", routeTable4Subnet2);
-            SubnetRouteTableAssociation subnetRouteTableAssociationSubnet2 = new SubnetRouteTableAssociation(template, subnet2, routeTable4Subnet2);
+            RouteTable routeTable4Subnet1 = new RouteTable(vpc);
+            template.Resources.Add("routeTable4Subnet1", routeTable4Subnet1);
 
-            var subnetGroup = new DbSubnetGroup(template, "dbSubnetGroup", "this is my subnet group description");
+            Route route4subnet1 = new Route(vpc.InternetGateway, "0.0.0.0/0", routeTable4Subnet1);
+            template.Resources.Add("route4subnet1", route4subnet1);
+
+            SubnetRouteTableAssociation subnetRouteTableAssociationSubnet1 = new SubnetRouteTableAssociation(subnet1, routeTable4Subnet1);
+            template.Resources.Add(subnetRouteTableAssociationSubnet1.LogicalId, subnetRouteTableAssociationSubnet1);
+
+            var subnet2 = new Subnet(template.Vpcs.First(), "10.0.64.0/28", AvailabilityZone.UsEast1E);
+            template.Resources.Add("subnetDb2", subnet2);
+
+            RouteTable routeTable4Subnet2 = new RouteTable(vpc);
+            template.Resources.Add("routeTable4Subnet2", routeTable4Subnet2);
+
+            Route route4subnet2 = new Route(vpc.InternetGateway, "0.0.0.0/0", routeTable4Subnet2);
+            template.Resources.Add("route4subnet2", route4subnet2);
+
+            SubnetRouteTableAssociation subnetRouteTableAssociationSubnet2 = new SubnetRouteTableAssociation(subnet2, routeTable4Subnet2);
+            template.Resources.Add(subnetRouteTableAssociationSubnet2.LogicalId, subnetRouteTableAssociationSubnet2);
+
+            var subnetGroup = new DbSubnetGroup("this is my subnet group description");
+            template.Resources.Add("dbSubnetGroup", subnetGroup);
+
             subnetGroup.AddSubnet(subnet1);
             subnetGroup.AddSubnet(subnet2);
 
-            SecurityGroup securityGroup = new SecurityGroup(template, "securityGroupWorldWide", "Allows access to SqlServer from everywhere", vpc);
+            SecurityGroup securityGroup = new SecurityGroup("Allows access to SqlServer from everywhere", vpc);
+            template.Resources.Add("securityGroupWorldWide", securityGroup);
             securityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.MySql);
 
-            var dbSecurityGroup = new DbSecurityGroup(template, "dbSecurityGroup", vpc, "Why is a description required?");
+            var dbSecurityGroup = new DbSecurityGroup(vpc, "Why is a description required?");
+            template.Resources.Add("dbSecurityGroup", dbSecurityGroup);
+
             var dbSecurityGroupIngress = new DbSecurityGroupIngress();
             dbSecurityGroupIngress.CIDRIP = "0.0.0.0/0";
             dbSecurityGroup.AddDbSecurityGroupIngress(dbSecurityGroupIngress);
 
-            DbInstance instance = new DbInstance(template,
-                "instanceBasicDbInstanceTest",
-                DbInstanceClassEnum.DbT2Micro,
+            DbInstance instance = new DbInstance(DbInstanceClassEnum.DbT2Micro,
                 EngineType.MySql,
                 LicenseModelType.GeneralPublicLicense,
                   Ebs.VolumeTypes.GeneralPurpose,
@@ -127,6 +164,7 @@ namespace AWS.CloudFormation.Test.Resource.RDS
                 subnetGroup,
                 dbSecurityGroup);
 
+            template.Resources.Add("instanceBasicDbInstanceTest", instance);
             instance.PubliclyAccessible = true.ToString().ToLowerInvariant();
             return template;
         }
@@ -138,32 +176,50 @@ namespace AWS.CloudFormation.Test.Resource.RDS
             vpc.EnableDnsHostnames = true;
             vpc.EnableDnsSupport = true;
 
-            var subnet1 = new Subnet(template, "subnetDb1", vpc, "10.0.128.0/28", AvailabilityZone.UsEast1A);
-            RouteTable routeTable4Subnet1 = new RouteTable(template, "routeTable4Subnet1", vpc);
-            Route route4subnet1 = new Route(template, "route4subnet1", vpc.InternetGateway, "0.0.0.0/0", routeTable4Subnet1);
-            SubnetRouteTableAssociation subnetRouteTableAssociationSubnet1 = new SubnetRouteTableAssociation(template, subnet1, routeTable4Subnet1);
+            var subnet1 = new Subnet(vpc, "10.0.128.0/28", AvailabilityZone.UsEast1A);
+            template.Resources.Add("subnetDb1", subnet1);
 
-            var subnet2 = new Subnet(template, "subnetDb2", template.Vpcs.First(), "10.0.64.0/28", AvailabilityZone.UsEast1E);
-            RouteTable routeTable4Subnet2 = new RouteTable(template, "routeTable4Subnet2", vpc);
-            Route route4subnet2 = new Route(template, "route4subnet2", vpc.InternetGateway, "0.0.0.0/0", routeTable4Subnet2);
-            SubnetRouteTableAssociation subnetRouteTableAssociationSubnet2 = new SubnetRouteTableAssociation(template, subnet2, routeTable4Subnet2);
+            RouteTable routeTable4Subnet1 = new RouteTable(vpc);
+            template.Resources.Add("routeTable4Subnet1", routeTable4Subnet1);
 
-            var subnetGroup = new DbSubnetGroup(template, "dbSubnetGroup", "this is my subnet group description");
+            Route route4subnet1 = new Route(vpc.InternetGateway, "0.0.0.0/0", routeTable4Subnet1);
+            template.Resources.Add("route4subnet1", route4subnet1);
+
+            SubnetRouteTableAssociation subnetRouteTableAssociationSubnet1 = new SubnetRouteTableAssociation(subnet1, routeTable4Subnet1);
+            template.Resources.Add(subnetRouteTableAssociationSubnet1.LogicalId, subnetRouteTableAssociationSubnet1);
+
+            var subnet2 = new Subnet(template.Vpcs.First(), "10.0.64.0/28", AvailabilityZone.UsEast1E);
+            template.Resources.Add("subnetDb2", subnet2);
+
+            RouteTable routeTable4Subnet2 = new RouteTable(vpc);
+            template.Resources.Add("routeTable4Subnet2", routeTable4Subnet2);
+
+            Route route4subnet2 = new Route(vpc.InternetGateway, "0.0.0.0/0", routeTable4Subnet2);
+            template.Resources.Add("route4subnet2", route4subnet2);
+
+            SubnetRouteTableAssociation subnetRouteTableAssociationSubnet2 = new SubnetRouteTableAssociation(subnet2, routeTable4Subnet2);
+            template.Resources.Add(subnetRouteTableAssociationSubnet2.LogicalId, subnetRouteTableAssociationSubnet2);
+
+            var subnetGroup = new DbSubnetGroup("this is my subnet group description");
+            template.Resources.Add("dbSubnetGroup", subnetGroup);
+
             subnetGroup.AddSubnet(subnet1);
             subnetGroup.AddSubnet(subnet2);
 
-            SecurityGroup securityGroup = new SecurityGroup(template, "securityGroupWorldWide", "Allows access to SqlServer from everywhere", vpc);
+            SecurityGroup securityGroup = new SecurityGroup("Allows access to SqlServer from everywhere", vpc);
+            template.Resources.Add("securityGroupWorldWide", securityGroup);
+
             securityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.MsSqlServer);
 
-            var dbSecurityGroup = new DbSecurityGroup(template, "dbSecurityGroup", vpc, "Why is a description required?");
+            var dbSecurityGroup = new DbSecurityGroup(vpc, "Why is a description required?");
+            template.Resources.Add("dbSecurityGroup", dbSecurityGroup);
+
 
             var dbSecurityGroupIngress = new DbSecurityGroupIngress();
             dbSecurityGroupIngress.CIDRIP = "0.0.0.0/0";
             dbSecurityGroup.AddDbSecurityGroupIngress(dbSecurityGroupIngress);
 
-            DbInstance instance = new DbInstance(template,
-                "instanceBasicDbInstanceTest",
-                DbInstanceClassEnum.DbR3Large,
+            DbInstance instance = new DbInstance(DbInstanceClassEnum.DbR3Large,
                 EngineType.Aurora,
                 LicenseModelType.GeneralPublicLicense,
                 Ebs.VolumeTypes.GeneralPurpose,
@@ -173,6 +229,7 @@ namespace AWS.CloudFormation.Test.Resource.RDS
                 subnetGroup,
                 dbSecurityGroup);
 
+            template.Resources.Add("instanceBasicDbInstanceTest", instance);
 
             instance.PubliclyAccessible = true.ToString().ToLowerInvariant();
             return template;

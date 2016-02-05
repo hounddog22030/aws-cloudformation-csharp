@@ -73,7 +73,9 @@ namespace AWS.CloudFormation.Configuration.Packages
         private void AddSecurityGroup()
         {
             var launchConfigurationAsInstance = this.Instance as Instance;
-            var rdgwSecurityGroup = new SecurityGroup(this.Instance.Template, $"SecurityGroup4{this.Instance.LogicalId}", "Remote Desktop Security Group", launchConfigurationAsInstance.Subnet.Vpc);
+            var rdgwSecurityGroup = new SecurityGroup("Remote Desktop Security Group", launchConfigurationAsInstance.Subnet.Vpc);
+            this.Instance.Template.Resources.Add($"SecurityGroup4{this.Instance.LogicalId}", rdgwSecurityGroup);
+
 
             rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol, Ports.Ssl);
             rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Http);

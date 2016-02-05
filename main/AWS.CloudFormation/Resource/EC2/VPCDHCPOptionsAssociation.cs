@@ -12,7 +12,7 @@ namespace AWS.CloudFormation.Resource.EC2
 {
     public class VpcDhcpOptionsAssociation : ResourceBase
     {
-        public VpcDhcpOptionsAssociation(Template template, string name, DhcpOptions dhcpOptions, Vpc vpc) : base(template, name, ResourceType.VpcDhcpOptionsAssociation)
+        public VpcDhcpOptionsAssociation(DhcpOptions dhcpOptions, Vpc vpc) : base(ResourceType.VpcDhcpOptionsAssociation)
         {
             this.DhcpOptionsId = new ReferenceProperty(dhcpOptions);
             this.VpcId = new ReferenceProperty(vpc);

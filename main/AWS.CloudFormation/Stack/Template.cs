@@ -42,7 +42,9 @@ namespace AWS.CloudFormation.Stack
             this.Resources.CollectionChanged += Resources_CollectionChanged;
             this.Parameters = new CloudFormationDictionary();
             this.Parameters.Add(ParameterKeyPairName, new ParameterBase(ParameterKeyPairName, "AWS::EC2::KeyPair::KeyName", keyPairName,"Key Pair to decrypt instance password."));
-            Vpc vpc = new Vpc(this, vpcName, vpcCidrBlock);
+            Vpc vpc = new Vpc(vpcCidrBlock);
+            this.Resources.Add(vpcName, vpc);
+
 
             if (!string.IsNullOrEmpty(description))
             {
@@ -56,6 +58,7 @@ namespace AWS.CloudFormation.Stack
             {
                 foreach (KeyValuePair<string,ResourceBase> newItem in e.NewItems)
                 {
+                    newItem.Value.LogicalId = newItem.Key;
                     newItem.Value.Template = this;
                 }
             }

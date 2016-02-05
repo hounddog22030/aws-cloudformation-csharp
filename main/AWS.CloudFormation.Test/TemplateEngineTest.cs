@@ -103,7 +103,8 @@ namespace AWS.CloudFormation.Test
             {
                 var template = new Template(Guid.NewGuid().ToString(),null,null);
                 template.Parameters.Clear();
-                var i1 = new Instance(template, Guid.NewGuid().ToString(), InstanceTypes.T2Nano, "ami-b17f35db", OperatingSystem.Windows, false);
+                var i1 = new Instance(InstanceTypes.T2Nano, "ami-b17f35db", OperatingSystem.Windows, false);
+                template.Resources.Add(Guid.NewGuid().ToString(),i1);
             }
             catch (InvalidOperationException e)
             {
@@ -116,9 +117,11 @@ namespace AWS.CloudFormation.Test
         {
             string defaultKeyName = "InvalidKeyName";
             var template = new Template(defaultKeyName,null,null);
-            var i1 = new Instance(template,Guid.NewGuid().ToString(), InstanceTypes.T2Nano, "ami-b17f35db", OperatingSystem.Windows, false);
+            var i1 = new Instance(InstanceTypes.T2Nano, "ami-b17f35db", OperatingSystem.Windows, false);
             template.Resources.Add("instance1", i1);
-            var vpc = new Vpc(template,"Vpc","0.0.0.0/0");
+            var vpc = new Vpc("0.0.0.0/0");
+            template.Resources.Add("Vpc", vpc);
+
             template.Resources.Add("VPC", vpc);
             return template;
         }

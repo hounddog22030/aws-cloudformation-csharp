@@ -113,9 +113,13 @@ namespace AWS.CloudFormation.Configuration.Packages
             {
                 if (_waitCondition == null)
                 {
-                    _waitCondition = new WaitCondition(this.Instance.Template,
-                        $"WaitCondition4{this.Instance.LogicalId}4{this.GetType().Name}".Replace(".", string.Empty)
-                            .Replace(":", string.Empty), TimeoutMax);
+                    var name = $"WaitCondition4{this.Instance.LogicalId}4{this.GetType().Name}"
+                        .Replace(".", string.Empty)
+                        .Replace(":", string.Empty);
+
+                    _waitCondition = new WaitCondition();
+
+                    this.Instance.Template.Resources.Add(name,_waitCondition);
 
                     this.Config.Commands.AddCommand<Command>(_waitCondition);
                 }

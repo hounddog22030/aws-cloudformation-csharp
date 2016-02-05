@@ -38,7 +38,8 @@ namespace AWS.CloudFormation.Resource.Route53
         }
 
 
-        private RecordSet(Template template, string name, RecordSetTypeEnum recordSetType) : base(template, name, ResourceType.AwsRoute53RecordSet)
+        private RecordSet(RecordSetTypeEnum recordSetType) 
+            : base(ResourceType.AwsRoute53RecordSet)
         {
             TTL = "900";
             this.RecordSetType = recordSetType.ToString();
@@ -106,7 +107,9 @@ namespace AWS.CloudFormation.Resource.Route53
 
         public static RecordSet AddByHostedZoneId(Template template, string resourceName, string hostedZoneId, string dnsName, RecordSetTypeEnum recordSetType)
         {
-            return new RecordSet(template, resourceName, recordSetType) { HostedZoneId = hostedZoneId, Name = dnsName };
+            var returnValue = new RecordSet(recordSetType) { HostedZoneId = hostedZoneId, Name = dnsName };
+            template.Resources.Add(resourceName,returnValue);
+            return returnValue;
         }
 
         public static RecordSet AddByHostedZone(Template template, string name, HostedZone hostedZone, string dnsName, RecordSetTypeEnum recordSetType)
@@ -119,7 +122,9 @@ namespace AWS.CloudFormation.Resource.Route53
 
         public static RecordSet AddByHostedZoneName(Template template, string name, string hostedZoneName, string dnsName, RecordSetTypeEnum recordSetType)
         {
-            return new RecordSet(template, name, recordSetType) { HostedZoneName = hostedZoneName, Name = dnsName };
+            var returnValue = new RecordSet(recordSetType) { HostedZoneName = hostedZoneName, Name = dnsName };
+            template.Resources.Add(name, returnValue);
+            return returnValue;
         }
 
         protected override bool SupportsTags {

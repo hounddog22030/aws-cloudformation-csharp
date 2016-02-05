@@ -187,13 +187,5 @@ namespace AWS.CloudFormation.Common
 
             return returnValue;
         }
-        public void Clear()
-        {
-            var keys = this.Keys.ToArray();
-            foreach (var key in keys)
-            {
-                this.Remove(key);
-            }
-        }
     }
 }

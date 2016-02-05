@@ -27,15 +27,15 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
     public class Instance : LaunchConfiguration, ICidrBlock
     {
 
-        public Instance(Template template, string name, InstanceTypes instanceType, string imageId,
+        public Instance(InstanceTypes instanceType, string imageId,
             OperatingSystem operatingSystem, bool enableHup)
-            : this(template,name,instanceType,imageId,operatingSystem,enableHup,DefinitionType.Instance)
+            : this(instanceType,imageId,operatingSystem,enableHup,DefinitionType.Instance)
         {
             
         }
 
-        public Instance(Template template, string name, InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem, bool enableHup, DefinitionType definitionType)
-            : base(template, name, instanceType, imageId, operatingSystem, ResourceType.AwsEc2Instance)
+        public Instance(InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem, bool enableHup, DefinitionType definitionType)
+            : base(instanceType, imageId, operatingSystem, ResourceType.AwsEc2Instance)
         {
             switch (definitionType)
             {
@@ -57,7 +57,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
             if (this.SupportsTags)
             {
-                this.Tags.Add( new Tag("Name",name) );
+                this.Tags.Add( new Tag("Name", this.LogicalId) );
             }
         }
 
