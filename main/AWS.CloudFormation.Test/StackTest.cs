@@ -328,10 +328,16 @@ namespace AWS.CloudFormation.Test
             {
                 Subnet = subnetDmz1
             };
+
             template.Resources.Add("rdp2", instanceRdp2);
+
             SecurityGroup rdp = new SecurityGroup("rdp", vpc);
             template.Resources.Add("SecurityGroupForRdp2Rdp2", rdp);
+
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+
+            instanceRdp2.AddSecurityGroup(rdp);
+
 
             instanceRdp2.AddElasticIp();
 
