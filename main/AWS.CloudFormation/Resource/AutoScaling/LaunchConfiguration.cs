@@ -56,16 +56,16 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             {
                 throw new InvalidOperationException($"Template must contain a Parameter named {Template.ParameterKeyPairName} which contains the default encryption key name for the instance.");
             }
-            if (OperatingSystem == OperatingSystem.Windows &&
-                this.Type != ResourceType.AwsAutoScalingLaunchConfiguration)
-            {
-                this.AddRename();
-            }
             UserData = new CloudFormationDictionary(this);
             UserData.Add("Fn::Base64", "");
             this.EnableHup();
             SetUserData();
             this.DisableFirewall();
+            if (OperatingSystem == OperatingSystem.Windows &&
+                this.Type != ResourceType.AwsAutoScalingLaunchConfiguration)
+            {
+                this.AddRename();
+            }
         }
 
         private const int NetBiosMachineNameLengthLimit = 15;
