@@ -132,27 +132,23 @@ namespace AWS.CloudFormation.Test
 
             var nat1 = AddNat1(template, subnetDmz1, natSecurityGroup);
 
-            var subnetDomainController1 = new Subnet(vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A);
+            var subnetDomainController1 = new Subnet(vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
             template.Resources.Add("Subnet4DomainController1", subnetDomainController1);
-
-            subnetDomainController1.AddNatGateway(nat1, natSecurityGroup);
 
             SecurityGroup sqlServer4TfsSecurityGroup = new SecurityGroup("Allows communication to SQLServer Service", vpc);
             template.Resources.Add("SecurityGroup4SqlServer4Tfs", sqlServer4TfsSecurityGroup);
 
             sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var subnetSqlServer4Tfs = new Subnet(vpc, CidrSqlServer4TfsSubnet, AvailabilityZone.UsEast1A);
+            var subnetSqlServer4Tfs = new Subnet(vpc, CidrSqlServer4TfsSubnet, AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
             template.Resources.Add("Subnet4SqlServer4Tfs", subnetSqlServer4Tfs);
 
-            subnetSqlServer4Tfs.AddNatGateway(nat1, natSecurityGroup);
 
-            var subnetTfsServer = new Subnet(vpc, CidrTfsServerSubnet, AvailabilityZone.UsEast1A);
+            var subnetTfsServer = new Subnet(vpc, CidrTfsServerSubnet, AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
             template.Resources.Add("Subnet4TfsServer", subnetTfsServer);
 
             sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock)subnetTfsServer, Protocol.Tcp, Ports.MsSqlServer);
             sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock)subnetTfsServer, Protocol.Tcp, Ports.Smb);
-            subnetTfsServer.AddNatGateway(nat1, natSecurityGroup);
 
             SecurityGroup tfsServerSecurityGroup = new SecurityGroup("Allows various TFS communication", vpc);
             template.Resources.Add("SecurityGroup4TfsServer", tfsServerSecurityGroup);
@@ -160,7 +156,7 @@ namespace AWS.CloudFormation.Test
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
 
-            var subnetBuildServer = new Subnet(vpc, CidrBuildServerSubnet, AvailabilityZone.UsEast1A);
+            var subnetBuildServer = new Subnet(vpc, CidrBuildServerSubnet, AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
             template.Resources.Add("Subnet4BuildServer", subnetBuildServer);
 
 
@@ -175,7 +171,6 @@ namespace AWS.CloudFormation.Test
 
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.TeamFoundationServerBuild);
-            subnetBuildServer.AddNatGateway(nat1, natSecurityGroup);
 
             var subnetDatabase4BuildServer2 = new Subnet(vpc, CidrDatabase4BuildSubnet2, AvailabilityZone.UsEast1E);
             template.Resources.Add("Subnet4Build2Database", subnetDatabase4BuildServer2);
@@ -193,7 +188,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("SecurityGroup4Workstation", workstationSecurityGroup);
 
             tfsServerSecurityGroup.AddIngress(workstationSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
-            var subnetWorkstation = new Subnet(vpc, CidrWorkstationSubnet, AvailabilityZone.UsEast1A);
+            var subnetWorkstation = new Subnet(vpc, CidrWorkstationSubnet, AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
             template.Resources.Add("Subnet4Workstation", subnetWorkstation);
 
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.TeamFoundationServerHttp);
@@ -201,7 +196,6 @@ namespace AWS.CloudFormation.Test
             // give db access to the workstations
             securityGroupSqlSever4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MsSqlServer);
             securityGroupDb4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MySql);
-            subnetWorkstation.AddNatGateway(nat1, natSecurityGroup);
 
             var domainAdminPasswordReference = new ReferenceProperty(Template.ParameterDomainAdminPassword);
 

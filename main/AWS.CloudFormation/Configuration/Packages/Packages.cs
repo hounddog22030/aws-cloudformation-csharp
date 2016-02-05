@@ -265,7 +265,13 @@ namespace AWS.CloudFormation.Configuration.Packages
             sqlServerNode.Add("SQLUSERDBDIR", "d:\\SqlUserDb");
             sqlServerNode.Add("SQLUSERDBLOGDIR", "e:\\SqlUserDbLog");
             sqlServerNode.Add("INSTALLSQLDATADIR", "f:\\SqlData");
+            var backup = configuration.AddDisk(Ebs.VolumeTypes.Magnetic, 20);
+            backup.Ebs.DeleteOnTermination = false;
+
+            // volume for backups
         }
+
+        
     }
 
     public abstract class TeamFoundationServer : PackageChef

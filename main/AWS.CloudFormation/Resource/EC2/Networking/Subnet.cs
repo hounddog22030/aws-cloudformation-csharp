@@ -18,19 +18,21 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
     {
 
 
+        public Subnet(Vpc vpc, string cidr, AvailabilityZone availabilityZone, Instance nat, SecurityGroup natSecurityGroup) : this(vpc, cidr, availabilityZone)
+        {
+            this.Nat = nat;
+            this.NatSecurityGroup = natSecurityGroup;
+        }
+
         public Subnet(Vpc vpc, string cidr, AvailabilityZone availabilityZone) : base(ResourceType.AwsEc2Subnet)
         {
+            this.AddInternetGatewayRoute = true;
             Vpc = vpc;
             CidrBlock = cidr;
             AvailabilityZone = availabilityZone;
         }
 
-        public Subnet(Vpc vpc, string cidr, AvailabilityZone availabilityZone, bool addInternetGatewayRoute ) : this(vpc,cidr,availabilityZone)
-        {
-            this.AddInternetGatewayRoute = addInternetGatewayRoute;
-        }
 
-        
         [JsonIgnore]
         public bool AddInternetGatewayRoute { get; }
 
@@ -67,11 +69,6 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             }
         }
 
-        public void AddNatGateway(Instance nat, SecurityGroup natSecurityGroup)
-        {
-            this.Nat = nat;
-            this.NatSecurityGroup = natSecurityGroup;
-        }
 
         [JsonIgnore]
         public SecurityGroup NatSecurityGroup { get; private set; }
@@ -82,6 +79,8 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         protected override void OnTemplateSet(Template template)
         {
             base.OnTemplateSet(template);
+
+
 
             if (this.Nat != null)
             {
