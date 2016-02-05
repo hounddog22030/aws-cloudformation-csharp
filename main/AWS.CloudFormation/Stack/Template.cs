@@ -74,7 +74,7 @@ namespace AWS.CloudFormation.Stack
 
         public ObservableDictionary<string, ResourceBase> Resources { get; }
         
-        public CloudFormationDictionary Parameters { get; private set; }
+        public CloudFormationDictionary Parameters { get; }
 
         [JsonIgnore]
         public IEnumerable<Vpc> Vpcs
