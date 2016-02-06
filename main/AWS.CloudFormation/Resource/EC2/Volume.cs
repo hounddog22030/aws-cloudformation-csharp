@@ -16,6 +16,11 @@ namespace AWS.CloudFormation.Resource.EC2
         {
         }
 
+        public Volume(int size): this()
+        {
+            this.Size = size.ToString();
+        }
+
         [JsonIgnore]
         public string SnapshotId
         {

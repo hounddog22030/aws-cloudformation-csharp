@@ -142,6 +142,10 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
 
         private void AttachVolume(Volume volume)
         {
+            if (volume.AvailabilityZone == AvailabilityZone.None)
+            {
+                volume.AvailabilityZone = this.Subnet.AvailabilityZone;
+            }
             VolumeAttachment attachment = new VolumeAttachment(this.GetAvailableDevice(), this, volume);
             this.Template.Resources.Add(attachment.LogicalId, attachment);
         }

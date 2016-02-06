@@ -226,7 +226,7 @@ namespace AWS.CloudFormation.Test
 
             var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami,
                 OperatingSystem.Windows);
-            template.Resources.Add($"Rdp{version}", instanceRdp);
+            template.Resources.Add($"Rdp", instanceRdp);
 
             dcPackage.Participate(instanceRdp);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage(domainInfo));
@@ -478,9 +478,8 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("workstation",w);
             w.AddSecurityGroup(rdp);
             w.AddElasticIp();
-            Volume v = new Volume() {Size = 1.ToString()};
+            Volume v = new Volume(1);
             template.Resources.Add("Volume1",v);
-            v.AvailabilityZone = AvailabilityZone.UsEast1E;
             w.AddDisk(v);
             template.Resources.Add("VolumeAttachment1",v);
             Stack.Stack.CreateStack(template);

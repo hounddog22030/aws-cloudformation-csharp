@@ -37,7 +37,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 this.Instance.Template,
                 $"RecordSet4{this.Instance.LogicalId}",
                 tldDomain,
-                $"{this.Instance.LogicalId}.{this.DomainInfo.DomainDnsName}.",
+                $"{this.Instance.LogicalId}.{this.DomainInfo.DomainDnsName}.".ToLowerInvariant(),
                 RecordSet.RecordSetTypeEnum.A);
 
             var eip = new ElasticIp(this.Instance);

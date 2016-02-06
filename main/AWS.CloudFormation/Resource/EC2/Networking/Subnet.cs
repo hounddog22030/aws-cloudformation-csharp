@@ -61,10 +61,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             get { return this.Properties.GetValue<AvailabilityZone>(); }
             set
             {
-                var enumType = typeof(AvailabilityZone);
-                var name = Enum.GetName(enumType, value);
-                var enumMemberAttribute = ((EnumMemberAttribute[])enumType.GetField(name).GetCustomAttributes(typeof(EnumMemberAttribute), true)).Single();
-                this.Properties.SetValue(enumMemberAttribute.Value);
+                this.Properties.SetValue(value);
             }
         }
 
