@@ -107,7 +107,13 @@ namespace AWS.CloudFormation.Test
                 NoEcho = true
             };
 
+            var domainAdminPasswordReference = new ReferenceProperty(Template.ParameterDomainAdminPassword);
+            var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, domainAdminPasswordReference);
+
             template.Parameters.Add("DomainAdminPassword", domainPassword);
+            template.Parameters.Add("TfsServiceAccountName", new ParameterBase("TfsServiceAccountName","String",domainInfo.DomainNetBiosName + "\\tfsservice", "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
+            template.Parameters.Add("TfsServicePassword", new ParameterBase("TfsServicePassword", "String", "JelloFood123.", "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
+
 
             Vpc vpc = template.Vpcs.First();
             vpc.EnableDnsHostnames = true;
@@ -193,9 +199,7 @@ namespace AWS.CloudFormation.Test
             securityGroupSqlSever4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MsSqlServer);
             securityGroupDb4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MySql);
 
-            var domainAdminPasswordReference = new ReferenceProperty(Template.ParameterDomainAdminPassword);
 
-            var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, domainAdminPasswordReference);
 
 
             var instanceDomainController = new Instance(subnetDomainController1,InstanceTypes.T2Small,UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
@@ -282,7 +286,8 @@ namespace AWS.CloudFormation.Test
             //template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
             //template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd871hdj11", "Password for Master User For RDS SqlServer") { NoEcho = true });
 
-            //var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
+            //var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer, 
+            // tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
 
             ////uses 33gb
             //var workstation = AddWorkstation(template,
@@ -1164,9 +1169,9 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateDevelopmentTest()
         {
-            var stackName = "alphayadayada-software";
-            var template = GetTemplateFullStack("alpha");
-            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "SWGP2720dtbt";
+            var stackName = "Lambda-dev-yadayada-software";
+            var template = GetTemplateFullStack("Lambda");
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "KOEO7757gcny";
             Stack.Stack.UpdateStack(stackName,template );
         }
 

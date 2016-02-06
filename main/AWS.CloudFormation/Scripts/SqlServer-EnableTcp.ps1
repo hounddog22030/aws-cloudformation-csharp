@@ -15,5 +15,7 @@ $Tcp.IsEnabled = $true
 $Tcp.Alter()
 $Tcp
 
+
+
 NET STOP MSSQLSERVER
 NET START MSSQLSERVER

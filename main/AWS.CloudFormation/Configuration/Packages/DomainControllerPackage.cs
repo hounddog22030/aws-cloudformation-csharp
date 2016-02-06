@@ -33,6 +33,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
             base.AddToLaunchConfiguration(configuration);
+
             var setupFiles = this.Config.Files;
             var checkForDomainPs = this.Config.Files.GetFile(CheckForDomainPsPath);
             checkForDomainPs.Source = "https://s3.amazonaws.com/gtbb/check-for-domain.ps1";
@@ -70,7 +71,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             currentCommand = this.Config.Commands.AddCommand<Command>("RestartNetLogon");
             currentCommand.Command = new PowershellFnJoin("-Command Restart-Service NetLogon -EA 0");
-            currentCommand.WaitAfterCompletion = 180.ToString();
+            currentCommand.WaitAfterCompletion = 30.ToString();
 
             currentCommand = this.Config.Commands.AddCommand<Command>("CreateAdminUser");
             currentCommand.WaitAfterCompletion = "0";
@@ -83,8 +84,20 @@ namespace AWS.CloudFormation.Configuration.Packages
                 " -AccountPassword (ConvertTo-SecureString \"",
                 new ReferenceProperty((ILogicalId)this.Instance.Template.Parameters[Template.ParameterDomainAdminPassword]),
                 "\" -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
-
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkIfUserExists} {this.DomainInfo.AdminUserName}";
+
+
+            currentCommand = this.Config.Commands.AddCommand<Command>("CreateTfsUser");
+            currentCommand.WaitAfterCompletion = "0";
+            currentCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None, "\"New-ADUser -Name ",
+                "tfsservice",
+                " -UserPrincipalName ",
+                "tfsservice",
+                "@",
+                this.DomainInfo.DomainDnsName,
+                " -AccountPassword (ConvertTo-SecureString \"Hello12345.\" -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
+
+            currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkIfUserExists} tfsservice";
 
             currentCommand = this.Config.Commands.AddCommand<Command>("UpdateAdminUser");
             currentCommand.WaitAfterCompletion = "0";
