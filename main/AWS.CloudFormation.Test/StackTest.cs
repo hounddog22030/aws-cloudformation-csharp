@@ -1138,23 +1138,27 @@ namespace AWS.CloudFormation.Test
         public void CreateDevelopmentTest()
         {
             Assert.IsFalse(HasGitDifferences());
-            
+
             var stacks = Stack.Stack.GetActiveStacks();
             var version = string.Empty;
             Greek maxVersion = Greek.Alpha;
 
-            foreach (var thisGreek in Enum.GetValues(typeof(Greek)))
+            foreach (var thisGreek in Enum.GetValues(typeof (Greek)))
             {
-                if (stacks.Any(s => s.Name.ToLowerInvariant().StartsWith(thisGreek.ToString().ToLowerInvariant().Replace('.', '-'))))
+                if (
+                    stacks.Any(
+                        s =>
+                            s.Name.ToLowerInvariant()
+                                .StartsWith(thisGreek.ToString().ToLowerInvariant().Replace('.', '-'))))
                 {
-                    maxVersion = (Greek)thisGreek;
+                    maxVersion = (Greek) thisGreek;
                 }
             }
-            version = ((Greek)((int) maxVersion + 1)).ToString();
+            version = ((Greek) ((int) maxVersion + 1)).ToString();
             var fullyQualifiedDomainName = $"{version}.dev.yadayadasoftware.com";
 
 
-        var templateToCreateStack = GetTemplateFullStack(version);
+            var templateToCreateStack = GetTemplateFullStack(fullyQualifiedDomainName);
             templateToCreateStack.StackName = fullyQualifiedDomainName.Replace('.', '-');
 
             CreateTestStack(templateToCreateStack, this.TestContext);
