@@ -25,7 +25,21 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             OperatingSystem operatingSystem, Ebs.VolumeTypes volumeType, int volumeSize)
             : this(subnet, instanceType, imageId, operatingSystem)
         {
-            this.AddDisk(volumeType, volumeSize);
+            this.AddDisk(volumeType, volumeSize, this.GetRootDeviceId());
+        }
+
+        private string GetRootDeviceId()
+        {
+            switch (OperatingSystem)
+            {
+                case OperatingSystem.Windows:
+                    return "/dev/sda1";
+                case OperatingSystem.Linux:
+                    return "/dev/xvda";
+                default:
+
+                    throw new NotImplementedException();
+            }
         }
 
 

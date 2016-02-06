@@ -99,7 +99,6 @@ namespace AWS.CloudFormation.Test
                 password += charToAdd;
             }
 
-            Assert.IsFalse(HasGitDifferences());
             var gitHash = GetGitHash();
             var template = new Template(KeyPairName, $"Vpc{version}", CidrVpc,gitHash);
 
@@ -200,7 +199,7 @@ namespace AWS.CloudFormation.Test
             var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, domainAdminPasswordReference);
 
 
-            var instanceDomainController = new Instance(subnetDomainController1,InstanceTypes.C4Large,UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
+            var instanceDomainController = new Instance(subnetDomainController1,InstanceTypes.T2Small,UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add("DomainController", instanceDomainController);
 
 
@@ -230,6 +229,7 @@ namespace AWS.CloudFormation.Test
 
             dcPackage.Participate(instanceRdp);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage(domainInfo));
+            var x = instanceRdp.Packages.Last().WaitCondition;
 
             var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
 
@@ -1111,6 +1111,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateDevelopmentTest()
         {
+            Assert.IsFalse(HasGitDifferences());
             var stacks = Stack.Stack.GetActiveStacks();
             var version = string.Empty;
             Greek maxVersion = Greek.Alpha;
@@ -1132,6 +1133,14 @@ namespace AWS.CloudFormation.Test
             CreateTestStack(templateToCreateStack, this.TestContext);
         }
 
+
+        [TestMethod]
+        public void CreateDevelopmentTemplateFileTest()
+        {
+            DomainDnsName = $"dev.nothing.com";
+            var templateToCreateStack = GetTemplateFullStack(Greek.Alpha.ToString());
+            TemplateEngine.CreateTemplateFile(templateToCreateStack);
+        }
 
         [TestMethod]
         public void UpdateDevelopmentTest()

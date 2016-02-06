@@ -105,13 +105,18 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         [JsonIgnore]
         public ObservableCollection<PackageBase<ConfigSet>> Packages { get; }
 
-        public BlockDeviceMapping AddDisk(Ebs.VolumeTypes ec2DiskType, int sizeInGigabytes)
+        public BlockDeviceMapping AddDisk(Ebs.VolumeTypes ec2DiskType, int sizeInGigabytes, string deviceId)
         {
-            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this, this.GetAvailableDevice());
+            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this, deviceId);
+
             blockDeviceMapping.Ebs.VolumeSize = sizeInGigabytes;
             blockDeviceMapping.Ebs.VolumeType = ec2DiskType;
             this.AddBlockDeviceMapping(blockDeviceMapping);
             return blockDeviceMapping;
+        }
+        public BlockDeviceMapping AddDisk(Ebs.VolumeTypes ec2DiskType, int sizeInGigabytes)
+        {
+            return AddDisk(ec2DiskType,sizeInGigabytes,this.GetAvailableDevice());
         }
 
         protected void PopulateAvailableDevices()
