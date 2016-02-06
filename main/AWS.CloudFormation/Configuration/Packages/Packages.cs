@@ -273,11 +273,13 @@ namespace AWS.CloudFormation.Configuration.Packages
             sysadminFile.Source = "https://s3.amazonaws.com/gtbb/add-network-to-sysadmin.ps1";
             command = this.Config.Commands.AddCommand<Command>("AddNetworkToSysadmin");
             command.Command = new PowershellFnJoin(AddNetworkLocalPath);
+            command.WaitAfterCompletion = 0.ToString();
 
             sysadminFile = this.Config.Files.GetFile(EnableTcpLocalPath);
             sysadminFile.Source = "https://s3.amazonaws.com/gtbb/SqlServer-EnableTcp.ps1";
             command = this.Config.Commands.AddCommand<Command>("SqlServerEnableTcp");
             command.Command = new PowershellFnJoin(EnableTcpLocalPath);
+            command.WaitAfterCompletion = 0.ToString();
 
 
         }
