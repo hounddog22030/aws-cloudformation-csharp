@@ -80,8 +80,8 @@ namespace AWS.CloudFormation.Resource.AutoScaling
                     : this.LogicalId.Length);
             var renameConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetRenameConfig);
             var renameCommandConfig = renameConfig.Commands.AddCommand<Command>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
-            renameCommandConfig.Command = new PowershellFnJoin($"\"Rename-Computer -NewName {computerName} -Force\"");
-            renameCommandConfig.WaitAfterCompletion = 30.ToString();
+            renameCommandConfig.Command = new PowershellFnJoin($"\"Rename-Computer -NewName {computerName} -Restart -Force\"");
+            renameCommandConfig.WaitAfterCompletion = "forever";
             renameCommandConfig.Test = $"IF \"%COMPUTERNAME%\"==\"{computerName.ToUpperInvariant()}\" EXIT /B 1 ELSE EXIT /B 0";
         }
 
