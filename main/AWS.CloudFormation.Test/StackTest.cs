@@ -200,7 +200,7 @@ namespace AWS.CloudFormation.Test
             var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, domainAdminPasswordReference);
 
 
-            var instanceDomainController = new Instance(subnetDomainController1,InstanceTypes.C48XLarge,UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
+            var instanceDomainController = new Instance(subnetDomainController1,InstanceTypes.C4Large,UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add("DomainController", instanceDomainController);
 
 
@@ -307,7 +307,7 @@ namespace AWS.CloudFormation.Test
 
             //////////the below is a remote desktop gateway server that can
             ////////// be uncommented to debug domain setup problems
-            AddRdp2(subnetDmz1, template, vpc, dcPackage);
+            //AddRdp2(subnetDmz1, template, vpc, dcPackage);
 
 
             return template;
