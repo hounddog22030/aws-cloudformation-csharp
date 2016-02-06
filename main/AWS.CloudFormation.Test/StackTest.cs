@@ -1170,6 +1170,8 @@ namespace AWS.CloudFormation.Test
         public void UpdateDevelopmentTest()
         {
             var stackName = "Nu-dev-yadayada-software";
+            DomainDnsName = $"nu.dev.yadayada.software";
+
             var template = GetTemplateFullStack("Nu");
             ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "GHBN5370gqcu";
             Stack.Stack.UpdateStack(stackName,template );
