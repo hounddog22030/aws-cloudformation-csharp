@@ -23,6 +23,7 @@ foreach ($Instance in $InstanceNames) {
     $login.LoginType = [Microsoft.SqlServer.Management.Smo.LoginType]::WindowsUser
     $login.Create()
     $login.AddToRole('sysadmin')
+    $login.AddToRole('serveradmin')
     Write-Host "Login:$Login"
     ##$Login.LoginType = "WindowsUser"
 }
