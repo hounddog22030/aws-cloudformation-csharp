@@ -68,6 +68,10 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
 
+            currentCommand = this.Config.Commands.AddCommand<Command>("RestartNetLogon");
+            currentCommand.Command = new PowershellFnJoin("-Command Restart-Service NetLogon -EA 0");
+            currentCommand.WaitAfterCompletion = 180.ToString();
+
             currentCommand = this.Config.Commands.AddCommand<Command>("CreateAdminUser");
             currentCommand.WaitAfterCompletion = "0";
             currentCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None, "\"New-ADUser -Name ",
