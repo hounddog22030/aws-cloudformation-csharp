@@ -84,6 +84,16 @@ namespace AWS.CloudFormation.Configuration.Packages
                 new ReferenceProperty((ILogicalId)this.Instance.Template.Parameters[Template.ParameterDomainAdminPassword]),
                 "\" -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
 
+            currentCommand = this.Config.Commands.AddCommand<Command>("CreateTfsUser");
+            currentCommand.WaitAfterCompletion = "0";
+            currentCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None, "\"New-ADUser -Name ",
+                "tfsservice",
+                " -UserPrincipalName ",
+                "tfsservice",
+                "@",
+                this.DomainInfo.DomainDnsName,
+                " -AccountPassword (ConvertTo-SecureString \"Hello12345.\" -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
+
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkIfUserExists} {this.DomainInfo.AdminUserName}";
 
             currentCommand = this.Config.Commands.AddCommand<Command>("UpdateAdminUser");

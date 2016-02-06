@@ -31,5 +31,6 @@ foreach ($Instance in $InstanceNames) {
     $login.AddToRole('sysadmin')
     $login.AddToRole('serveradmin')
     Write-Host "Login:$Login"
+
     ##$Login.LoginType = "WindowsUser"
 }

@@ -231,10 +231,10 @@ namespace AWS.CloudFormation.Test
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage(domainInfo));
             var x = instanceRdp.Packages.Last().WaitCondition;
 
-            var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
+            //var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
 
-            var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
-            var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
+            //var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
+            //var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
 
             DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup("Second subnet for database for build server");
             template.Resources.Add("DbSubnetGroup4Build2Database", mySqlSubnetGroupForDatabaseForBuild);
@@ -284,7 +284,7 @@ namespace AWS.CloudFormation.Test
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd871hdj11", "Password for Master User For RDS SqlServer") { NoEcho = true });
 
-            var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
+            //var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
 
             //uses 33gb
             var workstation = AddWorkstation(template,
@@ -1145,9 +1145,9 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateDevelopmentTest()
         {
-            var stackName = "alphayadayada-software";
-            var template = GetTemplateFullStack("alpha");
-            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "SWGP2720dtbt";
+            var stackName = "Lambda-dev-yadayada-software";
+            var template = GetTemplateFullStack("Lambda");
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "KOEO7757gcny";
             Stack.Stack.UpdateStack(stackName,template );
         }
 
