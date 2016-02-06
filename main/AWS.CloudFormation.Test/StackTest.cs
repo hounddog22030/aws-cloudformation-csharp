@@ -78,7 +78,6 @@ namespace AWS.CloudFormation.Test
         {
             var guid = Guid.NewGuid().ToString().Replace("-", string.Empty);
             var random = new Random(((int)DateTime.Now.Ticks % int.MaxValue));
-            var startAt = random.Next(0, guid.Length - 9);
 
             string password = string.Empty;
 
@@ -308,7 +307,7 @@ namespace AWS.CloudFormation.Test
 
             //////////the below is a remote desktop gateway server that can
             ////////// be uncommented to debug domain setup problems
-            //AddRdp2(subnetDmz1, template, vpc, dcPackage);
+            AddRdp2(subnetDmz1, template, vpc, dcPackage);
 
 
             return template;
@@ -1010,6 +1009,7 @@ namespace AWS.CloudFormation.Test
             }
 
             //workstation.Packages.Add(new SqlServerExpress(BucketNameSoftware));
+            workstation.Packages.Add(new Iis(BucketNameSoftware));
             workstation.Packages.Add(new VisualStudio(BucketNameSoftware));
             workstation.Packages.Add(new ReSharper());
             workstation.Packages.Add(new Chrome());

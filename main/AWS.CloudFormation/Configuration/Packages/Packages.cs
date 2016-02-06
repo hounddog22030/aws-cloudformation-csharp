@@ -249,6 +249,15 @@ namespace AWS.CloudFormation.Configuration.Packages
         }
     }
 
+    public class Iis : PackageChef
+    {
+        public Iis(string bucketName) : base(null,bucketName,"yadayada_iis")
+        {
+            
+        }
+        
+    }
+
     public class SqlServerExpressFromAmi : PackageBase<ConfigSet>
     {
         public SqlServerExpressFromAmi(string bucketName) : base(null,null,bucketName)
@@ -261,9 +270,10 @@ namespace AWS.CloudFormation.Configuration.Packages
             base.AddToLaunchConfiguration(configuration);
             var backup = configuration.AddDisk(Ebs.VolumeTypes.Magnetic, 20);
             backup.Ebs.DeleteOnTermination = false;
+            
             var command = this.Config.Commands.AddCommand<Command>("CreateBackupShare");
             command.Command = new PowershellFnJoin(FnJoinDelimiter.Space,
-                "New-Item \"d:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"d:\\Backups\" -FullAccess @('NT AUTHORITY\\NETWORK SERVICE', 'YADAYADA\\johnny')");
+                "New-Item \"d:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"d:\\Backups\" -FullAccess @('NT AUTHORITY\\NETWORK SERVICE')");
             command.WaitAfterCompletion = 0.ToString();
             this.Config.IgnoreErrors = true.ToString();
             command.Test = "IF EXIST d:power\\BACKUPS EXIT /B 1";
@@ -308,7 +318,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             backup.Ebs.DeleteOnTermination = false;
             var command = this.Config.Commands.AddCommand<Command>("CreateBackupShare");
             command.Command = new PowershellFnJoin(FnJoinDelimiter.Space,
-                "New-Item \"g:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"g:\\Backups\" -FullAccess \"NT AUTHORITY\\NETWORK SERVICE\", \"YADAYADA\\johnny\"");
+                "New-Item \"d:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"d:\\Backups\" -FullAccess @('NT AUTHORITY\\NETWORK SERVICE')");
             command.WaitAfterCompletion = 0.ToString();
             command.Test = "IF EXIST G:\\BACKUPS EXIT /B 1";
 
