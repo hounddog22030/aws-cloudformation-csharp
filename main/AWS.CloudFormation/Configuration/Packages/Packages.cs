@@ -50,10 +50,14 @@ namespace AWS.CloudFormation.Configuration.Packages
         {
             SnapshotId = snapshotId;
         }
-        protected PackageBase(Uri msi, string snapshotId) : this(msi)
+        protected PackageBase(Uri msi, string snapshotId, string bucketName) : this(msi)
         {
-             SnapshotId = snapshotId;
+            SnapshotId = snapshotId;
+            BucketName = bucketName;
         }
+
+        public string BucketName { get; }
+
 
         public LaunchConfiguration Instance { get; internal set; }
 
@@ -84,6 +88,19 @@ namespace AWS.CloudFormation.Configuration.Packages
                     msi.Add(fileName, Msi.AbsoluteUri);
                     configSet.Packages.Add("msi", msi);
 
+                }
+            }
+            if (!string.IsNullOrEmpty(this.BucketName))
+            {
+                var appSettingsReader = new AppSettingsReader();
+                string accessKeyString = (string)appSettingsReader.GetValue("S3AccessKey", typeof(string));
+                string secretKeyString = (string)appSettingsReader.GetValue("S3SecretKey", typeof(string));
+
+                if (!configuration.Metadata.Authentication.ContainsKey("S3AccessCreds"))
+                {
+                    var auth = configuration.Metadata.Authentication.Add("S3AccessCreds",
+                        new S3Authentication(accessKeyString, secretKeyString, new string[] { BucketName }));
+                    auth.Type = "S3";
                 }
             }
         }
@@ -153,10 +170,9 @@ namespace AWS.CloudFormation.Configuration.Packages
     {
 
         public PackageChef(string snapshotId, string bucketName, string cookbookName, string recipeName)
-            : base(new Uri("https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi"), snapshotId)
+            : base(new Uri("https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi"), snapshotId, bucketName)
         {
             CookbookName = cookbookName;
-            BucketName = bucketName;
             if (string.IsNullOrEmpty(recipeName))
             {
                 recipeName = "default";
@@ -164,7 +180,6 @@ namespace AWS.CloudFormation.Configuration.Packages
             RecipeList = $"{CookbookName}::{recipeName}";
         }
 
-        public string BucketName { get; }
 
         public PackageChef(string snapshotId, string bucketName, string cookbookName)
             : this(snapshotId, bucketName, cookbookName, null)
@@ -174,44 +189,25 @@ namespace AWS.CloudFormation.Configuration.Packages
         public string CookbookName { get; }
         public string RecipeList { get; private set; }
 
-
-        //protected Resource.EC2.Instancing.Metadata.Config.Config ChefConfig
-        //{
-        //    get
-        //    {
-        //        return
-        //            this.Instance.Metadata.Init.ConfigSets.GetConfigSet<ChefConfigSet>(RecipeList.Replace(":",
-        //                string.Empty)).Run;
-        //    }
-        //}
-
-
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
             base.AddToLaunchConfiguration(configuration);
 
             var appSettingsReader = new AppSettingsReader();
+
             string accessKeyString = (string)appSettingsReader.GetValue("S3AccessKey", typeof(string));
             string secretKeyString = (string)appSettingsReader.GetValue("S3SecretKey", typeof(string));
 
-            if (!configuration.Metadata.Authentication.ContainsKey("S3AccessCreds"))
-            {
-                var auth = configuration.Metadata.Authentication.Add("S3AccessCreds",
-                    new S3Authentication(accessKeyString, secretKeyString, new string[] {BucketName}));
-                auth.Type = "S3";
-            }
 
             var chefConfigContent = configuration.GetChefNodeJsonContent();
+
             if (!chefConfigContent.ContainsKey("s3_file"))
             {
                 var s3FileNode = chefConfigContent.Add("s3_file");
                 s3FileNode.Add("key", accessKeyString);
                 s3FileNode.Add("secret", secretKeyString);
             }
-            //var chefDict = new CloudFormationDictionary();
-            //chefDict.Add("chef","https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi");
 
-            //this.ChefConfig.Add("msi", chefDict);
             var chefCommandConfig = this.Config.Commands.AddCommand<Command>(RecipeList.Replace(':', '-'));
 
             var clientRbFileKey = $"c:/chef/{CookbookName}/client.rb";
@@ -243,8 +239,63 @@ namespace AWS.CloudFormation.Configuration.Packages
         public VisualStudio(string bucketName) : base("snap-5e27a85a", bucketName, "vs")
         {
         }
+
+        public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
+        {
+            base.AddToLaunchConfiguration(configuration);
+            var command = this.Config.Commands.AddCommand<Command>("DeleteAppDataFolder");
+            command.Command = "rmdir /q /s c:\\users\\default\\AppData";
+            command.WaitAfterCompletion = 0.ToString();
+        }
     }
 
+    public class Iis : PackageChef
+    {
+        public Iis(string bucketName) : base(null,bucketName,"yadayada_iis")
+        {
+            
+        }
+        
+    }
+
+    public class SqlServerExpressFromAmi : PackageBase<ConfigSet>
+    {
+        public SqlServerExpressFromAmi(string bucketName) : base(null,null,bucketName)
+        {
+        }
+
+
+        public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
+        {
+            base.AddToLaunchConfiguration(configuration);
+            var backup = configuration.AddDisk(Ebs.VolumeTypes.Magnetic, 20);
+            backup.Ebs.DeleteOnTermination = false;
+            
+            var command = this.Config.Commands.AddCommand<Command>("CreateBackupShare");
+            command.Command = new PowershellFnJoin(FnJoinDelimiter.Space,
+                "New-Item \"d:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"d:\\Backups\" -FullAccess @('NT AUTHORITY\\NETWORK SERVICE')");
+            command.WaitAfterCompletion = 0.ToString();
+            this.Config.IgnoreErrors = true.ToString();
+            command.Test = "IF EXIST d:power\\BACKUPS EXIT /B 1";
+            const string AddNetworkLocalPath = "c:/cfn/scripts/add-network-to-sysadmin.ps1";
+            const string EnableTcpLocalPath = "c:/cfn/scripts/SqlServer-EnableTcp.ps1";
+            var sysadminFile = this.Config.Files.GetFile(AddNetworkLocalPath);
+            sysadminFile.Source = "https://s3.amazonaws.com/gtbb/add-network-to-sysadmin.ps1";
+            command = this.Config.Commands.AddCommand<Command>("AddNetworkToSysadmin");
+            command.Command = new PowershellFnJoin(AddNetworkLocalPath,this.Instance.DomainNetBiosName);
+            command.WaitAfterCompletion = 0.ToString();
+
+            sysadminFile = this.Config.Files.GetFile(EnableTcpLocalPath);
+            sysadminFile.Source = "https://s3.amazonaws.com/gtbb/SqlServer-EnableTcp.ps1";
+            command = this.Config.Commands.AddCommand<Command>("SqlServerEnableTcp");
+            command.Command = new PowershellFnJoin(EnableTcpLocalPath);
+            command.WaitAfterCompletion = 0.ToString();
+
+
+        }
+
+
+    }
     public class SqlServerExpress : PackageChef
     {
         public SqlServerExpress(string bucketName) : base("snap-2cf80f29", bucketName, "sqlserver")
@@ -267,7 +318,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             backup.Ebs.DeleteOnTermination = false;
             var command = this.Config.Commands.AddCommand<Command>("CreateBackupShare");
             command.Command = new PowershellFnJoin(FnJoinDelimiter.Space,
-                "New-Item \"g:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"g:\\Backups\" -FullAccess \"NT AUTHORITY\\NETWORK SERVICE\", \"YADAYADA\\johnny\"");
+                "New-Item \"d:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"d:\\Backups\" -FullAccess @('NT AUTHORITY\\NETWORK SERVICE')");
             command.WaitAfterCompletion = 0.ToString();
             command.Test = "IF EXIST G:\\BACKUPS EXIT /B 1";
 

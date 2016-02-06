@@ -13,6 +13,10 @@ namespace AWS.CloudFormation.Property
     {
         public ReferenceProperty(ILogicalId reference) : this(reference.LogicalId)
         {
+            if (string.IsNullOrEmpty(reference.LogicalId))
+            {
+                throw new ArgumentOutOfRangeException(nameof(reference));
+            }
             this.Reference = reference;
         }
 
