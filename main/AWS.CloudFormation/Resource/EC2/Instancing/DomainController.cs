@@ -19,7 +19,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public DomainInfo(string domainDnsName, string adminUserName, ReferenceProperty adminPassword)
         {
             DomainDnsName = domainDnsName;
-            DomainNetBiosName = domainDnsName.Split('.')[0];
+            DomainNetBiosName = domainDnsName.Split('.')[domainDnsName.Split('.').Length-3];
             AdminUserName = adminUserName;
             AdminPassword = adminPassword;
 

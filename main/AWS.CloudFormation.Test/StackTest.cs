@@ -35,8 +35,6 @@ namespace AWS.CloudFormation.Test
         private const string CidrDatabase4BuildSubnet2 = "10.0.5.0/24";
         private const string KeyPairName = "corp.getthebuybox.com";
         private const string CidrVpc = "10.0.0.0/16";
-        public static string DomainDnsName = "yadayada.software";
-
         private const string DomainAdminUser = "johnny";
         private const string UsEast1AWindows2012R2Ami = "ami-9a0558f0";
         private const string UsEast1AWindows2012R2SqlServerExpressAmi = "ami-a3005dc9";
@@ -74,8 +72,12 @@ namespace AWS.CloudFormation.Test
             CreateTestStack(template, this.TestContext);
         }
 
-        public static Template GetTemplateFullStack(string version)
+        public static Template GetTemplateFullStack(string fullyQualifiedDomainName)
         {
+            var domainParts = fullyQualifiedDomainName.Split('.');
+            Greek version = (Greek)System.Enum.Parse(typeof (Greek), domainParts[0],true);
+            string netBios = domainParts[1];
+
             var guid = Guid.NewGuid().ToString().Replace("-", string.Empty);
             var random = new Random(((int)DateTime.Now.Ticks % int.MaxValue));
 
@@ -108,7 +110,7 @@ namespace AWS.CloudFormation.Test
             };
 
             var domainAdminPasswordReference = new ReferenceProperty(Template.ParameterDomainAdminPassword);
-            var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, domainAdminPasswordReference);
+            var domainInfo = new DomainInfo(fullyQualifiedDomainName, DomainAdminUser, domainAdminPasswordReference);
 
             template.Parameters.Add("DomainAdminPassword", domainPassword);
             template.Parameters.Add("TfsServiceAccountName", new ParameterBase("TfsServiceAccountName","String",domainInfo.DomainNetBiosName + "\\tfsservice", "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
@@ -202,7 +204,7 @@ namespace AWS.CloudFormation.Test
 
 
 
-            var instanceDomainController = new Instance(subnetDomainController1,InstanceTypes.T2Small,UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
+            var instanceDomainController = new Instance(subnetDomainController1,InstanceTypes.C4Large,UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add("DomainController", instanceDomainController);
 
 
@@ -220,20 +222,19 @@ namespace AWS.CloudFormation.Test
 
 
 
-            DhcpOptions dhcpOptions = new DhcpOptions($"{StackTest.DomainDnsName}", vpc, dnsServers, netBiosServers);
+            DhcpOptions dhcpOptions = new DhcpOptions(fullyQualifiedDomainName, vpc, dnsServers, netBiosServers);
             template.Resources.Add("DhcpOptions",dhcpOptions);
             dhcpOptions.NetbiosNodeType = "2";
 
 
-            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Small, UsEast1AWindows2012R2Ami,
-                OperatingSystem.Windows);
+            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.C4Large, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add($"Rdp", instanceRdp);
 
             dcPackage.Participate(instanceRdp);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage(domainInfo));
             var x = instanceRdp.Packages.Last().WaitCondition;
 
-            var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Large, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
+            //var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Large, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
 
             //var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
             //var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
@@ -717,7 +718,7 @@ namespace AWS.CloudFormation.Test
             var dcPackage = dc1.Packages.First() as DomainControllerPackage;
             dc1.AddElasticIp();
             dc1.AddSecurityGroup(rdp);
-            var w = AddBuildServer(template, InstanceTypes.T2Nano,  DMZSubnet, null, null, dcPackage, rdp,null);
+            var w = AddBuildServer(template, InstanceTypes.T2Nano,  DMZSubnet, null, null, dcPackage, rdp,null, "nothing.com");
             throw new NotImplementedException();
             //w.AddElasticIp();
 
@@ -969,7 +970,8 @@ namespace AWS.CloudFormation.Test
             WaitCondition tfsServerComplete, 
             DomainControllerPackage domainControllerPackage, 
             SecurityGroup buildServerSecurityGroup, 
-            DbInstance sqlExpress4Build)
+            DbInstance sqlExpress4Build,
+            string fullyQualifiedDomainName)
         {
 
             AutoScalingGroup launchGroup = new AutoScalingGroup();
@@ -1002,7 +1004,7 @@ namespace AWS.CloudFormation.Test
 
             var chefNode = buildServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
-            var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, new ReferenceProperty(Template.ParameterDomainAdminPassword));
+            var domainInfo = new DomainInfo(fullyQualifiedDomainName, DomainAdminUser, new ReferenceProperty(Template.ParameterDomainAdminPassword));
 
             domainAdminUserInfoNode.Add("name", domainInfo.DomainNetBiosName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
@@ -1050,7 +1052,8 @@ namespace AWS.CloudFormation.Test
             Subnet privateSubnet1, 
             LaunchConfiguration sqlServer4Tfs, 
             DomainControllerPackage dc1, 
-            SecurityGroup tfsServerSecurityGroup)
+            SecurityGroup tfsServerSecurityGroup,
+            string fullyQualifiedDomainName)
         {
             var tfsServer = new Instance(privateSubnet1,instanceSize,UsEast1AWindows2012R2Ami, OperatingSystem.Windows,Ebs.VolumeTypes.GeneralPurpose,
                                                     214);
@@ -1063,7 +1066,7 @@ namespace AWS.CloudFormation.Test
 
             var chefNode = tfsServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
-            var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, new ReferenceProperty(Template.ParameterDomainAdminPassword));
+            var domainInfo = new DomainInfo(fullyQualifiedDomainName, DomainAdminUser, new ReferenceProperty(Template.ParameterDomainAdminPassword));
             domainAdminUserInfoNode.Add("name", domainInfo.DomainNetBiosName + "\\" + DomainAdminUser);
             domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
             tfsServer.AddSecurityGroup(tfsServerSecurityGroup);
@@ -1148,11 +1151,11 @@ namespace AWS.CloudFormation.Test
                 }
             }
             version = ((Greek)((int) maxVersion + 1)).ToString();
-            DomainDnsName = $"{version}.dev.yadayada.software";
+            var fullyQualifiedDomainName = $"{version}.dev.yadayadasoftware.com";
 
 
         var templateToCreateStack = GetTemplateFullStack(version);
-            templateToCreateStack.StackName = $"{StackTest.DomainDnsName}".Replace('.', '-');
+            templateToCreateStack.StackName = fullyQualifiedDomainName.Replace('.', '-');
 
             CreateTestStack(templateToCreateStack, this.TestContext);
         }
@@ -1161,20 +1164,20 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateDevelopmentTemplateFileTest()
         {
-            DomainDnsName = $"dev.nothing.com";
-            var templateToCreateStack = GetTemplateFullStack(Greek.Alpha.ToString());
+            //DomainDnsName = $"alpha.dev.yadayadasoftware.com";
+            var templateToCreateStack = GetTemplateFullStack("alpha.dev.yadayadasoftware.com");
             TemplateEngine.CreateTemplateFile(templateToCreateStack);
         }
 
         [TestMethod]
         public void UpdateDevelopmentTest()
         {
-            var stackName = "Nu-dev-yadayada-software";
-            DomainDnsName = $"nu.dev.yadayada.software";
+            var fullyQualifiedDomainName = "alpha.dev.yadayada.software";
+            
 
-            var template = GetTemplateFullStack("Nu");
+            var template = GetTemplateFullStack(fullyQualifiedDomainName);
             ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "GHBN5370gqcu";
-            Stack.Stack.UpdateStack(stackName,template );
+            Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.','-'), template );
         }
 
 
