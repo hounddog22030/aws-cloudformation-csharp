@@ -71,7 +71,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             currentCommand = this.Config.Commands.AddCommand<Command>("RestartNetLogon");
             currentCommand.Command = new PowershellFnJoin("-Command Restart-Service NetLogon -EA 0");
-            currentCommand.WaitAfterCompletion = 180.ToString();
+            currentCommand.WaitAfterCompletion = 30.ToString();
 
             currentCommand = this.Config.Commands.AddCommand<Command>("CreateAdminUser");
             currentCommand.WaitAfterCompletion = "0";
