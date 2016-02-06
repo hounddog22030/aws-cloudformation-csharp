@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -213,7 +214,8 @@ namespace AWS.CloudFormation.Configuration.Packages
         public void AddReplicationSite(Subnet subnet)
         {
             var currentConfig = this.Config;
-            string commandName = $"create-site-{subnet.LogicalId}";
+            string commandName = $"CreateSite4{subnet.LogicalId}";
+
             if (!currentConfig.Commands.ContainsKey(commandName))
             {
                 const string checkAdReplicationSite = "c:/cfn/scripts/check-ADReplicationSite-exists.ps1";
@@ -234,9 +236,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                         checkAdReplicationSite,
                         new ReferenceProperty(subnet));
 
-
-
-                currentCommand = currentConfig.Commands.AddCommand<Command>($"create-subnet-{subnet.LogicalId}");
+                currentCommand = currentConfig.Commands.AddCommand<Command>($"CreateSubnet{subnet.LogicalId}");
                 currentCommand.WaitAfterCompletion = 0.ToString();
                 currentCommand.Command = new PowershellFnJoin($"-Command New-ADReplicationSubnet -Name {subnet.CidrBlock} -Site ",
                     new ReferenceProperty(subnet));
@@ -245,6 +245,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                         subnet.CidrBlock);
             }
         }
+
 
         public void AddToDomainMemberSecurityGroup(LaunchConfiguration domainMember)
         {
