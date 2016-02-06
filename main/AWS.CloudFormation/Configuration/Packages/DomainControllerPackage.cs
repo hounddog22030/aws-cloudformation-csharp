@@ -32,8 +32,9 @@ namespace AWS.CloudFormation.Configuration.Packages
 
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
-            this.Config.IgnoreErrors = true.ToString();
             base.AddToLaunchConfiguration(configuration);
+            this.Config.IgnoreErrors = true.ToString();
+
             var setupFiles = this.Config.Files;
             var checkForDomainPs = this.Config.Files.GetFile(CheckForDomainPsPath);
             checkForDomainPs.Source = "https://s3.amazonaws.com/gtbb/check-for-domain.ps1";
