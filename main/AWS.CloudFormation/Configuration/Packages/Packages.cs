@@ -272,10 +272,11 @@ namespace AWS.CloudFormation.Configuration.Packages
             backup.Ebs.DeleteOnTermination = false;
             
             var command = this.Config.Commands.AddCommand<Command>("CreateBackupShare");
-            command.Command = new PowershellFnJoin(FnJoinDelimiter.Space,
-                "New-Item \"d:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"d:\\Backups\" -FullAccess @('NT AUTHORITY\\NETWORK SERVICE')");
+            command.Command = new PowershellFnJoin(FnJoinDelimiter.None,
+                $"New-Item \"d:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"d:\\Backups\" -FullAccess @('NT AUTHORITY\\NETWORK SERVICE',",
+                new ReferenceProperty("TfsServiceAccountName"),
+                "')");
             command.WaitAfterCompletion = 0.ToString();
-            this.Config.IgnoreErrors = true.ToString();
             command.Test = "IF EXIST d:power\\BACKUPS EXIT /B 1";
             const string AddNetworkLocalPath = "c:/cfn/scripts/add-network-to-sysadmin.ps1";
             const string EnableTcpLocalPath = "c:/cfn/scripts/SqlServer-EnableTcp.ps1";
@@ -295,7 +296,8 @@ namespace AWS.CloudFormation.Configuration.Packages
             sysadminFile = this.Config.Files.GetFile(SetUserToTfsService);
             sysadminFile.Source = "https://s3.amazonaws.com/gtbb/SqlServer-EnableTcp.ps1";
             command = this.Config.Commands.AddCommand<Command>("SetUserToTfsService");
-            command.Command = new PowershellFnJoin(EnableTcpLocalPath);
+
+            command.Command = new PowershellFnJoin(FnJoinDelimiter.Space,EnableTcpLocalPath,configuration.Template.Parameters["TfsServiceAccountName"], configuration.Template.Parameters["TfsServicePassword"]);
             command.WaitAfterCompletion = 0.ToString();
 
         }
@@ -357,7 +359,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             var node = this.Instance.GetChefNodeJsonContent();
             var tfsNode = node.Add("tfs");
             tfsNode.Add("application_server_sqlname", new FnGetAtt(this.SqlServer, FnGetAttAttribute.AwsEc2InstancePrivateDnsName));
-
+            tfsNode.Add("ServiceAccountName", new ReferenceProperty("TfsServiceAccountName"));
         }
     }
 

@@ -4,6 +4,9 @@ default['tfs']['setup_exe_path'] = "#{default['tfs']['setup_drive_letter']}/tfs_
 default['tfs']['config_exe_path'] = "C:/Program Files/Microsoft Team Foundation Server 14.0/Tools/TFSConfig.exe"
 default['tfs']['application_server_netbios_name'] = "tfsserver1"
 default['tfs']['application_server_sqlname'] = "sql4tfs"
+default['tfs']['ServiceAccountName'] = "NT AUTHORITY\\NETWORK SERVICE"
+
+
 
 
 #build_agent
