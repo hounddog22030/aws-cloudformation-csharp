@@ -196,12 +196,24 @@
     <None Include="cookbooks\yadayada\recipes\default.rb" />
     <None Include="cookbooks\yadayada\Thorfile" />
     <None Include="cookbooks\yadayada\Vagrantfile" />
+    <None Include="cookbooks\yadayada_iis\.kitchen.yml" />
+    <None Include="cookbooks\yadayada_iis\Berksfile" />
+    <None Include="cookbooks\yadayada_iis\CHANGELOG.md" />
+    <None Include="cookbooks\yadayada_iis\chefignore" />
+    <None Include="cookbooks\yadayada_iis\Gemfile" />
+    <None Include="cookbooks\yadayada_iis\LICENSE" />
+    <None Include="cookbooks\yadayada_iis\metadata.rb" />
+    <None Include="cookbooks\yadayada_iis\README.md" />
+    <None Include="cookbooks\yadayada_iis\recipes\default.rb" />
+    <None Include="cookbooks\yadayada_iis\Thorfile" />
+    <None Include="cookbooks\yadayada_iis\Vagrantfile" />
     <None Include="Scripts\BringDisksOnline.ps" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="cookbooks\vs\files\default\AdminDeployment.xml" />
     <Content Include="cookbooks\windows_ad\.gitignore" />
     <Content Include="cookbooks\yadayada\.gitignore" />
+    <Content Include="cookbooks\yadayada_iis\.gitignore" />
     <Content Include="stack.template" />
     <Content Include="TextFile1.txt" />
   </ItemGroup>
@@ -243,6 +255,13 @@
     <Folder Include="cookbooks\yadayada\resources\" />
     <Folder Include="cookbooks\yadayada\templates\default\" />
     <Folder Include="cookbooks\yadayada\test\integration\default\" />
+    <Folder Include="cookbooks\yadayada_iis\attributes\" />
+    <Folder Include="cookbooks\yadayada_iis\files\default\" />
+    <Folder Include="cookbooks\yadayada_iis\libraries\" />
+    <Folder Include="cookbooks\yadayada_iis\providers\" />
+    <Folder Include="cookbooks\yadayada_iis\resources\" />
+    <Folder Include="cookbooks\yadayada_iis\templates\default\" />
+    <Folder Include="cookbooks\yadayada_iis\test\integration\default\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

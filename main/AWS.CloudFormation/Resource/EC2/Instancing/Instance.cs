@@ -25,7 +25,21 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             OperatingSystem operatingSystem, Ebs.VolumeTypes volumeType, int volumeSize)
             : this(subnet, instanceType, imageId, operatingSystem)
         {
-            this.AddDisk(volumeType, volumeSize);
+            this.AddDisk(volumeType, volumeSize, this.GetRootDeviceId());
+        }
+
+        private string GetRootDeviceId()
+        {
+            switch (OperatingSystem)
+            {
+                case OperatingSystem.Windows:
+                    return "/dev/sda1";
+                case OperatingSystem.Linux:
+                    return "/dev/xvda";
+                default:
+
+                    throw new NotImplementedException();
+            }
         }
 
 
@@ -34,7 +48,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         {
             SourceDestCheck = true;
             NetworkInterfaces = new List<NetworkInterface>();
-            this.Tags.Add( new Tag("Name", this.LogicalId) );
+            this.Tags.Add( new Tag("Name", this.LogicalId));
+            this.VolumesToAttach = new List<Volume>(); 
         }
 
         [JsonIgnore]
@@ -112,6 +127,41 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             {
                 throw new ReadOnlyException();
             }
+        }
+
+        public void AddDisk(Volume volume)
+        {
+            if (this.Template == null)
+            {
+                this.VolumesToAttach.Add(volume);
+            }
+            else
+            {
+                this.AttachVolume(volume);
+            }
+        }
+
+        [JsonIgnore]
+        private List<Volume> VolumesToAttach { get; set; }
+
+        protected override void OnTemplateSet(Template template)
+        {
+            base.OnTemplateSet(template);
+            foreach (var volume in this.VolumesToAttach)
+            {
+                this.AttachVolume(volume);
+            }
+            this.VolumesToAttach.Clear();
+        }
+
+        private void AttachVolume(Volume volume)
+        {
+            if (volume.AvailabilityZone == AvailabilityZone.None)
+            {
+                volume.AvailabilityZone = this.Subnet.AvailabilityZone;
+            }
+            VolumeAttachment attachment = new VolumeAttachment(this.GetAvailableDevice(), this, volume);
+            this.Template.Resources.Add(attachment.LogicalId, attachment);
         }
     }
 }

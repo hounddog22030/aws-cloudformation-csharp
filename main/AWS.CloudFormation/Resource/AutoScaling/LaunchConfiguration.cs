@@ -74,11 +74,15 @@ namespace AWS.CloudFormation.Resource.AutoScaling
 
         private void AddRename()
         {
+            var computerName = this.LogicalId.Substring(0,
+                this.LogicalId.Length > NetBiosMachineNameLengthLimit
+                    ? NetBiosMachineNameLengthLimit
+                    : this.LogicalId.Length);
             var renameConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetRenameConfig);
             var renameCommandConfig = renameConfig.Commands.AddCommand<Command>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
-            renameCommandConfig.Command = new PowershellFnJoin($"\"Rename-Computer -NewName {this.LogicalId.Substring(0, this.LogicalId.Length > NetBiosMachineNameLengthLimit ? NetBiosMachineNameLengthLimit : this.LogicalId.Length)} -Restart -Force\"");
+            renameCommandConfig.Command = new PowershellFnJoin($"\"Rename-Computer -NewName {computerName} -Restart -Force\"");
             renameCommandConfig.WaitAfterCompletion = "forever";
-            renameCommandConfig.Test = $"IF \"%COMPUTERNAME%\"==\"{this.LogicalId.ToUpper()}\" EXIT /B 1 ELSE EXIT /B 0";
+            renameCommandConfig.Test = $"IF \"%COMPUTERNAME%\"==\"{computerName.ToUpperInvariant()}\" EXIT /B 1 ELSE EXIT /B 0";
         }
 
 
@@ -101,13 +105,18 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         [JsonIgnore]
         public ObservableCollection<PackageBase<ConfigSet>> Packages { get; }
 
-        public BlockDeviceMapping AddDisk(Ebs.VolumeTypes ec2DiskType, int sizeInGigabytes)
+        public BlockDeviceMapping AddDisk(Ebs.VolumeTypes ec2DiskType, int sizeInGigabytes, string deviceId)
         {
-            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this, this.GetAvailableDevice());
+            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this, deviceId);
+
             blockDeviceMapping.Ebs.VolumeSize = sizeInGigabytes;
             blockDeviceMapping.Ebs.VolumeType = ec2DiskType;
             this.AddBlockDeviceMapping(blockDeviceMapping);
             return blockDeviceMapping;
+        }
+        public BlockDeviceMapping AddDisk(Ebs.VolumeTypes ec2DiskType, int sizeInGigabytes)
+        {
+            return AddDisk(ec2DiskType,sizeInGigabytes,this.GetAvailableDevice());
         }
 
         protected void PopulateAvailableDevices()

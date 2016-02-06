@@ -1,7 +1,8 @@
-﻿Import-Module ActiveDirectory
-param(
+﻿param(
   [string]$subnetName
 )
+
+Import-Module ActiveDirectory
 
 $site = Get-ADReplicationSite $subnetName
 

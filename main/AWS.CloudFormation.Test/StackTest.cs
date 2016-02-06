@@ -35,12 +35,11 @@ namespace AWS.CloudFormation.Test
         private const string CidrDatabase4BuildSubnet2 = "10.0.5.0/24";
         private const string KeyPairName = "corp.getthebuybox.com";
         private const string CidrVpc = "10.0.0.0/16";
-        public const string DomainDnsName = "yadayada.software";
+        public static string DomainDnsName = "yadayada.software";
 
         private const string DomainAdminUser = "johnny";
         private const string UsEast1AWindows2012R2Ami = "ami-9a0558f0";
         private const string UsEast1AWindows2012R2SqlServerExpressAmi = "ami-a3005dc9";
-        private const string UsEast1AWindows2012R2SqlExpressAmi = "ami-a3005dc9";
         private const string BucketNameSoftware = "gtbb";
         private static readonly TimeSpan Timeout3Hours = new TimeSpan(3, 0, 0);
         private static readonly TimeSpan Timeout2Hours = new TimeSpan(2, 0, 0);
@@ -79,7 +78,6 @@ namespace AWS.CloudFormation.Test
         {
             var guid = Guid.NewGuid().ToString().Replace("-", string.Empty);
             var random = new Random(((int)DateTime.Now.Ticks % int.MaxValue));
-            var startAt = random.Next(0, guid.Length - 9);
 
             string password = string.Empty;
 
@@ -101,9 +99,8 @@ namespace AWS.CloudFormation.Test
                 password += charToAdd;
             }
 
-            Assert.IsFalse(HasGitDifferences());
             var gitHash = GetGitHash();
-            var template = new Template(KeyPairName, "Vpc", CidrVpc,gitHash);
+            var template = new Template(KeyPairName, $"Vpc{version}", CidrVpc,gitHash);
 
             var domainPassword = new ParameterBase("DomainAdminPassword", "String", password,
                 "Password for domain administrator.")
@@ -202,7 +199,7 @@ namespace AWS.CloudFormation.Test
             var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, domainAdminPasswordReference);
 
 
-            var instanceDomainController = new Instance(subnetDomainController1,InstanceTypes.C48XLarge,UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
+            var instanceDomainController = new Instance(subnetDomainController1,InstanceTypes.T2Small,UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add("DomainController", instanceDomainController);
 
 
@@ -228,10 +225,11 @@ namespace AWS.CloudFormation.Test
 
             var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami,
                 OperatingSystem.Windows);
-            template.Resources.Add($"Rdp{version}", instanceRdp);
+            template.Resources.Add($"Rdp", instanceRdp);
 
             dcPackage.Participate(instanceRdp);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage(domainInfo));
+            var x = instanceRdp.Packages.Last().WaitCondition;
 
             var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
 
@@ -309,7 +307,7 @@ namespace AWS.CloudFormation.Test
 
             //////////the below is a remote desktop gateway server that can
             ////////// be uncommented to debug domain setup problems
-            //AddRdp2(subnetDmz1, template, vpc, dcPackage);
+            AddRdp2(subnetDmz1, template, vpc, dcPackage);
 
 
             return template;
@@ -337,11 +335,10 @@ namespace AWS.CloudFormation.Test
         private static LaunchConfiguration AddSql(Template template, string instanceName, InstanceTypes instanceSize, 
             Subnet subnet, DomainControllerPackage domainControllerPackage, SecurityGroup sqlServerSecurityGroup)
         {
-            var sqlServer = new Instance(subnet, instanceSize, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
+            var sqlServer = new Instance(subnet, instanceSize, UsEast1AWindows2012R2SqlServerExpressAmi, OperatingSystem.Windows);
             template.Resources.Add(instanceName,sqlServer);
-
             domainControllerPackage.Participate(sqlServer);
-            var sqlServerPackage = new SqlServerExpress(BucketNameSoftware);
+            var sqlServerPackage = new SqlServerExpressFromAmi(BucketNameSoftware);
             sqlServer.Packages.Add(sqlServerPackage);
             sqlServer.AddSecurityGroup(sqlServerSecurityGroup);
             return sqlServer;
@@ -477,12 +474,14 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
-            Instance w = new Instance(DMZSubnet,InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami,OperatingSystem.Windows);
-            template.Resources.Add(w.LogicalId, w);
+            Instance w = new Instance(DMZSubnet,InstanceTypes.T2Large, UsEast1AWindows2012R2Ami,OperatingSystem.Windows);
+            template.Resources.Add("workstation",w);
             w.AddSecurityGroup(rdp);
             w.AddElasticIp();
-            VolumeAttachment va = new VolumeAttachment("/dev/sdh", w, "vol-ec768410");
-            template.Resources.Add("VolumeAttachment1",va);
+            Volume v = new Volume(1);
+            template.Resources.Add("Volume1",v);
+            w.AddDisk(v);
+            template.Resources.Add("VolumeAttachment1",v);
             Stack.Stack.CreateStack(template);
         }
 
@@ -1012,6 +1011,7 @@ namespace AWS.CloudFormation.Test
             }
 
             //workstation.Packages.Add(new SqlServerExpress(BucketNameSoftware));
+            workstation.Packages.Add(new Iis(BucketNameSoftware));
             workstation.Packages.Add(new VisualStudio(BucketNameSoftware));
             workstation.Packages.Add(new ReSharper());
             workstation.Packages.Add(new Chrome());
@@ -1036,7 +1036,7 @@ namespace AWS.CloudFormation.Test
 
 
             dc1.Participate(tfsServer);
-            tfsServer.AddDependsOn(sqlServer4Tfs.Packages.First().WaitCondition);
+            tfsServer.AddDependsOn(sqlServer4Tfs.Packages.Last().WaitCondition);
 
             var chefNode = tfsServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
@@ -1111,6 +1111,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateDevelopmentTest()
         {
+            Assert.IsFalse(HasGitDifferences());
             var stacks = Stack.Stack.GetActiveStacks();
             var version = string.Empty;
             Greek maxVersion = Greek.Alpha;
@@ -1123,14 +1124,23 @@ namespace AWS.CloudFormation.Test
                 }
             }
             version = ((Greek)((int) maxVersion + 1)).ToString();
+            DomainDnsName = $"{version}.dev.yadayada.software";
 
 
-            var templateToCreateStack = GetTemplateFullStack(version);
-            templateToCreateStack.StackName = $"{version}-{StackTest.DomainDnsName}".Replace('.', '-');
+        var templateToCreateStack = GetTemplateFullStack(version);
+            templateToCreateStack.StackName = $"{StackTest.DomainDnsName}".Replace('.', '-');
 
             CreateTestStack(templateToCreateStack, this.TestContext);
         }
 
+
+        [TestMethod]
+        public void CreateDevelopmentTemplateFileTest()
+        {
+            DomainDnsName = $"dev.nothing.com";
+            var templateToCreateStack = GetTemplateFullStack(Greek.Alpha.ToString());
+            TemplateEngine.CreateTemplateFile(templateToCreateStack);
+        }
 
         [TestMethod]
         public void UpdateDevelopmentTest()
