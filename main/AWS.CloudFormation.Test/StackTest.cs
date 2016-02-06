@@ -307,7 +307,7 @@ namespace AWS.CloudFormation.Test
 
             //////////the below is a remote desktop gateway server that can
             ////////// be uncommented to debug domain setup problems
-            //AddRdp2(subnetDmz1, template, vpc, dcPackage);
+            AddRdp2(subnetDmz1, template, vpc, dcPackage);
 
 
             return template;
