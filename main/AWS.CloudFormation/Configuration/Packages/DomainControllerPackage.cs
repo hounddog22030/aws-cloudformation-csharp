@@ -33,7 +33,6 @@ namespace AWS.CloudFormation.Configuration.Packages
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
             base.AddToLaunchConfiguration(configuration);
-            this.Config.IgnoreErrors = true.ToString();
 
             var setupFiles = this.Config.Files;
             var checkForDomainPs = this.Config.Files.GetFile(CheckForDomainPsPath);
@@ -85,7 +84,8 @@ namespace AWS.CloudFormation.Configuration.Packages
                 " -AccountPassword (ConvertTo-SecureString \"",
                 new ReferenceProperty((ILogicalId)this.Instance.Template.Parameters[Template.ParameterDomainAdminPassword]),
                 "\" -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
-            
+            currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkIfUserExists} {this.DomainInfo.AdminUserName}";
+
 
             currentCommand = this.Config.Commands.AddCommand<Command>("CreateTfsUser");
             currentCommand.WaitAfterCompletion = "0";
@@ -97,7 +97,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 this.DomainInfo.DomainDnsName,
                 " -AccountPassword (ConvertTo-SecureString \"Hello12345.\" -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
 
-            currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkIfUserExists} {this.DomainInfo.AdminUserName}";
+            currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkIfUserExists} tfsservice";
 
             currentCommand = this.Config.Commands.AddCommand<Command>("UpdateAdminUser");
             currentCommand.WaitAfterCompletion = "0";
