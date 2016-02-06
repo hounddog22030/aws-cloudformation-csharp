@@ -32,6 +32,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
+            this.Config.IgnoreErrors = true.ToString();
             base.AddToLaunchConfiguration(configuration);
             var setupFiles = this.Config.Files;
             var checkForDomainPs = this.Config.Files.GetFile(CheckForDomainPsPath);
@@ -83,6 +84,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 " -AccountPassword (ConvertTo-SecureString \"",
                 new ReferenceProperty((ILogicalId)this.Instance.Template.Parameters[Template.ParameterDomainAdminPassword]),
                 "\" -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
+            
 
             currentCommand = this.Config.Commands.AddCommand<Command>("CreateTfsUser");
             currentCommand.WaitAfterCompletion = "0";
