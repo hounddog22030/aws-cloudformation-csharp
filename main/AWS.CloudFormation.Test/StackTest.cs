@@ -481,7 +481,7 @@ namespace AWS.CloudFormation.Test
             Volume v = new Volume() {Size = 1.ToString()};
             v.AvailabilityZone = AvailabilityZone.UsEast1E;
             w.AddDisk(v);
-            template.Resources.Add("VolumeAttachment1",va);
+            template.Resources.Add("VolumeAttachment1",v);
             Stack.Stack.CreateStack(template);
         }
 
