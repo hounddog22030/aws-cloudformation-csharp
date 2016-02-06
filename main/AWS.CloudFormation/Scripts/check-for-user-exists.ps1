@@ -1,7 +1,8 @@
-﻿Import-Module ActiveDirectory
-param(
+﻿param(
   [string]$userName
 )
+
+Import-Module ActiveDirectory
 
 $user = Get-ADUser $userName
 

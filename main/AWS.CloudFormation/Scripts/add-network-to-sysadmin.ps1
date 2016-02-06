@@ -1,7 +1,9 @@
-﻿Import-Module SQLPS -DisableNameChecking
-param(
+﻿param(
   [string]$domainName
 )
+
+Import-Module SQLPS -DisableNameChecking
+
 
 $Computer = $env:COMPUTERNAME
 $SqlServices = Get-Service -DisplayName 'SQL Server (*'

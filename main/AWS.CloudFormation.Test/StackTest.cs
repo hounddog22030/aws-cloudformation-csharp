@@ -1123,7 +1123,7 @@ namespace AWS.CloudFormation.Test
                 }
             }
             version = ((Greek)((int) maxVersion + 1)).ToString();
-            DomainDnsName = $"{version}.yadayada.software";
+            DomainDnsName = $"{version}.dev.yadayada.software";
 
 
         var templateToCreateStack = GetTemplateFullStack(version);
