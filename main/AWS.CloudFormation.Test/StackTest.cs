@@ -35,7 +35,7 @@ namespace AWS.CloudFormation.Test
         private const string CidrDatabase4BuildSubnet2 = "10.0.5.0/24";
         private const string KeyPairName = "corp.getthebuybox.com";
         private const string CidrVpc = "10.0.0.0/16";
-        public const string DomainDnsName = "yadayada.software";
+        public static string DomainDnsName = "yadayada.software";
 
         private const string DomainAdminUser = "johnny";
         private const string UsEast1AWindows2012R2Ami = "ami-9a0558f0";
@@ -1124,9 +1124,10 @@ namespace AWS.CloudFormation.Test
                 }
             }
             version = ((Greek)((int) maxVersion + 1)).ToString();
+            DomainDnsName = "${version}.yadayada.software";
 
 
-            var templateToCreateStack = GetTemplateFullStack(version);
+        var templateToCreateStack = GetTemplateFullStack(version);
             templateToCreateStack.StackName = $"{version}-{StackTest.DomainDnsName}".Replace('.', '-');
 
             CreateTestStack(templateToCreateStack, this.TestContext);
