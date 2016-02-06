@@ -55,7 +55,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             installRdsCommand.Command = new PowershellFnJoin("-Command \"Install-WindowsFeature RDS-Gateway,RSAT-RDS-Gateway\"");
 
-            ExecuteRemotePowershellScript.AddExecuteRemotePowershellScript(this.Config, new Uri("https://s3.amazonaws.com/gtbb/Configure-RDGW.ps1"), TimeSpan.MinValue );
+            ExecuteRemotePowershellScript.AddExecuteRemotePowershellScript(this.Config, new Uri("https://s3.amazonaws.com/gtbb/Configure-RDGW.ps1"));
 
             installRdsCommand = this.Config.Commands.AddCommand<Command>("ConfigureRemoteDesktopGatewayServices");
             installRdsCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None,

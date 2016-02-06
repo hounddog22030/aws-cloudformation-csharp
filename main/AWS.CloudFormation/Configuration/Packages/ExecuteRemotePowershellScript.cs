@@ -13,12 +13,21 @@ namespace AWS.CloudFormation.Configuration.Packages
 {
     public static class ExecuteRemotePowershellScript
     {
+        public static void AddExecuteRemotePowershellScript(Config config, Uri remoteUri)
+        {
+            TimeSpan zero = new TimeSpan(0,0,0);
+            AddExecuteRemotePowershellScript(config, remoteUri, zero, null);
+        }
         public static void AddExecuteRemotePowershellScript(Config config, Uri remoteUri, TimeSpan waitAfterCompletion)
         {
-            AddExecuteRemotePowershellScript(config,remoteUri,waitAfterCompletion,null);
+            AddExecuteRemotePowershellScript(config, remoteUri, waitAfterCompletion, null);
         }
         public static void AddExecuteRemotePowershellScript(Config config, Uri remoteUri, TimeSpan waitAfterCompletion, PowershellFnJoin test)
         {
+            if (waitAfterCompletion.TotalSeconds < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(waitAfterCompletion));
+            }
             var fileName = Path.GetFileName(remoteUri.AbsoluteUri);
             var localFileName = Path.Combine("c:/cfn/scripts", fileName);
             var fileCheckAdReplicationSite = config.Files.GetFile(localFileName);
