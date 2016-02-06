@@ -1169,9 +1169,9 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateDevelopmentTest()
         {
-            var stackName = "Lambda-dev-yadayada-software";
-            var template = GetTemplateFullStack("Lambda");
-            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "KOEO7757gcny";
+            var stackName = "Nu-dev-yadayada-software";
+            var template = GetTemplateFullStack("Nu");
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "GHBN5370gqcu";
             Stack.Stack.UpdateStack(stackName,template );
         }
 
