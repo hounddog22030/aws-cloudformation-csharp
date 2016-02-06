@@ -99,8 +99,7 @@ namespace AWS.CloudFormation.Test
                 password += charToAdd;
             }
 
-            var gitHash = GetGitHash();
-            var template = new Template(KeyPairName, $"Vpc{version}", CidrVpc,gitHash);
+            var template = new Template(KeyPairName, $"Vpc{version}", CidrVpc,$"{GetGitBranch()}:{GetGitHash()}");
 
             var domainPassword = new ParameterBase("DomainAdminPassword", "String", password,
                 "Password for domain administrator.")
@@ -207,7 +206,6 @@ namespace AWS.CloudFormation.Test
 
             DomainControllerPackage dcPackage = new DomainControllerPackage(domainInfo, subnetDomainController1);
             instanceDomainController.Packages.Add(dcPackage);
-
             instanceDomainController.Packages.Add(new Chrome());
 
             FnGetAtt dc1PrivateIp = new FnGetAtt(instanceDomainController, FnGetAttAttribute.AwsEc2InstancePrivateIp);
@@ -311,6 +309,26 @@ namespace AWS.CloudFormation.Test
 
 
             return template;
+        }
+
+        private static string GetGitBranch()
+        {
+            Process p = new Process();
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.StartInfo.FileName = "git.exe";
+            p.StartInfo.Arguments = "rev-parse --symbolic-full-name --abbrev-ref HEAD";
+            p.Start();
+
+            // To avoid deadlocks, always read the output stream first and then wait.
+            string output = p.StandardOutput.ReadToEnd();
+            p.WaitForExit();
+
+            byte newLineByte = 10;
+            char newLine = (char)newLineByte;
+            byte nullByte = 0;
+            char nullChar = (char)nullByte;
+            return output.Replace(newLine.ToString(), string.Empty);
         }
 
         private static void AddRdp2(Subnet subnetDmz1, Template template, Vpc vpc, DomainControllerPackage dcPackage)
@@ -1112,6 +1130,7 @@ namespace AWS.CloudFormation.Test
         public void CreateDevelopmentTest()
         {
             Assert.IsFalse(HasGitDifferences());
+            
             var stacks = Stack.Stack.GetActiveStacks();
             var version = string.Empty;
             Greek maxVersion = Greek.Alpha;
