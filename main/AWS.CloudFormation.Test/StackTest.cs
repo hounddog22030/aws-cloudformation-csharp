@@ -112,8 +112,8 @@ namespace AWS.CloudFormation.Test
             var domainInfo = new DomainInfo(DomainDnsName, DomainAdminUser, domainAdminPasswordReference);
 
             template.Parameters.Add("DomainAdminPassword", domainPassword);
-            template.Parameters.Add("TfsServiceAccountName", domainInfo.DomainNetBiosName);
-            template.Parameters.Add("TfsServicePassword","JelloFood123.");
+            template.Parameters.Add("TfsServiceAccountName", new ParameterBase("TfsServiceAccountName","String",domainInfo.DomainNetBiosName + "\\tfsservice", "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
+            template.Parameters.Add("TfsServicePassword", new ParameterBase("TfsServicePassword", "String", "JelloFood123.", "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
 
 
             Vpc vpc = template.Vpcs.First();
