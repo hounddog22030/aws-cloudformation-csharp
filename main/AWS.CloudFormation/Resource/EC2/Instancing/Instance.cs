@@ -115,9 +115,16 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
         }
 
-        public void AddDisk(Volume v)
+        public void AddDisk(Volume volume)
         {
-            this.VolumesToAttach.Add(v);
+            if (this.Template == null)
+            {
+                this.VolumesToAttach.Add(volume);
+            }
+            else
+            {
+                this.AttachVolume(volume);
+            }
         }
 
         [JsonIgnore]
@@ -128,9 +135,15 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             base.OnTemplateSet(template);
             foreach (var volume in this.VolumesToAttach)
             {
-                VolumeAttachment attachment = new VolumeAttachment(this.GetAvailableDevice(),this,volume);
-                template.Resources.Add(attachment.LogicalId,attachment);
+                this.AttachVolume(volume);
             }
+            this.VolumesToAttach.Clear();
+        }
+
+        private void AttachVolume(Volume volume)
+        {
+            VolumeAttachment attachment = new VolumeAttachment(this.GetAvailableDevice(), this, volume);
+            this.Template.Resources.Add(attachment.LogicalId, attachment);
         }
     }
 }

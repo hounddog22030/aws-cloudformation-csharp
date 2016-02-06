@@ -479,6 +479,7 @@ namespace AWS.CloudFormation.Test
             w.AddSecurityGroup(rdp);
             w.AddElasticIp();
             Volume v = new Volume() {Size = 1.ToString()};
+            template.Resources.Add("Volume1",v);
             v.AvailabilityZone = AvailabilityZone.UsEast1E;
             w.AddDisk(v);
             template.Resources.Add("VolumeAttachment1",v);
