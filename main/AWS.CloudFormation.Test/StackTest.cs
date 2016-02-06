@@ -225,7 +225,7 @@ namespace AWS.CloudFormation.Test
             dhcpOptions.NetbiosNodeType = "2";
 
 
-            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami,
+            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Small, UsEast1AWindows2012R2Ami,
                 OperatingSystem.Windows);
             template.Resources.Add($"Rdp", instanceRdp);
 
@@ -233,7 +233,7 @@ namespace AWS.CloudFormation.Test
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage(domainInfo));
             var x = instanceRdp.Packages.Last().WaitCondition;
 
-            //var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
+            var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Large, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
 
             //var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
             //var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
