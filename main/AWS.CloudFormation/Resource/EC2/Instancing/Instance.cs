@@ -34,7 +34,8 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         {
             SourceDestCheck = true;
             NetworkInterfaces = new List<NetworkInterface>();
-            this.Tags.Add( new Tag("Name", this.LogicalId) );
+            this.Tags.Add( new Tag("Name", this.LogicalId));
+            this.VolumesToAttach = new List<Volume>(); 
         }
 
         [JsonIgnore]
@@ -111,6 +112,24 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             set
             {
                 throw new ReadOnlyException();
+            }
+        }
+
+        public void AddDisk(Volume v)
+        {
+            this.VolumesToAttach.Add(v);
+        }
+
+        [JsonIgnore]
+        private List<Volume> VolumesToAttach { get; set; }
+
+        protected override void OnTemplateSet(Template template)
+        {
+            base.OnTemplateSet(template);
+            foreach (var volume in this.VolumesToAttach)
+            {
+                VolumeAttachment attachment = new VolumeAttachment(this.GetAvailableDevice(),this,volume);
+                template.Resources.Add(attachment.LogicalId,attachment);
             }
         }
     }

@@ -474,11 +474,13 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
-            Instance w = new Instance(DMZSubnet,InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami,OperatingSystem.Windows);
-            template.Resources.Add(w.LogicalId, w);
+            Instance w = new Instance(DMZSubnet,InstanceTypes.T2Large, UsEast1AWindows2012R2Ami,OperatingSystem.Windows);
+            template.Resources.Add("workstation",w);
             w.AddSecurityGroup(rdp);
             w.AddElasticIp();
-            VolumeAttachment va = new VolumeAttachment("/dev/sdh", w, "vol-ec768410");
+            Volume v = new Volume() {Size = 1.ToString()};
+            v.AvailabilityZone = AvailabilityZone.UsEast1E;
+            w.AddDisk(v);
             template.Resources.Add("VolumeAttachment1",va);
             Stack.Stack.CreateStack(template);
         }

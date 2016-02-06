@@ -1,4 +1,8 @@
 ﻿Import-Module SQLPS -DisableNameChecking
+param(
+  [string]$domainName
+)
+
 $Computer = $env:COMPUTERNAME
 $SqlServices = Get-Service -DisplayName 'SQL Server (*'
 Write-Host $SqlServices
@@ -19,7 +23,7 @@ foreach ($Instance in $InstanceNames) {
     
     #$Server = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Server -ArgumentList $Instance
     Write-Host "Server:$Server"
-    $login = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login($Server, "NT AUTHORITY\NETWORK SERVICE")
+    $login = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login($Server, "$domainName\Domain Computers")
     $login.LoginType = [Microsoft.SqlServer.Management.Smo.LoginType]::WindowsUser
     $login.Create()
     $login.AddToRole('sysadmin')

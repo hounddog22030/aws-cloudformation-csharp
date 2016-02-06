@@ -51,13 +51,18 @@ namespace AWS.CloudFormation.Configuration.Packages
         }
         private void InstallRemoteDesktopGateway()
         {
-            var installRdsCommand = this.Config.Commands.AddCommand<Command>("InstallRemoteDesktopGatewayServices");
-
+            var installRdsConfig =
+                this.Instance.Metadata.Init.ConfigSets.GetConfigSet("RemoteDesktop")
+                    .GetConfig("Install");
+            var installRdsCommand = installRdsConfig.Commands.AddCommand<Command>("a-install-rds");
             installRdsCommand.Command = new PowershellFnJoin("-Command \"Install-WindowsFeature RDS-Gateway,RSAT-RDS-Gateway\"");
 
-            ExecuteRemotePowershellScript.AddExecuteRemotePowershellScript(this.Config, new Uri("https://s3.amazonaws.com/gtbb/Configure-RDGW.ps1"));
+            var configureRdgwPsScript = installRdsConfig.Files.GetFile("c:\\cfn\\scripts\\Configure-RDGW.ps1");
 
-            installRdsCommand = this.Config.Commands.AddCommand<Command>("ConfigureRemoteDesktopGatewayServices");
+            configureRdgwPsScript.Source =
+                "https://s3.amazonaws.com/gtbb/Configure-RDGW.ps1";
+
+            installRdsCommand = installRdsConfig.Commands.AddCommand<Command>("b-configure-rdgw");
             installRdsCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None,
                                             " -ExecutionPolicy RemoteSigned ",
                                             " C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN ",

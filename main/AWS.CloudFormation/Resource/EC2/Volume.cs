@@ -29,6 +29,14 @@ namespace AWS.CloudFormation.Resource.EC2
             get { return this.Properties.GetValue<AvailabilityZone>(); }
             set { this.Properties.SetValue(value); }
         }
+
+        [JsonIgnore]
+        public string Size
+        {
+            get { return this.Properties.GetValue<string>(); }
+            set { this.Properties.SetValue(value); }
+        }
+
         protected override bool SupportsTags => true;
 
     }
