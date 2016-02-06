@@ -231,83 +231,83 @@ namespace AWS.CloudFormation.Test
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage(domainInfo));
             var x = instanceRdp.Packages.Last().WaitCondition;
 
-            var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
+            //var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
 
-            var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
-            var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
+            //var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
+            //var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
 
-            DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup("Second subnet for database for build server");
-            template.Resources.Add("DbSubnetGroup4Build2Database", mySqlSubnetGroupForDatabaseForBuild);
+            //DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup("Second subnet for database for build server");
+            //template.Resources.Add("DbSubnetGroup4Build2Database", mySqlSubnetGroupForDatabaseForBuild);
 
-            mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
-            mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
-            //DbInstance mySql4Build = null;
+            //mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
+            //mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
+            ////DbInstance mySql4Build = null;
 
-            ////mySql4Build = new DbInstance(
-            ////    template,
-            ////    "sql4build",
-            ////    DbInstanceClassEnum.DbT2Micro,
-            ////    EngineType.MySql,
-            ////    LicenseModelType.GeneralPublicLicense,
-            ////    Ebs.VolumeTypes.GeneralPurpose,
-            ////    20,
-            ////    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name),
-            ////    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name),
-            ////    mySqlSubnetGroupForDatabaseForBuild,
-            ////    securityGroupDb4Build);
+            //////mySql4Build = new DbInstance(
+            //////    template,
+            //////    "sql4build",
+            //////    DbInstanceClassEnum.DbT2Micro,
+            //////    EngineType.MySql,
+            //////    LicenseModelType.GeneralPublicLicense,
+            //////    Ebs.VolumeTypes.GeneralPurpose,
+            //////    20,
+            //////    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name),
+            //////    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name),
+            //////    mySqlSubnetGroupForDatabaseForBuild,
+            //////    securityGroupDb4Build);
 
-            DbSubnetGroup subnetGroupSqlExpress4Build = new DbSubnetGroup("DbSubnet Group for SQL Server database for build server");
-            template.Resources.Add("SubnetGroup4Build2SqlServer", subnetGroupSqlExpress4Build);
+            //DbSubnetGroup subnetGroupSqlExpress4Build = new DbSubnetGroup("DbSubnet Group for SQL Server database for build server");
+            //template.Resources.Add("SubnetGroup4Build2SqlServer", subnetGroupSqlExpress4Build);
 
-            subnetGroupSqlExpress4Build.AddSubnet(subnetBuildServer);
-            subnetGroupSqlExpress4Build.AddSubnet(subnetDatabase4BuildServer2);
+            //subnetGroupSqlExpress4Build.AddSubnet(subnetBuildServer);
+            //subnetGroupSqlExpress4Build.AddSubnet(subnetDatabase4BuildServer2);
 
-            DbInstance rdsSqlExpress4Build = null;
-
-
-            rdsSqlExpress4Build = new DbInstance(DbInstanceClassEnum.DbT2Micro,
-                EngineType.SqlServerExpress,
-                LicenseModelType.LicenseIncluded,
-                Ebs.VolumeTypes.GeneralPurpose,
-                30,
-                new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name),
-                new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name))
-            {
-                DBSubnetGroupName = new ReferenceProperty(subnetGroupSqlExpress4Build)
-            };
-
-            template.Resources.Add("SqlServer4Build", rdsSqlExpress4Build);
+            //DbInstance rdsSqlExpress4Build = null;
 
 
-            rdsSqlExpress4Build.AddVpcSecurityGroup(securityGroupSqlSever4Build);
+            //rdsSqlExpress4Build = new DbInstance(DbInstanceClassEnum.DbT2Micro,
+            //    EngineType.SqlServerExpress,
+            //    LicenseModelType.LicenseIncluded,
+            //    Ebs.VolumeTypes.GeneralPurpose,
+            //    30,
+            //    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name),
+            //    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name))
+            //{
+            //    DBSubnetGroupName = new ReferenceProperty(subnetGroupSqlExpress4Build)
+            //};
 
-            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
-            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd871hdj11", "Password for Master User For RDS SqlServer") { NoEcho = true });
-
-            var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
-
-            //uses 33gb
-            var workstation = AddWorkstation(template,
-                "Workstation",
-                subnetWorkstation,
-                dcPackage,
-                workstationSecurityGroup);
+            //template.Resources.Add("SqlServer4Build", rdsSqlExpress4Build);
 
 
-            ////SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
-            ////elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
-            ////tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            //rdsSqlExpress4Build.AddVpcSecurityGroup(securityGroupSqlSever4Build);
 
-            ////////////LoadBalancer elb = new LoadBalancer(template, "elb1");
-            ////////////elb.AddInstance(tfsServer);
-            ////////////elb.AddListener("8080", "8080", "http");
-            ////////////elb.AddSubnet(DMZSubnet);
-            ////////////elb.AddSecurityGroup(elbSecurityGroup);
-            ////////////template.AddResource(elb);
+            //template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
+            //template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd871hdj11", "Password for Master User For RDS SqlServer") { NoEcho = true });
 
-            //////////the below is a remote desktop gateway server that can
-            ////////// be uncommented to debug domain setup problems
-            AddRdp2(subnetDmz1, template, vpc, dcPackage);
+            //var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
+
+            ////uses 33gb
+            //var workstation = AddWorkstation(template,
+            //    "Workstation",
+            //    subnetWorkstation,
+            //    dcPackage,
+            //    workstationSecurityGroup);
+
+
+            //////SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
+            //////elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+            //////tfsServerSecurityGroup.AddIngress(elbSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
+
+            //////////////LoadBalancer elb = new LoadBalancer(template, "elb1");
+            //////////////elb.AddInstance(tfsServer);
+            //////////////elb.AddListener("8080", "8080", "http");
+            //////////////elb.AddSubnet(DMZSubnet);
+            //////////////elb.AddSecurityGroup(elbSecurityGroup);
+            //////////////template.AddResource(elb);
+
+            ////////////the below is a remote desktop gateway server that can
+            //////////// be uncommented to debug domain setup problems
+            //AddRdp2(subnetDmz1, template, vpc, dcPackage);
 
 
             return template;
