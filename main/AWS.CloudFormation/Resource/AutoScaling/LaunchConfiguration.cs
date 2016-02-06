@@ -82,7 +82,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             var renameCommandConfig = renameConfig.Commands.AddCommand<Command>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
             renameCommandConfig.Command = new PowershellFnJoin($"\"Rename-Computer -NewName {computerName} -Force\"");
             renameCommandConfig.WaitAfterCompletion = "forever";
-            renameCommandConfig.Test = $"IF \"%COMPUTERNAME%\"==\"{computerName}\" EXIT /B 1 ELSE EXIT /B 0";
+            renameCommandConfig.Test = $"IF \"%COMPUTERNAME%\"==\"{computerName.ToUpperInvariant()}\" EXIT /B 1 ELSE EXIT /B 0";
         }
 
 
