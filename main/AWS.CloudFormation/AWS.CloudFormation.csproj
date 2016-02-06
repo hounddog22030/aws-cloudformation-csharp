@@ -133,6 +133,7 @@
     <Compile Include="TemplateEngine.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Scripts\add-network-to-sysadmin.ps1" />
     <None Include="Scripts\check-for-domain.ps1" />
     <None Include="Configure-RDGW.ps1" />
     <None Include="ConvertTo-EnterpriseAdmin.ps1" />
@@ -150,6 +151,9 @@
       <Project>{e76938d8-edec-4568-b73c-b98c41044423}</Project>
       <Name>System.Net.IPNetwork</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Scripts\SqlServer-EnableTcp.ps1" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

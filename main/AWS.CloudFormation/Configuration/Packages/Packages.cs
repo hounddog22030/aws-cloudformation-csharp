@@ -243,15 +243,9 @@ namespace AWS.CloudFormation.Configuration.Packages
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
             base.AddToLaunchConfiguration(configuration);
-            var command = this.Config.Commands.AddCommand<Command>("DeleteFirstFolder");
-            command.Command = "rmdir /q /s c:\\users\\default\\AppData\\Local\\Microsoft\\VisualStudio";
+            var command = this.Config.Commands.AddCommand<Command>("DeleteAppDataFolder");
+            command.Command = "rmdir /q /s c:\\users\\default\\AppData";
             command.WaitAfterCompletion = 0.ToString();
-
-            command = this.Config.Commands.AddCommand<Command>("DeleteSecondFolder");
-            command.Command = "rmdir /q /s  c:\\users\\default\\AppData\\Roaming\\Microsoft\\VisualStudio";
-            command.WaitAfterCompletion = 0.ToString();
-
-            this.Config.IgnoreErrors = true.ToString();
         }
     }
 
@@ -274,11 +268,18 @@ namespace AWS.CloudFormation.Configuration.Packages
             this.Config.IgnoreErrors = true.ToString();
             command.Test = "IF EXIST d:power\\BACKUPS EXIT /B 1";
             const string AddNetworkLocalPath = "c:/cfn/scripts/add-network-to-sysadmin.ps1";
+            const string EnableTcpLocalPath = "c:/cfn/scripts/SqlServer-EnableTcp.ps1";
             var sysadminFile = this.Config.Files.GetFile(AddNetworkLocalPath);
             sysadminFile.Source = "https://s3.amazonaws.com/gtbb/add-network-to-sysadmin.ps1";
             command = this.Config.Commands.AddCommand<Command>("AddNetworkToSysadmin");
             command.Command = new PowershellFnJoin(AddNetworkLocalPath);
-            // volume for backups
+
+            sysadminFile = this.Config.Files.GetFile(EnableTcpLocalPath);
+            sysadminFile.Source = "https://s3.amazonaws.com/gtbb/SqlServer-EnableTcp.ps1";
+            command = this.Config.Commands.AddCommand<Command>("SqlServerEnableTcp");
+            command.Command = new PowershellFnJoin(EnableTcpLocalPath);
+
+
         }
 
 
