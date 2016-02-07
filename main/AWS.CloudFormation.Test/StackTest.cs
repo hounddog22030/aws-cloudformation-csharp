@@ -216,7 +216,7 @@ namespace AWS.CloudFormation.Test
             var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Large, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
             var x = instanceTfsSqlServer.Packages.Last().WaitCondition;
 
-            var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
+            //var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
             //var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
 
             //DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup("Second subnet for database for build server");
