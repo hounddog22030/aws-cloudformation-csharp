@@ -27,6 +27,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName),"."),
                 new FnJoin( FnJoinDelimiter.Period, 
                             this.Instance.LogicalId,
+                            new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
                             new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
                             new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)),
                 RecordSet.RecordSetTypeEnum.A);
