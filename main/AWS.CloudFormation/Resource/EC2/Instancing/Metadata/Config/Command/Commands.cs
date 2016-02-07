@@ -76,7 +76,10 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
         {
             var returnValue = this.AddCommand<T>(key);
             returnValue.WaitAfterCompletion = waitAfterCompletion.TotalSeconds.ToString(CultureInfo.InvariantCulture);
-            returnValue.Test = test;
+            if (test != null)
+            {
+                returnValue.Test = test;
+            }
             returnValue.Command = commandText;
             return returnValue;
         }
