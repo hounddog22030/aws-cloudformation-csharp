@@ -35,8 +35,8 @@ namespace AWS.CloudFormation.Test
         private const string CidrBuildServerSubnet = "10.0.3.0/24";
         private const string CidrWorkstationSubnet = "10.0.4.0/24";
         private const string CidrDatabase4BuildSubnet2 = "10.0.5.0/24";
-        private const string KeyPairName = "corp.getthebuybox.com";
-        private const string CidrVpc = "10.0.0.0/16";
+        public const string KeyPairName = "corp.getthebuybox.com";
+        public const string CidrVpc = "10.0.0.0/16";
         private const string DomainAdminUser = "johnny";
         private const string UsEast1AWindows2012R2Ami = "ami-9a0558f0";
         private const string UsEast1AWindows2012R2SqlServerExpressAmi = "ami-a3005dc9";

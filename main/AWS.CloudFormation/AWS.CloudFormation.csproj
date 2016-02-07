@@ -86,6 +86,7 @@
     <Compile Include="Resource\AutoScaling\LaunchConfiguration.cs" />
     <Compile Include="Resource\EC2\DHCPOptions.cs" />
     <Compile Include="Resource\EC2\Instancing\BlockDeviceMapping.cs" />
+    <Compile Include="Resource\EC2\Networking\VpcEndpoint.cs" />
     <Compile Include="Resource\EC2\VPCDHCPOptionsAssociation.cs" />
     <Compile Include="Resource\RDS\DbInstance.cs" />
     <Compile Include="Resource\RDS\DBSecurityGroup.cs" />
