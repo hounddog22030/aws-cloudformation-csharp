@@ -184,7 +184,7 @@ namespace AWS.CloudFormation.Test
 
 
 
-            var instanceDomainController = new Instance(subnetDomainController1,InstanceTypes.C4Large,UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
+            var instanceDomainController = new Instance(subnetDomainController1,InstanceTypes.T2Nano,UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add("DomainController", instanceDomainController);
             instanceDomainController.DependsOn.Add(nat1.LogicalId);
 
@@ -207,7 +207,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("DhcpOptions",dhcpOptions);
             dhcpOptions.NetbiosNodeType = "2";
 
-            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.C4Large, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
+            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add($"Rdp", instanceRdp);
 
             dcPackage.Participate(instanceRdp);
