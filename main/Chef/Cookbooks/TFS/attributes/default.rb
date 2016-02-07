@@ -5,8 +5,8 @@ default['tfs']['config_exe_path'] = "C:/Program Files/Microsoft Team Foundation 
 default['tfs']['application_server_netbios_name'] = "tfsserver1"
 default['tfs']['application_server_sqlname'] = "sql4tfs"
 default['tfs']['ServiceAccountName'] = "NT AUTHORITY\\NETWORK SERVICE"
-default['tfs']['TfsServicePasswordParameterName'] = "invalid"
-default['tfs']['TfsServiceAccountNameParameterName'] = "invalid"
+default['tfs']['TfsServicePassword'] = "invalid"
+default['tfs']['TfsServiceAccountName'] = "invalid"
 
 
 
