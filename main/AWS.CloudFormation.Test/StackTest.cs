@@ -1185,7 +1185,7 @@ namespace AWS.CloudFormation.Test
         {
             Assert.IsFalse(HasGitDifferences());
 
-            var fullyQualifiedDomainName = "xi.dev.yadayadasoftware.com";
+            var fullyQualifiedDomainName = "Xi.dev.yadayadasoftware.com";
             
 
             var template = GetTemplateFullStack("yadayadasoftware.com", "dev",Greek.Xi);
