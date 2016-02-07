@@ -277,6 +277,9 @@ namespace AWS.CloudFormation.Configuration.Packages
                 new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
                 "\\",
                 new ReferenceProperty("TfsServiceAccountName"),
+                "','",
+                new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
+                "\\Domain Admins",
                 "')");
             command.WaitAfterCompletion = 0.ToString();
             command.Test = "IF EXIST d:\\BACKUPS EXIT /B 1";
