@@ -102,12 +102,6 @@ namespace AWS.CloudFormation.Resource
         {
             get
             {
-                if (string.IsNullOrEmpty(_logicalId))
-                {
-                    var ticks = DateTime.Now.Ticks.ToString();
-                    _logicalId =
-                        $"i{ticks.Substring(ticks.ToString().Length - 14, 14)}";
-                }
                 return _logicalId;
             }
             internal set
