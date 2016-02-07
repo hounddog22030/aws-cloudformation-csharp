@@ -22,7 +22,6 @@ namespace AWS.CloudFormation.Configuration.Packages
     {
 
         public const string DomainAdminUsernameParameterName = "DomainAdminUsername";
-        //public const string DomainDnsNameParameterName = "DomainDnsName";
         public const string DomainTopLevelNameParameterName = "DomainTopLevelName";
         public const string DomainAppNameParameterName = "DomainAppName";
         public const string DomainVersionParameterName = "DomainVersion";
@@ -30,6 +29,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         public const string DomainAdminPasswordParameterName = "DomainAdminPassword";
 
         const string CheckForDomainPsPath = "c:/cfn/scripts/check-for-domain.ps1";
+
         public DomainControllerPackage(Subnet subnet)
         {
             Subnet = subnet;
@@ -132,6 +132,11 @@ namespace AWS.CloudFormation.Configuration.Packages
                     "\"");
 
             this.CreateDomainControllerSecurityGroup();
+
+            configuration.AddDisk(Ebs.VolumeTypes.Magnetic, 40);
+
+            this.Config.Commands.AddCommand<Command>("", TimeoutMax, null,
+                new PowershellFnJoin(FnJoinDelimiter.Space, "Import Server-Manager", "Add-WindowsFeature Windows-Server-Backup"));
 
         }
 
@@ -266,19 +271,5 @@ namespace AWS.CloudFormation.Configuration.Packages
                         subnet.CidrBlock);
             }
         }
-
-
-        //public void AddToDomainMemberSecurityGroup(LaunchConfiguration domainMember)
-        //{
-        //    //az1Subnet
-        //    DomainMemberSecurityGroup.AddIngress(domainMember.Subnet as ICidrBlock, Protocol.Tcp | Protocol.Udp, Ports.DnsQuery);
-        //    DomainMemberSecurityGroup.AddIngress(domainMember.Subnet, Protocol.Tcp | Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
-        //    //DMZSubnet
-        //    // this is questionable overkill
-        //    DomainMemberSecurityGroup.AddIngress(domainMember.Subnet as ICidrBlock, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-        //    DomainMemberSecurityGroup.AddIngress(domainMember.Subnet as ICidrBlock, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-
-        //    domainMember.AddSecurityGroup(DomainMemberSecurityGroup);
-        //}
     }
 }

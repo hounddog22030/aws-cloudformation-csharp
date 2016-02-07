@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
@@ -68,6 +69,16 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
             this.Add(key, newConfigCommand);
             newConfigCommand.Command = new T() {Parent = newConfigCommand };
             return newConfigCommand;
+        }
+
+        public ConfigCommand AddCommand<T>(string key,TimeSpan waitAfterCompletion, object test, params object[] commandText)
+            where T : Resource.EC2.Instancing.Metadata.Config.Command.Command, new()
+        {
+            var returnValue = this.AddCommand<T>(key);
+            returnValue.WaitAfterCompletion = waitAfterCompletion.TotalSeconds.ToString(CultureInfo.InvariantCulture);
+            returnValue.Test = test;
+            returnValue.Command = commandText;
+            return returnValue;
         }
 
 

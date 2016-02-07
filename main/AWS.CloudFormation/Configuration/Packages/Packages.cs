@@ -334,8 +334,12 @@ namespace AWS.CloudFormation.Configuration.Packages
             var backup = configuration.AddDisk(Ebs.VolumeTypes.Magnetic, 20);
             backup.Ebs.DeleteOnTermination = false;
             var command = this.Config.Commands.AddCommand<Command>("CreateBackupShare");
-            command.Command = new PowershellFnJoin(FnJoinDelimiter.Space,
-                "New-Item \"d:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"d:\\Backups\" -FullAccess @('NT AUTHORITY\\NETWORK SERVICE')");
+            command.Command = new PowershellFnJoin(FnJoinDelimiter.None,
+                "New-Item \"d:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"d:\\Backups\" -FullAccess @('NT AUTHORITY\\NETWORK SERVICE','",
+                new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
+                "\\",
+                new ReferenceProperty(DomainControllerPackage.DomainAdminUsernameParameterName),
+                "')");
             command.WaitAfterCompletion = 0.ToString();
             command.Test = "IF EXIST G:\\BACKUPS EXIT /B 1";
 
@@ -368,7 +372,8 @@ namespace AWS.CloudFormation.Configuration.Packages
             var node = this.Instance.GetChefNodeJsonContent();
             var tfsNode = node.Add("tfs");
             tfsNode.Add("application_server_sqlname", new FnGetAtt(this.SqlServer, FnGetAttAttribute.AwsEc2InstancePrivateDnsName));
-            tfsNode.Add("ServiceAccountName", new ReferenceProperty("TfsServiceAccountName"));
+            tfsNode.Add(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName));
+            tfsNode.Add(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName));
         }
     }
 

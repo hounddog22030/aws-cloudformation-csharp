@@ -26,6 +26,7 @@ IsServiceAccountBuiltIn=False
 
 ; Account that the TFS web site will run as.  On a domain joined machine, this can be a domain account or NT Authority\Network Service.  On a workgroup machine, it can be a local account or NT Authority\Local Service
 ServiceAccountName=<%= @ServiceAccountName %>
+ServiceAccountPassword=<%= @ServiceAccountPassword %>
 
 ; Determines how the service will authenticate the user.  The two options are NTLM and Negotiate
 AuthenticationMethod=NTLM

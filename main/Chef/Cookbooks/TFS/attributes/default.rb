@@ -6,6 +6,7 @@ default['tfs']['application_server_netbios_name'] = "tfsserver1"
 default['tfs']['application_server_sqlname'] = "sql4tfs"
 default['tfs']['ServiceAccountName'] = "NT AUTHORITY\\NETWORK SERVICE"
 default['tfs']['TfsServicePasswordParameterName'] = "invalid"
+default['tfs']['TfsServiceAccountNameParameterName'] = "invalid"
 
 
 
