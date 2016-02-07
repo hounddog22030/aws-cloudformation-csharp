@@ -10,6 +10,8 @@ using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.AutoScaling;
 using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Resource.RDS;
@@ -74,6 +76,9 @@ namespace AWS.CloudFormation.Test
 
         public static Template GetTemplateFullStack(string topLevel, string appNameNetBiosName, Greek version)
         {
+
+            PackageBase<ConfigSet> lastPackage = null;
+            
             var password = GetPassword();
 
             var template = new Template(KeyPairName, $"Vpc{version}", CidrVpc,$"{GetGitBranch()}:{GetGitHash()}");
@@ -183,8 +188,6 @@ namespace AWS.CloudFormation.Test
 
             var instanceDomainController = new Instance(subnetDomainController1,InstanceTypes.T2Nano,UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add("DomainController", instanceDomainController);
-
-
             instanceDomainController.DependsOn.Add(nat1.LogicalId);
 
             DomainControllerPackage dcPackage = new DomainControllerPackage(subnetDomainController1);
@@ -206,15 +209,17 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("DhcpOptions",dhcpOptions);
             dhcpOptions.NetbiosNodeType = "2";
 
+            lastPackage = instanceDomainController.Packages.Last();
 
             var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Small, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add($"Rdp", instanceRdp);
 
             dcPackage.Participate(instanceRdp);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
-            var x = instanceRdp.Packages.Last().WaitCondition;
+            lastPackage = instanceRdp.Packages.Last();
 
-            //var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Large, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
+            var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Large, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
+            lastPackage = instanceTfsSqlServer.Packages.Last();
 
             //var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
             //var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
@@ -293,6 +298,7 @@ namespace AWS.CloudFormation.Test
             //////////// be uncommented to debug domain setup problems
             //AddRdp2(subnetDmz1, template, vpc, dcPackage);
 
+            var nothing = lastPackage.WaitCondition;
 
             return template;
         }
