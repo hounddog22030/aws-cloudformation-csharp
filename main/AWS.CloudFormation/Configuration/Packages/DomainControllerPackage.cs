@@ -156,40 +156,25 @@ namespace AWS.CloudFormation.Configuration.Packages
 
         private void CreateDomainControllerSecurityGroup()
         {
+            ICidrBlock vpcCidrBlock = this.Subnet.Vpc;
             // ReSharper disable once InconsistentNaming
             SecurityGroup SecurityGroup4DomainController = new SecurityGroup("Domain Controller", this.Subnet.Vpc);
             this.Instance.Template.Resources.Add("SecurityGroup4DomainController", SecurityGroup4DomainController);
-            SecurityGroup4DomainController.AddIngress(this.Subnet.Vpc as ICidrBlock, Protocol.Tcp,
-                Ports.WsManagementPowerShell);
-            SecurityGroup4DomainController.AddIngress(this.Subnet.Vpc as ICidrBlock, Protocol.Tcp, Ports.Http);
-
-            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup, Protocol.Udp,
-                Ports.Ntp);
-            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
-                Ports.WinsManager);
-            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
-                Ports.ActiveDirectoryManagement);
-            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup, Protocol.Udp,
-                Ports.NetBios);
-            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup,
-                Protocol.Tcp | Protocol.Udp, Ports.Smb);
-            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup,
-                Protocol.Tcp | Protocol.Udp, Ports.ActiveDirectoryManagement2);
-            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup,
-                Protocol.Tcp | Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
-            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup,
-                Protocol.Tcp | Protocol.Udp, Ports.Ldap);
-            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
-                Ports.Ldaps);
-            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup, Protocol.Tcp,
-                Ports.Ldap2Begin, Ports.Ldap2End);
-            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup,
-                Protocol.Tcp | Protocol.Udp, Ports.DnsQuery);
-            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup,
-                Protocol.Tcp | Protocol.Udp, Ports.KerberosKeyDistribution);
-            SecurityGroup4DomainController.AddIngress(DomainMemberSecurityGroup,
-                Protocol.Tcp | Protocol.Udp, Ports.RemoteDesktopProtocol);
-
+            SecurityGroup4DomainController.AddIngress(vpcCidrBlock, Protocol.Tcp, Ports.WsManagementPowerShell);
+            SecurityGroup4DomainController.AddIngress(vpcCidrBlock, Protocol.Tcp, Ports.Http);
+            SecurityGroup4DomainController.AddIngress(vpcCidrBlock, Protocol.Udp, Ports.Ntp);
+            SecurityGroup4DomainController.AddIngress(vpcCidrBlock, Protocol.Tcp, Ports.WinsManager);
+            SecurityGroup4DomainController.AddIngress(vpcCidrBlock, Protocol.Tcp, Ports.ActiveDirectoryManagement);
+            SecurityGroup4DomainController.AddIngress(vpcCidrBlock, Protocol.Udp, Ports.NetBios);
+            SecurityGroup4DomainController.AddIngress(vpcCidrBlock, Protocol.Tcp | Protocol.Udp, Ports.Smb);
+            SecurityGroup4DomainController.AddIngress(vpcCidrBlock, Protocol.Tcp | Protocol.Udp, Ports.ActiveDirectoryManagement2);
+            SecurityGroup4DomainController.AddIngress(vpcCidrBlock, Protocol.Tcp | Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
+            SecurityGroup4DomainController.AddIngress(vpcCidrBlock, Protocol.Tcp | Protocol.Udp, Ports.Ldap);
+            SecurityGroup4DomainController.AddIngress(vpcCidrBlock, Protocol.Tcp, Ports.Ldaps);
+            SecurityGroup4DomainController.AddIngress(vpcCidrBlock, Protocol.Tcp, Ports.Ldap2Begin, Ports.Ldap2End);
+            SecurityGroup4DomainController.AddIngress(vpcCidrBlock, Protocol.Tcp | Protocol.Udp, Ports.DnsQuery);
+            SecurityGroup4DomainController.AddIngress(vpcCidrBlock, Protocol.Tcp | Protocol.Udp, Ports.KerberosKeyDistribution);
+            SecurityGroup4DomainController.AddIngress(vpcCidrBlock, Protocol.Tcp | Protocol.Udp, Ports.RemoteDesktopProtocol);
             this.Instance.AddSecurityGroup(SecurityGroup4DomainController);
 
         }
@@ -232,7 +217,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             joinCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
 
             participant.AddDependsOn(this.WaitCondition);
-            this.AddToDomainMemberSecurityGroup(participantLaunchConfiguration);
+            //this.AddToDomainMemberSecurityGroup(participantLaunchConfiguration);
             var nodeJson = participantLaunchConfiguration.GetChefNodeJsonContent();
             nodeJson.Add("domain", new ReferenceProperty(DomainNetBiosNameParameterName));
 
@@ -281,21 +266,17 @@ namespace AWS.CloudFormation.Configuration.Packages
         }
 
 
-        public void AddToDomainMemberSecurityGroup(LaunchConfiguration domainMember)
-        {
-            //az1Subnet
-            DomainMemberSecurityGroup.AddIngress(domainMember.Subnet as ICidrBlock,
-                Protocol.Tcp | Protocol.Udp, Ports.DnsQuery);
-            DomainMemberSecurityGroup.AddIngress(domainMember.Subnet,
-                Protocol.Tcp | Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
-            //DMZSubnet
-            // this is questionable overkill
-            DomainMemberSecurityGroup.AddIngress(domainMember.Subnet as ICidrBlock, Protocol.Tcp,
-                Ports.RemoteDesktopProtocol);
-            DomainMemberSecurityGroup.AddIngress(domainMember.Subnet as ICidrBlock, Protocol.Tcp,
-                Ports.RemoteDesktopProtocol);
+        //public void AddToDomainMemberSecurityGroup(LaunchConfiguration domainMember)
+        //{
+        //    //az1Subnet
+        //    DomainMemberSecurityGroup.AddIngress(domainMember.Subnet as ICidrBlock, Protocol.Tcp | Protocol.Udp, Ports.DnsQuery);
+        //    DomainMemberSecurityGroup.AddIngress(domainMember.Subnet, Protocol.Tcp | Protocol.Udp, Ports.DnsBegin, Ports.DnsEnd);
+        //    //DMZSubnet
+        //    // this is questionable overkill
+        //    DomainMemberSecurityGroup.AddIngress(domainMember.Subnet as ICidrBlock, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+        //    DomainMemberSecurityGroup.AddIngress(domainMember.Subnet as ICidrBlock, Protocol.Tcp, Ports.RemoteDesktopProtocol);
 
-            domainMember.AddSecurityGroup(DomainMemberSecurityGroup);
-        }
+        //    domainMember.AddSecurityGroup(DomainMemberSecurityGroup);
+        //}
     }
 }

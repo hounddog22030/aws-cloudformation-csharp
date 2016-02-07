@@ -365,7 +365,8 @@ namespace AWS.CloudFormation.Test
 
             instanceRdp2.AddElasticIp();
 
-            dcPackage.AddToDomainMemberSecurityGroup(instanceRdp2);
+            throw new NotImplementedException();
+            //dcPackage.AddToDomainMemberSecurityGroup(instanceRdp2);
         }
 
         private static LaunchConfiguration AddSql(Template template, string instanceName, InstanceTypes instanceSize, 
