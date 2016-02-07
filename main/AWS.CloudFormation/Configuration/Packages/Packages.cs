@@ -274,6 +274,8 @@ namespace AWS.CloudFormation.Configuration.Packages
             var command = this.Config.Commands.AddCommand<Command>("CreateBackupShare");
             command.Command = new PowershellFnJoin(FnJoinDelimiter.None,
                 $"New-Item \"d:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"d:\\Backups\" -FullAccess @('NT AUTHORITY\\NETWORK SERVICE',",
+                new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
+                "\\",
                 new ReferenceProperty("TfsServiceAccountName"),
                 "')");
             command.WaitAfterCompletion = 0.ToString();
