@@ -192,6 +192,14 @@ namespace AWS.CloudFormation.Test
             instanceDomainController.Packages.Add(dcPackage);
             instanceDomainController.Packages.Add(new Chrome());
 
+            dcPackage.AddReplicationSite(subnetDmz1);
+            dcPackage.AddReplicationSite(subnetDmz2);
+            dcPackage.AddReplicationSite(subnetSqlServer4Tfs);
+            dcPackage.AddReplicationSite(subnetTfsServer);
+            dcPackage.AddReplicationSite(subnetBuildServer);
+            dcPackage.AddReplicationSite(subnetDatabase4BuildServer2);
+            dcPackage.AddReplicationSite(subnetWorkstation);
+
             FnGetAtt dc1PrivateIp = new FnGetAtt(instanceDomainController, FnGetAttAttribute.AwsEc2InstancePrivateIp);
             object[] elements = new object[] { dc1PrivateIp, "10.0.0.2" };
             FnJoin dnsServers = new FnJoin(FnJoinDelimiter.Comma, elements);

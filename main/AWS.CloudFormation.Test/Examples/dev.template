@@ -1,5 +1,5 @@
 {
-  "Description": "active-directory-backup:df7cfa6f7906f35a72ad34fcaff0611ecb37fa19",
+  "Description": "active-directory-backup:1d7f161db901cc2704186a0da692df46ea5236b0",
   "AWSTemplateFormatVersion": "2010-09-09",
   "Resources": {
     "VpcAlpha": {
@@ -1341,6 +1341,59 @@
                       "powershell.exe -ExecutionPolicy RemoteSigned ",
                       "c:/cfn/scripts/check-ADReplicationSubnet-exists.ps1",
                       "10.0.2.0/24"
+                    ]
+                  ]
+                }
+              },
+              "016CreateSite4Subnet4Workstation": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "-Command  \"New-ADReplicationSite",
+                      {
+                        "Ref": "Subnet4Workstation"
+                      },
+                      "\""
+                    ]
+                  ]
+                },
+                "test": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe -ExecutionPolicy RemoteSigned ",
+                      "c:/cfn/scripts/check-ADReplicationSite-exists.ps1",
+                      {
+                        "Ref": "Subnet4Workstation"
+                      }
+                    ]
+                  ]
+                }
+              },
+              "017CreateSubnetSubnet4Workstation": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "-Command New-ADReplicationSubnet -Name 10.0.4.0/24 -Site ",
+                      {
+                        "Ref": "Subnet4Workstation"
+                      }
+                    ]
+                  ]
+                },
+                "test": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe -ExecutionPolicy RemoteSigned ",
+                      "c:/cfn/scripts/check-ADReplicationSubnet-exists.ps1",
+                      "10.0.4.0/24"
                     ]
                   ]
                 }
@@ -2875,6 +2928,389 @@
     "WaitCondition4Tfs4TeamFoundationServerApplicationTierHandle": {
       "Type": "AWS::CloudFormation::WaitConditionHandle",
       "Properties": {}
+    },
+    "Workstation": {
+      "Type": "AWS::EC2::Instance",
+      "Metadata": {
+        "AWS::CloudFormation::Init": {
+          "configSets": {
+            "LaunchConfigurationConfigSet": [
+              "LaunchConfigurationConfig",
+              "Rename"
+            ],
+            "JoinDomain": [
+              "JoinDomain"
+            ],
+            "Iis": [
+              "Iis"
+            ],
+            "VisualStudio": [
+              "VisualStudio"
+            ],
+            "ReSharper": [
+              "ReSharper"
+            ],
+            "Chrome": [
+              "Chrome"
+            ]
+          },
+          "LaunchConfigurationConfig": {
+            "commands": {
+              "000DisableWindowsFirewall": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\""
+                    ]
+                  ]
+                }
+              },
+              "001SetTimeZone": {
+                "waitAfterCompletion": "0",
+                "command": "tzutil /s \"Eastern Standard Time\""
+              }
+            },
+            "files": {
+              "c:\\cfn\\cfn-hup.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[main]\nstack=",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      "\nregion=",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\ninterval=1\nverbose=true"
+                    ]
+                  ]
+                }
+              },
+              "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[cfn-auto-reloader-hook]\n",
+                      "triggers=post.update\n",
+                      "path=Resources.Workstation.Metadata.AWS::CloudFormation::Init\n",
+                      "action=",
+                      "cfn-init.exe -v -c ",
+                      "LaunchConfigurationConfigSet,JoinDomain,Iis,VisualStudio,ReSharper,Chrome",
+                      " -s ",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      " -r ",
+                      "Workstation",
+                      " --region ",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\n"
+                    ]
+                  ]
+                }
+              },
+              "c:/chef/node.json": {
+                "content": {
+                  "domain": {
+                    "Ref": "DomainNetBiosName"
+                  },
+                  "s3_file": {
+                    "key": "AKIAJMUQ7GPWQNKSODIA",
+                    "secret": "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"
+                  }
+                }
+              }
+            },
+            "services": {
+              "windows": {
+                "cfn-hup": {
+                  "enabled": true,
+                  "ensureRunning": true,
+                  "files": [
+                    "c:\\cfn\\cfn-hup.conf",
+                    "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf"
+                  ]
+                }
+              }
+            },
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          },
+          "Rename": {
+            "commands": {
+              "000RenameComputer": {
+                "waitAfterCompletion": "forever",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "\"Rename-Computer -NewName Workstation -Restart -Force\""
+                    ]
+                  ]
+                },
+                "test": "IF \"%COMPUTERNAME%\"==\"WORKSTATION\" EXIT /B 1 ELSE EXIT /B 0"
+              }
+            },
+            "files": {},
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          },
+          "JoinDomain": {
+            "commands": {
+              "000AddRSATADPowerShell": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter"
+                    ]
+                  ]
+                }
+              },
+              "001JoinDomain": {
+                "waitAfterCompletion": "forever",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"",
+                      "if ((gwmi win32_computersystem).partofdomain -eq $true)             {",
+                      "write-host -fore green \"I am domain joined!\"",
+                      "} else {",
+                      "Add-Computer -DomainName ",
+                      {
+                        "Fn::Join": [
+                          ".",
+                          [
+                            {
+                              "Ref": "DomainVersion"
+                            },
+                            {
+                              "Ref": "DomainAppName"
+                            },
+                            {
+                              "Ref": "DomainTopLevelName"
+                            }
+                          ]
+                        ]
+                      },
+                      " -Credential (New-Object System.Management.Automation.PSCredential('",
+                      {
+                        "Ref": "DomainNetBiosName"
+                      },
+                      "\\",
+                      {
+                        "Ref": "DomainAdminUsername"
+                      },
+                      "',(ConvertTo-SecureString \"",
+                      {
+                        "Ref": "DomainAdminPassword"
+                      },
+                      "\" -AsPlainText -Force))) ",
+                      "-Restart\"",
+                      " }"
+                    ]
+                  ]
+                },
+                "test": "powershell.exe -ExecutionPolicy RemoteSigned c:/cfn/scripts/check-for-domain.ps1"
+              }
+            },
+            "files": {
+              "c:/cfn/scripts/check-for-domain.ps1": {
+                "content": {},
+                "source": "https://s3.amazonaws.com/gtbb/check-for-domain.ps1"
+              }
+            },
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          },
+          "Iis": {
+            "commands": {
+              "000yadayada_iis--default": {
+                "waitAfterCompletion": "0",
+                "command": "C:/opscode/chef/bin/chef-client.bat -z -o yadayada_iis::default -c c:/chef/yadayada_iis/client.rb"
+              }
+            },
+            "files": {
+              "c:/chef/yadayada_iis/client.rb": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "cache_path 'c:/chef'\ncookbook_path 'c:/chef/yadayada_iis/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n"
+                    ]
+                  ]
+                }
+              }
+            },
+            "services": {},
+            "sources": {
+              "c:/chef/yadayada_iis/": "https://gtbb.s3.amazonaws.com/yadayada_iis.tar.gz"
+            },
+            "packages": {
+              "msi": {
+                "chefclient12601x86": "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi"
+              }
+            },
+            "ignoreErrors": "False"
+          },
+          "VisualStudio": {
+            "commands": {
+              "000vs--default": {
+                "waitAfterCompletion": "0",
+                "command": "C:/opscode/chef/bin/chef-client.bat -z -o vs::default -c c:/chef/vs/client.rb"
+              },
+              "001DeleteAppDataFolder": {
+                "waitAfterCompletion": "0",
+                "command": "rmdir /q /s c:\\users\\default\\AppData"
+              }
+            },
+            "files": {
+              "c:/chef/vs/client.rb": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "cache_path 'c:/chef'\ncookbook_path 'c:/chef/vs/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n"
+                    ]
+                  ]
+                }
+              }
+            },
+            "services": {},
+            "sources": {
+              "c:/chef/vs/": "https://gtbb.s3.amazonaws.com/vs.tar.gz"
+            },
+            "packages": {
+              "msi": {
+                "chefclient12601x86": "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi"
+              }
+            },
+            "ignoreErrors": "False"
+          },
+          "ReSharper": {
+            "commands": {
+              "000InstallResharper": {
+                "waitAfterCompletion": "0",
+                "command": "c:/cfn/scripts/ReSharperUltimate.10.0.2.exe /VsVersion=14 /SpecificProductNames=ReSharper /Silent=True /PerMachine=True"
+              }
+            },
+            "files": {
+              "c:/cfn/scripts/ReSharperUltimate.10.0.2.exe": {
+                "source": "https://download.jetbrains.com/resharper/JetBrains.ReSharperUltimate.10.0.2.exe"
+              }
+            },
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          },
+          "Chrome": {
+            "commands": {},
+            "files": {},
+            "services": {},
+            "sources": {},
+            "packages": {
+              "msi": {
+                "googlechromestandaloneenterprise64": "https://s3.amazonaws.com/gtbb/software/googlechromestandaloneenterprise64.msi"
+              }
+            },
+            "ignoreErrors": "False"
+          }
+        },
+        "AWS::CloudFormation::Authentication": {
+          "S3AccessCreds": {
+            "accessKeyId": "AKIAJMUQ7GPWQNKSODIA",
+            "secretKey": "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",
+            "buckets": [
+              "gtbb"
+            ],
+            "type": "S3"
+          }
+        }
+      },
+      "DependsOn": [
+        "WaitCondition4DomainController4DomainControllerPackage"
+      ],
+      "Properties": {
+        "SubnetId": {
+          "Ref": "Subnet4Workstation"
+        },
+        "InstanceType": "t2.large",
+        "ImageId": "ami-a3005dc9",
+        "KeyName": {
+          "Ref": "KeyPairName"
+        },
+        "SourceDestCheck": true,
+        "Tags": [
+          {
+            "Key": "Name"
+          },
+          {
+            "Key": "Name",
+            "Value": "Workstation"
+          }
+        ],
+        "BlockDeviceMappings": [
+          {
+            "Ebs": {
+              "VolumeSize": 214,
+              "VolumeType": "gp2"
+            },
+            "DeviceName": "/dev/sda1"
+          },
+          {
+            "Ebs": {
+              "SnapshotId": "snap-5e27a85a"
+            },
+            "DeviceName": "xvdf"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "<script>",
+                "cfn-init.exe -v -c ",
+                "LaunchConfigurationConfigSet,JoinDomain,Iis,VisualStudio,ReSharper,Chrome",
+                " -s ",
+                {
+                  "Ref": "AWS::StackId"
+                },
+                " -r Workstation --region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "</script>"
+              ]
+            ]
+          }
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "SecurityGroup4Workstation"
+          }
+        ]
+      }
     }
   },
   "Parameters": {
@@ -2885,7 +3321,7 @@
     },
     "DomainAdminPassword": {
       "Type": "String",
-      "Default": "UYLT7023ckxq",
+      "Default": "XPSV4803nsbs",
       "Description": "Password for domain administrator.",
       "NoEcho": true
     },

@@ -228,11 +228,11 @@ namespace AWS.CloudFormation.Configuration.Packages
             var nodeJson = participantLaunchConfiguration.GetChefNodeJsonContent();
             nodeJson.Add("domain", new ReferenceProperty(DomainNetBiosNameParameterName));
 
-            Instance participantAsInstance = participant as Instance;
-            if (participantAsInstance != null)
-            {
-                this.AddReplicationSite(participantAsInstance.Subnet);
-            }
+            //Instance participantAsInstance = participant as Instance;
+            //if (participantAsInstance != null)
+            //{
+            //    this.AddReplicationSite(participantAsInstance.Subnet);
+            //}
 
 
 
