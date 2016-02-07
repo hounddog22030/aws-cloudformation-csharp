@@ -216,8 +216,8 @@ namespace AWS.CloudFormation.Test
             var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Large, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
             var x = instanceTfsSqlServer.Packages.Last().WaitCondition;
 
-            //var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
-            //var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
+            var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
+            var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
 
             //DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup("Second subnet for database for build server");
             //template.Resources.Add("DbSubnetGroup4Build2Database", mySqlSubnetGroupForDatabaseForBuild);
@@ -770,8 +770,13 @@ namespace AWS.CloudFormation.Test
             Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add(w.LogicalId, w);
 
+            
+
             w.AddSecurityGroup(rdp);
             w.AddElasticIp();
+
+            SecurityGroup blah = new SecurityGroup("blah",template.Vpcs.Last());
+            template.Resources.Add("blah",blah);
             CreateTestStack(template, this.TestContext);
 
         }
