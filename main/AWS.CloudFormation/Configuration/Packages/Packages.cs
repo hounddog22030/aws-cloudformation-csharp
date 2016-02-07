@@ -279,7 +279,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 new ReferenceProperty("TfsServiceAccountName"),
                 "')");
             command.WaitAfterCompletion = 0.ToString();
-            command.Test = "IF EXIST d:power\\BACKUPS EXIT /B 1";
+            command.Test = "IF EXIST d:\\BACKUPS EXIT /B 1";
             const string AddNetworkLocalPath = "c:/cfn/scripts/add-network-to-sysadmin.ps1";
             const string EnableTcpLocalPath = "c:/cfn/scripts/SqlServer-EnableTcp.ps1";
             const string SetUserToTfsService = "c:/cfn/scripts/change-sql-account.ps1";
