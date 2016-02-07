@@ -300,7 +300,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             sysadminFile.Source = "https://s3.amazonaws.com/gtbb/change-sql-account.ps1";
             command = this.Config.Commands.AddCommand<Command>("SetUserToTfsService");
 
-            command.Command = new PowershellFnJoin(FnJoinDelimiter.Space,EnableTcpLocalPath,
+            command.Command = new PowershellFnJoin(FnJoinDelimiter.Space, SetUserToTfsService,
                 new ReferenceProperty("TfsServiceAccountName"),
                 new ReferenceProperty("TfsServicePassword"));
             command.WaitAfterCompletion = 0.ToString();
