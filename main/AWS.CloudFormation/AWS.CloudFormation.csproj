@@ -144,6 +144,7 @@
     <None Include="Scripts\check-for-domain.ps1" />
     <None Include="Scripts\Configure-RDGW.ps1" />
     <None Include="Scripts\ConvertTo-EnterpriseAdmin.ps1" />
+    <None Include="Scripts\DomainControllerPackage\add-network-to-sysadmin.ps1" />
     <None Include="Scripts\New-LabADUser.ps1" />
     <None Include="packages.config">
       <SubType>Designer</SubType>

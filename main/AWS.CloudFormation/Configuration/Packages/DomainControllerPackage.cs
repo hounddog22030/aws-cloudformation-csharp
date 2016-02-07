@@ -136,7 +136,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             configuration.AddDisk(Ebs.VolumeTypes.Magnetic, 40);
 
             this.Config.Commands.AddCommand<Command>("InstallServerBackup", TimeoutMax, null,
-                new PowershellFnJoin(FnJoinDelimiter.None, "Add-WindowsFeature Windows-Server-Backup"));
+                new PowershellFnJoin(FnJoinDelimiter.None, "-Command \"Add-WindowsFeature Windows-Server-Backup\""));
 
         }
 
