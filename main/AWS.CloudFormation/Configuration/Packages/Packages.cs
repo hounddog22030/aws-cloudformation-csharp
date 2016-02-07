@@ -285,7 +285,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             var sysadminFile = this.Config.Files.GetFile(AddNetworkLocalPath);
             sysadminFile.Source = "https://s3.amazonaws.com/gtbb/add-network-to-sysadmin.ps1";
             command = this.Config.Commands.AddCommand<Command>("AddNetworkToSysadmin");
-            command.Command = new PowershellFnJoin(AddNetworkLocalPath,this.Instance.DomainNetBiosName);
+            command.Command = new PowershellFnJoin(AddNetworkLocalPath, new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName));
             command.WaitAfterCompletion = 0.ToString();
 
             sysadminFile = this.Config.Files.GetFile(EnableTcpLocalPath);

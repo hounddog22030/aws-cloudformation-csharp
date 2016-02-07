@@ -91,7 +91,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 " -UserPrincipalName ",
                 "tfsservice",
                 "@",
-                this.DomainInfo.DomainDnsName,
+                new ReferenceProperty(DomainDnsNameParameterName),
                 " -AccountPassword (ConvertTo-SecureString \"Hello12345.\" -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
 
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkIfUserExists} tfsservice";
@@ -99,7 +99,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             currentCommand = this.Config.Commands.AddCommand<Command>("UpdateAdminUser");
             currentCommand.WaitAfterCompletion = "0";
             currentCommand.Command = new PowershellFnJoin("-Command \"c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1 -Members",
-                this.DomainInfo.AdminUserName,
+                new ReferenceProperty(DomainAdminUsernameParameterName),
                 "\"");
 
 
@@ -186,7 +186,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         {
             LaunchConfiguration participantLaunchConfiguration = participant as LaunchConfiguration;
 
-            var joinCommandConfig = participant.Metadata.Init.ConfigSets.GetConfigSet($"JoinDomain{this.DomainInfo.DomainNetBiosName}").GetConfig("JoinDomain");
+            var joinCommandConfig = participant.Metadata.Init.ConfigSets.GetConfigSet($"JoinDomain").GetConfig("JoinDomain");
 
             var checkForDomainPs = joinCommandConfig.Files.GetFile(CheckForDomainPsPath);
             checkForDomainPs.Source = "https://s3.amazonaws.com/gtbb/check-for-domain.ps1";
@@ -203,13 +203,13 @@ namespace AWS.CloudFormation.Configuration.Packages
                         "write-host -fore green \"I am domain joined!\"",
                     "} else {",
                 "Add-Computer -DomainName ",
-                this.DomainInfo.DomainDnsName,
+                new ReferenceProperty(DomainDnsNameParameterName),
                 " -Credential (New-Object System.Management.Automation.PSCredential('",
-                this.DomainInfo.DomainNetBiosName,
+                new ReferenceProperty(DomainNetBiosNameParameterName),
                 "\\",
-                this.DomainInfo.AdminUserName,
+                new ReferenceProperty(DomainAdminUsernameParameterName),
                 "',(ConvertTo-SecureString \"",
-                this.DomainInfo.AdminPassword,
+                new ReferenceProperty(DomainAdminPasswordParameterName),
                 "\" -AsPlainText -Force))) ",
                 "-Restart\"",
                 " }");
@@ -218,10 +218,8 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             participant.AddDependsOn(this.WaitCondition);
             this.AddToDomainMemberSecurityGroup(participantLaunchConfiguration);
-            participantLaunchConfiguration.DomainNetBiosName = this.DomainInfo.DomainNetBiosName;
-            participantLaunchConfiguration.DomainDnsName = this.DomainInfo.DomainDnsName;
             var nodeJson = participantLaunchConfiguration.GetChefNodeJsonContent();
-            nodeJson.Add("domain", this.DomainInfo.DomainNetBiosName);
+            nodeJson.Add("domain", new ReferenceProperty(DomainNetBiosNameParameterName));
 
             Instance participantAsInstance = participant as Instance;
             if (participantAsInstance != null)

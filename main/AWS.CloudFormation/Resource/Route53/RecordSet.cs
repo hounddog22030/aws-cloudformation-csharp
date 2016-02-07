@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
-
+using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -46,16 +46,16 @@ namespace AWS.CloudFormation.Resource.Route53
         }
 
         [JsonIgnore]
-        public string HostedZoneName
+        public object HostedZoneName
         {
-            get { return this.Properties.GetValue<string>(); }
+            get { return this.Properties.GetValue<object>(); }
             set { this.Properties.SetValue(value); }
         }
 
         [JsonIgnore]
-        public string Name
+        public object Name
         {
-            get { return this.Properties.GetValue<string>(); }
+            get { return this.Properties.GetValue<object>(); }
             set { this.Properties.SetValue(value); }
         }
 
@@ -120,7 +120,7 @@ namespace AWS.CloudFormation.Resource.Route53
             return recordSet;
         }
 
-        public static RecordSet AddByHostedZoneName(Template template, string name, string hostedZoneName, string dnsName, RecordSetTypeEnum recordSetType)
+        public static RecordSet AddByHostedZoneName(Template template, string name, object hostedZoneName, object dnsName, RecordSetTypeEnum recordSetType)
         {
             var returnValue = new RecordSet(recordSetType) { HostedZoneName = hostedZoneName, Name = dnsName };
             template.Resources.Add(name, returnValue);

@@ -49,6 +49,9 @@ namespace AWS.CloudFormation.Stack
                 case FnJoinDelimiter.None:
                     this.Delimiter = string.Empty;
                     break;
+                case FnJoinDelimiter.Period:
+                    this.Delimiter = ".";
+                    break;
                 default:
                     throw new ArgumentException(nameof(delimiter));
             }
@@ -74,7 +77,8 @@ namespace AWS.CloudFormation.Stack
     {
         Space = 0,
         Comma = 1,
-        None = 3
+        None = 3,
+        Period = 4
     }
 
     public class PowershellFnJoin : FnJoin

@@ -85,13 +85,6 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             renameCommandConfig.Test = $"IF \"%COMPUTERNAME%\"==\"{computerName.ToUpperInvariant()}\" EXIT /B 1 ELSE EXIT /B 0";
         }
 
-
-        [JsonIgnore]
-        public string DomainDnsName { get; internal set; }
-        [JsonIgnore]
-        public string DomainNetBiosName { get; internal set; }
-
-
         private void Packages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             foreach (var newItem in e.NewItems)

@@ -16,28 +16,16 @@ namespace AWS.CloudFormation.Configuration.Packages
 {
     public class RemoteDesktopGatewayPackage : PackageBase<ConfigSet>
     {
-        public RemoteDesktopGatewayPackage(DomainInfo domainInfo)
-        {
-            DomainInfo = domainInfo;
-
-        }
-
-        private DomainInfo DomainInfo { get; }
-
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
             base.AddToLaunchConfiguration(configuration);
-
-            var domainParts = this.DomainInfo.DomainDnsName.Split('.');
-            var tldDomain = $"{domainParts[domainParts.Length - 2]}.{domainParts[domainParts.Length - 1]}.";
-
 
             this.InstallRemoteDesktopGateway();
             RecordSet routing = RecordSet.AddByHostedZoneName(
                 this.Instance.Template,
                 $"RecordSet4{this.Instance.LogicalId}",
-                tldDomain,
-                $"{this.Instance.LogicalId}.{this.DomainInfo.DomainDnsName}.".ToLowerInvariant(),
+                new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(DomainControllerPackage.DomainDnsNameParameterName),"."),
+                new FnJoin(FnJoinDelimiter.Period, this.Instance.LogicalId, new ReferenceProperty(DomainControllerPackage.DomainDnsNameParameterName)),
                 RecordSet.RecordSetTypeEnum.A);
 
             var eip = new ElasticIp(this.Instance);
@@ -68,9 +56,9 @@ namespace AWS.CloudFormation.Configuration.Packages
                                             " C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN ",
                                             this.Instance.LogicalId,
                                             ".",
-                                            this.DomainInfo.DomainDnsName,
+                                            new ReferenceProperty(DomainControllerPackage.DomainDnsNameParameterName),
                                             " -DomainNetBiosName ",
-                                            this.DomainInfo.DomainNetBiosName,
+                                            new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
                                             " -GroupName 'domain admins'");
         }
         private void AddSecurityGroup()

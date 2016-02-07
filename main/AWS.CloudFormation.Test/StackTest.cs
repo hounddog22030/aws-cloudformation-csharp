@@ -111,8 +111,8 @@ namespace AWS.CloudFormation.Test
             template.Parameters.Add(domainPassword);
             template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainDnsNameParameterName, "String", fullyQualifiedDomainName, "Fully qualified domain name for the stack (e.g. example.com)"));
             template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainNetBiosNameParameterName, "String", netBios, "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
+            template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainAdminUsernameParameterName, "String", "johnny", "Domain Admin User"));
             template.Parameters.Add(new ParameterBase("TfsServiceAccountName","String", new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),"\\tfsservice"), "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
-            template.Parameters.Add(new ParameterBase("TfsServicePassword", "String", "JelloFood123.", "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
             template.Parameters.Add(new ParameterBase("TfsServicePassword", "String", "JelloFood123.", "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
 
             var domainAdminPasswordReference = new ReferenceProperty(Template.ParameterDomainAdminPassword);
@@ -210,7 +210,7 @@ namespace AWS.CloudFormation.Test
 
             instanceDomainController.DependsOn.Add(nat1.LogicalId);
 
-            DomainControllerPackage dcPackage = new DomainControllerPackage(domainInfo, subnetDomainController1);
+            DomainControllerPackage dcPackage = new DomainControllerPackage(subnetDomainController1);
             instanceDomainController.Packages.Add(dcPackage);
             instanceDomainController.Packages.Add(new Chrome());
 
@@ -231,7 +231,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add($"Rdp", instanceRdp);
 
             dcPackage.Participate(instanceRdp);
-            instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage(domainInfo));
+            instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
             var x = instanceRdp.Packages.Last().WaitCondition;
 
             var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Large, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
@@ -1004,9 +1004,8 @@ namespace AWS.CloudFormation.Test
 
             var chefNode = buildServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
-            var domainInfo = new DomainInfo(fullyQualifiedDomainName, DomainAdminUser, new ReferenceProperty(Template.ParameterDomainAdminPassword));
 
-            domainAdminUserInfoNode.Add("name", domainInfo.DomainNetBiosName + "\\" + DomainAdminUser);
+            domainAdminUserInfoNode.Add("name", new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(DomainControllerPackage.DomainAdminUsernameParameterName)));
             domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
             buildServer.AddSecurityGroup(buildServerSecurityGroup);
             //var waitConditionBuildServerAvailable = buildServer.AddFinalizer("waitConditionBuildServerAvailable",TimeoutMax);
@@ -1066,8 +1065,8 @@ namespace AWS.CloudFormation.Test
 
             var chefNode = tfsServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
-            var domainInfo = new DomainInfo(fullyQualifiedDomainName, DomainAdminUser, new ReferenceProperty(Template.ParameterDomainAdminPassword));
-            domainAdminUserInfoNode.Add("name", domainInfo.DomainNetBiosName + "\\" + DomainAdminUser);
+
+            domainAdminUserInfoNode.Add("name", new FnJoin( FnJoinDelimiter.None, new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(DomainControllerPackage.DomainAdminUsernameParameterName)));
             domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
             tfsServer.AddSecurityGroup(tfsServerSecurityGroup);
             var packageTfsApplicationTier = new TeamFoundationServerApplicationTier(BucketNameSoftware,sqlServer4Tfs);
