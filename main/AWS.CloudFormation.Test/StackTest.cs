@@ -213,8 +213,8 @@ namespace AWS.CloudFormation.Test
             dcPackage.Participate(instanceRdp);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
 
-            //var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Large, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
-            //var x = instanceTfsSqlServer.Packages.Last().WaitCondition;
+            var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Large, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
+            var x = instanceTfsSqlServer.Packages.Last().WaitCondition;
 
             //var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
             //var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
@@ -1184,11 +1184,11 @@ namespace AWS.CloudFormation.Test
         {
             Assert.IsFalse(HasGitDifferences());
 
-            var fullyQualifiedDomainName = "Omicron.dev.yadayadasoftware.com";
+            var fullyQualifiedDomainName = "Tau.dev.yadayadasoftware.com";
             
 
-            var template = GetTemplateFullStack("yadayadasoftware.com", "dev",Greek.Omicron);
-            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "GGVT6267pmnm";
+            var template = GetTemplateFullStack("yadayadasoftware.com", "dev",Greek.Tau);
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "GDCS5438xxwd";
             Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.','-'), template );
         }
 
