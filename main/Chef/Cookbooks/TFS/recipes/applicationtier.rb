@@ -14,8 +14,8 @@ configurationFile = "#{Chef::Config['file_cache_path']}/configbasic.ini"
 template "#{configurationFile}" do
   source 'configbasic.ini.erb'
   variables(	:application_server_sqlname => "#{node[:tfs][:application_server_sqlname]}",
-				:ServiceAccountName => "#{node[:tfs][:ServiceAccountName]}", 
-				:ServiceAccountPassword => "#{node[:tfs][:ServiceAccountPassword]}" )
+				:ServiceAccountName => "#{node[:tfs][:TfsServiceAccountName]}", 
+				:ServiceAccountPassword => "#{node[:tfs][:TfsServicePassword]}" )
 end
 
 
