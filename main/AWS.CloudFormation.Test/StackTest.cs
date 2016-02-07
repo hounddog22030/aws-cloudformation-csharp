@@ -1184,11 +1184,11 @@ namespace AWS.CloudFormation.Test
         {
             Assert.IsFalse(HasGitDifferences());
 
-            var fullyQualifiedDomainName = "Xi.dev.yadayadasoftware.com";
+            var fullyQualifiedDomainName = "Omicron.dev.yadayadasoftware.com";
             
 
-            var template = GetTemplateFullStack("yadayadasoftware.com", "dev",Greek.Xi);
-            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "LHKF5015xnbr";
+            var template = GetTemplateFullStack("yadayadasoftware.com", "dev",Greek.Omicron);
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "GGVT6267pmnm";
             Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.','-'), template );
         }
 
