@@ -24,7 +24,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             RecordSet routing = RecordSet.AddByHostedZoneName(
                 this.Instance.Template,
                 $"RecordSet4{this.Instance.LogicalId}",
-                new FnJoin(FnJoinDelimiter.Period, new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName),"."),
+                new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName),"."),
                 new FnJoin( FnJoinDelimiter.Period, 
                             this.Instance.LogicalId,
                             new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
