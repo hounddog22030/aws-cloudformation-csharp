@@ -95,7 +95,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                                 " -AccountPassword (ConvertTo-SecureString \"",
                                 new ReferenceProperty((ILogicalId)this.Instance.Template.Parameters[Template.ParameterDomainAdminPassword]),
                                 "\" -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
-            currentCommand.Test = new PowershellFnJoin("{checkIfUserExists}", new ReferenceProperty(DomainAdminUsernameParameterName));
+            currentCommand.Test = new PowershellFnJoin(checkIfUserExists, new ReferenceProperty(DomainAdminUsernameParameterName));
 
 
             currentCommand = this.Config.Commands.AddCommand<Command>("CreateTfsUser");
