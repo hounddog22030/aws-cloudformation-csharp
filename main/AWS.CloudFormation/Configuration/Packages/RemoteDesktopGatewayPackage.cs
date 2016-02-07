@@ -68,6 +68,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                                             " -DomainNetBiosName ",
                                             new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
                                             " -GroupName 'domain admins'");
+            installRdsCommand.Test = "IF EXIST c:/rdp.cer EXIT 1";
         }
         private void AddSecurityGroup()
         {
