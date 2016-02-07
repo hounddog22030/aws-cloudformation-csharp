@@ -21,6 +21,14 @@ namespace AWS.CloudFormation.Configuration.Packages
     public class DomainControllerPackage : PackageBase<ConfigSet>
     {
 
+        public const string DomainAdminUsernameParameterName = "DomainAdminUsername";
+        //public const string DomainDnsNameParameterName = "DomainDnsName";
+        public const string DomainTopLevelNameParameterName = "DomainTopLevelName";
+        public const string DomainAppNameParameterName = "DomainAppName";
+        public const string DomainVersionParameterName = "DomainVersion";
+        public const string DomainNetBiosNameParameterName = "DomainNetBiosName";
+        public const string DomainAdminPasswordParameterName = "DomainAdminPassword";
+
         const string CheckForDomainPsPath = "c:/cfn/scripts/check-for-domain.ps1";
         public DomainControllerPackage(Subnet subnet)
         {
@@ -59,7 +67,10 @@ namespace AWS.CloudFormation.Configuration.Packages
 
 
             currentCommand.Command = new PowershellFnJoin("-Command \"Install-ADDSForest -DomainName",
-                new ReferenceProperty(DomainDnsNameParameterName),
+                new FnJoin( FnJoinDelimiter.Period,
+                            new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
+                            new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
+                            new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)),
                 "-SafeModeAdministratorPassword (convertto-securestring \"jhkjhsdf338!\" -asplaintext -force) -DomainMode Win2012 -DomainNetbiosName",
                 new ReferenceProperty(DomainNetBiosNameParameterName),
                 "-ForestMode Win2012 -Confirm:$false -Force\"");
@@ -77,7 +88,10 @@ namespace AWS.CloudFormation.Configuration.Packages
                                 " -UserPrincipalName ",
                                 new ReferenceProperty(DomainAdminUsernameParameterName),
                                 "@",
-                                new ReferenceProperty(DomainDnsNameParameterName),
+                                new FnJoin(FnJoinDelimiter.Period,
+                                            new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
+                                            new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
+                                            new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)),
                                 " -AccountPassword (ConvertTo-SecureString \"",
                                 new ReferenceProperty((ILogicalId)this.Instance.Template.Parameters[Template.ParameterDomainAdminPassword]),
                                 "\" -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
@@ -91,7 +105,10 @@ namespace AWS.CloudFormation.Configuration.Packages
                 " -UserPrincipalName ",
                 "tfsservice",
                 "@",
-                new ReferenceProperty(DomainDnsNameParameterName),
+                new FnJoin(FnJoinDelimiter.Period,
+                            new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
+                            new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
+                            new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)),
                 " -AccountPassword (ConvertTo-SecureString \"Hello12345.\" -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
 
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkIfUserExists} tfsservice";
@@ -116,12 +133,10 @@ namespace AWS.CloudFormation.Configuration.Packages
 
         }
 
-        public const string DomainAdminUsernameParameterName = "DomainAdminUsername";
 
         public Subnet Subnet { get; }
 
         private SecurityGroup _domainMemberSecurityGroup;
-        public const string DomainDnsNameParameterName = "DomainDnsName";
 
         public SecurityGroup DomainMemberSecurityGroup {
             get
@@ -137,9 +152,6 @@ namespace AWS.CloudFormation.Configuration.Packages
             }
         }
 
-        public const string DomainNetBiosNameParameterName = "DomainNetBiosName";
-
-        public const string DomainAdminPasswordParameterName = "DomainAdminPassword";
 
 
         private void CreateDomainControllerSecurityGroup()
@@ -203,7 +215,10 @@ namespace AWS.CloudFormation.Configuration.Packages
                         "write-host -fore green \"I am domain joined!\"",
                     "} else {",
                 "Add-Computer -DomainName ",
-                new ReferenceProperty(DomainDnsNameParameterName),
+                new FnJoin(FnJoinDelimiter.Period,
+                            new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
+                            new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
+                            new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)),
                 " -Credential (New-Object System.Management.Automation.PSCredential('",
                 new ReferenceProperty(DomainNetBiosNameParameterName),
                 "\\",

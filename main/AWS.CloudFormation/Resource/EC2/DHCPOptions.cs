@@ -13,7 +13,7 @@ namespace AWS.CloudFormation.Resource.EC2
 
     public class DhcpOptions : ResourceBase
     {
-        public DhcpOptions(string domainName, Vpc vpc, FnJoin dnsServers, FnJoin netBiosNameServers) 
+        public DhcpOptions(object domainName, Vpc vpc, FnJoin dnsServers, FnJoin netBiosNameServers) 
             : base(ResourceType.DhcpOptions)
         {
             this.Vpc = vpc;

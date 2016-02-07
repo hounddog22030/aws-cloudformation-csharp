@@ -72,34 +72,9 @@ namespace AWS.CloudFormation.Test
             CreateTestStack(template, this.TestContext);
         }
 
-        public static Template GetTemplateFullStack(string fullyQualifiedDomainName)
+        public static Template GetTemplateFullStack(string topLevel, string appNameNetBiosName, Greek version)
         {
-            var domainParts = fullyQualifiedDomainName.Split('.');
-            Greek version = (Greek)System.Enum.Parse(typeof (Greek), domainParts[0],true);
-            string netBios = domainParts[1];
-
-            var guid = Guid.NewGuid().ToString().Replace("-", string.Empty);
-            var random = new Random(((int)DateTime.Now.Ticks % int.MaxValue));
-
-            string password = string.Empty;
-
-            for (int i = 0; i < 4; i++)
-            {
-                char charToAdd = ((char)random.Next((int)'A', (int)'Z'));
-                password += charToAdd;
-            }
-
-            for (int i = 0; i < 4; i++)
-            {
-                char charToAdd = ((char) random.Next((int) '0', (int) '9'));
-                password += charToAdd;
-            }
-
-            for (int i = 0; i < 4; i++)
-            {
-                char charToAdd = ((char)random.Next((int)'a', (int)'z'));
-                password += charToAdd;
-            }
+            var password = GetPassword();
 
             var template = new Template(KeyPairName, $"Vpc{version}", CidrVpc,$"{GetGitBranch()}:{GetGitHash()}");
 
@@ -109,8 +84,10 @@ namespace AWS.CloudFormation.Test
             };
 
             template.Parameters.Add(domainPassword);
-            template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainDnsNameParameterName, "String", fullyQualifiedDomainName, "Fully qualified domain name for the stack (e.g. example.com)"));
-            template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainNetBiosNameParameterName, "String", netBios, "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
+            template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainTopLevelNameParameterName, "String", topLevel, "Top level domain name for the stack (e.g. example.com)"));
+            template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainAppNameParameterName, "String", appNameNetBiosName, "Name of the application (e.g. Dev,Test,Prod)"));
+            template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainVersionParameterName, "String", version.ToString().ToLowerInvariant(), "Fully qualified domain name for the stack (e.g. example.com)"));
+            template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainNetBiosNameParameterName, "String", appNameNetBiosName, "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
             template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainAdminUsernameParameterName, "String", "johnny", "Domain Admin User"));
             template.Parameters.Add(new ParameterBase("TfsServiceAccountName","String", "tfsservice", "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
             template.Parameters.Add(new ParameterBase("TfsServicePassword", "String", "JelloFood123.", "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
@@ -222,7 +199,10 @@ namespace AWS.CloudFormation.Test
 
 
 
-            DhcpOptions dhcpOptions = new DhcpOptions(fullyQualifiedDomainName, vpc, dnsServers, netBiosServers);
+            DhcpOptions dhcpOptions = new DhcpOptions(new FnJoin(FnJoinDelimiter.Period,
+                            new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
+                            new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
+                            new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)), vpc, dnsServers, netBiosServers);
             template.Resources.Add("DhcpOptions",dhcpOptions);
             dhcpOptions.NetbiosNodeType = "2";
 
@@ -315,6 +295,32 @@ namespace AWS.CloudFormation.Test
 
 
             return template;
+        }
+
+        private static string GetPassword()
+        {
+            var random = new Random(((int) DateTime.Now.Ticks%int.MaxValue));
+
+            string password = string.Empty;
+
+            for (int i = 0; i < 4; i++)
+            {
+                char charToAdd = ((char) random.Next((int) 'A', (int) 'Z'));
+                password += charToAdd;
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                char charToAdd = ((char) random.Next((int) '0', (int) '9'));
+                password += charToAdd;
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                char charToAdd = ((char) random.Next((int) 'a', (int) 'z'));
+                password += charToAdd;
+            }
+            return password;
         }
 
         private static string GetGitBranch()
@@ -1104,7 +1110,7 @@ namespace AWS.CloudFormation.Test
             return nat1;
         }
 
-        enum Greek
+        public enum Greek
         {
             Alpha,
             Beta,
@@ -1139,8 +1145,8 @@ namespace AWS.CloudFormation.Test
             Assert.IsFalse(HasGitDifferences());
 
             var stacks = Stack.Stack.GetActiveStacks();
-            var version = string.Empty;
-            Greek maxVersion = Greek.Alpha;
+
+            Greek version = Greek.Alpha;
 
             foreach (var thisGreek in Enum.GetValues(typeof (Greek)))
             {
@@ -1150,15 +1156,17 @@ namespace AWS.CloudFormation.Test
                             s.Name.ToLowerInvariant()
                                 .StartsWith(thisGreek.ToString().ToLowerInvariant().Replace('.', '-'))))
                 {
-                    maxVersion = (Greek) thisGreek;
+                    version = (Greek) thisGreek;
                 }
             }
-            version = ((Greek) ((int) maxVersion + 1)).ToString();
-            var fullyQualifiedDomainName = $"{version}.dev.yadayadasoftware.com";
 
+            version += 1;
 
-            var templateToCreateStack = GetTemplateFullStack(fullyQualifiedDomainName);
-            templateToCreateStack.StackName = fullyQualifiedDomainName.Replace('.', '-');
+            var topLevel = "yadayadasoftware.com";
+            var appName = "dev";
+
+            var templateToCreateStack = GetTemplateFullStack(topLevel, appName, version);
+            templateToCreateStack.StackName = $"{version}.{appName}.{topLevel}";
 
             CreateTestStack(templateToCreateStack, this.TestContext);
         }
@@ -1168,7 +1176,7 @@ namespace AWS.CloudFormation.Test
         public void CreateDevelopmentTemplateFileTest()
         {
             //DomainDnsName = $"alpha.dev.yadayadasoftware.com";
-            var templateToCreateStack = GetTemplateFullStack("alpha.dev.yadayadasoftware.com");
+            var templateToCreateStack = GetTemplateFullStack("yadayadasoftware.com", "dev", Greek.Alpha);
             TemplateEngine.CreateTemplateFile(templateToCreateStack);
         }
 
@@ -1177,10 +1185,10 @@ namespace AWS.CloudFormation.Test
         {
             Assert.IsFalse(HasGitDifferences());
 
-            var fullyQualifiedDomainName = "Xi.dev.yadayadasoftware.com";
+            var fullyQualifiedDomainName = "xi.dev.yadayadasoftware.com";
             
 
-            var template = GetTemplateFullStack(fullyQualifiedDomainName);
+            var template = GetTemplateFullStack("yadayadasoftware.com", "dev",Greek.Xi);
             ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "LHKF5015xnbr";
             Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.','-'), template );
         }

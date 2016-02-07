@@ -24,8 +24,11 @@ namespace AWS.CloudFormation.Configuration.Packages
             RecordSet routing = RecordSet.AddByHostedZoneName(
                 this.Instance.Template,
                 $"RecordSet4{this.Instance.LogicalId}",
-                new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(DomainControllerPackage.DomainDnsNameParameterName),"."),
-                new FnJoin(FnJoinDelimiter.Period, this.Instance.LogicalId, new ReferenceProperty(DomainControllerPackage.DomainDnsNameParameterName)),
+                new FnJoin(FnJoinDelimiter.Period, new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName),"."),
+                new FnJoin( FnJoinDelimiter.Period, 
+                            this.Instance.LogicalId,
+                            new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
+                            new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)),
                 RecordSet.RecordSetTypeEnum.A);
 
             var eip = new ElasticIp(this.Instance);
@@ -56,7 +59,11 @@ namespace AWS.CloudFormation.Configuration.Packages
                                             " C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN ",
                                             this.Instance.LogicalId,
                                             ".",
-                                            new ReferenceProperty(DomainControllerPackage.DomainDnsNameParameterName),
+                                            new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
+                                            ".",
+                                            new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
+                                            ".",
+                                            new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName),
                                             " -DomainNetBiosName ",
                                             new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
                                             " -GroupName 'domain admins'");
