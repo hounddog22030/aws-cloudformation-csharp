@@ -93,7 +93,7 @@ namespace AWS.CloudFormation.Test
             template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainNetBiosNameParameterName, "String", appNameNetBiosName, "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
             template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainAdminUsernameParameterName, "String", "johnny", "Domain Admin User"));
             template.Parameters.Add(new ParameterBase("TfsServiceAccountName","String", "tfsservice", "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
-            template.Parameters.Add(new ParameterBase("TfsServicePassword", "String", "JelloFood123.", "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
+            template.Parameters.Add(new ParameterBase("TfsServicePassword", "String", "Hello12345.", "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
 
             var domainAdminPasswordReference = new ReferenceProperty(Template.ParameterDomainAdminPassword);
 
