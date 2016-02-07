@@ -101,15 +101,17 @@ namespace AWS.CloudFormation.Configuration.Packages
             currentCommand = this.Config.Commands.AddCommand<Command>("CreateTfsUser");
             currentCommand.WaitAfterCompletion = "0";
             currentCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None, "\"New-ADUser -Name ",
-                "tfsservice",
+                new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName),
                 " -UserPrincipalName ",
-                "tfsservice",
+                new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName),
                 "@",
                 new FnJoin(FnJoinDelimiter.Period,
                             new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
                             new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
-                            new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)),
-                " -AccountPassword (ConvertTo-SecureString \"Hello12345.\" -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
+                            new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName),
+                " -AccountPassword (ConvertTo-SecureString \"",
+                new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName),
+                "\" -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\""));
 
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkIfUserExists} tfsservice";
 

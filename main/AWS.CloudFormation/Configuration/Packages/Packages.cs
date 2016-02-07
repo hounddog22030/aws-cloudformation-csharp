@@ -305,6 +305,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
                 "\\",
                 new ReferenceProperty("TfsServiceAccountName"),
+                " ",
                 new ReferenceProperty("TfsServicePassword"));
             command.WaitAfterCompletion = 0.ToString();
 
@@ -390,6 +391,9 @@ namespace AWS.CloudFormation.Configuration.Packages
         public DbInstance SqlServer4Build { get; }
 
         public LaunchConfiguration ApplicationServer { get; }
+        public const string TfsServiceAccountNameParameterName = "TfsServiceAccountName";
+
+        public const string TfsServicePasswordParameterName = "TfsServicePassword";
 
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {

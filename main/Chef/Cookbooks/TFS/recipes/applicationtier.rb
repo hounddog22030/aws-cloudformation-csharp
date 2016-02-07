@@ -20,5 +20,5 @@ end
 
 # Installing Team Foundation Server Standard.
 execute 'Configure Team Foundation Server STD' do
-	command "#{tfsconfigure_exe_file} unattend /configure /unattendfile:#{configurationFile} /password:Hello12345."
+	command "#{tfsconfigure_exe_file} unattend /configure /unattendfile:#{configurationFile} /password:#{node[:tfs][:TfsServicePasswordParameterName]}"
 end
