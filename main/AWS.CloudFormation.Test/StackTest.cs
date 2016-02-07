@@ -1175,6 +1175,8 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateDevelopmentTest()
         {
+            Assert.IsFalse(HasGitDifferences());
+
             var fullyQualifiedDomainName = "Xi.dev.yadayadasoftware.com";
             
 
