@@ -1,0 +1,2929 @@
+{
+  "Description": "active-directory-backup:df7cfa6f7906f35a72ad34fcaff0611ecb37fa19",
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "VpcAlpha": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "10.0.0.0/16",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "VpcAlpha"
+          }
+        ],
+        "EnableDnsHostnames": true,
+        "EnableDnsSupport": true
+      }
+    },
+    "VpcAlphaInternetGateway": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "VpcAlphaInternetGateway"
+          }
+        ]
+      }
+    },
+    "VpcAlphaInternetGatewayAttachment": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "InternetGatewayId": {
+          "Ref": "VpcAlphaInternetGateway"
+        },
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        }
+      }
+    },
+    "SubnetDmz2": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "CidrBlock": "10.0.255.0/28",
+        "AvailabilityZone": "us-east-1a",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "SubnetDmz2"
+          }
+        ]
+      }
+    },
+    "RouteTable4SubnetDmz2": {
+      "Type": "AWS::EC2::RouteTable",
+      "DependsOn": [
+        "VpcAlphaInternetGateway"
+      ],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "RouteTable4SubnetDmz2"
+          }
+        ]
+      }
+    },
+    "Route4SubnetDmz2": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": [
+        "VpcAlphaInternetGateway"
+      ],
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "RouteTable4SubnetDmz2"
+        },
+        "GatewayId": {
+          "Ref": "VpcAlphaInternetGateway"
+        }
+      }
+    },
+    "SubnetRouteTableAssociation4SubnetDmz2RouteTable4SubnetDmz2": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RouteTable4SubnetDmz2"
+        },
+        "SubnetId": {
+          "Ref": "SubnetDmz2"
+        }
+      }
+    },
+    "SecurityGroup4Nat": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "GroupDescription": "Enables Ssh access to NAT1 in AZ1 via port 22 and outbound internet access via private subnets",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 22,
+            "IpProtocol": "tcp",
+            "ToPort": 22
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": -1,
+            "IpProtocol": "icmp",
+            "ToPort": -1
+          },
+          {
+            "CidrIp": "10.0.0.0/24",
+            "FromPort": 1,
+            "IpProtocol": "-1",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.0.0/24",
+            "FromPort": -1,
+            "IpProtocol": "icmp",
+            "ToPort": -1
+          },
+          {
+            "CidrIp": "10.0.1.0/24",
+            "FromPort": 1,
+            "IpProtocol": "-1",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.1.0/24",
+            "FromPort": -1,
+            "IpProtocol": "icmp",
+            "ToPort": -1
+          },
+          {
+            "CidrIp": "10.0.2.0/24",
+            "FromPort": 1,
+            "IpProtocol": "-1",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.2.0/24",
+            "FromPort": -1,
+            "IpProtocol": "icmp",
+            "ToPort": -1
+          },
+          {
+            "CidrIp": "10.0.3.0/24",
+            "FromPort": 1,
+            "IpProtocol": "-1",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.3.0/24",
+            "FromPort": -1,
+            "IpProtocol": "icmp",
+            "ToPort": -1
+          },
+          {
+            "CidrIp": "10.0.4.0/24",
+            "FromPort": 1,
+            "IpProtocol": "-1",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.4.0/24",
+            "FromPort": -1,
+            "IpProtocol": "icmp",
+            "ToPort": -1
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "SecurityGroup4Nat"
+          }
+        ]
+      }
+    },
+    "SubnetDmz1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "CidrBlock": "10.0.127.0/28",
+        "AvailabilityZone": "us-east-1a",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "SubnetDmz1"
+          }
+        ]
+      }
+    },
+    "RouteTable4SubnetDmz1": {
+      "Type": "AWS::EC2::RouteTable",
+      "DependsOn": [
+        "VpcAlphaInternetGateway"
+      ],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "RouteTable4SubnetDmz1"
+          }
+        ]
+      }
+    },
+    "Route4SubnetDmz1": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": [
+        "VpcAlphaInternetGateway"
+      ],
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "RouteTable4SubnetDmz1"
+        },
+        "GatewayId": {
+          "Ref": "VpcAlphaInternetGateway"
+        }
+      }
+    },
+    "SubnetRouteTableAssociation4SubnetDmz1RouteTable4SubnetDmz1": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RouteTable4SubnetDmz1"
+        },
+        "SubnetId": {
+          "Ref": "SubnetDmz1"
+        }
+      }
+    },
+    "Nat1": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": "t2.micro",
+        "ImageId": "ami-4c9e4b24",
+        "KeyName": {
+          "Ref": "KeyPairName"
+        },
+        "SourceDestCheck": false,
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": true,
+            "DeviceIndex": 0,
+            "DeleteOnTermination": true,
+            "SubnetId": {
+              "Ref": "SubnetDmz1"
+            },
+            "GroupSet": [
+              {
+                "Ref": "SecurityGroup4Nat"
+              }
+            ]
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name"
+          },
+          {
+            "Key": "Name",
+            "Value": "Nat1"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": ""
+        }
+      }
+    },
+    "Subnet4DomainController1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "CidrBlock": "10.0.0.0/24",
+        "AvailabilityZone": "us-east-1a",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Subnet4DomainController1"
+          }
+        ]
+      }
+    },
+    "RouteTable4Subnet4DomainController1": {
+      "Type": "AWS::EC2::RouteTable",
+      "DependsOn": [
+        "VpcAlphaInternetGateway"
+      ],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "RouteTable4Subnet4DomainController1"
+          }
+        ]
+      }
+    },
+    "Route4Subnet4DomainController1": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "RouteTable4Subnet4DomainController1"
+        },
+        "InstanceId": {
+          "Ref": "Nat1"
+        }
+      }
+    },
+    "SubnetRouteTableAssociation4Subnet4DomainController1RouteTable4Subnet4DomainController1": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RouteTable4Subnet4DomainController1"
+        },
+        "SubnetId": {
+          "Ref": "Subnet4DomainController1"
+        }
+      }
+    },
+    "SecurityGroup4SqlServer4Tfs": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "GroupDescription": "Allows communication to SQLServer Service",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "10.0.127.0/28",
+            "FromPort": 3389,
+            "IpProtocol": "tcp",
+            "ToPort": 3389
+          },
+          {
+            "CidrIp": "10.0.255.0/28",
+            "FromPort": 3389,
+            "IpProtocol": "tcp",
+            "ToPort": 3389
+          },
+          {
+            "CidrIp": "10.0.2.0/24",
+            "FromPort": 1433,
+            "IpProtocol": "tcp",
+            "ToPort": 1433
+          },
+          {
+            "CidrIp": "10.0.2.0/24",
+            "FromPort": 445,
+            "IpProtocol": "tcp",
+            "ToPort": 445
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "SecurityGroup4SqlServer4Tfs"
+          }
+        ]
+      }
+    },
+    "Subnet4SqlServer4Tfs": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "CidrBlock": "10.0.1.0/24",
+        "AvailabilityZone": "us-east-1a",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Subnet4SqlServer4Tfs"
+          }
+        ]
+      }
+    },
+    "RouteTable4Subnet4SqlServer4Tfs": {
+      "Type": "AWS::EC2::RouteTable",
+      "DependsOn": [
+        "VpcAlphaInternetGateway"
+      ],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "RouteTable4Subnet4SqlServer4Tfs"
+          }
+        ]
+      }
+    },
+    "Route4Subnet4SqlServer4Tfs": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "RouteTable4Subnet4SqlServer4Tfs"
+        },
+        "InstanceId": {
+          "Ref": "Nat1"
+        }
+      }
+    },
+    "SubnetRouteTableAssociation4Subnet4SqlServer4TfsRouteTable4Subnet4SqlServer4Tfs": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RouteTable4Subnet4SqlServer4Tfs"
+        },
+        "SubnetId": {
+          "Ref": "Subnet4SqlServer4Tfs"
+        }
+      }
+    },
+    "Subnet4TfsServer": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "CidrBlock": "10.0.2.0/24",
+        "AvailabilityZone": "us-east-1a",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Subnet4TfsServer"
+          }
+        ]
+      }
+    },
+    "RouteTable4Subnet4TfsServer": {
+      "Type": "AWS::EC2::RouteTable",
+      "DependsOn": [
+        "VpcAlphaInternetGateway"
+      ],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "RouteTable4Subnet4TfsServer"
+          }
+        ]
+      }
+    },
+    "Route4Subnet4TfsServer": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "RouteTable4Subnet4TfsServer"
+        },
+        "InstanceId": {
+          "Ref": "Nat1"
+        }
+      }
+    },
+    "SubnetRouteTableAssociation4Subnet4TfsServerRouteTable4Subnet4TfsServer": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RouteTable4Subnet4TfsServer"
+        },
+        "SubnetId": {
+          "Ref": "Subnet4TfsServer"
+        }
+      }
+    },
+    "SecurityGroup4TfsServer": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "GroupDescription": "Allows various TFS communication",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "10.0.127.0/28",
+            "FromPort": 3389,
+            "IpProtocol": "tcp",
+            "ToPort": 3389
+          },
+          {
+            "CidrIp": "10.0.255.0/28",
+            "FromPort": 3389,
+            "IpProtocol": "tcp",
+            "ToPort": 3389
+          },
+          {
+            "CidrIp": "10.0.3.0/24",
+            "FromPort": 8080,
+            "IpProtocol": "tcp",
+            "ToPort": 8080
+          },
+          {
+            "CidrIp": "10.0.3.0/24",
+            "FromPort": 9191,
+            "IpProtocol": "tcp",
+            "ToPort": 9191
+          },
+          {
+            "SourceSecurityGroupId": {
+              "Ref": "SecurityGroup4Workstation"
+            },
+            "FromPort": 8080,
+            "IpProtocol": "tcp",
+            "ToPort": 8080
+          },
+          {
+            "CidrIp": "10.0.4.0/24",
+            "FromPort": 8080,
+            "IpProtocol": "tcp",
+            "ToPort": 8080
+          },
+          {
+            "CidrIp": "10.0.4.0/24",
+            "FromPort": 9191,
+            "IpProtocol": "tcp",
+            "ToPort": 9191
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "SecurityGroup4TfsServer"
+          }
+        ]
+      }
+    },
+    "Subnet4BuildServer": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "CidrBlock": "10.0.3.0/24",
+        "AvailabilityZone": "us-east-1a",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Subnet4BuildServer"
+          }
+        ]
+      }
+    },
+    "RouteTable4Subnet4BuildServer": {
+      "Type": "AWS::EC2::RouteTable",
+      "DependsOn": [
+        "VpcAlphaInternetGateway"
+      ],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "RouteTable4Subnet4BuildServer"
+          }
+        ]
+      }
+    },
+    "Route4Subnet4BuildServer": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "RouteTable4Subnet4BuildServer"
+        },
+        "InstanceId": {
+          "Ref": "Nat1"
+        }
+      }
+    },
+    "SubnetRouteTableAssociation4Subnet4BuildServerRouteTable4Subnet4BuildServer": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RouteTable4Subnet4BuildServer"
+        },
+        "SubnetId": {
+          "Ref": "Subnet4BuildServer"
+        }
+      }
+    },
+    "SecurityGroup4Build2Db": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "GroupDescription": "Allows communication to Db",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "10.0.3.0/24",
+            "FromPort": 3306,
+            "IpProtocol": "tcp",
+            "ToPort": 3306
+          },
+          {
+            "CidrIp": "10.0.3.0/24",
+            "FromPort": 3306,
+            "IpProtocol": "tcp",
+            "ToPort": 3306
+          },
+          {
+            "CidrIp": "10.0.4.0/24",
+            "FromPort": 3306,
+            "IpProtocol": "tcp",
+            "ToPort": 3306
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "SecurityGroup4Build2Db"
+          }
+        ]
+      }
+    },
+    "SecurityGroup4Build2SqlSever": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "GroupDescription": "Allows communication to SqlServer",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "10.0.3.0/24",
+            "FromPort": 1433,
+            "IpProtocol": "tcp",
+            "ToPort": 1433
+          },
+          {
+            "CidrIp": "10.0.4.0/24",
+            "FromPort": 1433,
+            "IpProtocol": "tcp",
+            "ToPort": 1433
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "SecurityGroup4Build2SqlSever"
+          }
+        ]
+      }
+    },
+    "Subnet4Build2Database": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "CidrBlock": "10.0.5.0/24",
+        "AvailabilityZone": "us-east-1e",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Subnet4Build2Database"
+          }
+        ]
+      }
+    },
+    "RouteTable4Subnet4Build2Database": {
+      "Type": "AWS::EC2::RouteTable",
+      "DependsOn": [
+        "VpcAlphaInternetGateway"
+      ],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "RouteTable4Subnet4Build2Database"
+          }
+        ]
+      }
+    },
+    "Route4Subnet4Build2Database": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": [
+        "VpcAlphaInternetGateway"
+      ],
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "RouteTable4Subnet4Build2Database"
+        },
+        "GatewayId": {
+          "Ref": "VpcAlphaInternetGateway"
+        }
+      }
+    },
+    "SubnetRouteTableAssociation4Subnet4Build2DatabaseRouteTable4Subnet4Build2Database": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RouteTable4Subnet4Build2Database"
+        },
+        "SubnetId": {
+          "Ref": "Subnet4Build2Database"
+        }
+      }
+    },
+    "SecurityGroup4BuildServer": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "GroupDescription": "Allows build controller to build agent communication",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "10.0.127.0/28",
+            "FromPort": 3389,
+            "IpProtocol": "tcp",
+            "ToPort": 3389
+          },
+          {
+            "CidrIp": "10.0.255.0/28",
+            "FromPort": 3389,
+            "IpProtocol": "tcp",
+            "ToPort": 3389
+          },
+          {
+            "CidrIp": "10.0.2.0/24",
+            "FromPort": 9191,
+            "IpProtocol": "tcp",
+            "ToPort": 9191
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "SecurityGroup4BuildServer"
+          }
+        ]
+      }
+    },
+    "SecurityGroup4Workstation": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "GroupDescription": "Security Group To Contain Workstations",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "SecurityGroup4Workstation"
+          }
+        ]
+      }
+    },
+    "Subnet4Workstation": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "CidrBlock": "10.0.4.0/24",
+        "AvailabilityZone": "us-east-1a",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Subnet4Workstation"
+          }
+        ]
+      }
+    },
+    "RouteTable4Subnet4Workstation": {
+      "Type": "AWS::EC2::RouteTable",
+      "DependsOn": [
+        "VpcAlphaInternetGateway"
+      ],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "RouteTable4Subnet4Workstation"
+          }
+        ]
+      }
+    },
+    "Route4Subnet4Workstation": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "RouteTable4Subnet4Workstation"
+        },
+        "InstanceId": {
+          "Ref": "Nat1"
+        }
+      }
+    },
+    "SubnetRouteTableAssociation4Subnet4WorkstationRouteTable4Subnet4Workstation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RouteTable4Subnet4Workstation"
+        },
+        "SubnetId": {
+          "Ref": "Subnet4Workstation"
+        }
+      }
+    },
+    "DomainController": {
+      "Type": "AWS::EC2::Instance",
+      "Metadata": {
+        "AWS::CloudFormation::Init": {
+          "configSets": {
+            "LaunchConfigurationConfigSet": [
+              "LaunchConfigurationConfig",
+              "Rename"
+            ],
+            "DomainControllerPackage": [
+              "DomainControllerPackage"
+            ],
+            "Chrome": [
+              "Chrome"
+            ]
+          },
+          "LaunchConfigurationConfig": {
+            "commands": {
+              "000DisableWindowsFirewall": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\""
+                    ]
+                  ]
+                }
+              },
+              "001SetTimeZone": {
+                "waitAfterCompletion": "0",
+                "command": "tzutil /s \"Eastern Standard Time\""
+              }
+            },
+            "files": {
+              "c:\\cfn\\cfn-hup.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[main]\nstack=",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      "\nregion=",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\ninterval=1\nverbose=true"
+                    ]
+                  ]
+                }
+              },
+              "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[cfn-auto-reloader-hook]\n",
+                      "triggers=post.update\n",
+                      "path=Resources.DomainController.Metadata.AWS::CloudFormation::Init\n",
+                      "action=",
+                      "cfn-init.exe -v -c ",
+                      "LaunchConfigurationConfigSet,DomainControllerPackage,Chrome",
+                      " -s ",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      " -r ",
+                      "DomainController",
+                      " --region ",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\n"
+                    ]
+                  ]
+                }
+              }
+            },
+            "services": {
+              "windows": {
+                "cfn-hup": {
+                  "enabled": true,
+                  "ensureRunning": true,
+                  "files": [
+                    "c:\\cfn\\cfn-hup.conf",
+                    "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf"
+                  ]
+                }
+              }
+            },
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          },
+          "Rename": {
+            "commands": {
+              "000RenameComputer": {
+                "waitAfterCompletion": "forever",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "\"Rename-Computer -NewName DomainControlle -Restart -Force\""
+                    ]
+                  ]
+                },
+                "test": "IF \"%COMPUTERNAME%\"==\"DOMAINCONTROLLE\" EXIT /B 1 ELSE EXIT /B 0"
+              }
+            },
+            "files": {},
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          },
+          "DomainControllerPackage": {
+            "commands": {
+              "000InstallPrequisites": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Install-WindowsFeature AD-Domain-Services, rsat-adds -IncludeAllSubFeature\""
+                    ]
+                  ]
+                },
+                "test": "powershell.exe -ExecutionPolicy RemoteSigned c:/cfn/scripts/check-for-domain.ps1"
+              },
+              "001AddRSATADPowerShell": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter\""
+                    ]
+                  ]
+                }
+              },
+              "002InstallActiveDirectoryDomainServices": {
+                "waitAfterCompletion": "43200",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Install-ADDSForest -DomainName",
+                      {
+                        "Fn::Join": [
+                          ".",
+                          [
+                            {
+                              "Ref": "DomainVersion"
+                            },
+                            {
+                              "Ref": "DomainAppName"
+                            },
+                            {
+                              "Ref": "DomainTopLevelName"
+                            }
+                          ]
+                        ]
+                      },
+                      "-SafeModeAdministratorPassword (convertto-securestring \"jhkjhsdf338!\" -asplaintext -force) -DomainMode Win2012 -DomainNetbiosName",
+                      {
+                        "Ref": "DomainNetBiosName"
+                      },
+                      "-ForestMode Win2012 -Confirm:$false -Force\""
+                    ]
+                  ]
+                },
+                "test": "powershell.exe -ExecutionPolicy RemoteSigned c:/cfn/scripts/check-for-domain.ps1"
+              },
+              "003RestartNetLogon": {
+                "waitAfterCompletion": "30",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "-Command Restart-Service NetLogon -EA 0"
+                    ]
+                  ]
+                }
+              },
+              "004CreateAdminUser": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "\"New-ADUser -Name ",
+                      {
+                        "Ref": "DomainAdminUsername"
+                      },
+                      " -UserPrincipalName ",
+                      {
+                        "Ref": "DomainAdminUsername"
+                      },
+                      "@",
+                      {
+                        "Fn::Join": [
+                          ".",
+                          [
+                            {
+                              "Ref": "DomainVersion"
+                            },
+                            {
+                              "Ref": "DomainAppName"
+                            },
+                            {
+                              "Ref": "DomainTopLevelName"
+                            }
+                          ]
+                        ]
+                      },
+                      " -AccountPassword (ConvertTo-SecureString \"",
+                      {
+                        "Ref": "DomainAdminPassword"
+                      },
+                      "\" -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\""
+                    ]
+                  ]
+                },
+                "test": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe -ExecutionPolicy RemoteSigned ",
+                      "c:/cfn/scripts/check-for-user-exists.ps1",
+                      {
+                        "Ref": "DomainAdminUsername"
+                      }
+                    ]
+                  ]
+                }
+              },
+              "005CreateTfsUser": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "\"New-ADUser -Name ",
+                      {
+                        "Ref": "TfsServiceAccountName"
+                      },
+                      " -UserPrincipalName ",
+                      {
+                        "Ref": "TfsServiceAccountName"
+                      },
+                      "@",
+                      {
+                        "Fn::Join": [
+                          ".",
+                          [
+                            {
+                              "Ref": "DomainVersion"
+                            },
+                            {
+                              "Ref": "DomainAppName"
+                            },
+                            {
+                              "Ref": "DomainTopLevelName"
+                            }
+                          ]
+                        ]
+                      },
+                      " -AccountPassword (ConvertTo-SecureString \"",
+                      {
+                        "Ref": "TfsServicePassword"
+                      },
+                      "\" -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\""
+                    ]
+                  ]
+                },
+                "test": "powershell.exe -ExecutionPolicy RemoteSigned c:/cfn/scripts/check-for-user-exists.ps1 tfsservice"
+              },
+              "006UpdateAdminUser": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe -ExecutionPolicy RemoteSigned ",
+                      "-Command \"c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1 -Members",
+                      {
+                        "Ref": "DomainAdminUsername"
+                      },
+                      "\""
+                    ]
+                  ]
+                }
+              },
+              "007SignalCompleteWaitCondition4DomainController4DomainControllerPackage": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "cfn-signal.exe -e 0 \"",
+                      {
+                        "Ref": "WaitCondition4DomainController4DomainControllerPackageHandle"
+                      },
+                      "\""
+                    ]
+                  ]
+                }
+              },
+              "008RenameDefaultSite": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "\"Get-ADObject -SearchBase (Get-ADRootDSE).ConfigurationNamingContext -filter {Name -eq 'Default-First-Site-Name'} | Rename-ADObject -NewName",
+                      {
+                        "Ref": "Subnet4DomainController1"
+                      },
+                      "\""
+                    ]
+                  ]
+                }
+              },
+              "009InstallServerBackup": {
+                "waitAfterCompletion": "43200",
+                "command": [
+                  {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "powershell.exe ",
+                        "Add-WindowsFeature Windows-Server-Backup"
+                      ]
+                    ]
+                  }
+                ]
+              },
+              "010CreateSite4SubnetDmz1": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "-Command  \"New-ADReplicationSite",
+                      {
+                        "Ref": "SubnetDmz1"
+                      },
+                      "\""
+                    ]
+                  ]
+                },
+                "test": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe -ExecutionPolicy RemoteSigned ",
+                      "c:/cfn/scripts/check-ADReplicationSite-exists.ps1",
+                      {
+                        "Ref": "SubnetDmz1"
+                      }
+                    ]
+                  ]
+                }
+              },
+              "011CreateSubnetSubnetDmz1": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "-Command New-ADReplicationSubnet -Name 10.0.127.0/28 -Site ",
+                      {
+                        "Ref": "SubnetDmz1"
+                      }
+                    ]
+                  ]
+                },
+                "test": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe -ExecutionPolicy RemoteSigned ",
+                      "c:/cfn/scripts/check-ADReplicationSubnet-exists.ps1",
+                      "10.0.127.0/28"
+                    ]
+                  ]
+                }
+              },
+              "012CreateSite4Subnet4SqlServer4Tfs": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "-Command  \"New-ADReplicationSite",
+                      {
+                        "Ref": "Subnet4SqlServer4Tfs"
+                      },
+                      "\""
+                    ]
+                  ]
+                },
+                "test": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe -ExecutionPolicy RemoteSigned ",
+                      "c:/cfn/scripts/check-ADReplicationSite-exists.ps1",
+                      {
+                        "Ref": "Subnet4SqlServer4Tfs"
+                      }
+                    ]
+                  ]
+                }
+              },
+              "013CreateSubnetSubnet4SqlServer4Tfs": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "-Command New-ADReplicationSubnet -Name 10.0.1.0/24 -Site ",
+                      {
+                        "Ref": "Subnet4SqlServer4Tfs"
+                      }
+                    ]
+                  ]
+                },
+                "test": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe -ExecutionPolicy RemoteSigned ",
+                      "c:/cfn/scripts/check-ADReplicationSubnet-exists.ps1",
+                      "10.0.1.0/24"
+                    ]
+                  ]
+                }
+              },
+              "014CreateSite4Subnet4TfsServer": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "-Command  \"New-ADReplicationSite",
+                      {
+                        "Ref": "Subnet4TfsServer"
+                      },
+                      "\""
+                    ]
+                  ]
+                },
+                "test": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe -ExecutionPolicy RemoteSigned ",
+                      "c:/cfn/scripts/check-ADReplicationSite-exists.ps1",
+                      {
+                        "Ref": "Subnet4TfsServer"
+                      }
+                    ]
+                  ]
+                }
+              },
+              "015CreateSubnetSubnet4TfsServer": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "-Command New-ADReplicationSubnet -Name 10.0.2.0/24 -Site ",
+                      {
+                        "Ref": "Subnet4TfsServer"
+                      }
+                    ]
+                  ]
+                },
+                "test": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe -ExecutionPolicy RemoteSigned ",
+                      "c:/cfn/scripts/check-ADReplicationSubnet-exists.ps1",
+                      "10.0.2.0/24"
+                    ]
+                  ]
+                }
+              }
+            },
+            "files": {
+              "c:/cfn/scripts/check-for-domain.ps1": {
+                "content": {},
+                "source": "https://s3.amazonaws.com/gtbb/check-for-domain.ps1"
+              },
+              "c:\\cfn\\scripts\\ConvertTo-EnterpriseAdmin.ps1": {
+                "content": {},
+                "source": "https://s3.amazonaws.com/quickstart-reference/microsoft/activedirectory/latest/scripts/ConvertTo-EnterpriseAdmin.ps1"
+              },
+              "c:/cfn/scripts/check-for-user-exists.ps1": {
+                "content": {},
+                "source": "https://s3.amazonaws.com/gtbb/check-for-user-exists.ps1"
+              },
+              "c:/cfn/scripts/check-ADReplicationSite-exists.ps1": {
+                "content": {},
+                "source": "https://s3.amazonaws.com/gtbb/check-ADReplicationSite-exists.ps1"
+              },
+              "c:/cfn/scripts/check-ADReplicationSubnet-exists.ps1": {
+                "content": {},
+                "source": "https://s3.amazonaws.com/gtbb/check-ADReplicationSubnet-exists.ps1"
+              }
+            },
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          },
+          "Chrome": {
+            "commands": {},
+            "files": {},
+            "services": {},
+            "sources": {},
+            "packages": {
+              "msi": {
+                "googlechromestandaloneenterprise64": "https://s3.amazonaws.com/gtbb/software/googlechromestandaloneenterprise64.msi"
+              }
+            },
+            "ignoreErrors": "False"
+          }
+        },
+        "AWS::CloudFormation::Authentication": {
+          "S3AccessCreds": {
+            "accessKeyId": "AKIAJMUQ7GPWQNKSODIA",
+            "secretKey": "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",
+            "buckets": [
+              "gtbb"
+            ],
+            "type": "S3"
+          }
+        }
+      },
+      "DependsOn": [
+        "Nat1"
+      ],
+      "Properties": {
+        "SubnetId": {
+          "Ref": "Subnet4DomainController1"
+        },
+        "InstanceType": "t2.small",
+        "ImageId": "ami-9a0558f0",
+        "KeyName": {
+          "Ref": "KeyPairName"
+        },
+        "SourceDestCheck": true,
+        "Tags": [
+          {
+            "Key": "Name"
+          },
+          {
+            "Key": "Name",
+            "Value": "DomainController"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "<script>",
+                "cfn-init.exe -v -c ",
+                "LaunchConfigurationConfigSet,DomainControllerPackage,Chrome",
+                " -s ",
+                {
+                  "Ref": "AWS::StackId"
+                },
+                " -r DomainController --region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "</script>"
+              ]
+            ]
+          }
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "SecurityGroup4DomainController"
+          }
+        ],
+        "BlockDeviceMappings": [
+          {
+            "Ebs": {
+              "VolumeSize": 40,
+              "VolumeType": "standard"
+            },
+            "DeviceName": "xvdf"
+          }
+        ]
+      }
+    },
+    "WaitCondition4DomainController4DomainControllerPackage": {
+      "Type": "AWS::CloudFormation::WaitCondition",
+      "Properties": {
+        "Timeout": 43200,
+        "Handle": {
+          "Ref": "WaitCondition4DomainController4DomainControllerPackageHandle"
+        }
+      }
+    },
+    "WaitCondition4DomainController4DomainControllerPackageHandle": {
+      "Type": "AWS::CloudFormation::WaitConditionHandle",
+      "Properties": {}
+    },
+    "SecurityGroup4DomainController": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "GroupDescription": "Domain Controller",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 5985,
+            "IpProtocol": "tcp",
+            "ToPort": 5985
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 80,
+            "IpProtocol": "tcp",
+            "ToPort": 80
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 123,
+            "IpProtocol": "udp",
+            "ToPort": 123
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 135,
+            "IpProtocol": "tcp",
+            "ToPort": 135
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 9389,
+            "IpProtocol": "tcp",
+            "ToPort": 9389
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 138,
+            "IpProtocol": "udp",
+            "ToPort": 138
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 445,
+            "IpProtocol": "tcp",
+            "ToPort": 445
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 445,
+            "IpProtocol": "udp",
+            "ToPort": 445
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 464,
+            "IpProtocol": "tcp",
+            "ToPort": 464
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 464,
+            "IpProtocol": "udp",
+            "ToPort": 464
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 49152,
+            "IpProtocol": "tcp",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 49152,
+            "IpProtocol": "udp",
+            "ToPort": 65535
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 389,
+            "IpProtocol": "tcp",
+            "ToPort": 389
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 389,
+            "IpProtocol": "udp",
+            "ToPort": 389
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 636,
+            "IpProtocol": "tcp",
+            "ToPort": 636
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 3268,
+            "IpProtocol": "tcp",
+            "ToPort": 3269
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 53,
+            "IpProtocol": "tcp",
+            "ToPort": 53
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 53,
+            "IpProtocol": "udp",
+            "ToPort": 53
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 88,
+            "IpProtocol": "tcp",
+            "ToPort": 88
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 88,
+            "IpProtocol": "udp",
+            "ToPort": 88
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 3389,
+            "IpProtocol": "tcp",
+            "ToPort": 3389
+          },
+          {
+            "CidrIp": "10.0.0.0/16",
+            "FromPort": 3389,
+            "IpProtocol": "udp",
+            "ToPort": 3389
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "SecurityGroup4DomainController"
+          }
+        ]
+      }
+    },
+    "DhcpOptions": {
+      "Type": "AWS::EC2::DHCPOptions",
+      "Properties": {
+        "DomainName": {
+          "Fn::Join": [
+            ".",
+            [
+              {
+                "Ref": "DomainVersion"
+              },
+              {
+                "Ref": "DomainAppName"
+              },
+              {
+                "Ref": "DomainTopLevelName"
+              }
+            ]
+          ]
+        },
+        "DomainNameServers": [
+          {
+            "Fn::Join": [
+              ",",
+              [
+                {
+                  "Fn::GetAtt": [
+                    "DomainController",
+                    "PrivateIp"
+                  ]
+                },
+                "10.0.0.2"
+              ]
+            ]
+          }
+        ],
+        "NetbiosNameServers": [
+          {
+            "Fn::Join": [
+              ",",
+              [
+                {
+                  "Fn::GetAtt": [
+                    "DomainController",
+                    "PrivateIp"
+                  ]
+                }
+              ]
+            ]
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "DhcpOptions"
+          }
+        ],
+        "NetbiosNodeType": "2"
+      }
+    },
+    "VpcDhcpOptionsAssociation4DhcpOptions": {
+      "Type": "AWS::EC2::VPCDHCPOptionsAssociation",
+      "Properties": {
+        "DhcpOptionsId": {
+          "Ref": "DhcpOptions"
+        },
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        }
+      }
+    },
+    "Rdp": {
+      "Type": "AWS::EC2::Instance",
+      "Metadata": {
+        "AWS::CloudFormation::Init": {
+          "configSets": {
+            "LaunchConfigurationConfigSet": [
+              "LaunchConfigurationConfig",
+              "Rename"
+            ],
+            "JoinDomain": [
+              "JoinDomain"
+            ],
+            "RemoteDesktop": [
+              "Install"
+            ]
+          },
+          "LaunchConfigurationConfig": {
+            "commands": {
+              "000DisableWindowsFirewall": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\""
+                    ]
+                  ]
+                }
+              },
+              "001SetTimeZone": {
+                "waitAfterCompletion": "0",
+                "command": "tzutil /s \"Eastern Standard Time\""
+              }
+            },
+            "files": {
+              "c:\\cfn\\cfn-hup.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[main]\nstack=",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      "\nregion=",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\ninterval=1\nverbose=true"
+                    ]
+                  ]
+                }
+              },
+              "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[cfn-auto-reloader-hook]\n",
+                      "triggers=post.update\n",
+                      "path=Resources.Rdp.Metadata.AWS::CloudFormation::Init\n",
+                      "action=",
+                      "cfn-init.exe -v -c ",
+                      "LaunchConfigurationConfigSet,JoinDomain,RemoteDesktop",
+                      " -s ",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      " -r ",
+                      "Rdp",
+                      " --region ",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\n"
+                    ]
+                  ]
+                }
+              },
+              "c:/chef/node.json": {
+                "content": {
+                  "domain": {
+                    "Ref": "DomainNetBiosName"
+                  }
+                }
+              }
+            },
+            "services": {
+              "windows": {
+                "cfn-hup": {
+                  "enabled": true,
+                  "ensureRunning": true,
+                  "files": [
+                    "c:\\cfn\\cfn-hup.conf",
+                    "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf"
+                  ]
+                }
+              }
+            },
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          },
+          "Rename": {
+            "commands": {
+              "000RenameComputer": {
+                "waitAfterCompletion": "forever",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "\"Rename-Computer -NewName Rdp -Restart -Force\""
+                    ]
+                  ]
+                },
+                "test": "IF \"%COMPUTERNAME%\"==\"RDP\" EXIT /B 1 ELSE EXIT /B 0"
+              }
+            },
+            "files": {},
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          },
+          "JoinDomain": {
+            "commands": {
+              "000AddRSATADPowerShell": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter"
+                    ]
+                  ]
+                }
+              },
+              "001JoinDomain": {
+                "waitAfterCompletion": "forever",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"",
+                      "if ((gwmi win32_computersystem).partofdomain -eq $true)             {",
+                      "write-host -fore green \"I am domain joined!\"",
+                      "} else {",
+                      "Add-Computer -DomainName ",
+                      {
+                        "Fn::Join": [
+                          ".",
+                          [
+                            {
+                              "Ref": "DomainVersion"
+                            },
+                            {
+                              "Ref": "DomainAppName"
+                            },
+                            {
+                              "Ref": "DomainTopLevelName"
+                            }
+                          ]
+                        ]
+                      },
+                      " -Credential (New-Object System.Management.Automation.PSCredential('",
+                      {
+                        "Ref": "DomainNetBiosName"
+                      },
+                      "\\",
+                      {
+                        "Ref": "DomainAdminUsername"
+                      },
+                      "',(ConvertTo-SecureString \"",
+                      {
+                        "Ref": "DomainAdminPassword"
+                      },
+                      "\" -AsPlainText -Force))) ",
+                      "-Restart\"",
+                      " }"
+                    ]
+                  ]
+                },
+                "test": "powershell.exe -ExecutionPolicy RemoteSigned c:/cfn/scripts/check-for-domain.ps1"
+              }
+            },
+            "files": {
+              "c:/cfn/scripts/check-for-domain.ps1": {
+                "content": {},
+                "source": "https://s3.amazonaws.com/gtbb/check-for-domain.ps1"
+              }
+            },
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          },
+          "Install": {
+            "commands": {
+              "000a-install-rds": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Install-WindowsFeature RDS-Gateway,RSAT-RDS-Gateway\""
+                    ]
+                  ]
+                }
+              },
+              "001b-configure-rdgw": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe -ExecutionPolicy RemoteSigned ",
+                      " -ExecutionPolicy RemoteSigned ",
+                      " C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN ",
+                      "Rdp",
+                      ".",
+                      {
+                        "Ref": "DomainVersion"
+                      },
+                      ".",
+                      {
+                        "Ref": "DomainAppName"
+                      },
+                      ".",
+                      {
+                        "Ref": "DomainTopLevelName"
+                      },
+                      " -DomainNetBiosName ",
+                      {
+                        "Ref": "DomainNetBiosName"
+                      },
+                      " -GroupName 'domain admins'"
+                    ]
+                  ]
+                },
+                "test": "IF EXIST c:/rdp.cer EXIT 1"
+              }
+            },
+            "files": {
+              "c:\\cfn\\scripts\\Configure-RDGW.ps1": {
+                "content": {},
+                "source": "https://s3.amazonaws.com/gtbb/Configure-RDGW.ps1"
+              }
+            },
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          }
+        },
+        "AWS::CloudFormation::Authentication": {
+          "S3AccessCreds": {
+            "accessKeyId": "AKIAJMUQ7GPWQNKSODIA",
+            "secretKey": "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",
+            "buckets": [
+              "gtbb"
+            ],
+            "type": "S3"
+          }
+        }
+      },
+      "DependsOn": [
+        "WaitCondition4DomainController4DomainControllerPackage"
+      ],
+      "Properties": {
+        "SubnetId": {
+          "Ref": "SubnetDmz1"
+        },
+        "InstanceType": "t2.micro",
+        "ImageId": "ami-9a0558f0",
+        "KeyName": {
+          "Ref": "KeyPairName"
+        },
+        "SourceDestCheck": true,
+        "Tags": [
+          {
+            "Key": "Name"
+          },
+          {
+            "Key": "Name",
+            "Value": "Rdp"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "<script>",
+                "cfn-init.exe -v -c ",
+                "LaunchConfigurationConfigSet,JoinDomain,RemoteDesktop",
+                " -s ",
+                {
+                  "Ref": "AWS::StackId"
+                },
+                " -r Rdp --region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "</script>"
+              ]
+            ]
+          }
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "SecurityGroup4Rdp"
+          }
+        ]
+      }
+    },
+    "RecordSet4Rdp": {
+      "Type": "AWS::Route53::RecordSet",
+      "Properties": {
+        "TTL": "60",
+        "Type": "A",
+        "HostedZoneName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "DomainTopLevelName"
+              },
+              "."
+            ]
+          ]
+        },
+        "Name": {
+          "Fn::Join": [
+            ".",
+            [
+              "Rdp",
+              {
+                "Ref": "DomainVersion"
+              },
+              {
+                "Ref": "DomainAppName"
+              },
+              {
+                "Ref": "DomainTopLevelName"
+              }
+            ]
+          ]
+        },
+        "ResourceRecords": [
+          {
+            "Ref": "Eip4Rdp"
+          }
+        ]
+      }
+    },
+    "Eip4Rdp": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "InstanceId": {
+          "Ref": "Rdp"
+        },
+        "Domain": "vpc"
+      }
+    },
+    "SecurityGroup4Rdp": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcAlpha"
+        },
+        "GroupDescription": "Remote Desktop Security Group",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 3389,
+            "IpProtocol": "tcp",
+            "ToPort": 3389
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 443,
+            "IpProtocol": "tcp",
+            "ToPort": 443
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 80,
+            "IpProtocol": "tcp",
+            "ToPort": 80
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 3391,
+            "IpProtocol": "udp",
+            "ToPort": 3391
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": -1,
+            "IpProtocol": "icmp",
+            "ToPort": -1
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "SecurityGroup4Rdp"
+          }
+        ]
+      }
+    },
+    "Sql4Tfs": {
+      "Type": "AWS::EC2::Instance",
+      "Metadata": {
+        "AWS::CloudFormation::Init": {
+          "configSets": {
+            "LaunchConfigurationConfigSet": [
+              "LaunchConfigurationConfig",
+              "Rename"
+            ],
+            "JoinDomain": [
+              "JoinDomain"
+            ],
+            "SqlServerExpressFromAmi": [
+              "SqlServerExpressFromAmi"
+            ]
+          },
+          "LaunchConfigurationConfig": {
+            "commands": {
+              "000DisableWindowsFirewall": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\""
+                    ]
+                  ]
+                }
+              },
+              "001SetTimeZone": {
+                "waitAfterCompletion": "0",
+                "command": "tzutil /s \"Eastern Standard Time\""
+              }
+            },
+            "files": {
+              "c:\\cfn\\cfn-hup.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[main]\nstack=",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      "\nregion=",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\ninterval=1\nverbose=true"
+                    ]
+                  ]
+                }
+              },
+              "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[cfn-auto-reloader-hook]\n",
+                      "triggers=post.update\n",
+                      "path=Resources.Sql4Tfs.Metadata.AWS::CloudFormation::Init\n",
+                      "action=",
+                      "cfn-init.exe -v -c ",
+                      "LaunchConfigurationConfigSet,JoinDomain,SqlServerExpressFromAmi",
+                      " -s ",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      " -r ",
+                      "Sql4Tfs",
+                      " --region ",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\n"
+                    ]
+                  ]
+                }
+              },
+              "c:/chef/node.json": {
+                "content": {
+                  "domain": {
+                    "Ref": "DomainNetBiosName"
+                  }
+                }
+              }
+            },
+            "services": {
+              "windows": {
+                "cfn-hup": {
+                  "enabled": true,
+                  "ensureRunning": true,
+                  "files": [
+                    "c:\\cfn\\cfn-hup.conf",
+                    "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf"
+                  ]
+                }
+              }
+            },
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          },
+          "Rename": {
+            "commands": {
+              "000RenameComputer": {
+                "waitAfterCompletion": "forever",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "\"Rename-Computer -NewName Sql4Tfs -Restart -Force\""
+                    ]
+                  ]
+                },
+                "test": "IF \"%COMPUTERNAME%\"==\"SQL4TFS\" EXIT /B 1 ELSE EXIT /B 0"
+              }
+            },
+            "files": {},
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          },
+          "JoinDomain": {
+            "commands": {
+              "000AddRSATADPowerShell": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter"
+                    ]
+                  ]
+                }
+              },
+              "001JoinDomain": {
+                "waitAfterCompletion": "forever",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"",
+                      "if ((gwmi win32_computersystem).partofdomain -eq $true)             {",
+                      "write-host -fore green \"I am domain joined!\"",
+                      "} else {",
+                      "Add-Computer -DomainName ",
+                      {
+                        "Fn::Join": [
+                          ".",
+                          [
+                            {
+                              "Ref": "DomainVersion"
+                            },
+                            {
+                              "Ref": "DomainAppName"
+                            },
+                            {
+                              "Ref": "DomainTopLevelName"
+                            }
+                          ]
+                        ]
+                      },
+                      " -Credential (New-Object System.Management.Automation.PSCredential('",
+                      {
+                        "Ref": "DomainNetBiosName"
+                      },
+                      "\\",
+                      {
+                        "Ref": "DomainAdminUsername"
+                      },
+                      "',(ConvertTo-SecureString \"",
+                      {
+                        "Ref": "DomainAdminPassword"
+                      },
+                      "\" -AsPlainText -Force))) ",
+                      "-Restart\"",
+                      " }"
+                    ]
+                  ]
+                },
+                "test": "powershell.exe -ExecutionPolicy RemoteSigned c:/cfn/scripts/check-for-domain.ps1"
+              }
+            },
+            "files": {
+              "c:/cfn/scripts/check-for-domain.ps1": {
+                "content": {},
+                "source": "https://s3.amazonaws.com/gtbb/check-for-domain.ps1"
+              }
+            },
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          },
+          "SqlServerExpressFromAmi": {
+            "commands": {
+              "000CreateBackupShare": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "New-Item \"d:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"d:\\Backups\" -FullAccess @('NT AUTHORITY\\NETWORK SERVICE','",
+                      {
+                        "Ref": "DomainNetBiosName"
+                      },
+                      "\\",
+                      {
+                        "Ref": "TfsServiceAccountName"
+                      },
+                      "','",
+                      {
+                        "Ref": "DomainNetBiosName"
+                      },
+                      "\\Domain Admins",
+                      "')"
+                    ]
+                  ]
+                },
+                "test": "IF EXIST d:\\BACKUPS EXIT /B 1"
+              },
+              "001AddNetworkToSysadmin": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe -ExecutionPolicy RemoteSigned ",
+                      "c:/cfn/scripts/add-network-to-sysadmin.ps1",
+                      {
+                        "Ref": "DomainNetBiosName"
+                      }
+                    ]
+                  ]
+                }
+              },
+              "002SqlServerEnableTcp": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe -ExecutionPolicy RemoteSigned ",
+                      "c:/cfn/scripts/SqlServer-EnableTcp.ps1"
+                    ]
+                  ]
+                }
+              },
+              "003SetUserToTfsService": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe -ExecutionPolicy RemoteSigned ",
+                      "c:/cfn/scripts/change-sql-account.ps1",
+                      " ",
+                      {
+                        "Ref": "DomainNetBiosName"
+                      },
+                      "\\",
+                      {
+                        "Ref": "TfsServiceAccountName"
+                      },
+                      " ",
+                      {
+                        "Ref": "TfsServicePassword"
+                      }
+                    ]
+                  ]
+                }
+              },
+              "004SignalCompleteWaitCondition4Sql4Tfs4SqlServerExpressFromAmi": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "cfn-signal.exe -e 0 \"",
+                      {
+                        "Ref": "WaitCondition4Sql4Tfs4SqlServerExpressFromAmiHandle"
+                      },
+                      "\""
+                    ]
+                  ]
+                }
+              }
+            },
+            "files": {
+              "c:/cfn/scripts/add-network-to-sysadmin.ps1": {
+                "content": {},
+                "source": "https://s3.amazonaws.com/gtbb/add-network-to-sysadmin.ps1"
+              },
+              "c:/cfn/scripts/SqlServer-EnableTcp.ps1": {
+                "content": {},
+                "source": "https://s3.amazonaws.com/gtbb/SqlServer-EnableTcp.ps1"
+              },
+              "c:/cfn/scripts/change-sql-account.ps1": {
+                "content": {},
+                "source": "https://s3.amazonaws.com/gtbb/change-sql-account.ps1"
+              }
+            },
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          }
+        },
+        "AWS::CloudFormation::Authentication": {
+          "S3AccessCreds": {
+            "accessKeyId": "AKIAJMUQ7GPWQNKSODIA",
+            "secretKey": "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",
+            "buckets": [
+              "gtbb"
+            ],
+            "type": "S3"
+          }
+        }
+      },
+      "DependsOn": [
+        "WaitCondition4DomainController4DomainControllerPackage"
+      ],
+      "Properties": {
+        "SubnetId": {
+          "Ref": "Subnet4SqlServer4Tfs"
+        },
+        "InstanceType": "t2.large",
+        "ImageId": "ami-a3005dc9",
+        "KeyName": {
+          "Ref": "KeyPairName"
+        },
+        "SourceDestCheck": true,
+        "Tags": [
+          {
+            "Key": "Name"
+          },
+          {
+            "Key": "Name",
+            "Value": "Sql4Tfs"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "<script>",
+                "cfn-init.exe -v -c ",
+                "LaunchConfigurationConfigSet,JoinDomain,SqlServerExpressFromAmi",
+                " -s ",
+                {
+                  "Ref": "AWS::StackId"
+                },
+                " -r Sql4Tfs --region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "</script>"
+              ]
+            ]
+          }
+        },
+        "BlockDeviceMappings": [
+          {
+            "Ebs": {
+              "VolumeSize": 20,
+              "VolumeType": "standard",
+              "DeleteOnTermination": false
+            },
+            "DeviceName": "xvdf"
+          }
+        ],
+        "SecurityGroupIds": [
+          {
+            "Ref": "SecurityGroup4SqlServer4Tfs"
+          }
+        ]
+      }
+    },
+    "WaitCondition4Sql4Tfs4SqlServerExpressFromAmi": {
+      "Type": "AWS::CloudFormation::WaitCondition",
+      "Properties": {
+        "Timeout": 43200,
+        "Handle": {
+          "Ref": "WaitCondition4Sql4Tfs4SqlServerExpressFromAmiHandle"
+        }
+      }
+    },
+    "WaitCondition4Sql4Tfs4SqlServerExpressFromAmiHandle": {
+      "Type": "AWS::CloudFormation::WaitConditionHandle",
+      "Properties": {}
+    },
+    "Tfs": {
+      "Type": "AWS::EC2::Instance",
+      "Metadata": {
+        "AWS::CloudFormation::Init": {
+          "configSets": {
+            "LaunchConfigurationConfigSet": [
+              "LaunchConfigurationConfig",
+              "Rename"
+            ],
+            "JoinDomain": [
+              "JoinDomain"
+            ],
+            "TeamFoundationServerApplicationTier": [
+              "TeamFoundationServerApplicationTier"
+            ]
+          },
+          "LaunchConfigurationConfig": {
+            "commands": {
+              "000DisableWindowsFirewall": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\""
+                    ]
+                  ]
+                }
+              },
+              "001SetTimeZone": {
+                "waitAfterCompletion": "0",
+                "command": "tzutil /s \"Eastern Standard Time\""
+              }
+            },
+            "files": {
+              "c:\\cfn\\cfn-hup.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[main]\nstack=",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      "\nregion=",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\ninterval=1\nverbose=true"
+                    ]
+                  ]
+                }
+              },
+              "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[cfn-auto-reloader-hook]\n",
+                      "triggers=post.update\n",
+                      "path=Resources.Tfs.Metadata.AWS::CloudFormation::Init\n",
+                      "action=",
+                      "cfn-init.exe -v -c ",
+                      "LaunchConfigurationConfigSet,JoinDomain,TeamFoundationServerApplicationTier",
+                      " -s ",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      " -r ",
+                      "Tfs",
+                      " --region ",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\n"
+                    ]
+                  ]
+                }
+              },
+              "c:/chef/node.json": {
+                "content": {
+                  "domain": {
+                    "Ref": "DomainNetBiosName"
+                  },
+                  "domainAdmin": {
+                    "name": {
+                      "Fn::Join": [
+                        "",
+                        [
+                          {
+                            "Ref": "DomainNetBiosName"
+                          },
+                          "\\",
+                          {
+                            "Ref": "DomainAdminUsername"
+                          }
+                        ]
+                      ]
+                    },
+                    "password": {
+                      "Ref": "DomainAdminPassword"
+                    }
+                  },
+                  "s3_file": {
+                    "key": "AKIAJMUQ7GPWQNKSODIA",
+                    "secret": "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"
+                  },
+                  "tfs": {
+                    "application_server_sqlname": {
+                      "Fn::GetAtt": [
+                        "Sql4Tfs",
+                        "PrivateDnsName"
+                      ]
+                    },
+                    "TfsServiceAccountName": {
+                      "Ref": "TfsServiceAccountName"
+                    },
+                    "TfsServicePassword": {
+                      "Ref": "TfsServicePassword"
+                    }
+                  }
+                }
+              }
+            },
+            "services": {
+              "windows": {
+                "cfn-hup": {
+                  "enabled": true,
+                  "ensureRunning": true,
+                  "files": [
+                    "c:\\cfn\\cfn-hup.conf",
+                    "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf"
+                  ]
+                }
+              }
+            },
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          },
+          "Rename": {
+            "commands": {
+              "000RenameComputer": {
+                "waitAfterCompletion": "forever",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "\"Rename-Computer -NewName Tfs -Restart -Force\""
+                    ]
+                  ]
+                },
+                "test": "IF \"%COMPUTERNAME%\"==\"TFS\" EXIT /B 1 ELSE EXIT /B 0"
+              }
+            },
+            "files": {},
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          },
+          "JoinDomain": {
+            "commands": {
+              "000AddRSATADPowerShell": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter"
+                    ]
+                  ]
+                }
+              },
+              "001JoinDomain": {
+                "waitAfterCompletion": "forever",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"",
+                      "if ((gwmi win32_computersystem).partofdomain -eq $true)             {",
+                      "write-host -fore green \"I am domain joined!\"",
+                      "} else {",
+                      "Add-Computer -DomainName ",
+                      {
+                        "Fn::Join": [
+                          ".",
+                          [
+                            {
+                              "Ref": "DomainVersion"
+                            },
+                            {
+                              "Ref": "DomainAppName"
+                            },
+                            {
+                              "Ref": "DomainTopLevelName"
+                            }
+                          ]
+                        ]
+                      },
+                      " -Credential (New-Object System.Management.Automation.PSCredential('",
+                      {
+                        "Ref": "DomainNetBiosName"
+                      },
+                      "\\",
+                      {
+                        "Ref": "DomainAdminUsername"
+                      },
+                      "',(ConvertTo-SecureString \"",
+                      {
+                        "Ref": "DomainAdminPassword"
+                      },
+                      "\" -AsPlainText -Force))) ",
+                      "-Restart\"",
+                      " }"
+                    ]
+                  ]
+                },
+                "test": "powershell.exe -ExecutionPolicy RemoteSigned c:/cfn/scripts/check-for-domain.ps1"
+              }
+            },
+            "files": {
+              "c:/cfn/scripts/check-for-domain.ps1": {
+                "content": {},
+                "source": "https://s3.amazonaws.com/gtbb/check-for-domain.ps1"
+              }
+            },
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          },
+          "TeamFoundationServerApplicationTier": {
+            "commands": {
+              "000tfs--applicationtier": {
+                "waitAfterCompletion": "0",
+                "command": "C:/opscode/chef/bin/chef-client.bat -z -o tfs::applicationtier -c c:/chef/tfs/client.rb"
+              },
+              "001SignalCompleteWaitCondition4Tfs4TeamFoundationServerApplicationTier": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "cfn-signal.exe -e 0 \"",
+                      {
+                        "Ref": "WaitCondition4Tfs4TeamFoundationServerApplicationTierHandle"
+                      },
+                      "\""
+                    ]
+                  ]
+                }
+              }
+            },
+            "files": {
+              "c:/chef/tfs/client.rb": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "cache_path 'c:/chef'\ncookbook_path 'c:/chef/tfs/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n"
+                    ]
+                  ]
+                }
+              }
+            },
+            "services": {},
+            "sources": {
+              "c:/chef/tfs/": "https://gtbb.s3.amazonaws.com/tfs.tar.gz"
+            },
+            "packages": {
+              "msi": {
+                "chefclient12601x86": "https://opscode-omnibus-packages.s3.amazonaws.com/windows/2012r2/i386/chef-client-12.6.0-1-x86.msi"
+              }
+            },
+            "ignoreErrors": "False"
+          }
+        },
+        "AWS::CloudFormation::Authentication": {
+          "S3AccessCreds": {
+            "accessKeyId": "AKIAJMUQ7GPWQNKSODIA",
+            "secretKey": "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",
+            "buckets": [
+              "gtbb"
+            ],
+            "type": "S3"
+          }
+        }
+      },
+      "DependsOn": [
+        "WaitCondition4DomainController4DomainControllerPackage",
+        "WaitCondition4Sql4Tfs4SqlServerExpressFromAmi"
+      ],
+      "Properties": {
+        "SubnetId": {
+          "Ref": "Subnet4TfsServer"
+        },
+        "InstanceType": "t2.small",
+        "ImageId": "ami-9a0558f0",
+        "KeyName": {
+          "Ref": "KeyPairName"
+        },
+        "SourceDestCheck": true,
+        "Tags": [
+          {
+            "Key": "Name"
+          },
+          {
+            "Key": "Name",
+            "Value": "Tfs"
+          }
+        ],
+        "BlockDeviceMappings": [
+          {
+            "Ebs": {
+              "VolumeSize": 214,
+              "VolumeType": "gp2"
+            },
+            "DeviceName": "/dev/sda1"
+          },
+          {
+            "Ebs": {
+              "SnapshotId": "snap-4e69d94b"
+            },
+            "DeviceName": "xvdf"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "<script>",
+                "cfn-init.exe -v -c ",
+                "LaunchConfigurationConfigSet,JoinDomain,TeamFoundationServerApplicationTier",
+                " -s ",
+                {
+                  "Ref": "AWS::StackId"
+                },
+                " -r Tfs --region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "</script>"
+              ]
+            ]
+          }
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "SecurityGroup4TfsServer"
+          }
+        ]
+      }
+    },
+    "WaitCondition4Tfs4TeamFoundationServerApplicationTier": {
+      "Type": "AWS::CloudFormation::WaitCondition",
+      "Properties": {
+        "Timeout": 43200,
+        "Handle": {
+          "Ref": "WaitCondition4Tfs4TeamFoundationServerApplicationTierHandle"
+        }
+      }
+    },
+    "WaitCondition4Tfs4TeamFoundationServerApplicationTierHandle": {
+      "Type": "AWS::CloudFormation::WaitConditionHandle",
+      "Properties": {}
+    }
+  },
+  "Parameters": {
+    "KeyPairName": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Default": "corp.getthebuybox.com",
+      "Description": "Key Pair to decrypt instance password."
+    },
+    "DomainAdminPassword": {
+      "Type": "String",
+      "Default": "UYLT7023ckxq",
+      "Description": "Password for domain administrator.",
+      "NoEcho": true
+    },
+    "DomainTopLevelName": {
+      "Type": "String",
+      "Default": "yadayadasoftware.com",
+      "Description": "Top level domain name for the stack (e.g. example.com)"
+    },
+    "DomainAppName": {
+      "Type": "String",
+      "Default": "dev",
+      "Description": "Name of the application (e.g. Dev,Test,Prod)"
+    },
+    "DomainVersion": {
+      "Type": "String",
+      "Default": "alpha",
+      "Description": "Fully qualified domain name for the stack (e.g. example.com)"
+    },
+    "DomainNetBiosName": {
+      "Type": "String",
+      "Default": "dev",
+      "Description": "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"
+    },
+    "DomainAdminUsername": {
+      "Type": "String",
+      "Default": "johnny",
+      "Description": "Domain Admin User"
+    },
+    "TfsServiceAccountName": {
+      "Type": "String",
+      "Default": "tfsservice",
+      "Description": "Account name for Tfs Application Server Service and Tfs SqlServer Service"
+    },
+    "TfsServicePassword": {
+      "Type": "String",
+      "Default": "Hello12345.",
+      "Description": "Password for Tfs Application Server Service and Tfs SqlServer Service Account "
+    }
+  },
+  "Outputs": {}
+}

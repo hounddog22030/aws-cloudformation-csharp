@@ -768,16 +768,17 @@ namespace AWS.CloudFormation.Test
 
 
             Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
-            template.Resources.Add(w.LogicalId, w);
+            template.Resources.Add("w", w);
 
             
 
             w.AddSecurityGroup(rdp);
             w.AddElasticIp();
 
-            SecurityGroup blah = new SecurityGroup("blah",template.Vpcs.Last());
-            template.Resources.Add("blah",blah);
-            CreateTestStack(template, this.TestContext);
+            //SecurityGroup blah = new SecurityGroup("blah",template.Vpcs.Last());
+            //template.Resources.Add("blah",blah);
+            //CreateTestStack(template, this.TestContext);
+            Stack.Stack.UpdateStack("CreateMinimalInstanceTest-active-directory-backup-2016-02-07-15-04-25", template);
 
         }
 
