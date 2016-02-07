@@ -108,10 +108,10 @@ namespace AWS.CloudFormation.Configuration.Packages
                 new FnJoin(FnJoinDelimiter.Period,
                             new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
                             new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
-                            new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName),
+                            new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)),
                 " -AccountPassword (ConvertTo-SecureString \"",
                 new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName),
-                "\" -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\""));
+                "\" -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
 
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkIfUserExists} tfsservice";
 
