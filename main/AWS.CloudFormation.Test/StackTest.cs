@@ -184,7 +184,7 @@ namespace AWS.CloudFormation.Test
 
 
 
-            var instanceDomainController = new Instance(subnetDomainController1,InstanceTypes.C4Large,UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
+            var instanceDomainController = new Instance(subnetDomainController1,InstanceTypes.T2Nano,UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add("DomainController", instanceDomainController);
             instanceDomainController.DependsOn.Add(nat1.LogicalId);
 
@@ -207,7 +207,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("DhcpOptions",dhcpOptions);
             dhcpOptions.NetbiosNodeType = "2";
 
-            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.C4Large, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
+            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add($"Rdp", instanceRdp);
 
             dcPackage.Participate(instanceRdp);
@@ -216,8 +216,8 @@ namespace AWS.CloudFormation.Test
             var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Large, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
             var x = instanceTfsSqlServer.Packages.Last().WaitCondition;
 
-            //var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
-            //var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
+            var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
+            var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
 
             //DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup("Second subnet for database for build server");
             //template.Resources.Add("DbSubnetGroup4Build2Database", mySqlSubnetGroupForDatabaseForBuild);
@@ -1057,8 +1057,7 @@ namespace AWS.CloudFormation.Test
             Subnet privateSubnet1, 
             LaunchConfiguration sqlServer4Tfs, 
             DomainControllerPackage dc1, 
-            SecurityGroup tfsServerSecurityGroup,
-            string fullyQualifiedDomainName)
+            SecurityGroup tfsServerSecurityGroup)
         {
             var tfsServer = new Instance(privateSubnet1,instanceSize,UsEast1AWindows2012R2Ami, OperatingSystem.Windows,Ebs.VolumeTypes.GeneralPurpose,
                                                     214);
