@@ -103,19 +103,19 @@ namespace AWS.CloudFormation.Test
 
             var template = new Template(KeyPairName, $"Vpc{version}", CidrVpc,$"{GetGitBranch()}:{GetGitHash()}");
 
-            var domainPassword = new ParameterBase("DomainAdminPassword", "String", password,
-                "Password for domain administrator.")
+            var domainPassword = new ParameterBase(DomainControllerPackage.DomainAdminPasswordParameterName, "String", password, "Password for domain administrator.")
             {
                 NoEcho = true
             };
 
+            template.Parameters.Add(domainPassword);
+            template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainDnsNameParameterName, "String", fullyQualifiedDomainName, "Fully qualified domain name for the stack (e.g. example.com)"));
+            template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainNetBiosNameParameterName, "String", netBios, "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
+            template.Parameters.Add(new ParameterBase("TfsServiceAccountName","String", new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),"\\tfsservice"), "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
+            template.Parameters.Add(new ParameterBase("TfsServicePassword", "String", "JelloFood123.", "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
+            template.Parameters.Add(new ParameterBase("TfsServicePassword", "String", "JelloFood123.", "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
+
             var domainAdminPasswordReference = new ReferenceProperty(Template.ParameterDomainAdminPassword);
-            var domainInfo = new DomainInfo(fullyQualifiedDomainName, DomainAdminUser, domainAdminPasswordReference);
-
-            template.Parameters.Add("DomainAdminPassword", domainPassword);
-            template.Parameters.Add("TfsServiceAccountName", new ParameterBase("TfsServiceAccountName","String",domainInfo.DomainNetBiosName + "\\tfsservice", "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
-            template.Parameters.Add("TfsServicePassword", new ParameterBase("TfsServicePassword", "String", "JelloFood123.", "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
-
 
             Vpc vpc = template.Vpcs.First();
             vpc.EnableDnsHostnames = true;

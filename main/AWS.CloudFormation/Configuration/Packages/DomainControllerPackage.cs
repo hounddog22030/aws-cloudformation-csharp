@@ -22,13 +22,10 @@ namespace AWS.CloudFormation.Configuration.Packages
     {
 
         const string CheckForDomainPsPath = "c:/cfn/scripts/check-for-domain.ps1";
-        public DomainControllerPackage(DomainInfo domainInfo, Subnet subnet)
+        public DomainControllerPackage(Subnet subnet)
         {
-            this.DomainInfo = domainInfo;
             Subnet = subnet;
         }
-
-        private DomainInfo DomainInfo { get; }
 
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
@@ -62,9 +59,9 @@ namespace AWS.CloudFormation.Configuration.Packages
 
 
             currentCommand.Command = new PowershellFnJoin("-Command \"Install-ADDSForest -DomainName",
-                this.DomainInfo.DomainDnsName,
+                new ReferenceProperty(DomainDnsNameParameterName),
                 "-SafeModeAdministratorPassword (convertto-securestring \"jhkjhsdf338!\" -asplaintext -force) -DomainMode Win2012 -DomainNetbiosName",
-                this.DomainInfo.DomainNetBiosName,
+                new ReferenceProperty(DomainNetBiosNameParameterName),
                 "-ForestMode Win2012 -Confirm:$false -Force\"");
 
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
@@ -76,15 +73,15 @@ namespace AWS.CloudFormation.Configuration.Packages
             currentCommand = this.Config.Commands.AddCommand<Command>("CreateAdminUser");
             currentCommand.WaitAfterCompletion = "0";
             currentCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None, "\"New-ADUser -Name ",
-                this.DomainInfo.AdminUserName,
-                " -UserPrincipalName ",
-                this.DomainInfo.AdminUserName,
-                "@",
-                this.DomainInfo.DomainDnsName,
-                " -AccountPassword (ConvertTo-SecureString \"",
-                new ReferenceProperty((ILogicalId)this.Instance.Template.Parameters[Template.ParameterDomainAdminPassword]),
-                "\" -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
-            currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {checkIfUserExists} {this.DomainInfo.AdminUserName}";
+                                new ReferenceProperty(DomainAdminUsernameParameterName),
+                                " -UserPrincipalName ",
+                                new ReferenceProperty(DomainAdminUsernameParameterName),
+                                "@",
+                                new ReferenceProperty(DomainDnsNameParameterName),
+                                " -AccountPassword (ConvertTo-SecureString \"",
+                                new ReferenceProperty((ILogicalId)this.Instance.Template.Parameters[Template.ParameterDomainAdminPassword]),
+                                "\" -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true\"");
+            currentCommand.Test = new PowershellFnJoin("{checkIfUserExists}", new ReferenceProperty(DomainAdminUsernameParameterName));
 
 
             currentCommand = this.Config.Commands.AddCommand<Command>("CreateTfsUser");
@@ -119,9 +116,12 @@ namespace AWS.CloudFormation.Configuration.Packages
 
         }
 
+        public const string DomainAdminUsernameParameterName = "DomainAdminUsername";
+
         public Subnet Subnet { get; }
 
         private SecurityGroup _domainMemberSecurityGroup;
+        public const string DomainDnsNameParameterName = "DomainDnsName";
 
         public SecurityGroup DomainMemberSecurityGroup {
             get
@@ -136,6 +136,10 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             }
         }
+
+        public const string DomainNetBiosNameParameterName = "DomainNetBiosName";
+
+        public const string DomainAdminPasswordParameterName = "DomainAdminPassword";
 
 
         private void CreateDomainControllerSecurityGroup()
