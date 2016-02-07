@@ -204,7 +204,7 @@ namespace AWS.CloudFormation.Test
 
 
 
-            var instanceDomainController = new Instance(subnetDomainController1,InstanceTypes.C4Large,UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
+            var instanceDomainController = new Instance(subnetDomainController1,InstanceTypes.T2Nano,UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add("DomainController", instanceDomainController);
 
 
@@ -227,14 +227,14 @@ namespace AWS.CloudFormation.Test
             dhcpOptions.NetbiosNodeType = "2";
 
 
-            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.C4Large, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
+            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Small, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add($"Rdp", instanceRdp);
 
             dcPackage.Participate(instanceRdp);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage(domainInfo));
             var x = instanceRdp.Packages.Last().WaitCondition;
 
-            //var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Large, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
+            var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Large, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
 
             //var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
             //var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
@@ -1176,11 +1176,11 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateDevelopmentTest()
         {
-            var fullyQualifiedDomainName = "alpha.dev.yadayada.software";
+            var fullyQualifiedDomainName = "Xi.dev.yadayadasoftware.com";
             
 
             var template = GetTemplateFullStack(fullyQualifiedDomainName);
-            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "GHBN5370gqcu";
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "LHKF5015xnbr";
             Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.','-'), template );
         }
 
