@@ -213,11 +213,11 @@ namespace AWS.CloudFormation.Test
             dcPackage.Participate(instanceRdp);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
 
-            var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Large, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
-            var x = instanceTfsSqlServer.Packages.Last().WaitCondition;
+            //var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Large, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
+            //var x = instanceTfsSqlServer.Packages.Last().WaitCondition;
 
-            var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
-            var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
+            //var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
+            //var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
 
             //DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup("Second subnet for database for build server");
             //template.Resources.Add("DbSubnetGroup4Build2Database", mySqlSubnetGroupForDatabaseForBuild);
