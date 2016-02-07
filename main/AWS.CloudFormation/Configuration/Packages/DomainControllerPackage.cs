@@ -121,7 +121,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 new ReferenceProperty(DomainAdminUsernameParameterName),
                 "\"");
 
-
+            var x = this.WaitCondition;
 
             currentCommand = this.Config.Commands.AddCommand<Command>("RenameDefaultSite");
             currentCommand.WaitAfterCompletion = 0.ToString();
