@@ -227,63 +227,63 @@ namespace AWS.CloudFormation.Test
             var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
             var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
 
-            //DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup("Second subnet for database for build server");
-            //template.Resources.Add("DbSubnetGroup4Build2Database", mySqlSubnetGroupForDatabaseForBuild);
+            DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup("Second subnet for database for build server");
+            template.Resources.Add("DbSubnetGroup4Build2Database", mySqlSubnetGroupForDatabaseForBuild);
 
-            //mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
-            //mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
-            ////DbInstance mySql4Build = null;
+            mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
+            mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
+            //DbInstance mySql4Build = null;
 
-            //////mySql4Build = new DbInstance(
-            //////    template,
-            //////    "sql4build",
-            //////    DbInstanceClassEnum.DbT2Micro,
-            //////    EngineType.MySql,
-            //////    LicenseModelType.GeneralPublicLicense,
-            //////    Ebs.VolumeTypes.GeneralPurpose,
-            //////    20,
-            //////    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name),
-            //////    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name),
-            //////    mySqlSubnetGroupForDatabaseForBuild,
-            //////    securityGroupDb4Build);
+            ////mySql4Build = new DbInstance(
+            ////    template,
+            ////    "sql4build",
+            ////    DbInstanceClassEnum.DbT2Micro,
+            ////    EngineType.MySql,
+            ////    LicenseModelType.GeneralPublicLicense,
+            ////    Ebs.VolumeTypes.GeneralPurpose,
+            ////    20,
+            ////    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name),
+            ////    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name),
+            ////    mySqlSubnetGroupForDatabaseForBuild,
+            ////    securityGroupDb4Build);
 
-            //DbSubnetGroup subnetGroupSqlExpress4Build = new DbSubnetGroup("DbSubnet Group for SQL Server database for build server");
-            //template.Resources.Add("SubnetGroup4Build2SqlServer", subnetGroupSqlExpress4Build);
+            DbSubnetGroup subnetGroupSqlExpress4Build = new DbSubnetGroup("DbSubnet Group for SQL Server database for build server");
+            template.Resources.Add("SubnetGroup4Build2SqlServer", subnetGroupSqlExpress4Build);
 
-            //subnetGroupSqlExpress4Build.AddSubnet(subnetBuildServer);
-            //subnetGroupSqlExpress4Build.AddSubnet(subnetDatabase4BuildServer2);
+            subnetGroupSqlExpress4Build.AddSubnet(subnetBuildServer);
+            subnetGroupSqlExpress4Build.AddSubnet(subnetDatabase4BuildServer2);
 
-            //DbInstance rdsSqlExpress4Build = null;
-
-
-            //rdsSqlExpress4Build = new DbInstance(DbInstanceClassEnum.DbT2Micro,
-            //    EngineType.SqlServerExpress,
-            //    LicenseModelType.LicenseIncluded,
-            //    Ebs.VolumeTypes.GeneralPurpose,
-            //    30,
-            //    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name),
-            //    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name))
-            //{
-            //    DBSubnetGroupName = new ReferenceProperty(subnetGroupSqlExpress4Build)
-            //};
-
-            //template.Resources.Add("SqlServer4Build", rdsSqlExpress4Build);
+            DbInstance rdsSqlExpress4Build = null;
 
 
-            //rdsSqlExpress4Build.AddVpcSecurityGroup(securityGroupSqlSever4Build);
+            rdsSqlExpress4Build = new DbInstance(DbInstanceClassEnum.DbT2Micro,
+                EngineType.SqlServerExpress,
+                LicenseModelType.LicenseIncluded,
+                Ebs.VolumeTypes.GeneralPurpose,
+                30,
+                new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name),
+                new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name))
+            {
+                DBSubnetGroupName = new ReferenceProperty(subnetGroupSqlExpress4Build)
+            };
 
-            //template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
-            //template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd871hdj11", "Password for Master User For RDS SqlServer") { NoEcho = true });
+            template.Resources.Add("SqlServer4Build", rdsSqlExpress4Build);
 
-            //var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer, 
-            // tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
 
-            ////uses 33gb
-            //var workstation = AddWorkstation(template,
-            //    "Workstation",
-            //    subnetWorkstation,
-            //    dcPackage,
-            //    workstationSecurityGroup);
+            rdsSqlExpress4Build.AddVpcSecurityGroup(securityGroupSqlSever4Build);
+
+            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
+            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd871hdj11", "Password for Master User For RDS SqlServer") { NoEcho = true });
+
+            var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer,
+             tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
+
+            //uses 33gb
+            var workstation = AddWorkstation(template,
+                "Workstation",
+                subnetWorkstation,
+                dcPackage,
+                workstationSecurityGroup);
 
 
             //////SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
@@ -732,7 +732,7 @@ namespace AWS.CloudFormation.Test
             var dcPackage = dc1.Packages.First() as DomainControllerPackage;
             dc1.AddElasticIp();
             dc1.AddSecurityGroup(rdp);
-            var w = AddBuildServer(template, InstanceTypes.T2Nano,  DMZSubnet, null, null, dcPackage, rdp,null, "nothing.com");
+            var w = AddBuildServer(template, InstanceTypes.T2Nano,  DMZSubnet, null, null, dcPackage, rdp,null);
             throw new NotImplementedException();
             //w.AddElasticIp();
 
@@ -990,8 +990,7 @@ namespace AWS.CloudFormation.Test
             WaitCondition tfsServerComplete, 
             DomainControllerPackage domainControllerPackage, 
             SecurityGroup buildServerSecurityGroup, 
-            DbInstance sqlExpress4Build,
-            string fullyQualifiedDomainName)
+            DbInstance sqlExpress4Build)
         {
 
             AutoScalingGroup launchGroup = new AutoScalingGroup();
@@ -1198,11 +1197,11 @@ namespace AWS.CloudFormation.Test
         {
             Assert.IsFalse(HasGitDifferences());
 
-            var fullyQualifiedDomainName = "Tau.dev.yadayadasoftware.com";
+            var fullyQualifiedDomainName = "Beta.dev.yadayadasoftware.com";
             
 
-            var template = GetTemplateFullStack("yadayadasoftware.com", "dev",Greek.Tau);
-            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "GDCS5438xxwd";
+            var template = GetTemplateFullStack("yadayadasoftware.com", "dev",Greek.Beta);
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "OCSW8233txyl";
             Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.','-'), template );
         }
 
