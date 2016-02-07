@@ -1173,7 +1173,7 @@ namespace AWS.CloudFormation.Test
             var appName = "dev";
 
             var templateToCreateStack = GetTemplateFullStack(topLevel, appName, version);
-            templateToCreateStack.StackName = $"{version}-{appName}-{topLevel}";
+            templateToCreateStack.StackName = $"{version}-{appName}-{topLevel}".Replace('.','-');
 
             CreateTestStack(templateToCreateStack, this.TestContext);
         }
