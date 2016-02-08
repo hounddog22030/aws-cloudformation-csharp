@@ -299,16 +299,16 @@ namespace AWS.CloudFormation.Test
             //////////// be uncommented to debug domain setup problems
             //AddRdp2(subnetDmz1, template, vpc, dcPackage);
 
-            LaunchConfiguration backupServer = new LaunchConfiguration(subnetDomainController1, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsEc2Instance);
-            SecurityGroup backupServerSecurityGroup = new SecurityGroup("SecurityGroup4BackupServer",vpc);
-            template.Resources.Add("SecurityGroup4BackupServer", backupServerSecurityGroup);
-            backupServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            backupServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            backupServer.AddSecurityGroup(backupServerSecurityGroup);
-            template.Resources.Add("BackupServer",backupServer);
-            dcPackage.Participate(backupServer);
-            backupServer.AddDisk(Ebs.VolumeTypes.Magnetic, 400);
-            backupServer.Packages.Add(new WindowsShare("d:/backups", "backups","dev\\tfsservice","dev\\Domain Admins"));
+            //LaunchConfiguration backupServer = new LaunchConfiguration(subnetDomainController1, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsEc2Instance);
+            //SecurityGroup backupServerSecurityGroup = new SecurityGroup("SecurityGroup4BackupServer",vpc);
+            //template.Resources.Add("SecurityGroup4BackupServer", backupServerSecurityGroup);
+            //backupServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            //backupServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            //backupServer.AddSecurityGroup(backupServerSecurityGroup);
+            //template.Resources.Add("BackupServer",backupServer);
+            //dcPackage.Participate(backupServer);
+            //backupServer.AddDisk(Ebs.VolumeTypes.Magnetic, 400);
+            //backupServer.Packages.Add(new WindowsShare("d:/backups", "backups","dev\\tfsservice","dev\\Domain Admins"));
 
 
             return template;
