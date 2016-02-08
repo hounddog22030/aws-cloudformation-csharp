@@ -299,7 +299,7 @@ namespace AWS.CloudFormation.Test
             //////////// be uncommented to debug domain setup problems
             //AddRdp2(subnetDmz1, template, vpc, dcPackage);
 
-            LaunchConfiguration backupServer = new LaunchConfiguration(subnetDmz1,InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsEc2Instance);
+            LaunchConfiguration backupServer = new LaunchConfiguration(subnetDomainController1, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsEc2Instance);
             SecurityGroup backupServerSecurityGroup = new SecurityGroup("SecurityGroup4BackupServer",vpc);
             template.Resources.Add("SecurityGroup4BackupServer", backupServerSecurityGroup);
             backupServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
