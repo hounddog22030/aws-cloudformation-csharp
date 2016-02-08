@@ -304,6 +304,8 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("SecurityGroup4BackupServer", backupServerSecurityGroup);
             backupServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             backupServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            backupServerSecurityGroup.AddIngress(vpc,Protocol.Tcp,Ports.Min,Ports.Max);
+            backupServerSecurityGroup.AddIngress(vpc, Protocol.Udp, Ports.Min, Ports.Max);
             backupServer.AddSecurityGroup(backupServerSecurityGroup);
             template.Resources.Add("BackupServer",backupServer);
             dcPackage.Participate(backupServer);
