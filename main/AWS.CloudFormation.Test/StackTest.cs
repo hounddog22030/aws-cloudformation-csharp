@@ -170,6 +170,7 @@ namespace AWS.CloudFormation.Test
 
             SecurityGroup workstationSecurityGroup = new SecurityGroup("Security Group To Contain Workstations", vpc);
             template.Resources.Add("SecurityGroup4Workstation", workstationSecurityGroup);
+            workstationSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
 
             tfsServerSecurityGroup.AddIngress(workstationSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             var subnetWorkstation = new Subnet(vpc, CidrWorkstationSubnet, AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
