@@ -135,8 +135,11 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             configuration.AddDisk(Ebs.VolumeTypes.Magnetic, 40);
 
+            const string InstallWindowsServerBackup = "c:/cfn/scripts/InstallBackup.ps1";
+            var installWindowsServerBackupPath = this.Config.Files.GetFile(InstallWindowsServerBackup);
+            installWindowsServerBackupPath.Source = "https://s3.amazonaws.com/gtbb/InstallBackup.ps1";
             this.Config.Commands.AddCommand<Command>("InstallServerBackup", TimeoutMax, null,
-                new PowershellFnJoin(FnJoinDelimiter.None, "-Command \"Add-WindowsFeature Windows-Server-Backup\""));
+                new PowershellFnJoin(FnJoinDelimiter.None, InstallWindowsServerBackup));
 
         }
 
