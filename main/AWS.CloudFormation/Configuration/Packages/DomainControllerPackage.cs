@@ -138,8 +138,10 @@ namespace AWS.CloudFormation.Configuration.Packages
             const string InstallWindowsServerBackup = "c:/cfn/scripts/InstallBackup.ps1";
             var installWindowsServerBackupPath = this.Config.Files.GetFile(InstallWindowsServerBackup);
             installWindowsServerBackupPath.Source = "https://s3.amazonaws.com/gtbb/InstallBackup.ps1";
-            this.Config.Commands.AddCommand<Command>("InstallServerBackup", TimeoutMax, null,
-                new PowershellFnJoin(FnJoinDelimiter.None, InstallWindowsServerBackup));
+
+            currentCommand  = this.Config.Commands.AddCommand<Command>("InstallServerBackup");
+            currentCommand.Command = new PowershellFnJoin(" -Command ",InstallWindowsServerBackup);
+            currentCommand.WaitAfterCompletion = 0.ToString();
 
         }
 
