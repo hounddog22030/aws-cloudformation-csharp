@@ -48,7 +48,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 CreateWindowsShare,
                 this.Path,
                 this.ShareName,
-                $"@({string.Join(",", accountsFinal)}");
+                $"@({string.Join(",", accountsFinal)})");
 
         }
     }
