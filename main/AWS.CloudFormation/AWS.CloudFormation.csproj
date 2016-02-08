@@ -80,6 +80,7 @@
     <Compile Include="Configuration\Packages\Packages.cs" />
     <Compile Include="Configuration\Packages\RemoteDesktopGatewayPackage.cs" />
     <Compile Include="Configuration\Packages\ReSharper.cs" />
+    <Compile Include="Configuration\Packages\WindowsShare.cs" />
     <Compile Include="Property\AvailabilityZone.cs" />
     <Compile Include="Property\Region.cs" />
     <Compile Include="Resource\AutoScaling\AutoScalingGroup.cs" />
@@ -140,6 +141,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Scripts\CreateWindowsShare.ps1" />
     <None Include="Scripts\add-network-to-sysadmin.ps1" />
     <None Include="Scripts\check-for-domain.ps1" />
     <None Include="Scripts\Configure-RDGW.ps1" />

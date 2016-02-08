@@ -182,9 +182,6 @@ namespace AWS.CloudFormation.Test
             securityGroupSqlSever4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MsSqlServer);
             securityGroupDb4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MySql);
 
-
-
-
             var instanceDomainController = new Instance(subnetDomainController1,InstanceTypes.T2Small,UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add("DomainController", instanceDomainController);
             instanceDomainController.DependsOn.Add(nat1.LogicalId);
@@ -301,6 +298,12 @@ namespace AWS.CloudFormation.Test
             ////////////the below is a remote desktop gateway server that can
             //////////// be uncommented to debug domain setup problems
             //AddRdp2(subnetDmz1, template, vpc, dcPackage);
+
+            LaunchConfiguration backupServer = new LaunchConfiguration(subnetDmz1,InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsEc2Instance);
+            dcPackage.Participate(backupServer);
+            backupServer.AddDisk(Ebs.VolumeTypes.Magnetic, 400);
+            backupServer.Packages.Add(new WindowsShare("d:/backups", "backups","dev\\tfsservice"));
+
 
             return template;
         }
