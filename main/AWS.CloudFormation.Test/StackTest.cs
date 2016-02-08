@@ -300,7 +300,7 @@ namespace AWS.CloudFormation.Test
             //AddRdp2(subnetDmz1, template, vpc, dcPackage);
 
             LaunchConfiguration backupServer = new LaunchConfiguration(subnetDmz1,InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsEc2Instance);
-            template.Resources.Add(backupServer);
+            template.Resources.Add("BackupServer",backupServer);
             dcPackage.Participate(backupServer);
             backupServer.AddDisk(Ebs.VolumeTypes.Magnetic, 400);
             backupServer.Packages.Add(new WindowsShare("d:/backups", "backups","dev\\tfsservice"));
