@@ -308,7 +308,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("BackupServer",backupServer);
             dcPackage.Participate(backupServer);
             backupServer.AddDisk(Ebs.VolumeTypes.Magnetic, 400);
-            backupServer.Packages.Add(new WindowsShare("d:/backups", "backups","dev\\tfsservice","dev\\Domain Admins","dev\\Backup Operators"));
+            backupServer.Packages.Add(new WindowsShare("d:/backups", "backups","dev\\tfsservice","dev\\Domain Admins"));
 
 
             return template;
