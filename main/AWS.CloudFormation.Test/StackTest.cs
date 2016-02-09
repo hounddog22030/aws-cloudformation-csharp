@@ -229,27 +229,31 @@ namespace AWS.CloudFormation.Test
                 tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
             }
 
-            DbInstance mySql4Build = null;
-
-            if (instancesToCreate.HasFlag(Create.MySql4Build))
-            {
-                throw new NotImplementedException();
-                //mySql4Build = new DbInstance(
-                //    DbInstanceClassEnum.DbT2Micro,
-                //    EngineType.MySql,
-                //    LicenseModelType.GeneralPublicLicense,
-                //    Ebs.VolumeTypes.GeneralPurpose,
-                //    20,
-                //    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name),
-                //    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name),
-                //    mySqlSubnetGroupForDatabaseForBuild);
-            }
-
             DbSubnetGroup subnetGroupSqlExpress4Build = new DbSubnetGroup("DbSubnet Group for SQL Server database for build server");
             template.Resources.Add("SubnetGroup4Build2SqlServer", subnetGroupSqlExpress4Build);
 
             subnetGroupSqlExpress4Build.AddSubnet(subnetBuildServer);
             subnetGroupSqlExpress4Build.AddSubnet(subnetDatabase4BuildServer2);
+
+            DbInstance mySql4Build = null;
+
+            if (instancesToCreate.HasFlag(Create.MySql4Build))
+            {
+                mySql4Build = new DbInstance(
+                    DbInstanceClassEnum.DbT2Micro,
+                    EngineType.MySql,
+                    LicenseModelType.GeneralPublicLicense,
+                    Ebs.VolumeTypes.GeneralPurpose,
+                    20,
+                    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name),
+                    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name))
+                {
+                    DBSubnetGroupName = new ReferenceProperty(subnetGroupSqlExpress4Build)
+                };
+                template.Resources.Add("MySql4Build",mySql4Build);
+                mySql4Build.AddVpcSecurityGroup(securityGroupSqlSever4Build);
+            }
+
 
             DbInstance rdsSqlExpress4Build = null;
 
