@@ -238,7 +238,7 @@ namespace AWS.CloudFormation.Test
             DbInstance mySql4Build = null;
 
             const string mySqlMasterUserName = "mysqlmasteruser";
-            const string mySqlPassword = "th1s1smyp@55w0rd";
+            const string mySqlPassword = "thisismypassword";
 
             if (instancesToCreate.HasFlag(Create.MySql4Build))
             {
