@@ -1387,7 +1387,7 @@ namespace AWS.CloudFormation.Test
             var fullyQualifiedDomainName = $"{version}.dev.yadayadasoftware.com";
             
 
-            var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, Create.BackupServer | Create.Rdp1 );
+            var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, Create.Dc2 | Create.BackupServer | Create.Rdp1 );
             ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "JKFQ2282qmfh";
             Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.','-'), template );
         }
