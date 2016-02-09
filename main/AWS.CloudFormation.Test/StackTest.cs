@@ -74,7 +74,22 @@ namespace AWS.CloudFormation.Test
             CreateTestStack(template, this.TestContext);
         }
 
-        public static Template GetTemplateFullStack(string topLevel, string appNameNetBiosName, Greek version)
+        [Flags]
+        public enum Create
+        {
+            Dc2 = 1,
+            Rdp1 = Dc2 * 2,
+            Sql4Tfs = Rdp1 * 2,
+            Tfs = Sql4Tfs * 2,
+            Build = Tfs * 2,
+            SqlServer4Build = Build *2,
+            MySql4Build = SqlServer4Build * 2,
+            BackupServer = MySql4Build * 2,
+            Workstation = BackupServer,
+            FullStack = Dc2 + Rdp1 + Sql4Tfs + Tfs + Build + SqlServer4Build + MySql4Build + BackupServer + Workstation
+        }
+
+        public static Template GetTemplateFullStack(string topLevel, string appNameNetBiosName, Greek version, Create instancesToCreate)
         {
 
             var password = GetPassword();
@@ -94,6 +109,8 @@ namespace AWS.CloudFormation.Test
             template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainAdminUsernameParameterName, "String", "johnny", "Domain Admin User"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "tfsservice", "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, "String", "Hello12345.", "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
+            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
+            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd871hdj11", "Password for Master User For RDS SqlServer") { NoEcho = true });
 
             var domainAdminPasswordReference = new ReferenceProperty(Template.ParameterDomainAdminPassword);
 
@@ -186,6 +203,12 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("DomainController", instanceDomainController);
             instanceDomainController.DependsOn.Add(nat1.LogicalId);
 
+            DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup("Second subnet for database for build server");
+            template.Resources.Add("DbSubnetGroup4Build2Database", mySqlSubnetGroupForDatabaseForBuild);
+
+            mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
+            mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
+
             DomainControllerPackage dcPackage = new DomainControllerPackage(subnetDomainController1);
             instanceDomainController.Packages.Add(dcPackage);
             instanceDomainController.Packages.Add(new Chrome());
@@ -213,37 +236,47 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("DhcpOptions",dhcpOptions);
             dhcpOptions.NetbiosNodeType = "2";
 
-            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
-            template.Resources.Add($"Rdp", instanceRdp);
+            if (instancesToCreate.HasFlag(Create.Rdp1))
+            {
+                var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Micro, UsEast1AWindows2012R2Ami, OperatingSystem.Windows);
+                template.Resources.Add($"Rdp", instanceRdp);
 
-            dcPackage.Participate(instanceRdp);
-            instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
+                dcPackage.Participate(instanceRdp);
+                instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
+            }
 
-            var instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Large, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
-            var x = instanceTfsSqlServer.Packages.Last().WaitCondition;
+            LaunchConfiguration instanceTfsSqlServer = null;
 
-            var tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
-            var tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
+            if (instancesToCreate.HasFlag(Create.Sql4Tfs))
+            {
+                instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Large, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
+                var x = instanceTfsSqlServer.Packages.Last().WaitCondition;
+            }
 
-            DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup("Second subnet for database for build server");
-            template.Resources.Add("DbSubnetGroup4Build2Database", mySqlSubnetGroupForDatabaseForBuild);
+            LaunchConfiguration tfsServer = null;
+            WaitCondition tfsApplicationTierInstalled = null;
 
-            mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
-            mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
-            //DbInstance mySql4Build = null;
+            if (instancesToCreate.HasFlag(Create.Tfs))
+            {
+                tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
+                tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
+            }
 
-            ////mySql4Build = new DbInstance(
-            ////    template,
-            ////    "sql4build",
-            ////    DbInstanceClassEnum.DbT2Micro,
-            ////    EngineType.MySql,
-            ////    LicenseModelType.GeneralPublicLicense,
-            ////    Ebs.VolumeTypes.GeneralPurpose,
-            ////    20,
-            ////    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name),
-            ////    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name),
-            ////    mySqlSubnetGroupForDatabaseForBuild,
-            ////    securityGroupDb4Build);
+            DbInstance mySql4Build = null;
+
+            if (instancesToCreate.HasFlag(Create.MySql4Build))
+            {
+                throw new NotImplementedException();
+                //mySql4Build = new DbInstance(
+                //    DbInstanceClassEnum.DbT2Micro,
+                //    EngineType.MySql,
+                //    LicenseModelType.GeneralPublicLicense,
+                //    Ebs.VolumeTypes.GeneralPurpose,
+                //    20,
+                //    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name),
+                //    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name),
+                //    mySqlSubnetGroupForDatabaseForBuild);
+            }
 
             DbSubnetGroup subnetGroupSqlExpress4Build = new DbSubnetGroup("DbSubnet Group for SQL Server database for build server");
             template.Resources.Add("SubnetGroup4Build2SqlServer", subnetGroupSqlExpress4Build);
@@ -253,35 +286,60 @@ namespace AWS.CloudFormation.Test
 
             DbInstance rdsSqlExpress4Build = null;
 
-
-            rdsSqlExpress4Build = new DbInstance(DbInstanceClassEnum.DbT2Micro,
-                EngineType.SqlServerExpress,
-                LicenseModelType.LicenseIncluded,
-                Ebs.VolumeTypes.GeneralPurpose,
-                30,
-                new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name),
-                new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name))
+            if (instancesToCreate.HasFlag(Create.SqlServer4Build))
             {
-                DBSubnetGroupName = new ReferenceProperty(subnetGroupSqlExpress4Build)
-            };
+                rdsSqlExpress4Build = new DbInstance(DbInstanceClassEnum.DbT2Micro,
+                    EngineType.SqlServerExpress,
+                    LicenseModelType.LicenseIncluded,
+                    Ebs.VolumeTypes.GeneralPurpose,
+                    30,
+                    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name),
+                    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name))
+                {
+                    DBSubnetGroupName = new ReferenceProperty(subnetGroupSqlExpress4Build)
+                };
+                template.Resources.Add("SqlServer4Build", rdsSqlExpress4Build);
+                rdsSqlExpress4Build.AddVpcSecurityGroup(securityGroupSqlSever4Build);
+            }
 
-            template.Resources.Add("SqlServer4Build", rdsSqlExpress4Build);
+            if (instancesToCreate.HasFlag(Create.Build))
+            {
+                var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer,
+                 tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
+            }
+
+            if (instancesToCreate.HasFlag(Create.Workstation))
+            {
+                //uses 33gb
+                var workstation = AddWorkstation(template,
+                    "Workstation",
+                    subnetWorkstation,
+                    dcPackage,
+                    workstationSecurityGroup);
+            }
+
+            if (instancesToCreate.HasFlag(Create.BackupServer))
+            {
+                LaunchConfiguration backupServer = new LaunchConfiguration(subnetDomainController1, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsEc2Instance);
+                SecurityGroup backupServerSecurityGroup = new SecurityGroup("SecurityGroup4BackupServer", vpc);
+                template.Resources.Add("SecurityGroup4BackupServer", backupServerSecurityGroup);
+                backupServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+                backupServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+                backupServerSecurityGroup.AddIngress(vpc, Protocol.Tcp, Ports.Min, Ports.Max);
+                backupServerSecurityGroup.AddIngress(vpc, Protocol.Udp, Ports.Min, Ports.Max);
+                backupServer.AddSecurityGroup(backupServerSecurityGroup);
+                template.Resources.Add("BackupServer", backupServer);
+                dcPackage.Participate(backupServer);
+                backupServer.AddDisk(Ebs.VolumeTypes.Magnetic, 400);
+                backupServer.Packages.Add(new WindowsShare("d:/backups", "backups", "dev\\tfsservice", "dev\\Domain Admins"));
+            }
 
 
-            rdsSqlExpress4Build.AddVpcSecurityGroup(securityGroupSqlSever4Build);
 
-            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
-            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd871hdj11", "Password for Master User For RDS SqlServer") { NoEcho = true });
 
-            var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer,
-             tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
 
-            //uses 33gb
-            var workstation = AddWorkstation(template,
-                "Workstation",
-                subnetWorkstation,
-                dcPackage,
-                workstationSecurityGroup);
+
+
 
 
             //////SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
@@ -299,18 +357,6 @@ namespace AWS.CloudFormation.Test
             //////////// be uncommented to debug domain setup problems
             //AddRdp2(subnetDmz1, template, vpc, dcPackage);
 
-            LaunchConfiguration backupServer = new LaunchConfiguration(subnetDomainController1, InstanceTypes.T2Nano, UsEast1AWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsEc2Instance);
-            SecurityGroup backupServerSecurityGroup = new SecurityGroup("SecurityGroup4BackupServer",vpc);
-            template.Resources.Add("SecurityGroup4BackupServer", backupServerSecurityGroup);
-            backupServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            backupServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            backupServerSecurityGroup.AddIngress(vpc,Protocol.Tcp,Ports.Min,Ports.Max);
-            backupServerSecurityGroup.AddIngress(vpc, Protocol.Udp, Ports.Min, Ports.Max);
-            backupServer.AddSecurityGroup(backupServerSecurityGroup);
-            template.Resources.Add("BackupServer",backupServer);
-            dcPackage.Participate(backupServer);
-            backupServer.AddDisk(Ebs.VolumeTypes.Magnetic, 400);
-            backupServer.Packages.Add(new WindowsShare("d:/backups", "backups","dev\\tfsservice","dev\\Domain Admins"));
 
 
             return template;
@@ -997,8 +1043,8 @@ namespace AWS.CloudFormation.Test
         private static LaunchConfiguration AddBuildServer(
             Template template, 
             InstanceTypes instanceSize, 
-            Subnet subnet, 
-            Instance tfsServer,
+            Subnet subnet,
+            LaunchConfiguration tfsServer,
             WaitCondition tfsServerComplete, 
             DomainControllerPackage domainControllerPackage, 
             SecurityGroup buildServerSecurityGroup, 
@@ -1189,7 +1235,8 @@ namespace AWS.CloudFormation.Test
             var topLevel = "yadayadasoftware.com";
             var appName = "dev";
 
-            var templateToCreateStack = GetTemplateFullStack(topLevel, appName, version);
+            Create instances = Create.Rdp1 | Create.BackupServer;
+            var templateToCreateStack = GetTemplateFullStack(topLevel, appName, version, instances);
             templateToCreateStack.StackName = $"{version}-{appName}-{topLevel}".Replace('.','-');
 
             CreateTestStack(templateToCreateStack, this.TestContext);
@@ -1200,7 +1247,7 @@ namespace AWS.CloudFormation.Test
         public void CreateDevelopmentTemplateFileTest()
         {
             //DomainDnsName = $"alpha.dev.yadayadasoftware.com";
-            var templateToCreateStack = GetTemplateFullStack("yadayadasoftware.com", "dev", Greek.Alpha);
+            var templateToCreateStack = GetTemplateFullStack("yadayadasoftware.com", "dev", Greek.Alpha,Create.FullStack);
             TemplateEngine.CreateTemplateFile(templateToCreateStack);
         }
 
@@ -1212,7 +1259,7 @@ namespace AWS.CloudFormation.Test
             var fullyQualifiedDomainName = "Beta.dev.yadayadasoftware.com";
             
 
-            var template = GetTemplateFullStack("yadayadasoftware.com", "dev",Greek.Beta);
+            var template = GetTemplateFullStack("yadayadasoftware.com", "dev",Greek.Beta, Create.FullStack);
             ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "OCSW8233txyl";
             Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.','-'), template );
         }

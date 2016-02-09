@@ -429,7 +429,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
     public class TeamFoundationServerBuildServerAgentOnly : TeamFoundationServerBuildServerBase
     {
-        public TeamFoundationServerBuildServerAgentOnly(Instance applicationServer, string bucketName, DbInstance sqlExpress4Build)
+        public TeamFoundationServerBuildServerAgentOnly(LaunchConfiguration applicationServer, string bucketName, DbInstance sqlExpress4Build)
             : base(applicationServer, bucketName, "agent", sqlExpress4Build)
         {
             this.SnapshotId = string.Empty;

@@ -76,7 +76,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateTemplateFileTest()
         {
-            var template = StackTest.GetTemplateFullStack("yadayadasoftware.com", "dev", StackTest.Greek.Xi);
+            var template = StackTest.GetTemplateFullStack("yadayadasoftware.com", "dev", StackTest.Greek.Xi, StackTest.Create.FullStack);
 
             FileInfo file = TemplateEngine.CreateTemplateFile(template);
             Assert.IsNotNull(file);
