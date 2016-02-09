@@ -50,18 +50,9 @@ namespace AWS.CloudFormation.Configuration.Packages
             file.Source = "https://s3.amazonaws.com/gtbb/check-for-user-exists.ps1";
 
 
-            var currentCommand = this.Config.Commands.AddCommand<Command>("InstallPrequisites");
+            InstallDomainControllerCommon(this.Instance);
 
-            var addActiveDirectoryPowershell = this.Config.Commands.AddCommand<Command>("AddRSATADPowerShell");
-            addActiveDirectoryPowershell.Command = new PowershellFnJoin(FnJoinDelimiter.None, "-Command \"Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter\"");
-            addActiveDirectoryPowershell.WaitAfterCompletion = 0.ToString();
-
-
-            currentCommand.Command = new PowershellFnJoin("-Command \"Install-WindowsFeature AD-Domain-Services, rsat-adds -IncludeAllSubFeature\"");
-            currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
-            currentCommand.WaitAfterCompletion = 0.ToString();
-
-            currentCommand = this.Config.Commands.AddCommand<Command>("InstallActiveDirectoryDomainServices");
+            var currentCommand = this.Config.Commands.AddCommand<Command>("InstallActiveDirectoryDomainServices");
             currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
             currentCommand.WaitAfterCompletion = TimeoutMax.TotalSeconds.ToString(CultureInfo.InvariantCulture);
 
@@ -145,9 +136,26 @@ namespace AWS.CloudFormation.Configuration.Packages
 
         }
 
+        private void InstallDomainControllerCommon(LaunchConfiguration instance)
+        {
+            var config = instance.Metadata.Init.ConfigSets.GetConfigSet(this.ConfigSetName).GetConfig(this.ConfigName);
+            var currentCommand = config.Commands.AddCommand<Command>("InstallPrequisites");
+            var addActiveDirectoryPowershell = config.Commands.AddCommand<Command>("AddRSATADPowerShell");
+            addActiveDirectoryPowershell.Command = new PowershellFnJoin(FnJoinDelimiter.None,
+                "-Command \"Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter\"");
+            addActiveDirectoryPowershell.WaitAfterCompletion = 0.ToString();
+
+
+            currentCommand.Command =
+                new PowershellFnJoin("-Command \"Install-WindowsFeature AD-Domain-Services, rsat-adds -IncludeAllSubFeature\"");
+            currentCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
+            currentCommand.WaitAfterCompletion = 0.ToString();
+        }
+
         public void MakeSecondaryDomainController(LaunchConfiguration secondary)
         {
             secondary.AddSecurityGroup(this.DomainControllerSecurityGroup);
+            InstallDomainControllerCommon(secondary);
         }
 
         public Subnet Subnet { get; }
