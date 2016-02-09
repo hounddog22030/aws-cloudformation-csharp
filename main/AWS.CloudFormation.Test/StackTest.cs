@@ -1360,7 +1360,7 @@ namespace AWS.CloudFormation.Test
             var topLevel = "yadayadasoftware.com";
             var appName = "dev";
 
-            Create instances = Create.Rdp1 | Create.BackupServer;
+            Create instances = Create.Dc2 | Create.BackupServer | Create.Rdp1;
             var templateToCreateStack = GetTemplateFullStack(topLevel, appName, version, instances);
             templateToCreateStack.StackName = $"{version}-{appName}-{topLevel}".Replace('.','-');
 
