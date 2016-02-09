@@ -73,7 +73,7 @@ namespace AWS.CloudFormation.Test
             MySql4Build = SqlServer4Build * 2,
             BackupServer = MySql4Build * 2,
             Workstation = BackupServer,
-            FullStack = Dc2 + Rdp1 + Sql4Tfs + Tfs + Build + SqlServer4Build + MySql4Build + BackupServer + Workstation
+            FullStack = int.MaxValue
         }
 
         public static Template GetTemplateFullStack(string topLevel, string appNameNetBiosName, Greek version, Create instancesToCreate)
@@ -1366,7 +1366,7 @@ namespace AWS.CloudFormation.Test
             var appName = "dev";
 
             //Create instances = Create.Dc2 | Create.BackupServer | Create.Rdp1;
-            Create instances = Create.BackupServer | Create.Rdp1;
+            Create instances = Create.FullStack;
             var templateToCreateStack = GetTemplateFullStack(topLevel, appName, version, instances);
             templateToCreateStack.StackName = $"{version}-{appName}-{topLevel}".Replace('.','-');
 
