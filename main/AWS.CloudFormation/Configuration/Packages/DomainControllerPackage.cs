@@ -169,6 +169,15 @@ namespace AWS.CloudFormation.Configuration.Packages
                             new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
                             new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
                             new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)),
+                " -Credential ",
+                "(New-Object System.Management.Automation.PSCredential('",
+                new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
+                "\\",
+                new ReferenceProperty(DomainControllerPackage.DomainAdminUsernameParameterName),
+                "',",
+                "(ConvertTo-SecureString ",
+                new ReferenceProperty(DomainControllerPackage.DomainAdminPasswordParameterName),
+                " -AsPlainText -Force))) ",
                 " -SafeModeAdministratorPassword (convertto-securestring \"jhkjhsdf338!\" -asplaintext -force) ",
                 " -Confirm:$false -Force\"");
         }
