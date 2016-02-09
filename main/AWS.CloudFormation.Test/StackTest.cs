@@ -179,6 +179,7 @@ namespace AWS.CloudFormation.Test
                 instanceDomainController2.DependsOn.Add(nat2.LogicalId);
                 dcPackage.Participate(instanceDomainController2);
                 dc2PrivateIp = new FnGetAtt(instanceDomainController2, FnGetAttAttribute.AwsEc2InstancePrivateIp);
+                dcPackage.MakeSecondaryDomainController(instanceDomainController2);
             }
 
             FnGetAtt dc1PrivateIp = new FnGetAtt(instanceDomainController, FnGetAttAttribute.AwsEc2InstancePrivateIp);
