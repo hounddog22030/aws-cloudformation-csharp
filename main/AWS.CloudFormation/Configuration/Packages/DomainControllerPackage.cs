@@ -157,8 +157,13 @@ namespace AWS.CloudFormation.Configuration.Packages
             secondary.AddSecurityGroup(this.DomainControllerSecurityGroup);
             InstallDomainControllerCommon(secondary);
             var config = secondary.Metadata.Init.ConfigSets.GetConfigSet(this.ConfigSetName).GetConfig(this.ConfigName);
-            var currentCommand = config.Commands.AddCommand<Command>("MakeSecondaryDomainController");
 
+            //Install-WindowsFeature AD-Domain-Services, rsat-adds -IncludeAllSubFeature
+
+            var currentCommand = config.Commands.AddCommand<Command>("InstallWindowsFeatureADDomainServices");
+            currentCommand.Command = new PowershellFnJoin("-Command \"Install-WindowsFeature AD-Domain-Services, rsat-adds -IncludeAllSubFeature\"");
+
+            currentCommand = config.Commands.AddCommand<Command>("InstallADDSDomainControllerr");
             currentCommand.Command = new PowershellFnJoin("-Command \"Install-ADDSDomainController -InstallDns -DomainName ",
                 new FnJoin(FnJoinDelimiter.Period,
                             new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
