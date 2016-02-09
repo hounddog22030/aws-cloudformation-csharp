@@ -164,7 +164,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             currentCommand.Command = new PowershellFnJoin("-Command \"Install-WindowsFeature AD-Domain-Services, rsat-adds -IncludeAllSubFeature\"");
 
             currentCommand = config.Commands.AddCommand<Command>("InstallADDSDomainControllerr");
-            currentCommand.Command = new PowershellFnJoin("-Command \"Install-ADDSDomainController -InstallDns -DomainName ",
+            currentCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None, "-Command \"Install-ADDSDomainController -InstallDns -DomainName ",
                 new FnJoin(FnJoinDelimiter.Period,
                             new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
                             new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
