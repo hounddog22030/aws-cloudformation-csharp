@@ -237,6 +237,9 @@ namespace AWS.CloudFormation.Test
 
             DbInstance mySql4Build = null;
 
+            const string mySqlMasterUserName = "mysqlmasteruser";
+            const string mySqlPassword = "th1s1smyp@55w0rd";
+
             if (instancesToCreate.HasFlag(Create.MySql4Build))
             {
                 mySql4Build = new DbInstance(
@@ -245,8 +248,8 @@ namespace AWS.CloudFormation.Test
                     LicenseModelType.GeneralPublicLicense,
                     Ebs.VolumeTypes.GeneralPurpose,
                     20,
-                    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name),
-                    new ReferenceProperty(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name))
+                    mySqlMasterUserName,
+                    mySqlPassword)
                 {
                     DBSubnetGroupName = new ReferenceProperty(subnetGroupSqlExpress4Build)
                 };
