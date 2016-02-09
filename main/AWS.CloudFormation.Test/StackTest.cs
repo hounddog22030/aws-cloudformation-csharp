@@ -110,10 +110,14 @@ namespace AWS.CloudFormation.Test
             Subnet subnetDmz2 = AddDmz2(vpc, template);
 
             Instance nat1 = AddNat(template, subnetDmz1, natSecurityGroup);
+            nat1.DependsOn.Add(vpc.InternetGateway.LogicalId);
             Instance nat2 = null;
+
             if (instancesToCreate.HasFlag(Create.Dc2))
             {
                 nat2 = AddNat(template, subnetDmz2, natSecurityGroup);
+                nat2.DependsOn.Add(vpc.InternetGateway.LogicalId);
+
             }
 
             Subnet subnetDomainController1 = AddSubnet4DomainController(vpc, nat1, natSecurityGroup, template);
@@ -1360,7 +1364,8 @@ namespace AWS.CloudFormation.Test
             var topLevel = "yadayadasoftware.com";
             var appName = "dev";
 
-            Create instances = Create.Dc2 | Create.BackupServer | Create.Rdp1;
+            //Create instances = Create.Dc2 | Create.BackupServer | Create.Rdp1;
+            Create instances = Create.BackupServer | Create.Rdp1;
             var templateToCreateStack = GetTemplateFullStack(topLevel, appName, version, instances);
             templateToCreateStack.StackName = $"{version}-{appName}-{topLevel}".Replace('.','-');
 
