@@ -156,6 +156,16 @@ namespace AWS.CloudFormation.Configuration.Packages
         {
             secondary.AddSecurityGroup(this.DomainControllerSecurityGroup);
             InstallDomainControllerCommon(secondary);
+            var config = secondary.Metadata.Init.ConfigSets.GetConfigSet(this.ConfigSetName).GetConfig(this.ConfigName);
+            var currentCommand = config.Commands.AddCommand<Command>("MakeSecondaryDomainController");
+
+            currentCommand.Command = new PowershellFnJoin("-Command \"Install-ADDSDomainController -InstallDns -DomainName ",
+                new FnJoin(FnJoinDelimiter.Period,
+                            new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
+                            new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
+                            new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)),
+                " -SafeModeAdministratorPassword (convertto-securestring \"jhkjhsdf338!\" -asplaintext -force) ",
+                " -Confirm:$false -Force\"");
         }
 
         public Subnet Subnet { get; }
