@@ -175,7 +175,7 @@ namespace AWS.CloudFormation.Test
             if (instancesToCreate.HasFlag(Create.Dc2))
             {
                 instanceDomainController2 = new Instance(subnetDomainController2, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows);
-                template.Resources.Add("DomainController2", instanceDomainController2);
+                template.Resources.Add("DomainControll2", instanceDomainController2);
                 instanceDomainController2.DependsOn.Add(nat2.LogicalId);
                 dcPackage.Participate(instanceDomainController2);
                 dc2PrivateIp = new FnGetAtt(instanceDomainController2, FnGetAttAttribute.AwsEc2InstancePrivateIp);
