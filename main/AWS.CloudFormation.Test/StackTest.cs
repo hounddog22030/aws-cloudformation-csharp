@@ -184,6 +184,7 @@ namespace AWS.CloudFormation.Test
                 dcPackage.Participate(instanceDomainController2);
                 dc2PrivateIp = new FnGetAtt(instanceDomainController2, FnGetAttAttribute.AwsEc2InstancePrivateIp);
                 dcPackage.MakeSecondaryDomainController(instanceDomainController2);
+                var x = instanceDomainController2.Packages.Last().WaitCondition;
             }
 
             FnGetAtt dc1PrivateIp = new FnGetAtt(instanceDomainController, FnGetAttAttribute.AwsEc2InstancePrivateIp);
@@ -207,9 +208,9 @@ namespace AWS.CloudFormation.Test
             {
                 var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows);
                 template.Resources.Add($"Rdp", instanceRdp);
-
                 dcPackage.Participate(instanceRdp);
                 instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
+                var x = instanceRdp.Packages.Last().WaitCondition;
             }
 
             LaunchConfiguration instanceTfsSqlServer = null;
