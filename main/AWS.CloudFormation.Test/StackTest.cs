@@ -1382,7 +1382,7 @@ namespace AWS.CloudFormation.Test
             //Delta-dev-yadayadasoftware-com	
             Assert.IsFalse(HasGitDifferences());
 
-            Greek version = Greek.Delta;
+            Greek version = Greek.Eta;
 
             var fullyQualifiedDomainName = $"{version}.dev.yadayadasoftware.com";
             
