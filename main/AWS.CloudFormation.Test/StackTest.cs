@@ -108,7 +108,7 @@ namespace AWS.CloudFormation.Test
             securityGroupSqlSever4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MsSqlServer);
             securityGroupDb4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MySql);
 
-            Instance instanceDomainController = new Instance(subnetDomainController1, InstanceTypes.T2Small, UsEastWindows2012R2Ami, OperatingSystem.Windows);
+            Instance instanceDomainController = new Instance(subnetDomainController1, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
             template.Resources.Add("DomainController", instanceDomainController);
             instanceDomainController.DependsOn.Add(nat1.LogicalId);
 
@@ -127,7 +127,7 @@ namespace AWS.CloudFormation.Test
 
             if (instancesToCreate.HasFlag(Create.Dc2))
             {
-                instanceDomainController2 = new Instance(subnetDomainController2, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows);
+                instanceDomainController2 = new Instance(subnetDomainController2, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
                 template.Resources.Add("DomainControll2", instanceDomainController2);
                 instanceDomainController2.DependsOn.Add(nat2.LogicalId);
                 dcPackage.Participate(instanceDomainController2);
@@ -154,7 +154,7 @@ namespace AWS.CloudFormation.Test
 
             if (instancesToCreate.HasFlag(Create.Rdp1))
             {
-                var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows);
+                var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
                 template.Resources.Add($"Rdp", instanceRdp);
                 dcPackage.Participate(instanceRdp);
                 instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
@@ -165,7 +165,7 @@ namespace AWS.CloudFormation.Test
 
             if (instancesToCreate.HasFlag(Create.Sql4Tfs))
             {
-                instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Large, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
+                instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
                 var x = instanceTfsSqlServer.Packages.Last().WaitCondition;
             }
 
@@ -253,7 +253,7 @@ namespace AWS.CloudFormation.Test
                 backupServer.AddSecurityGroup(backupServerSecurityGroup);
                 template.Resources.Add("BackupServer", backupServer);
                 dcPackage.Participate(backupServer);
-                backupServer.AddDisk(Ebs.VolumeTypes.Magnetic, 400);
+                backupServer.AddDisk(Ebs.VolumeTypes.Magnetic, 60);
                 backupServer.Packages.Add(new WindowsShare(
                     "d:/backups",
                     "backups", 
@@ -575,7 +575,7 @@ namespace AWS.CloudFormation.Test
         private static LaunchConfiguration AddSql(Template template, string instanceName, InstanceTypes instanceSize, 
             Subnet subnet, DomainControllerPackage domainControllerPackage, SecurityGroup sqlServerSecurityGroup)
         {
-            var sqlServer = new Instance(subnet, instanceSize, UsEastWindows2012R2SqlServerExpressAmi, OperatingSystem.Windows);
+            var sqlServer = new Instance(subnet, instanceSize, UsEastWindows2012R2SqlServerExpressAmi, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 70);
             template.Resources.Add(instanceName,sqlServer);
             domainControllerPackage.Participate(sqlServer);
             var sqlServerPackage = new SqlServerExpressFromAmi(BucketNameSoftware);
