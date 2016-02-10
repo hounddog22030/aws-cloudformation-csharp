@@ -37,7 +37,7 @@
      <SelectableItemCustomization Id="VCExtendedHidden" Selected="no" />
      <SelectableItemCustomization Id="WinJSHidden" Selected="no" />
      <SelectableItemCustomization Id="WinSDKHidden" Selected="no" />
-     <SelectableItemCustomization Id="WebTools" Hidden="no" Selected="yes" />
+     <SelectableItemCustomization Id="WebTools" Hidden="no" Selected="no" />
    </SelectableItemCustomizations>
 
 </AdminDeploymentCustomizations>

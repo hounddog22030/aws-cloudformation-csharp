@@ -7,25 +7,6 @@
 # All rights reserved - Do Not Redistribute
 #
 
-#######################################
-
-#
-# Cookbook Name:: VisualStudio
-# Recipe:: default
-#
-# Copyright (c) 2015 The Authors, All Rights Reserved.
-
-
-#include_recipe 'iis'
-#include_recipe 'iis::mod_aspnet45'
-#include_recipe 'iis::mod_auth_windows'
-#include_recipe 'iis::mod_compress_dynamic'
-#include_recipe 'iis::mod_logging'
-#include_recipe 'iis::mod_security'
-#include_recipe 'iis::mod_tracing'
-
-#include_recipe 'SQL2014'
-
 include_recipe 'ec2helper'
 
 sentinel_file = "C:/Program Files (x86)/Microsoft Visual Studio 14.0/Common7/IDE/DevEnv.exe"
@@ -55,14 +36,9 @@ execute 'Install Visual Studio' do
 	returns [0,3010]
 	not_if { File.exist?("#{sentinel_file}") }
 	action :nothing
-	notifies :request_reboot, 'reboot[app_requires_reboot]', :immediately
+	notifies :delete, 'directory[c:/users/default/AppData]', :immediately
 end
 
-reboot 'app_requires_reboot' do
-  reason 'Need to reboot when the run completes successfully.'
-  delay_mins 0
-  action :nothing
+directory 'c:/users/default/AppData' do
+	action :nothing
 end
-
-#include_recipe 'Resharper'
-#include_recipe 'AWS4VisualStudio'

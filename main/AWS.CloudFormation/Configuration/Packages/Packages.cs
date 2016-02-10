@@ -239,14 +239,6 @@ namespace AWS.CloudFormation.Configuration.Packages
         public VisualStudio(string bucketName) : base("snap-5e27a85a", bucketName, "vs")
         {
         }
-
-        public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
-        {
-            base.AddToLaunchConfiguration(configuration);
-            var command = this.Config.Commands.AddCommand<Command>("DeleteAppDataFolder");
-            command.Command = "rmdir /q /s c:\\users\\default\\AppData";
-            command.WaitAfterCompletion = 0.ToString();
-        }
     }
 
     public class Iis : PackageChef
