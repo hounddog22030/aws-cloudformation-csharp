@@ -1,5 +1,17 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "KeyPairName": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Default": "corp.getthebuybox.com",
+      "Description": "Key Pair to decrypt instance password."
+    },
+    "TimeZone": {
+      "Type": "String",
+      "Default": "Eastern Standard Time",
+      "Description": "Timezone for the stack."
+    }
+  },
   "Resources": {
     "VpcCreateMinimalInstanceTest": {
       "Type": "AWS::EC2::VPC",
@@ -143,7 +155,17 @@
               },
               "001SetTimeZone": {
                 "waitAfterCompletion": "0",
-                "command": "tzutil /s \"Eastern Standard Time\""
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "tzutil /s ",
+                      "\"",
+                      { "Ref": "TimeZone" },
+                      "\""
+                    ]
+                  ]
+                }
               }
             },
             "files": {
@@ -312,13 +334,6 @@
           }
         ]
       }
-    }
-  },
-  "Parameters": {
-    "KeyPairName": {
-      "Type": "AWS::EC2::KeyPair::KeyName",
-      "Default": "corp.getthebuybox.com",
-      "Description": "Key Pair to decrypt instance password."
     }
   },
   "Outputs": {

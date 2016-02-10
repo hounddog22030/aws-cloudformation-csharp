@@ -4,13 +4,15 @@
     "stack1": {
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
-        "TemplateURL": "https://s3.amazonaws.com/gtbb/nested/subtemplate1.template"
+        "TemplateURL": "https://s3.amazonaws.com/gtbb/nested/subtemplate1.template",
+        "Parameters": { "TimeZone": "Eastern Standard Time" }
       }
     },
     "stack2": {
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
-        "TemplateURL": "https://s3.amazonaws.com/gtbb/nested/subtemplate2.template"
+        "TemplateURL": "https://s3.amazonaws.com/gtbb/nested/subtemplate2.template",
+        "Parameters": { "TimeZone": "Pacific Standard Time" }
       }
     }
   }
