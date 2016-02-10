@@ -80,7 +80,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             }
             if (this.Msi != null)
             {
-                var fileName = System.IO.Path.GetFileNameWithoutExtension(Msi.AbsolutePath).Replace(".",string.Empty).Replace("-",String.Empty);
+                var fileName = System.IO.Path.GetFileNameWithoutExtension(Msi.AbsolutePath).Replace(".", string.Empty).Replace("-", String.Empty);
                 var configSet = this.Config; // configuration.Metadata.Init.ConfigSets.GetConfigSet(fileName).GetConfig(fileName);
                 if (!configSet.Packages.ContainsKey("msi"))
                 {
@@ -136,7 +136,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
                     _waitCondition = new WaitCondition();
 
-                    this.Instance.Template.Resources.Add(name,_waitCondition);
+                    this.Instance.Template.Resources.Add(name, _waitCondition);
 
                     this.Config.Commands.AddCommand<Command>(_waitCondition);
                 }
@@ -243,16 +243,16 @@ namespace AWS.CloudFormation.Configuration.Packages
 
     public class Iis : PackageChef
     {
-        public Iis(string bucketName) : base(null,bucketName,"yadayada_iis")
+        public Iis(string bucketName) : base(null, bucketName, "yadayada_iis")
         {
-            
+
         }
-        
+
     }
 
     public class SqlServerExpressFromAmi : PackageBase<ConfigSet>
     {
-        public SqlServerExpressFromAmi(string bucketName) : base(null,null,bucketName)
+        public SqlServerExpressFromAmi(string bucketName) : base(null, null, bucketName)
         {
         }
 
@@ -327,7 +327,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             // volume for backups
         }
 
-        
+
     }
 
     public abstract class TeamFoundationServer : PackageChef
@@ -352,7 +352,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             base.AddToLaunchConfiguration(configuration);
             var node = this.Instance.GetChefNodeJsonContent();
             var tfsNode = node.Add("tfs");
-            tfsNode.Add("application_server_sqlname", new FnGetAtt(this.SqlServer, FnGetAttAttribute.AwsEc2InstancePrivateDnsName));
+            tfsNode.Add("application_server_sqlname", this.SqlServer.LogicalId);
             tfsNode.Add(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName));
             tfsNode.Add(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName));
         }
@@ -365,7 +365,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         public const string sqlexpress4build_username_parameter_name = "SqlExpress4BuildUsername";
         public const string sqlexpress4build_password_parameter_name = "SqlExpress4BuildPassword";
 
-        public TeamFoundationServerBuildServerBase( LaunchConfiguration applicationServer, 
+        public TeamFoundationServerBuildServerBase(LaunchConfiguration applicationServer,
                                                     string bucketName,
                                                     string recipeName,
                                                     DbInstance sqlServer4Build) : base(bucketName, recipeName)
@@ -387,7 +387,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             var node = this.Instance.GetChefNodeJsonContent();
             var tfsNode = node.Add("tfs");
             tfsNode.Add("application_server_netbios_name", new FnGetAtt(this.ApplicationServer, FnGetAttAttribute.AwsEc2InstancePrivateDnsName));
-            tfsNode.Add("sqlexpress4build_private_dns_name", this.SqlServer4Build.LogicalId );
+            tfsNode.Add("sqlexpress4build_private_dns_name", new FnGetAtt(this.SqlServer4Build, FnGetAttAttribute.AwsRdsDbInstanceEndpointAddress));
             tfsNode.Add("sqlexpress4build_username",
                 new ReferenceProperty(sqlexpress4build_username_parameter_name));
             tfsNode.Add("sqlexpress4build_password",
