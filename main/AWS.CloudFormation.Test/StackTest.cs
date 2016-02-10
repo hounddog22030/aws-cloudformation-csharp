@@ -59,13 +59,13 @@ namespace AWS.CloudFormation.Test
             Subnet subnetDmz2 = AddDmz2(vpc, template);
 
             Instance nat1 = AddNat(template, subnetDmz1, natSecurityGroup);
-            nat1.DependsOn.Add(vpc.InternetGateway.LogicalId);
+            nat1.DependsOn.Add(vpc.VpcGatewayAttachment.LogicalId);
             Instance nat2 = null;
 
             if (instancesToCreate.HasFlag(Create.Dc2))
             {
                 nat2 = AddNat(template, subnetDmz2, natSecurityGroup);
-                nat2.DependsOn.Add(vpc.InternetGateway.LogicalId);
+                nat2.DependsOn.Add(vpc.VpcGatewayAttachment.LogicalId);
 
             }
 
@@ -715,7 +715,10 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
-            Instance w = new Instance(DMZSubnet,InstanceTypes.T2Large, UsEastWindows2012R2Ami,OperatingSystem.Windows);
+            Volume rootVolume = new Volume(50);
+            template.Resources.Add("VolumeTestRoot", rootVolume);
+
+            Instance w = new Instance(DMZSubnet,InstanceTypes.T2Large, UsEastWindows2012R2Ami,OperatingSystem.Windows,rootVolume);
             template.Resources.Add("workstation",w);
             w.AddSecurityGroup(rdp);
             w.AddElasticIp();

@@ -42,12 +42,24 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             }
             this.InstanceType = instanceType;
             this.OperatingSystem = operatingSystem;
+            switch (OperatingSystem)
+            {
+                case OperatingSystem.Windows:
+                    RootDeviceId = "/dev/sda1";
+                    break;
+                case OperatingSystem.Linux:
+                    RootDeviceId = "/dev/xvda";
+                    break;
+                default:
+                    throw new NotSupportedException(nameof(operatingSystem));
+            }
             Packages = new ObservableCollection<PackageBase<ConfigSet>>();
             Packages.CollectionChanged += Packages_CollectionChanged;
             this.ImageId = imageId;
             this.PopulateAvailableDevices();
 
             KeyName = new ReferenceProperty(Template.ParameterKeyPairName);
+            
         }
 
         protected override void OnTemplateSet(Template template)
@@ -136,6 +148,9 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             var nodeJson = chefConfig.Files.GetFile("c:/chef/node.json");
             return nodeJson.Content;
         }
+
+        [JsonIgnore]
+        public readonly string RootDeviceId;
 
         private readonly List<string> _availableDevices;
         internal string GetAvailableDevice()

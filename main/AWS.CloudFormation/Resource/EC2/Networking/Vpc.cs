@@ -19,9 +19,12 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             base.OnTemplateSet(template);
             InternetGateway = new InternetGateway();
             template.Resources.Add($"{this.LogicalId}InternetGateway", InternetGateway);
-            VpcGatewayAttachment attachment = new VpcGatewayAttachment(InternetGateway, this);
-            template.Resources.Add($"{InternetGateway.LogicalId}Attachment", attachment);
+            this.VpcGatewayAttachment = new VpcGatewayAttachment(InternetGateway, this);
+            template.Resources.Add($"{InternetGateway.LogicalId}Attachment", this.VpcGatewayAttachment);
         }
+
+        [JsonIgnore]
+        public VpcGatewayAttachment VpcGatewayAttachment { get; private set; }
 
         [JsonIgnore]
         public bool EnableDnsHostnames
@@ -46,50 +49,50 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             set { this.Properties.SetValue(value); }
         }
 
-        public class VpcGatewayAttachment : ResourceBase
+        protected override bool SupportsTags => true;
+
+    }
+    public class VpcGatewayAttachment : ResourceBase
+    {
+
+        public VpcGatewayAttachment() : base(ResourceType.AwsEc2VpcGatewayAttachment)
         {
 
-            public VpcGatewayAttachment() : base(ResourceType.AwsEc2VpcGatewayAttachment)
-            {
-
-            }
-
-            public VpcGatewayAttachment(InternetGateway internetGateway, Vpc vpc) : this()
-            {
-                InternetGateway = internetGateway;
-                Vpc = vpc;
-            }
-
-
-            [JsonIgnore]
-            public InternetGateway InternetGateway
-            {
-                get
-                {
-                    return this.Properties.GetValue<InternetGateway>();
-                }
-                private set
-                {
-                    this.Properties.SetValue(value);
-                }
-            }
-
-            [JsonIgnore]
-            public Vpc Vpc
-            {
-                get
-                {
-                    return this.Properties.GetValue<Vpc>();
-                }
-                private set
-                {
-                    this.Properties.SetValue(value);
-                }
-            }
-            protected override bool SupportsTags => false;
-
         }
-        protected override bool SupportsTags => true;
+
+        public VpcGatewayAttachment(InternetGateway internetGateway, Vpc vpc) : this()
+        {
+            InternetGateway = internetGateway;
+            Vpc = vpc;
+        }
+
+
+        [JsonIgnore]
+        public InternetGateway InternetGateway
+        {
+            get
+            {
+                return this.Properties.GetValue<InternetGateway>();
+            }
+            private set
+            {
+                this.Properties.SetValue(value);
+            }
+        }
+
+        [JsonIgnore]
+        public Vpc Vpc
+        {
+            get
+            {
+                return this.Properties.GetValue<Vpc>();
+            }
+            private set
+            {
+                this.Properties.SetValue(value);
+            }
+        }
+        protected override bool SupportsTags => false;
 
     }
 }

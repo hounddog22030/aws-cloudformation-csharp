@@ -10,8 +10,16 @@ using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Resource.EC2
 {
+
+    public enum VolumeAttachmentType
+    {
+        Extension,
+        Root
+    }
+
     public class Volume : ResourceBase
     {
+
         public Volume() : base(ResourceType.AwsEc2Volume)
         {
         }
@@ -20,6 +28,9 @@ namespace AWS.CloudFormation.Resource.EC2
         {
             this.Size = size.ToString();
         }
+
+        [JsonIgnore]
+        public VolumeAttachmentType AttachmentType { get; set; }
 
         [JsonIgnore]
         public string SnapshotId

@@ -20,9 +20,21 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             this.Add("Ebs", Ebs);
             this.Add("DeviceName", deviceName);
         }
+        public BlockDeviceMapping(ResourceBase resource, string deviceName, bool noDevice) : base(resource)
+        {
+            this.Add("DeviceName", deviceName);
+            if (noDevice)
+            {
+                this.Add("NoDevice",new object());
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
+        }
 
         public Ebs Ebs { get;}
-
+        public object NoDevice { get; set; }
     }
     public class Ebs : CloudFormationDictionary
     {

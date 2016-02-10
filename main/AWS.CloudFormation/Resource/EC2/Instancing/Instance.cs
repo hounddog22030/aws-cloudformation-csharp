@@ -27,6 +27,21 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         {
             this.AddDisk(volumeType, volumeSize, this.GetRootDeviceId());
         }
+        public Instance(Subnet subnet, InstanceTypes instanceType, string imageId,
+            OperatingSystem operatingSystem, Volume rootVolume)
+            : this(subnet, instanceType, imageId, operatingSystem)
+        {
+            rootVolume.AttachmentType=VolumeAttachmentType.Root;
+            if (string.IsNullOrEmpty(rootVolume.LogicalId))
+            {
+                rootVolume.LogicalId = $"Volume{this.LogicalId}Root";
+            }
+            this.VolumesToAttach.Add(rootVolume);
+
+            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this, this.RootDeviceId,true);
+            
+            this.AddBlockDeviceMapping(blockDeviceMapping);
+        }
 
         private string GetRootDeviceId()
         {
@@ -160,7 +175,19 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             {
                 volume.AvailabilityZone = this.Subnet.AvailabilityZone;
             }
-            VolumeAttachment attachment = new VolumeAttachment(this.GetAvailableDevice(), this, volume);
+            string deviceId = string.Empty;
+            switch (volume.AttachmentType)
+            {
+                    case VolumeAttachmentType.Extension:
+                    deviceId = this.GetAvailableDevice();
+                    break;
+                    case VolumeAttachmentType.Root:
+                    deviceId = this.RootDeviceId;
+                    break;
+                default:
+                    throw new NotSupportedException(volume.AttachmentType.ToString());
+            }
+            VolumeAttachment attachment = new VolumeAttachment(deviceId, this, volume);
             this.Template.Resources.Add(attachment.LogicalId, attachment);
         }
     }
