@@ -1409,9 +1409,13 @@ namespace AWS.CloudFormation.Test
             Greek version = Greek.Omicron;
 
             var fullyQualifiedDomainName = $"{version}.dev.yadayadasoftware.com";
-            
 
-            var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, Create.FullStack | ~Create.BackupServer );
+            //colors &= ~Blah.BLUE;
+
+            var instances = Create.FullStack;
+            instances &= ~Create.BackupServer;
+
+            var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances);
             ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "RNWD6664ytle";
             Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.','-'), template );
         }
