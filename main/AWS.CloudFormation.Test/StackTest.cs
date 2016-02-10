@@ -265,6 +265,7 @@ namespace AWS.CloudFormation.Test
                     "'",
                     new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
                     "\\Domain Admins'")));
+                var x = backupServer.Packages.Last().WaitCondition;
             }
 
 
