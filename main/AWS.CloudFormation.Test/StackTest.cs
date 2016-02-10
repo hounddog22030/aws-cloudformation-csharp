@@ -25,63 +25,12 @@ namespace AWS.CloudFormation.Test
     [TestClass]
     public class StackTest
     {
-        //private const string DomainAdminPassword = "kasdfiajs!!9";
-        private const string CidrDmz1 = "10.0.127.0/28";
-        private const string CidrDmz2 = "10.0.255.0/28";
-        private const string CidrDomainController1Subnet = "10.0.0.0/24";
-        private const string CidrDomainController2Subnet = "10.0.128.0/24";
-        private const string CidrSqlServer4TfsSubnet = "10.0.1.0/24";
-        private const string CidrTfsServerSubnet = "10.0.2.0/24";
-        private const string CidrBuildServerSubnet = "10.0.3.0/24";
-        private const string CidrWorkstationSubnet = "10.0.4.0/24";
-        private const string CidrDatabase4BuildSubnet2 = "10.0.5.0/24";
-        private const string KeyPairName = "corp.getthebuybox.com";
-        private const string CidrVpc = "10.0.0.0/16";
-        private const string UsEastWindows2012R2Ami = "ami-9a0558f0";
-        private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-a3005dc9";
-        private const string BucketNameSoftware = "gtbb";
-
-        public static Template GetTemplateWithParameters()
-        {
-            var template = new Template(KeyPairName, "Vpc", CidrVpc);
-            var password = System.Web.Security.Membership.GeneratePassword(8, 0);
-            var domainPassword = new ParameterBase(Template.ParameterDomainAdminPassword, "String", password, "Password for domain administrator.")
-            {
-                NoEcho = true
-            };
-
-            template.Parameters.Add(Template.ParameterDomainAdminPassword, domainPassword);
-            return template;
-        }
-
-        [TestMethod]
-        public void TestParameters()
-        {
-            var template = GetTemplateWithParameters();
-            CreateTestStack(template, this.TestContext);
-        }
-
-        [Flags]
-        public enum Create
-        {
-            Dc2 = 1,
-            Rdp1 = Dc2 * 2,
-            Sql4Tfs = Rdp1 * 2,
-            Tfs = Sql4Tfs * 2,
-            Build = Tfs * 2,
-            SqlServer4Build = Build *2,
-            MySql4Build = SqlServer4Build * 2,
-            BackupServer = MySql4Build * 2,
-            Workstation = BackupServer,
-            FullStack = int.MaxValue
-        }
-
         public static Template GetTemplateFullStack(string topLevel, string appNameNetBiosName, Greek version, Create instancesToCreate)
         {
 
             var password = GetPassword();
 
-            var template = new Template(KeyPairName, $"Vpc{version}", CidrVpc,$"{GetGitBranch()}:{GetGitHash()}");
+            var template = new Template(KeyPairName, $"Vpc{version}", CidrVpc, $"{GetGitBranch()}:{GetGitHash()}");
 
             var domainPassword = new ParameterBase(DomainControllerPackage.DomainAdminPasswordParameterName, "String", password, "Password for domain administrator.")
             {
@@ -159,7 +108,7 @@ namespace AWS.CloudFormation.Test
             securityGroupSqlSever4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MsSqlServer);
             securityGroupDb4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MySql);
 
-            Instance instanceDomainController = new Instance(subnetDomainController1,InstanceTypes.T2Small,UsEastWindows2012R2Ami, OperatingSystem.Windows);
+            Instance instanceDomainController = new Instance(subnetDomainController1, InstanceTypes.T2Small, UsEastWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add("DomainController", instanceDomainController);
             instanceDomainController.DependsOn.Add(nat1.LogicalId);
 
@@ -174,7 +123,7 @@ namespace AWS.CloudFormation.Test
 
             Instance instanceDomainController2 = null;
             FnGetAtt dc2PrivateIp = null;
-            
+
 
             if (instancesToCreate.HasFlag(Create.Dc2))
             {
@@ -253,7 +202,7 @@ namespace AWS.CloudFormation.Test
                 {
                     DBSubnetGroupName = new ReferenceProperty(subnetGroupSqlExpress4Build)
                 };
-                template.Resources.Add("MySql4Build",mySql4Build);
+                template.Resources.Add("MySql4Build", mySql4Build);
                 mySql4Build.AddVpcSecurityGroup(securityGroupSqlSever4Build);
             }
 
@@ -305,7 +254,17 @@ namespace AWS.CloudFormation.Test
                 template.Resources.Add("BackupServer", backupServer);
                 dcPackage.Participate(backupServer);
                 backupServer.AddDisk(Ebs.VolumeTypes.Magnetic, 400);
-                backupServer.Packages.Add(new WindowsShare("d:/backups", "backups", "dev\\tfsservice", "dev\\Domain Admins"));
+                backupServer.Packages.Add(new WindowsShare(
+                    "d:/backups",
+                    "backups", 
+                    new FnJoin(FnJoinDelimiter.None,
+                    "'",
+                    new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
+                    "\\tfsservice'"),
+                    new FnJoin(FnJoinDelimiter.None,
+                    "'",
+                    new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
+                    "\\Domain Admins'")));
             }
 
 
@@ -335,6 +294,58 @@ namespace AWS.CloudFormation.Test
 
             return template;
         }
+
+        //private const string DomainAdminPassword = "kasdfiajs!!9";
+        private const string CidrDmz1 = "10.0.127.0/28";
+        private const string CidrDmz2 = "10.0.255.0/28";
+        private const string CidrDomainController1Subnet = "10.0.0.0/24";
+        private const string CidrDomainController2Subnet = "10.0.128.0/24";
+        private const string CidrSqlServer4TfsSubnet = "10.0.1.0/24";
+        private const string CidrTfsServerSubnet = "10.0.2.0/24";
+        private const string CidrBuildServerSubnet = "10.0.3.0/24";
+        private const string CidrWorkstationSubnet = "10.0.4.0/24";
+        private const string CidrDatabase4BuildSubnet2 = "10.0.5.0/24";
+        private const string KeyPairName = "corp.getthebuybox.com";
+        private const string CidrVpc = "10.0.0.0/16";
+        private const string UsEastWindows2012R2Ami = "ami-9a0558f0";
+        private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-a3005dc9";
+        private const string BucketNameSoftware = "gtbb";
+
+        public static Template GetTemplateWithParameters()
+        {
+            var template = new Template(KeyPairName, "Vpc", CidrVpc);
+            var password = System.Web.Security.Membership.GeneratePassword(8, 0);
+            var domainPassword = new ParameterBase(Template.ParameterDomainAdminPassword, "String", password, "Password for domain administrator.")
+            {
+                NoEcho = true
+            };
+
+            template.Parameters.Add(Template.ParameterDomainAdminPassword, domainPassword);
+            return template;
+        }
+
+        [TestMethod]
+        public void TestParameters()
+        {
+            var template = GetTemplateWithParameters();
+            CreateTestStack(template, this.TestContext);
+        }
+
+        [Flags]
+        public enum Create
+        {
+            Dc2 = 1,
+            Rdp1 = Dc2 * 2,
+            Sql4Tfs = Rdp1 * 2,
+            Tfs = Sql4Tfs * 2,
+            Build = Tfs * 2,
+            SqlServer4Build = Build *2,
+            MySql4Build = SqlServer4Build * 2,
+            BackupServer = MySql4Build * 2,
+            Workstation = BackupServer,
+            FullStack = int.MaxValue
+        }
+
 
         private static DhcpOptions AddDhcpOptions(object[] elements, object[] netBiosServersElements, Vpc vpc, Template template)
         {
@@ -1207,6 +1218,7 @@ namespace AWS.CloudFormation.Test
             {
                 buildServer.AddDependsOn(tfsServerComplete);
             }
+
             if (sqlExpress4Build != null)
             {
                 buildServer.DependsOn.Add(sqlExpress4Build.LogicalId);
@@ -1218,7 +1230,8 @@ namespace AWS.CloudFormation.Test
             domainAdminUserInfoNode.Add("name", new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(DomainControllerPackage.DomainAdminUsernameParameterName)));
             domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
             buildServer.AddSecurityGroup(buildServerSecurityGroup);
-            //var waitConditionBuildServerAvailable = buildServer.AddFinalizer("waitConditionBuildServerAvailable",TimeoutMax);
+
+            var x = buildServer.Packages.Last().WaitCondition;
 
             return buildServer;
         }
@@ -1391,16 +1404,15 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateDevelopmentTest()
         {
-            //Delta-dev-yadayadasoftware-com	
             Assert.IsFalse(HasGitDifferences());
 
-            Greek version = Greek.Eta;
+            Greek version = Greek.Omicron;
 
             var fullyQualifiedDomainName = $"{version}.dev.yadayadasoftware.com";
             
 
-            var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, Create.Dc2 | Create.BackupServer | Create.Rdp1 );
-            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "JKFQ2282qmfh";
+            var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, Create.FullStack | ~Create.BackupServer );
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "RNWD6664ytle";
             Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.','-'), template );
         }
 

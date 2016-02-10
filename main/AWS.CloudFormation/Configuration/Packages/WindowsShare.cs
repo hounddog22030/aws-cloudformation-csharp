@@ -13,14 +13,14 @@ namespace AWS.CloudFormation.Configuration.Packages
 {
     public class WindowsShare : PackageBase<ConfigSet>
     {
-        public WindowsShare(string path, string shareName, params string[] accounts)
+        public WindowsShare(string path, string shareName, params object[] accounts)
         {
             this.Path = path;
             this.ShareName = shareName;
             this.Accounts = accounts;
         }
 
-        public string[] Accounts { get; }
+        public object[] Accounts { get; }
 
         public string ShareName { get; }
 
@@ -33,22 +33,14 @@ namespace AWS.CloudFormation.Configuration.Packages
             const string CreateWindowsShare = "c:/cfn/scripts/CreateWindowsShare.ps1";
             var script = this.Config.Files.GetFile(CreateWindowsShare);
             script.Source = "https://s3.amazonaws.com/gtbb/CreateWindowsShare.ps1";
-            var accounts = this.Accounts.ToList();
-            var accountsFinal = new List<string>();
-            foreach (var account in accounts)
-            {
-                var accountTemp = account;
-                if (!accountTemp.StartsWith("'"))
-                {
-                    accountTemp = $"\'{accountTemp}\'";
-                }
-                accountsFinal.Add(accountTemp);
-            }
             command.Command = new PowershellFnJoin(FnJoinDelimiter.Space,
                 CreateWindowsShare,
                 this.Path,
                 this.ShareName,
-                $"@({string.Join(",", accountsFinal)})");
+                "@(",
+                new FnJoin(FnJoinDelimiter.Comma,
+                    this.Accounts),
+                ")");
 
         }
     }
