@@ -337,7 +337,7 @@
     }
   },
   "Outputs": {
-    "WEip": {
+    "WEip1": {
       "Description": "Information about the value",
       "Value": {
         "Fn::GetAtt": [

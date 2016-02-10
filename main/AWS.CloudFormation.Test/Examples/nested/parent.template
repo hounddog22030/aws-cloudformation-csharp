@@ -5,15 +5,28 @@
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
         "TemplateURL": "https://s3.amazonaws.com/gtbb/nested/subtemplate1.template",
-        "Parameters": { "TimeZone": "Eastern Standard Time" }
+        "Parameters": { "TimeZone": "Pacific Standard Time" }
       }
     },
     "stack2": {
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
         "TemplateURL": "https://s3.amazonaws.com/gtbb/nested/subtemplate2.template",
-        "Parameters": { "TimeZone": "Pacific Standard Time" }
+        "Parameters": {
+          "TimeZone": "Eastern Standard Time",
+           "Stack1EipId": "boo"
+        }
       }
+    }
+  },
+  "Outputs": {
+    "StackRef1": { "Value": { "Ref": "stack1" } },
+    "StackRef2": { "Value": { "Ref": "stack2" } },
+    "OutputFromNestedStack1": {
+      "Value": { "Fn::GetAtt": [ "stack1", "Outputs.WEip1" ] }
+    },
+    "OutputFromNestedStack2": {
+      "Value": { "Fn::GetAtt": [ "stack2", "Outputs.WEip2" ] }
     }
   }
 }

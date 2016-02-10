@@ -6,6 +6,10 @@
       "Default": "corp.getthebuybox.com",
       "Description": "Key Pair to decrypt instance password."
     },
+    "Stack1EipId": {
+      "Type": "String",
+      "Default": "invalud"
+    },
     "TimeZone": {
       "Type": "String",
       "Default": "Eastern Standard Time",
@@ -337,7 +341,7 @@
     }
   },
   "Outputs": {
-    "WEip": {
+    "WEip2": {
       "Description": "Information about the value",
       "Value": {
         "Fn::GetAtt": [
