@@ -1407,17 +1407,18 @@ namespace AWS.CloudFormation.Test
         {
             Assert.IsFalse(HasGitDifferences());
 
-            Greek version = Greek.Omicron;
+            Greek version = Greek.Rho;
 
             var fullyQualifiedDomainName = $"{version}.dev.yadayadasoftware.com";
 
             //colors &= ~Blah.BLUE;
 
-            var instances = Create.FullStack;
-            //instances &= ~Create.BackupServer;
+            Create instances = Create.FullStack;
+            instances = Create.Dc2 | Create.Sql4Tfs | Create.Workstation | Create.BackupServer | Create.Rdp1;
+
 
             var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances);
-            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "RNWD6664ytle";
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "IDUJ7263bnnn";
             Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.','-'), template );
         }
 
