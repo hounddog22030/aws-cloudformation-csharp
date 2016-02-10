@@ -267,27 +267,15 @@ namespace AWS.CloudFormation.Configuration.Packages
 
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
-            base.AddToLaunchConfiguration(configuration);
-
-            var command = this.Config.Commands.AddCommand<Command>("CreateBackupShare");
-            command.Command = new PowershellFnJoin(FnJoinDelimiter.None,
-                $"New-Item \"d:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"d:\\Backups\" -FullAccess @('NT AUTHORITY\\NETWORK SERVICE','",
-                new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
-                "\\",
-                new ReferenceProperty("TfsServiceAccountName"),
-                "','",
-                new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
-                "\\Domain Admins",
-                "')");
-            command.WaitAfterCompletion = 0.ToString();
-            command.Test = "IF EXIST d:\\BACKUPS EXIT /B 1";
             const string AddNetworkLocalPath = "c:/cfn/scripts/add-network-to-sysadmin.ps1";
             const string EnableTcpLocalPath = "c:/cfn/scripts/SqlServer-EnableTcp.ps1";
             const string SetUserToTfsService = "c:/cfn/scripts/change-sql-account.ps1";
 
+            base.AddToLaunchConfiguration(configuration);
             var sysadminFile = this.Config.Files.GetFile(AddNetworkLocalPath);
             sysadminFile.Source = "https://s3.amazonaws.com/gtbb/add-network-to-sysadmin.ps1";
-            command = this.Config.Commands.AddCommand<Command>("AddNetworkToSysadmin");
+
+            var command = this.Config.Commands.AddCommand<Command>("AddNetworkToSysadmin");
             command.Command = new PowershellFnJoin(AddNetworkLocalPath, new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName));
             command.WaitAfterCompletion = 0.ToString();
 

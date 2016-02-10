@@ -1385,7 +1385,7 @@ namespace AWS.CloudFormation.Test
             var appName = "dev";
 
             //Create instances = Create.Dc2 | Create.BackupServer | Create.Rdp1;
-            Create instances = Create.FullStack;
+            Create instances = Create.Dc2 | Create.BackupServer | Create.Rdp1 | Create.Workstation;
             var templateToCreateStack = GetTemplateFullStack(topLevel, appName, version, instances);
             templateToCreateStack.StackName = $"{version}-{appName}-{topLevel}".Replace('.','-');
 
