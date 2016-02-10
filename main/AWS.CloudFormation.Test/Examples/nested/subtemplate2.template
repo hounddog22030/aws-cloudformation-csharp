@@ -1,0 +1,335 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "VpcCreateMinimalInstanceTest": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "10.0.0.0/16",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "VpcCreateMinimalInstanceTest"
+          }
+        ]
+      }
+    },
+    "VpcCreateMinimalInstanceTestInternetGateway": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "VpcCreateMinimalInstanceTestInternetGateway"
+          }
+        ]
+      }
+    },
+    "VpcCreateMinimalInstanceTestInternetGatewayAttachment": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "InternetGatewayId": {
+          "Ref": "VpcCreateMinimalInstanceTestInternetGateway"
+        },
+        "VpcId": {
+          "Ref": "VpcCreateMinimalInstanceTest"
+        }
+      }
+    },
+    "rdp": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateMinimalInstanceTest"
+        },
+        "GroupDescription": "rdp",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 3389,
+            "IpProtocol": "tcp",
+            "ToPort": 3389
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "rdp"
+          }
+        ]
+      }
+    },
+    "DMZSubnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateMinimalInstanceTest"
+        },
+        "CidrBlock": "10.0.127.0/28",
+        "AvailabilityZone": "us-east-1a",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "DMZSubnet"
+          }
+        ]
+      }
+    },
+    "RouteTable4DMZSubnet": {
+      "Type": "AWS::EC2::RouteTable",
+      "DependsOn": [
+        "VpcCreateMinimalInstanceTestInternetGateway"
+      ],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateMinimalInstanceTest"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "RouteTable4DMZSubnet"
+          }
+        ]
+      }
+    },
+    "Route4DMZSubnet": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": [
+        "VpcCreateMinimalInstanceTestInternetGateway"
+      ],
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "RouteTable4DMZSubnet"
+        },
+        "GatewayId": {
+          "Ref": "VpcCreateMinimalInstanceTestInternetGateway"
+        }
+      }
+    },
+    "SubnetRouteTableAssociation4DMZSubnetRouteTable4DMZSubnet": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RouteTable4DMZSubnet"
+        },
+        "SubnetId": {
+          "Ref": "DMZSubnet"
+        }
+      }
+    },
+    "w": {
+      "Type": "AWS::EC2::Instance",
+      "Metadata": {
+        "AWS::CloudFormation::Init": {
+          "configSets": {
+            "LaunchConfigurationConfigSet": [
+              "LaunchConfigurationConfig",
+              "Rename"
+            ]
+          },
+          "LaunchConfigurationConfig": {
+            "commands": {
+              "000DisableWindowsFirewall": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\""
+                    ]
+                  ]
+                }
+              },
+              "001SetTimeZone": {
+                "waitAfterCompletion": "0",
+                "command": "tzutil /s \"Eastern Standard Time\""
+              }
+            },
+            "files": {
+              "c:\\cfn\\cfn-hup.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[main]\nstack=",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      "\nregion=",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\ninterval=1\nverbose=true"
+                    ]
+                  ]
+                }
+              },
+              "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[cfn-auto-reloader-hook]\n",
+                      "triggers=post.update\n",
+                      "path=Resources.w.Metadata.AWS::CloudFormation::Init\n",
+                      "action=",
+                      "cfn-init.exe -v -c ",
+                      "LaunchConfigurationConfigSet",
+                      " -s ",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      " -r ",
+                      "w",
+                      " --region ",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\n"
+                    ]
+                  ]
+                }
+              }
+            },
+            "services": {
+              "windows": {
+                "cfn-hup": {
+                  "enabled": true,
+                  "ensureRunning": true,
+                  "files": [
+                    "c:\\cfn\\cfn-hup.conf",
+                    "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf"
+                  ]
+                }
+              }
+            },
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          },
+          "Rename": {
+            "commands": {
+              "000RenameComputer": {
+                "waitAfterCompletion": "forever",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "\"Rename-Computer -NewName w -Restart -Force\""
+                    ]
+                  ]
+                },
+                "test": "IF \"%COMPUTERNAME%\"==\"W\" EXIT /B 1 ELSE EXIT /B 0"
+              }
+            },
+            "files": {},
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          }
+        },
+        "AWS::CloudFormation::Authentication": {
+          "S3AccessCreds": {
+            "accessKeyId": "AKIAJMUQ7GPWQNKSODIA",
+            "secretKey": "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",
+            "buckets": [
+              "gtbb"
+            ],
+            "type": "S3"
+          }
+        }
+      },
+      "Properties": {
+        "SubnetId": {
+          "Ref": "DMZSubnet"
+        },
+        "InstanceType": "t2.nano",
+        "ImageId": "ami-9a0558f0",
+        "KeyName": {
+          "Ref": "KeyPairName"
+        },
+        "SourceDestCheck": true,
+        "Tags": [
+          {
+            "Key": "Name"
+          },
+          {
+            "Key": "Name",
+            "Value": "w"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "<script>",
+                "cfn-init.exe -v -c ",
+                "LaunchConfigurationConfigSet",
+                " -s ",
+                {
+                  "Ref": "AWS::StackId"
+                },
+                " -r w --region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "</script>"
+              ]
+            ]
+          }
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "rdp"
+          }
+        ]
+      }
+    },
+    "Eip4w": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "InstanceId": {
+          "Ref": "w"
+        },
+        "Domain": "vpc"
+      }
+    },
+    "blah": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcCreateMinimalInstanceTest"
+        },
+        "GroupDescription": "blah",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "blah"
+          }
+        ]
+      }
+    }
+  },
+  "Parameters": {
+    "KeyPairName": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Default": "corp.getthebuybox.com",
+      "Description": "Key Pair to decrypt instance password."
+    }
+  },
+  "Outputs": {
+    "WEip": {
+      "Description": "Information about the value",
+      "Value": {
+        "Fn::GetAtt": [
+          "Eip4w",
+          "AllocationId"
+        ]
+      }
+    }
+  }
+}
