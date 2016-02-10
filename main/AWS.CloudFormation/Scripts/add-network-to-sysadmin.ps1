@@ -31,6 +31,12 @@ foreach ($Instance in $InstanceNames) {
     $login.AddToRole('sysadmin')
     $login.AddToRole('serveradmin')
     Write-Host "Login:$Login"
+    $login = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login($Server, "$domainName\Domain Admins")
+    $login.LoginType = [Microsoft.SqlServer.Management.Smo.LoginType]::WindowsUser
+    $login.Create()
+    $login.AddToRole('sysadmin')
+    $login.AddToRole('serveradmin')
+    Write-Host "Login:$Login"
 
     ##$Login.LoginType = "WindowsUser"
 }
