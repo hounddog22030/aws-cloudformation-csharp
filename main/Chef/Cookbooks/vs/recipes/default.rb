@@ -29,7 +29,6 @@ ec2helper_mount 'MountEc2Drives' do
 	action :mount
 end
 
-# Installing Team Foundation Server Standard.
 execute 'Install Visual Studio' do
 	command lazy { "#{exe_path} /quiet /ADMINFILE #{admin_xml}" }
 	timeout 43200
@@ -37,8 +36,17 @@ execute 'Install Visual Studio' do
 	not_if { File.exist?("#{sentinel_file}") }
 	action :nothing
 	notifies :delete, 'directory[c:/users/default/AppData]', :immediately
+	notifies :request_reboot, 'reboot[app_requires_reboot]', :immediately
 end
 
 directory 'c:/users/default/AppData' do
 	action :nothing
 end
+
+reboot 'app_requires_reboot' do
+  reason 'Need to reboot when the run completes successfully.'
+  delay_mins 2
+  action :nothing
+end
+
+
