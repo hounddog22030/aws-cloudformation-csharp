@@ -157,18 +157,6 @@
                   ]
                 }
               },
-              "001Dir": {
-                "waitAfterCompletion": "0",
-                "command": {
-                  "Fn::Join": [
-                    " ",
-                    [
-                      "dir",
-                      { "Fn::GetAtt" : [ "stack1", "Outputs.WEip1" ] }
-                    ]
-                  ]
-                }
-              },
               "002SetTimeZone": {
                 "waitAfterCompletion": "0",
                 "command": {

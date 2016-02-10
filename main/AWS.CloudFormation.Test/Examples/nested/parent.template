@@ -17,7 +17,7 @@
         "TemplateURL": "https://s3.amazonaws.com/gtbb/nested/subtemplate2.template",
         "Parameters": {
           "TimeZone": "Eastern Standard Time",
-           "Stack1EipId": "boo"
+           "Stack1EipId": { "Fn::GetAtt": [ "stack1", "Outputs.WEip1" ] }
         }
       }
     }
