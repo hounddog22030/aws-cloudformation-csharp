@@ -16,7 +16,6 @@ using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Serialization;
 
 using Newtonsoft.Json;
-using VpcGatewayAttachment = AWS.CloudFormation.Resource.EC2.Networking.Vpc.VpcGatewayAttachment;
 
 namespace AWS.CloudFormation.Stack
 {
