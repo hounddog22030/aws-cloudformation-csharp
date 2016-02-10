@@ -345,6 +345,12 @@
           "AllocationId"
         ]
       }
+    },
+    "DMZSubnet": {
+      "Value": { "Ref": "DMZSubnet" }
+    },
+    "rdp": {
+      "Value": { "Ref": "rdp" }
     }
   }
 }

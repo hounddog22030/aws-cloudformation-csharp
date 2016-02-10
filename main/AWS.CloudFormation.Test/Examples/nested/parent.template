@@ -10,14 +10,13 @@
     },
     "stack2": {
       "Type": "AWS::CloudFormation::Stack",
-      "DependsOn": [
-        "stack1"
-      ],
       "Properties": {
         "TemplateURL": "https://s3.amazonaws.com/gtbb/nested/subtemplate2.template",
         "Parameters": {
           "TimeZone": "Eastern Standard Time",
-           "Stack1EipId": { "Fn::GetAtt": [ "stack1", "Outputs.WEip1" ] }
+          "Stack1EipId": { "Fn::GetAtt": [ "stack1", "Outputs.WEip1" ] },
+          "rdp": { "Fn::GetAtt": [ "stack1", "Outputs.rdp" ] },
+          "DMZSubnet":  { "Fn::GetAtt": [ "stack1", "Outputs.DMZSubnet" ] }
         }
       }
     }

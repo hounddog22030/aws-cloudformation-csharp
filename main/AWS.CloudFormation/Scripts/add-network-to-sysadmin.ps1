@@ -25,16 +25,14 @@ foreach ($Instance in $InstanceNames) {
     
     #$Server = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Server -ArgumentList $Instance
     Write-Host "Server:$Server"
-    $login = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login($Server, "$domainName\Domain Computers")
-    $login.LoginType = [Microsoft.SqlServer.Management.Smo.LoginType]::WindowsUser
-    $login.Create()
-    $login.AddToRole('sysadmin')
-    $login.AddToRole('serveradmin')
-    Write-Host "Login:$Login"
     $login = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login($Server, "$domainName\Domain Admins")
+    Write-Host "Login:$Login"
     $login.LoginType = [Microsoft.SqlServer.Management.Smo.LoginType]::WindowsUser
+    Write-Host "Login:$Login"
     $login.Create()
+    Write-Host "Login:$Login"
     $login.AddToRole('sysadmin')
+    Write-Host "Login:$Login"
     $login.AddToRole('serveradmin')
     Write-Host "Login:$Login"
 

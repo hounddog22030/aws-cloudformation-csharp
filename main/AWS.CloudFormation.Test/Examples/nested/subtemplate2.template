@@ -10,6 +10,12 @@
       "Type": "String",
       "Default": "boo"
     },
+    "DMZSubnet": {
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+    "rdp": {
+      "Type": "AWS::EC2::SecurityGroup::Id"
+    },
     "TimeZone": {
       "Type": "String",
       "Default": "Eastern Standard Time",
@@ -17,122 +23,6 @@
     }
   },
   "Resources": {
-    "VpcCreateMinimalInstanceTest": {
-      "Type": "AWS::EC2::VPC",
-      "Properties": {
-        "CidrBlock": "10.0.0.0/16",
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "VpcCreateMinimalInstanceTest"
-          }
-        ]
-      }
-    },
-    "VpcCreateMinimalInstanceTestInternetGateway": {
-      "Type": "AWS::EC2::InternetGateway",
-      "Properties": {
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "VpcCreateMinimalInstanceTestInternetGateway"
-          }
-        ]
-      }
-    },
-    "VpcCreateMinimalInstanceTestInternetGatewayAttachment": {
-      "Type": "AWS::EC2::VPCGatewayAttachment",
-      "Properties": {
-        "InternetGatewayId": {
-          "Ref": "VpcCreateMinimalInstanceTestInternetGateway"
-        },
-        "VpcId": {
-          "Ref": "VpcCreateMinimalInstanceTest"
-        }
-      }
-    },
-    "rdp": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "VpcId": {
-          "Ref": "VpcCreateMinimalInstanceTest"
-        },
-        "GroupDescription": "rdp",
-        "SecurityGroupIngress": [
-          {
-            "CidrIp": "0.0.0.0/0",
-            "FromPort": 3389,
-            "IpProtocol": "tcp",
-            "ToPort": 3389
-          }
-        ],
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "rdp"
-          }
-        ]
-      }
-    },
-    "DMZSubnet": {
-      "Type": "AWS::EC2::Subnet",
-      "Properties": {
-        "VpcId": {
-          "Ref": "VpcCreateMinimalInstanceTest"
-        },
-        "CidrBlock": "10.0.127.0/28",
-        "AvailabilityZone": "us-east-1a",
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "DMZSubnet"
-          }
-        ]
-      }
-    },
-    "RouteTable4DMZSubnet": {
-      "Type": "AWS::EC2::RouteTable",
-      "DependsOn": [
-        "VpcCreateMinimalInstanceTestInternetGateway"
-      ],
-      "Properties": {
-        "VpcId": {
-          "Ref": "VpcCreateMinimalInstanceTest"
-        },
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "RouteTable4DMZSubnet"
-          }
-        ]
-      }
-    },
-    "Route4DMZSubnet": {
-      "Type": "AWS::EC2::Route",
-      "DependsOn": [
-        "VpcCreateMinimalInstanceTestInternetGateway"
-      ],
-      "Properties": {
-        "DestinationCidrBlock": "0.0.0.0/0",
-        "RouteTableId": {
-          "Ref": "RouteTable4DMZSubnet"
-        },
-        "GatewayId": {
-          "Ref": "VpcCreateMinimalInstanceTestInternetGateway"
-        }
-      }
-    },
-    "SubnetRouteTableAssociation4DMZSubnetRouteTable4DMZSubnet": {
-      "Type": "AWS::EC2::SubnetRouteTableAssociation",
-      "Properties": {
-        "RouteTableId": {
-          "Ref": "RouteTable4DMZSubnet"
-        },
-        "SubnetId": {
-          "Ref": "DMZSubnet"
-        }
-      }
-    },
     "w": {
       "Type": "AWS::EC2::Instance",
       "Metadata": {
@@ -322,21 +212,6 @@
           "Ref": "w"
         },
         "Domain": "vpc"
-      }
-    },
-    "blah": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "VpcId": {
-          "Ref": "VpcCreateMinimalInstanceTest"
-        },
-        "GroupDescription": "blah",
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "blah"
-          }
-        ]
       }
     }
   },
