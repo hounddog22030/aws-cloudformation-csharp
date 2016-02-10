@@ -1413,7 +1413,7 @@ namespace AWS.CloudFormation.Test
             //colors &= ~Blah.BLUE;
 
             var instances = Create.FullStack;
-            instances &= ~Create.BackupServer;
+            //instances &= ~Create.BackupServer;
 
             var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances);
             ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "RNWD6664ytle";
