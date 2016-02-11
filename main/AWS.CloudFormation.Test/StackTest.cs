@@ -235,7 +235,6 @@ namespace AWS.CloudFormation.Test
             {
                 //uses 33gb
                 var workstation = AddWorkstation(template,
-                    "Workstation",
                     subnetWorkstation,
                     dcPackage,
                     workstationSecurityGroup);
@@ -895,7 +894,7 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
-            Instance w = AddWorkstation(template, "Windows1", DMZSubnet, null, rdp);
+            Instance w = AddWorkstation(template, DMZSubnet, null, rdp);
             w.AddElasticIp();
             CreateTestStack(template, this.TestContext);
 
@@ -1223,11 +1222,6 @@ namespace AWS.CloudFormation.Test
                 buildServer.AddDependsOn(tfsServerComplete);
             }
 
-            if (sqlExpress4Build != null)
-            {
-                buildServer.DependsOn.Add(sqlExpress4Build.LogicalId);
-            }
-
             var chefNode = buildServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
 
@@ -1241,7 +1235,6 @@ namespace AWS.CloudFormation.Test
         }
 
         private static Instance AddWorkstation(  Template template, 
-                                                        string name, 
                                                         Subnet subnet, 
                                                         DomainControllerPackage instanceDomainControllerPackage, 
                                                         SecurityGroup workstationSecurityGroup)
