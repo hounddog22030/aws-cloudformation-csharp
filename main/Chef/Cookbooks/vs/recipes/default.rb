@@ -40,6 +40,7 @@ execute 'Install Visual Studio' do
 end
 
 directory 'c:/users/default/AppData' do
+	recursive true
 	action :nothing
 end
 
