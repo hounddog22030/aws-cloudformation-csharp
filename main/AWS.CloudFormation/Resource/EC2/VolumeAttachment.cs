@@ -27,6 +27,7 @@ namespace AWS.CloudFormation.Resource.EC2
         {
             VolumeId = volumeId;
             this.LogicalId = $"VolumeAttachment{Instance.LogicalId}{Device}{volumeId}".Replace("/",string.Empty);
+            this.DependsOn.Add(instance.LogicalId);
         }
 
 

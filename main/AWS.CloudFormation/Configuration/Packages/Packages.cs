@@ -362,7 +362,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             base.AddToLaunchConfiguration(configuration);
             var node = this.Instance.GetChefNodeJsonContent();
             var tfsNode = node.Add("tfs");
-            tfsNode.Add("application_server_sqlname", this.SqlServer.LogicalId);
+            tfsNode.Add("application_server_sqlname", new FnGetAtt(this.SqlServer, FnGetAttAttribute.AwsEc2InstancePrivateDnsName ));
             tfsNode.Add(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName));
             tfsNode.Add(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName));
         }

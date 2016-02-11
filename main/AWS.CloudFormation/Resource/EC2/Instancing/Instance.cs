@@ -176,6 +176,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 volume.AvailabilityZone = this.Subnet.AvailabilityZone;
             }
             string deviceId = string.Empty;
+
             switch (volume.AttachmentType)
             {
                     case VolumeAttachmentType.Extension:
