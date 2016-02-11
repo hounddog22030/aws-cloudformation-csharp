@@ -218,7 +218,13 @@ namespace AWS.CloudFormation.Configuration.Packages
                 $"https://{BucketName}.s3.amazonaws.com/{CookbookName}.tar.gz");
 
             chefCommandConfig.Command = $"C:/opscode/chef/bin/chef-client.bat -z -o {RecipeList} -c c:/chef/{CookbookName}/client.rb";
+            if (this.WaitAfterCompletion != TimeSpan.MinValue)
+            {
+                chefCommandConfig.WaitAfterCompletion = this.WaitAfterCompletion.TotalSeconds.ToString();
+            }
         }
+
+        public TimeSpan WaitAfterCompletion { get; set; }
     }
 
     public class ChefConfigSet : ConfigSet
@@ -238,6 +244,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
         public VisualStudio(string bucketName) : base("snap-5e27a85a", bucketName, "vs")
         {
+            this.WaitAfterCompletion = new TimeSpan(0,2,0);
         }
     }
 

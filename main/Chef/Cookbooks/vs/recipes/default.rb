@@ -36,17 +36,16 @@ execute 'Install Visual Studio' do
 	not_if { File.exist?("#{sentinel_file}") }
 	action :nothing
 	notifies :delete, 'directory[c:/users/default/AppData]', :immediately
-	notifies :request_reboot, 'reboot[app_requires_reboot]', :immediately
 end
 
 directory 'c:/users/default/AppData' do
 	recursive true
 	action :nothing
+	notifies :request_reboot, 'reboot[app_requires_reboot]', :immediately
 end
 
 reboot 'app_requires_reboot' do
   reason 'Need to reboot when the run completes successfully.'
-  delay_mins 2
   action :nothing
 end
 
