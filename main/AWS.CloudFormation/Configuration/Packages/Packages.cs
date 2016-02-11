@@ -260,6 +260,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
             const string AddNetworkLocalPath = "c:/cfn/scripts/add-network-to-sysadmin.ps1";
+            const string AddComputersLocalPath = "c:/cfn/scripts/add-network-to-sysadmin2.ps1";
             const string EnableTcpLocalPath = "c:/cfn/scripts/SqlServer-EnableTcp.ps1";
             const string SetUserToTfsService = "c:/cfn/scripts/change-sql-account.ps1";
 
@@ -267,7 +268,14 @@ namespace AWS.CloudFormation.Configuration.Packages
             var sysadminFile = this.Config.Files.GetFile(AddNetworkLocalPath);
             sysadminFile.Source = "https://s3.amazonaws.com/gtbb/add-network-to-sysadmin.ps1";
 
-            var command = this.Config.Commands.AddCommand<Command>("AddNetworkToSysadmin");
+            sysadminFile = this.Config.Files.GetFile(AddComputersLocalPath);
+            sysadminFile.Source = "https://s3.amazonaws.com/gtbb/add-network-to-sysadmin2.ps1";
+
+            var command = this.Config.Commands.AddCommand<Command>("AddDomainAdminsToSysadmin");
+            command.Command = new PowershellFnJoin(AddNetworkLocalPath, new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName));
+            command.WaitAfterCompletion = 0.ToString();
+
+            command = this.Config.Commands.AddCommand<Command>("AddComputersLocalPath");
             command.Command = new PowershellFnJoin(AddNetworkLocalPath, new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName));
             command.WaitAfterCompletion = 0.ToString();
 
