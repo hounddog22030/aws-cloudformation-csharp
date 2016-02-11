@@ -1411,8 +1411,8 @@ namespace AWS.CloudFormation.Test
 
             Create instances = Create.FullStack;
             //instances = Create.Dc2 | Create.Sql4Tfs | Create.Workstation | Create.BackupServer | Create.Rdp1 | Create.Tfs;
-            //instances = Create.FullStack;
-            instances = Create.Dc2 | Create.Workstation | Create.BackupServer | Create.Rdp1;
+            instances = Create.FullStack;
+            //instances = Create.Dc2 | Create.Workstation | Create.BackupServer | Create.Rdp1;
 
 
             var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances);
