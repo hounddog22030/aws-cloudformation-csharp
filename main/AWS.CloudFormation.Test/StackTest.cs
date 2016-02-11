@@ -108,7 +108,7 @@ namespace AWS.CloudFormation.Test
             securityGroupSqlSever4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MsSqlServer);
             securityGroupDb4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MySql);
 
-            Instance instanceDomainController = new Instance(subnetDomainController1, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
+            Instance instanceDomainController = new Instance(subnetDomainController1, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
             template.Resources.Add("DomainController", instanceDomainController);
             instanceDomainController.DependsOn.Add(nat1.LogicalId);
 
@@ -127,7 +127,7 @@ namespace AWS.CloudFormation.Test
 
             if (instancesToCreate.HasFlag(Create.Dc2))
             {
-                instanceDomainController2 = new Instance(subnetDomainController2, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
+                instanceDomainController2 = new Instance(subnetDomainController2, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
                 template.Resources.Add("DomainControll2", instanceDomainController2);
                 instanceDomainController2.DependsOn.Add(nat2.LogicalId);
                 dcPackage.Participate(instanceDomainController2);
