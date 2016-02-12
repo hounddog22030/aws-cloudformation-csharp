@@ -72,6 +72,9 @@ namespace AWS.CloudFormation.Test
             routeForAz1.RouteTable = routeTableForSubnetsToNat1;
 
 
+            Subnet subnetDomainController1 = AddSubnet4DomainController(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template);
+            Subnet subnetDomainController2 = null;
+
             if (instancesToCreate.HasFlag(Create.Dc2))
             {
                 RouteTable routeTableForSubnetsToNat2 = new RouteTable(vpc);
@@ -85,13 +88,12 @@ namespace AWS.CloudFormation.Test
 
                 nat2 = AddNat(template, subnetDmz2, natSecurityGroup);
                 nat2.DependsOn.Add(vpc.VpcGatewayAttachment.LogicalId);
+                subnetDomainController2 = AddSubnet4DomainController2(vpc, routeTableForSubnetsToNat2, natSecurityGroup, template);
 
             }
 
-            Subnet subnetDomainController1 = AddSubnet4DomainController(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template);
 
 
-            Subnet subnetDomainController2 = AddSubnet4DomainController2(vpc, routeTableForSubnetsToNat2, natSecurityGroup, template);
             SecurityGroup sqlServer4TfsSecurityGroup = AddSqlServer4TfsSecurityGroup(vpc, template, subnetDmz1, subnetDmz2);
             Subnet subnetSqlServer4Tfs = AddSubnetSqlServer4Tfs(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template);
 
