@@ -149,6 +149,7 @@
     <None Include="cookbooks\vs\LICENSE" />
     <None Include="cookbooks\vs\metadata.rb" />
     <None Include="cookbooks\vs\README.md" />
+    <None Include="cookbooks\vs\recipes\cleanup.rb" />
     <None Include="cookbooks\vs\recipes\default.rb" />
     <None Include="cookbooks\vs\Thorfile" />
     <None Include="cookbooks\vs\Vagrantfile" />

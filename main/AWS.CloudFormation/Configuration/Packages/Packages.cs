@@ -198,7 +198,6 @@ namespace AWS.CloudFormation.Configuration.Packages
             string accessKeyString = (string)appSettingsReader.GetValue("S3AccessKey", typeof(string));
             string secretKeyString = (string)appSettingsReader.GetValue("S3SecretKey", typeof(string));
 
-
             var chefConfigContent = configuration.GetChefNodeJsonContent();
 
             if (!chefConfigContent.ContainsKey("s3_file"))
@@ -208,7 +207,13 @@ namespace AWS.CloudFormation.Configuration.Packages
                 s3FileNode.Add("secret", secretKeyString);
             }
 
-            var chefCommandConfig = this.Config.Commands.AddCommand<Command>(RecipeList.Replace(':', '-'));
+            AddChefRecipeCall(RecipeList.Replace(':', '-'));
+
+        }
+
+        protected void AddChefRecipeCall(string recipe)
+        {
+            var chefCommandConfig = this.Config.Commands.AddCommand<Command>(recipe);
 
             var clientRbFileKey = $"c:/chef/{CookbookName}/client.rb";
             this.Config.Files.GetFile(clientRbFileKey)
@@ -217,11 +222,12 @@ namespace AWS.CloudFormation.Configuration.Packages
             this.Config.Sources.Add($"c:/chef/{CookbookName}/",
                 $"https://{BucketName}.s3.amazonaws.com/{CookbookName}.tar.gz");
 
-            chefCommandConfig.Command = $"C:/opscode/chef/bin/chef-client.bat -z -o {RecipeList} -c c:/chef/{CookbookName}/client.rb";
+            chefCommandConfig.Command = $"C:/opscode/chef/bin/chef-client.bat -z -o {recipe} -c c:/chef/{CookbookName}/client.rb";
             if (this.WaitAfterCompletion != TimeSpan.MinValue)
             {
                 chefCommandConfig.WaitAfterCompletion = this.WaitAfterCompletion.TotalSeconds.ToString();
             }
+
         }
 
         public TimeSpan WaitAfterCompletion { get; set; }
@@ -245,6 +251,12 @@ namespace AWS.CloudFormation.Configuration.Packages
         public VisualStudio(string bucketName) : base("snap-5e27a85a", bucketName, "vs")
         {
             this.WaitAfterCompletion = new TimeSpan(0,2,0);
+        }
+
+        public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
+        {
+            base.AddToLaunchConfiguration(configuration);
+            this.AddChefRecipeCall("cleanup");
         }
     }
 
