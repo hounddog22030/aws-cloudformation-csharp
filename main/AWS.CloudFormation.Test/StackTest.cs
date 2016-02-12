@@ -77,18 +77,18 @@ namespace AWS.CloudFormation.Test
 
             if (instancesToCreate.HasFlag(Create.Dc2))
             {
+                nat2 = AddNat(template, subnetDmz2, natSecurityGroup);
+                nat2.DependsOn.Add(vpc.VpcGatewayAttachment.LogicalId);
                 RouteTable routeTableForSubnetsToNat2 = new RouteTable(vpc);
                 template.Resources.Add($"RouteTable2", routeTableForSubnetsToNat2);
+                subnetDomainController2 = AddSubnet4DomainController2(vpc, routeTableForSubnetsToNat2, natSecurityGroup, template);
+
 
                 Route routeForAz2 = new Route(Template.CidrIpTheWorld, routeTableForSubnetsToNat2);
                 template.Resources.Add($"RouteForAz2", routeForAz2);
                 routeForAz2.DestinationCidrBlock = "0.0.0.0/0";
                 routeForAz2.Instance = nat2;
                 routeForAz2.RouteTable = routeTableForSubnetsToNat2;
-
-                nat2 = AddNat(template, subnetDmz2, natSecurityGroup);
-                nat2.DependsOn.Add(vpc.VpcGatewayAttachment.LogicalId);
-                subnetDomainController2 = AddSubnet4DomainController2(vpc, routeTableForSubnetsToNat2, natSecurityGroup, template);
 
             }
 
