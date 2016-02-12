@@ -261,8 +261,9 @@ namespace AWS.CloudFormation.Configuration.Packages
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
             base.AddToLaunchConfiguration(configuration);
-            var c = this.AddChefRecipeCall($"{CookbookName}::cleanup");
-            c.WaitAfterCompletion = 0.ToString();
+            var commandConfig = this.Config.Commands.AddCommand<Command>("DeleteDefaultUserAppData");
+            commandConfig.Command = "rmdir /s /q c:\\users\\default\\appdata";
+            commandConfig.WaitAfterCompletion = 0.ToString();
         }
     }
 
