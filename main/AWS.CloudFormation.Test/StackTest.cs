@@ -62,25 +62,48 @@ namespace AWS.CloudFormation.Test
             nat1.DependsOn.Add(vpc.VpcGatewayAttachment.LogicalId);
             Instance nat2 = null;
 
+            RouteTable routeTableForSubnetsToNat1 = new RouteTable(vpc);
+            template.Resources.Add($"RouteTable1", routeTableForSubnetsToNat1);
+            
+            Route routeForAz1 = new Route(Template.CidrIpTheWorld, routeTableForSubnetsToNat1);
+            template.Resources.Add($"RouteForAz1", routeForAz1);
+            routeForAz1.DestinationCidrBlock = "0.0.0.0/0";
+            routeForAz1.Instance = nat1;
+            routeForAz1.RouteTable = routeTableForSubnetsToNat1;
+
+
+            Subnet subnetDomainController1 = AddSubnet4DomainController(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template);
+            Subnet subnetDomainController2 = null;
+
             if (instancesToCreate.HasFlag(Create.Dc2))
             {
                 nat2 = AddNat(template, subnetDmz2, natSecurityGroup);
                 nat2.DependsOn.Add(vpc.VpcGatewayAttachment.LogicalId);
+                RouteTable routeTableForSubnetsToNat2 = new RouteTable(vpc);
+                template.Resources.Add($"RouteTable2", routeTableForSubnetsToNat2);
+                subnetDomainController2 = AddSubnet4DomainController2(vpc, routeTableForSubnetsToNat2, natSecurityGroup, template);
+
+
+                Route routeForAz2 = new Route(Template.CidrIpTheWorld, routeTableForSubnetsToNat2);
+                template.Resources.Add($"RouteForAz2", routeForAz2);
+                routeForAz2.DestinationCidrBlock = "0.0.0.0/0";
+                routeForAz2.Instance = nat2;
+                routeForAz2.RouteTable = routeTableForSubnetsToNat2;
 
             }
 
-            Subnet subnetDomainController1 = AddSubnet4DomainController(vpc, nat1, natSecurityGroup, template);
-            Subnet subnetDomainController2 = AddSubnet4DomainController2(vpc, nat2, natSecurityGroup, template);
-            SecurityGroup sqlServer4TfsSecurityGroup = AddSqlServer4TfsSecurityGroup(vpc, template, subnetDmz1, subnetDmz2);
-            Subnet subnetSqlServer4Tfs = AddSubnetSqlServer4Tfs(vpc, nat1, natSecurityGroup, template);
 
-            Subnet subnetTfsServer = AddSubnetTfsServer(vpc, nat1, natSecurityGroup, template);
+
+            SecurityGroup sqlServer4TfsSecurityGroup = AddSqlServer4TfsSecurityGroup(vpc, template, subnetDmz1, subnetDmz2);
+            Subnet subnetSqlServer4Tfs = AddSubnetSqlServer4Tfs(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template);
+
+            Subnet subnetTfsServer = AddSubnetTfsServer(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template);
             sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock)subnetTfsServer, Protocol.Tcp, Ports.MsSqlServer);
             sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock)subnetTfsServer, Protocol.Tcp, Ports.Smb);
 
             SecurityGroup tfsServerSecurityGroup = AddTfsServerSecurityGroup(vpc, template, subnetDmz1, subnetDmz2);
 
-            Subnet subnetBuildServer = AddSubnet4BuildServer(vpc, nat1, natSecurityGroup, template);
+            Subnet subnetBuildServer = AddSubnet4BuildServer(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.TeamFoundationServerBuild);
 
@@ -101,7 +124,7 @@ namespace AWS.CloudFormation.Test
             SecurityGroup workstationSecurityGroup = AddWorkstationSecurityGroup(vpc, template, subnetDmz1);
             tfsServerSecurityGroup.AddIngress(workstationSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
-            Subnet subnetWorkstation = AddSubnetWorkstation(vpc, nat1, natSecurityGroup, template);
+            Subnet subnetWorkstation = AddSubnetWorkstation(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.TeamFoundationServerBuild);
             // give db access to the workstations
@@ -152,21 +175,18 @@ namespace AWS.CloudFormation.Test
 
             AddDhcpOptions(elements, netBiosServersElements, vpc, template);
 
-            if (instancesToCreate.HasFlag(Create.Rdp1))
-            {
-                var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
-                template.Resources.Add($"Rdp", instanceRdp);
-                dcPackage.Participate(instanceRdp);
-                instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
-                var x = instanceRdp.Packages.Last().WaitCondition;
-            }
+            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
+            template.Resources.Add($"Rdp", instanceRdp);
+            dcPackage.Participate(instanceRdp);
+            instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
+            var x = instanceRdp.Packages.Last().WaitCondition;
 
             LaunchConfiguration instanceTfsSqlServer = null;
 
             if (instancesToCreate.HasFlag(Create.Sql4Tfs))
             {
                 instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
-                var x = instanceTfsSqlServer.Packages.Last().WaitCondition;
+                x = instanceTfsSqlServer.Packages.Last().WaitCondition;
             }
 
             LaunchConfiguration tfsServer = null;
@@ -264,7 +284,7 @@ namespace AWS.CloudFormation.Test
                     "'",
                     new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
                     "\\Domain Admins'")));
-                var x = backupServer.Packages.Last().WaitCondition;
+                x = backupServer.Packages.Last().WaitCondition;
             }
 
 
@@ -296,7 +316,7 @@ namespace AWS.CloudFormation.Test
         }
 
         //private const string DomainAdminPassword = "kasdfiajs!!9";
-        private const string CidrDmz1 = "10.0.127.0/28";
+        public const string CidrDmz1 = "10.0.127.0/28";
         private const string CidrDmz2 = "10.0.255.0/28";
         private const string CidrDomainController1Subnet = "10.0.0.0/24";
         private const string CidrDomainController2Subnet = "10.0.128.0/24";
@@ -305,9 +325,9 @@ namespace AWS.CloudFormation.Test
         private const string CidrBuildServerSubnet = "10.0.3.0/24";
         private const string CidrWorkstationSubnet = "10.0.4.0/24";
         private const string CidrDatabase4BuildSubnet2 = "10.0.5.0/24";
-        private const string KeyPairName = "corp.getthebuybox.com";
-        private const string CidrVpc = "10.0.0.0/16";
-        private const string UsEastWindows2012R2Ami = "ami-9a0558f0";
+        public const string KeyPairName = "corp.getthebuybox.com";
+        public const string CidrVpc = "10.0.0.0/16";
+        public const string UsEastWindows2012R2Ami = "ami-9a0558f0";
         private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-a3005dc9";
         private const string BucketNameSoftware = "gtbb";
 
@@ -335,8 +355,7 @@ namespace AWS.CloudFormation.Test
         public enum Create
         {
             Dc2 = 1,
-            Rdp1 = Dc2 * 2,
-            Sql4Tfs = Rdp1 * 2,
+            Sql4Tfs = Dc2 * 2,
             Tfs = Sql4Tfs * 2,
             Build = Tfs * 2,
             SqlServer4Build = Build *2,
@@ -379,7 +398,7 @@ namespace AWS.CloudFormation.Test
             return dcPackage;
         }
 
-        private static Subnet AddSubnetWorkstation(Vpc vpc, Instance nat1, SecurityGroup natSecurityGroup, Template template)
+        private static Subnet AddSubnetWorkstation(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup, Template template)
         {
             var subnetWorkstation = new Subnet(vpc, CidrWorkstationSubnet, AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
             template.Resources.Add("Subnet4Workstation", subnetWorkstation);
@@ -404,7 +423,7 @@ namespace AWS.CloudFormation.Test
 
         private static Subnet AddSubnetDatabase4BuildServer2(Vpc vpc, Template template)
         {
-            var subnetDatabase4BuildServer2 = new Subnet(vpc, CidrDatabase4BuildSubnet2, AvailabilityZone.UsEast1E, true);
+            var subnetDatabase4BuildServer2 = new Subnet(vpc, CidrDatabase4BuildSubnet2, AvailabilityZone.UsEast1E, false);
             template.Resources.Add("Subnet4Build2Database", subnetDatabase4BuildServer2);
             return subnetDatabase4BuildServer2;
         }
@@ -423,7 +442,7 @@ namespace AWS.CloudFormation.Test
             return securityGroupDb4Build;
         }
 
-        private static Subnet AddSubnet4BuildServer(Vpc vpc, Instance nat1, SecurityGroup natSecurityGroup, Template template)
+        private static Subnet AddSubnet4BuildServer(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup, Template template)
         {
             var subnetBuildServer = new Subnet(vpc, CidrBuildServerSubnet, AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
             template.Resources.Add("Subnet4BuildServer", subnetBuildServer);
@@ -439,7 +458,7 @@ namespace AWS.CloudFormation.Test
             return tfsServerSecurityGroup;
         }
 
-        private static Subnet AddSubnetTfsServer(Vpc vpc, Instance nat1, SecurityGroup natSecurityGroup, Template template)
+        private static Subnet AddSubnetTfsServer(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup, Template template)
         {
             var subnetTfsServer = new Subnet(vpc, CidrTfsServerSubnet, AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
             template.Resources.Add("Subnet4TfsServer", subnetTfsServer);
@@ -460,7 +479,7 @@ namespace AWS.CloudFormation.Test
             return subnetDmz2;
         }
 
-        private static Subnet AddSubnet4DomainController2(Vpc vpc, Instance nat2, SecurityGroup natSecurityGroup,
+        private static Subnet AddSubnet4DomainController2(Vpc vpc, RouteTable nat2, SecurityGroup natSecurityGroup,
             Template template)
         {
             Subnet subnetDomainController2 = new Subnet(vpc, CidrDomainController2Subnet, AvailabilityZone.UsEast1E, nat2,
@@ -469,7 +488,7 @@ namespace AWS.CloudFormation.Test
             return subnetDomainController2;
         }
 
-        private static Subnet AddSubnet4DomainController(Vpc vpc, Instance nat1, SecurityGroup natSecurityGroup,
+        private static Subnet AddSubnet4DomainController(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup,
             Template template)
         {
             var subnetDomainController1 = new Subnet(vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A, nat1,
@@ -478,7 +497,7 @@ namespace AWS.CloudFormation.Test
             return subnetDomainController1;
         }
 
-        private static Subnet AddSubnetSqlServer4Tfs(Vpc vpc, Instance nat1, SecurityGroup natSecurityGroup, Template template)
+        private static Subnet AddSubnetSqlServer4Tfs(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup, Template template)
         {
             var subnetSqlServer4Tfs = new Subnet(vpc, CidrSqlServer4TfsSubnet, AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
             template.Resources.Add("Subnet4SqlServer4Tfs", subnetSqlServer4Tfs);
@@ -1043,10 +1062,10 @@ namespace AWS.CloudFormation.Test
             var subnet2 = new Subnet(vpc, CidrDmz2, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("subnet2", subnet2);
 
-            var subnet3 = new Subnet(vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A, true);
+            var subnet3 = new Subnet(vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A, false);
             template.Resources.Add("subnet3", subnet3);
 
-            var subnet4 = new Subnet(vpc, CidrDomainController2Subnet, AvailabilityZone.UsEast1A, true);
+            var subnet4 = new Subnet(vpc, CidrDomainController2Subnet, AvailabilityZone.UsEast1A, false);
             template.Resources.Add("subnet4", subnet4);
 
 
@@ -1382,7 +1401,8 @@ namespace AWS.CloudFormation.Test
             var appName = "dev";
 
             //Create instances = Create.Dc2 | Create.BackupServer | Create.Rdp1;
-            Create instances = Create.FullStack;
+            //Create instances = Create.FullStack;
+            Create instances = (Create)0;
             var templateToCreateStack = GetTemplateFullStack(topLevel, appName, version, instances);
             templateToCreateStack.StackName = $"{version}-{appName}-{topLevel}".Replace('.','-');
 
@@ -1411,15 +1431,33 @@ namespace AWS.CloudFormation.Test
 
             Create instances = Create.FullStack;
             //instances = Create.Dc2 | Create.Sql4Tfs | Create.Workstation | Create.BackupServer | Create.Rdp1 | Create.Tfs;
-            instances = Create.FullStack;
+            instances = (Create)0;
             //instances = Create.Dc2 | Create.Workstation | Create.BackupServer | Create.Rdp1;
-            //instances = Create.Dc2 | Create.Sql4Tfs | Create.BackupServer | Create.Rdp1 | Create.Tfs | Create.Build |
+            instances = Create.Dc2 | Create.Sql4Tfs | Create.BackupServer | Create.Tfs | Create.Build;
             //            Create.Workstation;
 
 
             var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances);
             ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "PUKI1388rbex";
-            Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.','-'), template );
+            Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.', '-'), template);
+        }
+
+        [TestMethod]
+        public void UpdatePsiTest()
+        {
+            Assert.IsFalse(HasGitDifferences());
+
+            Greek version = Greek.Psi;
+
+            var fullyQualifiedDomainName = $"{version}.dev.yadayadasoftware.com";
+
+            //colors &= ~Blah.BLUE;
+
+            Create instances = Create.FullStack;
+
+            var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances);
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "IDJP5673lwip";
+            Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.', '-'), template);
         }
 
 
