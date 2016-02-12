@@ -186,7 +186,7 @@ namespace AWS.CloudFormation.Test
             if (instancesToCreate.HasFlag(Create.Sql4Tfs))
             {
                 instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
-                var x = instanceTfsSqlServer.Packages.Last().WaitCondition;
+                x = instanceTfsSqlServer.Packages.Last().WaitCondition;
             }
 
             LaunchConfiguration tfsServer = null;
@@ -284,7 +284,7 @@ namespace AWS.CloudFormation.Test
                     "'",
                     new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
                     "\\Domain Admins'")));
-                var x = backupServer.Packages.Last().WaitCondition;
+                x = backupServer.Packages.Last().WaitCondition;
             }
 
 
