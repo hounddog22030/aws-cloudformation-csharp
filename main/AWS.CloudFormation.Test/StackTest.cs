@@ -62,6 +62,15 @@ namespace AWS.CloudFormation.Test
             nat1.DependsOn.Add(vpc.VpcGatewayAttachment.LogicalId);
             Instance nat2 = null;
 
+            RouteTable routeTable = new RouteTable(vpc);
+            template.Resources.Add($"RouteTable1", routeTable);
+            
+            Route route = new Route(Template.CidrIpTheWorld, routeTable);
+            template.Resources.Add($"Route1", route);
+            route.DestinationCidrBlock = "0.0.0.0/0";
+            route.Instance = nat1;
+            route.RouteTable = routeTable;
+
             if (instancesToCreate.HasFlag(Create.Dc2))
             {
                 nat2 = AddNat(template, subnetDmz2, natSecurityGroup);
@@ -1382,7 +1391,8 @@ namespace AWS.CloudFormation.Test
             var appName = "dev";
 
             //Create instances = Create.Dc2 | Create.BackupServer | Create.Rdp1;
-            Create instances = Create.FullStack;
+            //Create instances = Create.FullStack;
+            Create instances = (Create)0;
             var templateToCreateStack = GetTemplateFullStack(topLevel, appName, version, instances);
             templateToCreateStack.StackName = $"{version}-{appName}-{topLevel}".Replace('.','-');
 

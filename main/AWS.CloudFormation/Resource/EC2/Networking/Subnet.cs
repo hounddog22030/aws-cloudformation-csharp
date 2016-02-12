@@ -78,7 +78,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 
 
 
-            if (this.Nat != null)
+            if (this.Nat != null && false)
             {
                 RouteTable routeTable = new RouteTable(this.Vpc);
                 template.Resources.Add($"RouteTable4{this.LogicalId}", routeTable);
