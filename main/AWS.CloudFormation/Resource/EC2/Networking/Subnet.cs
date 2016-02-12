@@ -79,8 +79,6 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 
             if (this.RouteTableForGateway != null)
             {
-                Route route = new Route(Template.CidrIpTheWorld, this.RouteTableForGateway);
-                template.Resources.Add($"Route4{this.LogicalId}", route);
                 SubnetRouteTableAssociation routeTableAssociation = new SubnetRouteTableAssociation(this, this.RouteTableForGateway);
                 this.Template.Resources.Add(routeTableAssociation.LogicalId, routeTableAssociation);
                 this.NatSecurityGroup.AddIngress((ICidrBlock)this, Protocol.All, Ports.Min, Ports.Max);
