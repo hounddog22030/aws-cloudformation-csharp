@@ -215,7 +215,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             this.Config.Sources.Add($"c:/chef/{CookbookName}/",
                 $"https://{BucketName}.s3.amazonaws.com/{CookbookName}.tar.gz");
 
-            var chefCommandConfig = AddChefRecipeCall(RecipeList.Replace(':', '-'));
+            var chefCommandConfig = AddChefRecipeCall(RecipeList);
 
             if (this.WaitAfterCompletion != TimeSpan.MinValue)
             {
@@ -227,7 +227,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
         protected ConfigCommand AddChefRecipeCall(string recipe)
         {
-            var chefCommandConfig = this.Config.Commands.AddCommand<Command>(recipe);
+            var chefCommandConfig = this.Config.Commands.AddCommand<Command>(recipe.Replace(':','-'));
 
             chefCommandConfig.Command = $"C:/opscode/chef/bin/chef-client.bat -z -o {recipe} -c c:/chef/{CookbookName}/client.rb";
 
@@ -261,7 +261,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
             base.AddToLaunchConfiguration(configuration);
-            var c = this.AddChefRecipeCall("cleanup");
+            var c = this.AddChefRecipeCall($"{CookbookName}::cleanup");
             c.WaitAfterCompletion = 0.ToString();
         }
     }
