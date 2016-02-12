@@ -18,9 +18,9 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
     {
 
 
-        public Subnet(Vpc vpc, string cidr, AvailabilityZone availabilityZone, Instance nat, SecurityGroup natSecurityGroup) : this(vpc, cidr, availabilityZone, false)
+        public Subnet(Vpc vpc, string cidr, AvailabilityZone availabilityZone, RouteTable routeTableForGateway, SecurityGroup natSecurityGroup) : this(vpc, cidr, availabilityZone, false)
         {
-            this.Nat = nat;
+            this.RouteTableForGateway = routeTableForGateway;
             this.NatSecurityGroup = natSecurityGroup;
         }
 
@@ -69,24 +69,20 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         [JsonIgnore]
         public SecurityGroup NatSecurityGroup { get; private set; }
 
+
         [JsonIgnore]
-        public Instance Nat { get; private set; }
+        public RouteTable RouteTableForGateway { get; set; }
 
         protected override void OnTemplateSet(Template template)
         {
             base.OnTemplateSet(template);
 
-
-
-            if (this.Nat != null && false)
+            if (this.RouteTableForGateway != null)
             {
-                RouteTable routeTable = new RouteTable(this.Vpc);
-                template.Resources.Add($"RouteTable4{this.LogicalId}", routeTable);
-                Route route = new Route(Template.CidrIpTheWorld, routeTable);
+                Route route = new Route(Template.CidrIpTheWorld, this.RouteTableForGateway);
                 template.Resources.Add($"Route4{this.LogicalId}", route);
-                SubnetRouteTableAssociation routeTableAssociation = new SubnetRouteTableAssociation(this, routeTable);
+                SubnetRouteTableAssociation routeTableAssociation = new SubnetRouteTableAssociation(this, this.RouteTableForGateway);
                 this.Template.Resources.Add(routeTableAssociation.LogicalId, routeTableAssociation);
-                route.Instance = this.Nat;
                 this.NatSecurityGroup.AddIngress((ICidrBlock)this, Protocol.All, Ports.Min, Ports.Max);
                 this.NatSecurityGroup.AddIngress((ICidrBlock)this, Protocol.Icmp, Ports.All);
             }

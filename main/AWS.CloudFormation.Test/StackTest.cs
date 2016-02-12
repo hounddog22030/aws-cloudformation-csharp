@@ -62,14 +62,23 @@ namespace AWS.CloudFormation.Test
             nat1.DependsOn.Add(vpc.VpcGatewayAttachment.LogicalId);
             Instance nat2 = null;
 
-            RouteTable routeTable = new RouteTable(vpc);
-            template.Resources.Add($"RouteTable1", routeTable);
+            RouteTable routeTableForSubnetsToNat1 = new RouteTable(vpc);
+            template.Resources.Add($"RouteTable1", routeTableForSubnetsToNat1);
             
-            Route route = new Route(Template.CidrIpTheWorld, routeTable);
-            template.Resources.Add($"Route1", route);
-            route.DestinationCidrBlock = "0.0.0.0/0";
-            route.Instance = nat1;
-            route.RouteTable = routeTable;
+            Route routeForAz1 = new Route(Template.CidrIpTheWorld, routeTableForSubnetsToNat1);
+            template.Resources.Add($"RouteForAz1", routeForAz1);
+            routeForAz1.DestinationCidrBlock = "0.0.0.0/0";
+            routeForAz1.Instance = nat1;
+            routeForAz1.RouteTable = routeTableForSubnetsToNat1;
+
+            RouteTable routeTableForSubnetsToNat2 = new RouteTable(vpc);
+            template.Resources.Add($"RouteTable2", routeTableForSubnetsToNat2);
+
+            Route routeForAz2 = new Route(Template.CidrIpTheWorld, routeTableForSubnetsToNat2);
+            template.Resources.Add($"RouteForAz2", routeForAz2);
+            routeForAz2.DestinationCidrBlock = "0.0.0.0/0";
+            routeForAz2.Instance = nat2;
+            routeForAz2.RouteTable = routeTableForSubnetsToNat2;
 
             if (instancesToCreate.HasFlag(Create.Dc2))
             {
@@ -78,18 +87,20 @@ namespace AWS.CloudFormation.Test
 
             }
 
-            Subnet subnetDomainController1 = AddSubnet4DomainController(vpc, nat1, natSecurityGroup, template);
-            Subnet subnetDomainController2 = AddSubnet4DomainController2(vpc, nat2, natSecurityGroup, template);
-            SecurityGroup sqlServer4TfsSecurityGroup = AddSqlServer4TfsSecurityGroup(vpc, template, subnetDmz1, subnetDmz2);
-            Subnet subnetSqlServer4Tfs = AddSubnetSqlServer4Tfs(vpc, nat1, natSecurityGroup, template);
+            Subnet subnetDomainController1 = AddSubnet4DomainController(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template);
 
-            Subnet subnetTfsServer = AddSubnetTfsServer(vpc, nat1, natSecurityGroup, template);
+
+            Subnet subnetDomainController2 = AddSubnet4DomainController2(vpc, routeTableForSubnetsToNat2, natSecurityGroup, template);
+            SecurityGroup sqlServer4TfsSecurityGroup = AddSqlServer4TfsSecurityGroup(vpc, template, subnetDmz1, subnetDmz2);
+            Subnet subnetSqlServer4Tfs = AddSubnetSqlServer4Tfs(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template);
+
+            Subnet subnetTfsServer = AddSubnetTfsServer(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template);
             sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock)subnetTfsServer, Protocol.Tcp, Ports.MsSqlServer);
             sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock)subnetTfsServer, Protocol.Tcp, Ports.Smb);
 
             SecurityGroup tfsServerSecurityGroup = AddTfsServerSecurityGroup(vpc, template, subnetDmz1, subnetDmz2);
 
-            Subnet subnetBuildServer = AddSubnet4BuildServer(vpc, nat1, natSecurityGroup, template);
+            Subnet subnetBuildServer = AddSubnet4BuildServer(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.TeamFoundationServerBuild);
 
@@ -110,7 +121,7 @@ namespace AWS.CloudFormation.Test
             SecurityGroup workstationSecurityGroup = AddWorkstationSecurityGroup(vpc, template, subnetDmz1);
             tfsServerSecurityGroup.AddIngress(workstationSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
-            Subnet subnetWorkstation = AddSubnetWorkstation(vpc, nat1, natSecurityGroup, template);
+            Subnet subnetWorkstation = AddSubnetWorkstation(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.TeamFoundationServerBuild);
             // give db access to the workstations
@@ -388,7 +399,7 @@ namespace AWS.CloudFormation.Test
             return dcPackage;
         }
 
-        private static Subnet AddSubnetWorkstation(Vpc vpc, Instance nat1, SecurityGroup natSecurityGroup, Template template)
+        private static Subnet AddSubnetWorkstation(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup, Template template)
         {
             var subnetWorkstation = new Subnet(vpc, CidrWorkstationSubnet, AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
             template.Resources.Add("Subnet4Workstation", subnetWorkstation);
@@ -432,7 +443,7 @@ namespace AWS.CloudFormation.Test
             return securityGroupDb4Build;
         }
 
-        private static Subnet AddSubnet4BuildServer(Vpc vpc, Instance nat1, SecurityGroup natSecurityGroup, Template template)
+        private static Subnet AddSubnet4BuildServer(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup, Template template)
         {
             var subnetBuildServer = new Subnet(vpc, CidrBuildServerSubnet, AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
             template.Resources.Add("Subnet4BuildServer", subnetBuildServer);
@@ -448,7 +459,7 @@ namespace AWS.CloudFormation.Test
             return tfsServerSecurityGroup;
         }
 
-        private static Subnet AddSubnetTfsServer(Vpc vpc, Instance nat1, SecurityGroup natSecurityGroup, Template template)
+        private static Subnet AddSubnetTfsServer(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup, Template template)
         {
             var subnetTfsServer = new Subnet(vpc, CidrTfsServerSubnet, AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
             template.Resources.Add("Subnet4TfsServer", subnetTfsServer);
@@ -469,7 +480,7 @@ namespace AWS.CloudFormation.Test
             return subnetDmz2;
         }
 
-        private static Subnet AddSubnet4DomainController2(Vpc vpc, Instance nat2, SecurityGroup natSecurityGroup,
+        private static Subnet AddSubnet4DomainController2(Vpc vpc, RouteTable nat2, SecurityGroup natSecurityGroup,
             Template template)
         {
             Subnet subnetDomainController2 = new Subnet(vpc, CidrDomainController2Subnet, AvailabilityZone.UsEast1E, nat2,
@@ -478,7 +489,7 @@ namespace AWS.CloudFormation.Test
             return subnetDomainController2;
         }
 
-        private static Subnet AddSubnet4DomainController(Vpc vpc, Instance nat1, SecurityGroup natSecurityGroup,
+        private static Subnet AddSubnet4DomainController(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup,
             Template template)
         {
             var subnetDomainController1 = new Subnet(vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A, nat1,
@@ -487,7 +498,7 @@ namespace AWS.CloudFormation.Test
             return subnetDomainController1;
         }
 
-        private static Subnet AddSubnetSqlServer4Tfs(Vpc vpc, Instance nat1, SecurityGroup natSecurityGroup, Template template)
+        private static Subnet AddSubnetSqlServer4Tfs(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup, Template template)
         {
             var subnetSqlServer4Tfs = new Subnet(vpc, CidrSqlServer4TfsSubnet, AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
             template.Resources.Add("Subnet4SqlServer4Tfs", subnetSqlServer4Tfs);
