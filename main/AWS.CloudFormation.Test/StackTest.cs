@@ -413,7 +413,7 @@ namespace AWS.CloudFormation.Test
 
         private static Subnet AddSubnetDatabase4BuildServer2(Vpc vpc, Template template)
         {
-            var subnetDatabase4BuildServer2 = new Subnet(vpc, CidrDatabase4BuildSubnet2, AvailabilityZone.UsEast1E, true);
+            var subnetDatabase4BuildServer2 = new Subnet(vpc, CidrDatabase4BuildSubnet2, AvailabilityZone.UsEast1E, false);
             template.Resources.Add("Subnet4Build2Database", subnetDatabase4BuildServer2);
             return subnetDatabase4BuildServer2;
         }
@@ -1052,10 +1052,10 @@ namespace AWS.CloudFormation.Test
             var subnet2 = new Subnet(vpc, CidrDmz2, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("subnet2", subnet2);
 
-            var subnet3 = new Subnet(vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A, true);
+            var subnet3 = new Subnet(vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A, false);
             template.Resources.Add("subnet3", subnet3);
 
-            var subnet4 = new Subnet(vpc, CidrDomainController2Subnet, AvailabilityZone.UsEast1A, true);
+            var subnet4 = new Subnet(vpc, CidrDomainController2Subnet, AvailabilityZone.UsEast1A, false);
             template.Resources.Add("subnet4", subnet4);
 
 
