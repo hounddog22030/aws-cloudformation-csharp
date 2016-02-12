@@ -175,14 +175,11 @@ namespace AWS.CloudFormation.Test
 
             AddDhcpOptions(elements, netBiosServersElements, vpc, template);
 
-            if (instancesToCreate.HasFlag(Create.Rdp1))
-            {
-                var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
-                template.Resources.Add($"Rdp", instanceRdp);
-                dcPackage.Participate(instanceRdp);
-                instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
-                var x = instanceRdp.Packages.Last().WaitCondition;
-            }
+            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
+            template.Resources.Add($"Rdp", instanceRdp);
+            dcPackage.Participate(instanceRdp);
+            instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
+            var x = instanceRdp.Packages.Last().WaitCondition;
 
             LaunchConfiguration instanceTfsSqlServer = null;
 
@@ -328,8 +325,8 @@ namespace AWS.CloudFormation.Test
         private const string CidrBuildServerSubnet = "10.0.3.0/24";
         private const string CidrWorkstationSubnet = "10.0.4.0/24";
         private const string CidrDatabase4BuildSubnet2 = "10.0.5.0/24";
-        private const string KeyPairName = "corp.getthebuybox.com";
-        private const string CidrVpc = "10.0.0.0/16";
+        public const string KeyPairName = "corp.getthebuybox.com";
+        public const string CidrVpc = "10.0.0.0/16";
         private const string UsEastWindows2012R2Ami = "ami-9a0558f0";
         private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-a3005dc9";
         private const string BucketNameSoftware = "gtbb";
@@ -358,8 +355,7 @@ namespace AWS.CloudFormation.Test
         public enum Create
         {
             Dc2 = 1,
-            Rdp1 = Dc2 * 2,
-            Sql4Tfs = Rdp1 * 2,
+            Sql4Tfs = Dc2 * 2,
             Tfs = Sql4Tfs * 2,
             Build = Tfs * 2,
             SqlServer4Build = Build *2,
@@ -1427,7 +1423,7 @@ namespace AWS.CloudFormation.Test
         {
             Assert.IsFalse(HasGitDifferences());
 
-            Greek version = Greek.Upsilon;
+            Greek version = Greek.Psi;
 
             var fullyQualifiedDomainName = $"{version}.dev.yadayadasoftware.com";
 
@@ -1435,14 +1431,14 @@ namespace AWS.CloudFormation.Test
 
             Create instances = Create.FullStack;
             //instances = Create.Dc2 | Create.Sql4Tfs | Create.Workstation | Create.BackupServer | Create.Rdp1 | Create.Tfs;
-            instances = Create.FullStack;
+            instances = (Create)0;
             //instances = Create.Dc2 | Create.Workstation | Create.BackupServer | Create.Rdp1;
             //instances = Create.Dc2 | Create.Sql4Tfs | Create.BackupServer | Create.Rdp1 | Create.Tfs | Create.Build |
             //            Create.Workstation;
 
 
             var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances);
-            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "PUKI1388rbex";
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "IDJP5673lwip";
             Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.','-'), template );
         }
 
