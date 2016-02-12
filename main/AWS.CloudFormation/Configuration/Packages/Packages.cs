@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -207,6 +208,13 @@ namespace AWS.CloudFormation.Configuration.Packages
                 s3FileNode.Add("secret", secretKeyString);
             }
 
+            var clientRbFileKey = $"c:/chef/{CookbookName}/client.rb";
+            this.Config.Files.GetFile(clientRbFileKey)
+                .Content.SetFnJoin(
+                    $"cache_path 'c:/chef'\ncookbook_path 'c:/chef/{CookbookName}/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
+            this.Config.Sources.Add($"c:/chef/{CookbookName}/",
+                $"https://{BucketName}.s3.amazonaws.com/{CookbookName}.tar.gz");
+
             AddChefRecipeCall(RecipeList.Replace(':', '-'));
 
         }
@@ -215,17 +223,11 @@ namespace AWS.CloudFormation.Configuration.Packages
         {
             var chefCommandConfig = this.Config.Commands.AddCommand<Command>(recipe);
 
-            var clientRbFileKey = $"c:/chef/{CookbookName}/client.rb";
-            this.Config.Files.GetFile(clientRbFileKey)
-                .Content.SetFnJoin(
-                    $"cache_path 'c:/chef'\ncookbook_path 'c:/chef/{CookbookName}/cookbooks'\nlocal_mode true\njson_attribs 'c:/chef/node.json'\n");
-            this.Config.Sources.Add($"c:/chef/{CookbookName}/",
-                $"https://{BucketName}.s3.amazonaws.com/{CookbookName}.tar.gz");
-
             chefCommandConfig.Command = $"C:/opscode/chef/bin/chef-client.bat -z -o {recipe} -c c:/chef/{CookbookName}/client.rb";
+
             if (this.WaitAfterCompletion != TimeSpan.MinValue)
             {
-                chefCommandConfig.WaitAfterCompletion = this.WaitAfterCompletion.TotalSeconds.ToString();
+                chefCommandConfig.WaitAfterCompletion = this.WaitAfterCompletion.TotalSeconds.ToString(CultureInfo.InvariantCulture);
             }
 
         }
