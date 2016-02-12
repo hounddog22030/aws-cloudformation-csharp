@@ -316,7 +316,7 @@ namespace AWS.CloudFormation.Test
         }
 
         //private const string DomainAdminPassword = "kasdfiajs!!9";
-        private const string CidrDmz1 = "10.0.127.0/28";
+        public const string CidrDmz1 = "10.0.127.0/28";
         private const string CidrDmz2 = "10.0.255.0/28";
         private const string CidrDomainController1Subnet = "10.0.0.0/24";
         private const string CidrDomainController2Subnet = "10.0.128.0/24";
@@ -327,7 +327,7 @@ namespace AWS.CloudFormation.Test
         private const string CidrDatabase4BuildSubnet2 = "10.0.5.0/24";
         public const string KeyPairName = "corp.getthebuybox.com";
         public const string CidrVpc = "10.0.0.0/16";
-        private const string UsEastWindows2012R2Ami = "ami-9a0558f0";
+        public const string UsEastWindows2012R2Ami = "ami-9a0558f0";
         private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-a3005dc9";
         private const string BucketNameSoftware = "gtbb";
 
@@ -1439,7 +1439,25 @@ namespace AWS.CloudFormation.Test
 
             var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances);
             ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "PUKI1388rbex";
-            Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.','-'), template );
+            Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.', '-'), template);
+        }
+
+        [TestMethod]
+        public void UpdatePsiTest()
+        {
+            Assert.IsFalse(HasGitDifferences());
+
+            Greek version = Greek.Psi;
+
+            var fullyQualifiedDomainName = $"{version}.dev.yadayadasoftware.com";
+
+            //colors &= ~Blah.BLUE;
+
+            Create instances = Create.FullStack;
+
+            var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances);
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "IDJP5673lwip";
+            Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.', '-'), template);
         }
 
 
