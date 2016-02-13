@@ -285,10 +285,10 @@ namespace AWS.CloudFormation.Configuration.Packages
 
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
-            const string AddNetworkLocalPath = "c:/cfn/scripts/add-network-to-sysadmin.ps1";
-            const string AddComputersLocalPath = "c:/cfn/scripts/add-network-to-sysadmin2.ps1";
-            const string EnableTcpLocalPath = "c:/cfn/scripts/SqlServer-EnableTcp.ps1";
-            const string SetUserToTfsService = "c:/cfn/scripts/change-sql-account.ps1";
+            //const string AddNetworkLocalPath = "c:/cfn/scripts/add-network-to-sysadmin.ps1";
+            //const string AddComputersLocalPath = "c:/cfn/scripts/add-network-to-sysadmin2.ps1";
+            //const string EnableTcpLocalPath = "c:/cfn/scripts/SqlServer-EnableTcp.ps1";
+            const string SetUserToTfsService = "c:/cfn/scripts/configure-sql-4-tfs.ps1";
 
             base.AddToLaunchConfiguration(configuration);
 
@@ -299,31 +299,33 @@ namespace AWS.CloudFormation.Configuration.Packages
             command.Command = new PowershellFnJoin(FnJoinDelimiter.None, SetUserToTfsService,
                 " ",
                 new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
+                " ",
+                new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
                 "\\",
                 new ReferenceProperty("TfsServiceAccountName"),
                 " ",
                 new ReferenceProperty("TfsServicePassword"));
             command.WaitAfterCompletion = 0.ToString();
 
-            sysadminFile = this.Config.Files.GetFile(AddNetworkLocalPath);
-            sysadminFile.Source = "https://s3.amazonaws.com/gtbb/add-network-to-sysadmin.ps1";
+            //sysadminFile = this.Config.Files.GetFile(AddNetworkLocalPath);
+            //sysadminFile.Source = "https://s3.amazonaws.com/gtbb/add-network-to-sysadmin.ps1";
 
-            sysadminFile = this.Config.Files.GetFile(AddComputersLocalPath);
-            sysadminFile.Source = "https://s3.amazonaws.com/gtbb/add-network-to-sysadmin2.ps1";
+            //sysadminFile = this.Config.Files.GetFile(AddComputersLocalPath);
+            //sysadminFile.Source = "https://s3.amazonaws.com/gtbb/add-network-to-sysadmin2.ps1";
 
-            command = this.Config.Commands.AddCommand<Command>("AddDomainAdminsToSysadmin");
-            command.Command = new PowershellFnJoin(AddNetworkLocalPath, new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName));
-            command.WaitAfterCompletion = 0.ToString();
+            //command = this.Config.Commands.AddCommand<Command>("AddDomainAdminsToSysadmin");
+            //command.Command = new PowershellFnJoin(AddNetworkLocalPath, new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName));
+            //command.WaitAfterCompletion = 0.ToString();
 
-            command = this.Config.Commands.AddCommand<Command>("AddComputersLocalPath");
-            command.Command = new PowershellFnJoin(AddComputersLocalPath, new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName));
-            command.WaitAfterCompletion = 0.ToString();
+            //command = this.Config.Commands.AddCommand<Command>("AddComputersLocalPath");
+            //command.Command = new PowershellFnJoin(AddComputersLocalPath, new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName));
+            //command.WaitAfterCompletion = 0.ToString();
 
-            sysadminFile = this.Config.Files.GetFile(EnableTcpLocalPath);
-            sysadminFile.Source = "https://s3.amazonaws.com/gtbb/SqlServer-EnableTcp.ps1";
-            command = this.Config.Commands.AddCommand<Command>("SqlServerEnableTcp");
-            command.Command = new PowershellFnJoin(EnableTcpLocalPath);
-            command.WaitAfterCompletion = 0.ToString();
+            //sysadminFile = this.Config.Files.GetFile(EnableTcpLocalPath);
+            //sysadminFile.Source = "https://s3.amazonaws.com/gtbb/SqlServer-EnableTcp.ps1";
+            //command = this.Config.Commands.AddCommand<Command>("SqlServerEnableTcp");
+            //command.Command = new PowershellFnJoin(EnableTcpLocalPath);
+            //command.WaitAfterCompletion = 0.ToString();
 
 
         }

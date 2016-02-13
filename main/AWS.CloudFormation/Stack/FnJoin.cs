@@ -86,7 +86,7 @@ namespace AWS.CloudFormation.Stack
         public PowershellFnJoin(FnJoinDelimiter delimiter, params object[] elements) : base(delimiter, elements)
         {
             var temp = new List<object>();
-            var commandLine = "powershell.exe ";
+            var commandLine = "start /high powershell.exe ";
             bool remoteSigned = false;
             elements.ToList().ForEach(e=>remoteSigned=remoteSigned||e.ToString().ToLowerInvariant().Contains(".ps1"));
             if (remoteSigned)
