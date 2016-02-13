@@ -1441,7 +1441,7 @@ namespace AWS.CloudFormation.Test
             instances = (Create)0;
             //instances = Create.Dc2 | Create.Workstation | Create.BackupServer | Create.Rdp1;
             //instances = Create.Dc2 | Create.BackupServer | Create.Build | Create.Workstation | Create.Sql4Tfs | Create.Tfs;
-            //instances = Create.Sql4Tfs;
+            instances = Create.Sql4Tfs;
             //            Create.Workstation;
 
 
