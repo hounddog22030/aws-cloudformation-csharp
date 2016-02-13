@@ -195,7 +195,11 @@ namespace AWS.CloudFormation.Test
             if (instancesToCreate.HasFlag(Create.Tfs))
             {
                 tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
-                tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
+                var package =  tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().FirstOrDefault();
+                if (package != null)
+                {
+                    tfsApplicationTierInstalled = package.WaitCondition;
+                }
             }
 
             DbSubnetGroup subnetGroupSqlExpress4Build = new DbSubnetGroup("DbSubnet Group for SQL Server database for build server");
