@@ -1302,16 +1302,16 @@ namespace AWS.CloudFormation.Test
             if (sqlServer4Tfs != null)
             {
                 tfsServer.AddDependsOn(sqlServer4Tfs.Packages.Last().WaitCondition);
+                var chefNode = tfsServer.GetChefNodeJsonContent();
+                var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
+
+                domainAdminUserInfoNode.Add("name", new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(DomainControllerPackage.DomainAdminUsernameParameterName)));
+                domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
+                tfsServer.AddSecurityGroup(tfsServerSecurityGroup);
+                var packageTfsApplicationTier = new TeamFoundationServerApplicationTier(BucketNameSoftware, sqlServer4Tfs);
+                tfsServer.Packages.Add(packageTfsApplicationTier);
             }
 
-            var chefNode = tfsServer.GetChefNodeJsonContent();
-            var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
-
-            domainAdminUserInfoNode.Add("name", new FnJoin( FnJoinDelimiter.None, new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(DomainControllerPackage.DomainAdminUsernameParameterName)));
-            domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
-            tfsServer.AddSecurityGroup(tfsServerSecurityGroup);
-            var packageTfsApplicationTier = new TeamFoundationServerApplicationTier(BucketNameSoftware,sqlServer4Tfs);
-            tfsServer.Packages.Add(packageTfsApplicationTier);
             return tfsServer;
         }
 
