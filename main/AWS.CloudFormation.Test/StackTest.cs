@@ -1423,7 +1423,7 @@ namespace AWS.CloudFormation.Test
         {
             Assert.IsFalse(HasGitDifferences());
 
-            Greek version = Greek.Upsilon;
+            Greek version = Greek.Psi;
 
             var fullyQualifiedDomainName = $"{version}.dev.yadayadasoftware.com";
 
@@ -1438,7 +1438,7 @@ namespace AWS.CloudFormation.Test
 
 
             var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances);
-            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "PUKI1388rbex";
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "IDJP5673lwip";
             Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.', '-'), template);
         }
 
