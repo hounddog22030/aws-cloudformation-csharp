@@ -221,20 +221,13 @@ namespace AWS.CloudFormation.Configuration.Packages
             {
                 chefCommandConfig.WaitAfterCompletion = this.WaitAfterCompletion.TotalSeconds.ToString(CultureInfo.InvariantCulture);
             }
-
-            var chefClientHigh = this.Config.Files.GetFile("C:/opscode/chef/bin/chef-client-high.bat");
-            chefClientHigh.Source = "https://s3.amazonaws.com/gtbb/chef-client-high.bat";
-
-            //C:\opscode\chef\bin\
-
-
         }
 
         protected ConfigCommand AddChefRecipeCall(string recipe)
         {
             var chefCommandConfig = this.Config.Commands.AddCommand<Command>(recipe.Replace(':','-'));
 
-            chefCommandConfig.Command = $"C:/opscode/chef/bin/chef-client-high.bat -z -o {recipe} -c c:/chef/{CookbookName}/client.rb";
+            chefCommandConfig.Command = $"C:/opscode/chef/bin/chef-client.bat -z -o {recipe} -c c:/chef/{CookbookName}/client.rb";
 
             return chefCommandConfig;
 
