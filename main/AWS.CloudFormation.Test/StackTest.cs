@@ -245,7 +245,7 @@ namespace AWS.CloudFormation.Test
                 rdsSqlExpress4Build.AddVpcSecurityGroup(securityGroupSqlSever4Build);
             }
 
-            if (instancesToCreate.HasFlag(Create.Build))
+            if (instancesToCreate.HasFlag(Create.Tfs) && instancesToCreate.HasFlag(Create.Build))
             {
                 var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer,
                  tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
