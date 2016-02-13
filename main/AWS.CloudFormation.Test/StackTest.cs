@@ -365,7 +365,7 @@ namespace AWS.CloudFormation.Test
             SqlServer4Build = Build *2,
             MySql4Build = SqlServer4Build * 2,
             BackupServer = MySql4Build * 2,
-            Workstation = BackupServer,
+            Workstation = BackupServer * 2,
             FullStack = int.MaxValue
         }
 
@@ -1441,7 +1441,7 @@ namespace AWS.CloudFormation.Test
             instances = (Create)0;
             //instances = Create.Dc2 | Create.Workstation | Create.BackupServer | Create.Rdp1;
             //instances = Create.Dc2 | Create.BackupServer | Create.Build | Create.Workstation | Create.Sql4Tfs | Create.Tfs;
-            instances = Create.Sql4Tfs | Create.Tfs | Create.BackupServer;
+            instances = Create.BackupServer;
             //            Create.Workstation;
 
 
