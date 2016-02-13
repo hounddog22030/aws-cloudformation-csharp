@@ -194,7 +194,7 @@ namespace AWS.CloudFormation.Test
 
             if (instancesToCreate.HasFlag(Create.Tfs))
             {
-                tfsServer = AddTfsServer(template, InstanceTypes.C4Large, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
+                tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
                 var package =  tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().FirstOrDefault();
                 if (package != null)
                 {
@@ -1441,7 +1441,7 @@ namespace AWS.CloudFormation.Test
             instances = (Create)0;
             //instances = Create.Dc2 | Create.Workstation | Create.BackupServer | Create.Rdp1;
             //instances = Create.Dc2 | Create.BackupServer | Create.Build | Create.Workstation | Create.Sql4Tfs | Create.Tfs;
-            instances = Create.Sql4Tfs | Create.Tfs;
+            instances = Create.Sql4Tfs | Create.Tfs | Create.BackupServer;
             //            Create.Workstation;
 
 
