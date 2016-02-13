@@ -5,6 +5,7 @@ using System.Linq;
 using AWS.CloudFormation.Configuration.Packages;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.EC2.Instancing;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -111,27 +112,24 @@ namespace AWS.CloudFormation.Test.Resource.EC2
             VpcEndpoint endpoint = new VpcEndpoint("s3",template.Vpcs.First(), routeTableForDomainControllerSubnet);
             template.Resources.Add($"VpcEndpoint4{nameBase}",endpoint);
 
-            //Route routeForSubnetDomainController1ToVpcEndpoint = new Route("0.0.0.0/0", routeTableForSubnetsToNat1)
-            //{
-            //    Gateway = endpoint
-            //};
-            //routeForSubnetDomainController1ToVpcEndpoint.DependsOn.Add(endpoint.LogicalId);
-
-            //template.Resources.Add("routeForSubnetDomainController1ToVpcEndpoint", routeForSubnetDomainController1ToVpcEndpoint);
-
             Subnet subnetDomainController1 = StackTest.AddSubnet4DomainController(vpc, routeTableForDomainControllerSubnet, null, template);
-            //SubnetRouteTableAssociation srta = new SubnetRouteTableAssociation(subnetDomainController1,routeTableForSubnetsToNat1);
-            //template.Resources.Add("srta", srta);
-
 
             Instance instanceDomainController = new Instance(subnetDomainController1, InstanceTypes.T2Nano, StackTest.UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
             template.Resources.Add("DomainController", instanceDomainController);
-            var dcPackage = new DomainControllerPackage(subnetDomainController1);
-            instanceDomainController.Packages.Add(dcPackage);
+            var commandConfig = instanceDomainController.Metadata.Init.ConfigSets.GetConfigSet("testConfigSet")
+                .GetConfig("testConfig")
+                .Commands.AddCommand<Command>("command1");
+            commandConfig.Command = "dir";
 
             var DMZSubnet = new Subnet(vpc, StackTest.CidrDmz1, AvailabilityZone.UsEast1A,true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
-            StackTest.AddRdp2(DMZSubnet, template, vpc, dcPackage);
+            var rdp = StackTest.AddRdp2(DMZSubnet, template, vpc, null);
+            var rdpToDomainController = new SecurityGroup("RdpAccess", vpc);
+            template.Resources.Add("rdpToDomainController", rdpToDomainController);
+            rdpToDomainController.AddIngress(DMZSubnet, Protocol.Tcp, Ports.Min, Ports.Max);
+            instanceDomainController.AddSecurityGroup(rdpToDomainController);
+
+
 
             return template;
         }

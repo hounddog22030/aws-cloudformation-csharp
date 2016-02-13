@@ -571,7 +571,7 @@ namespace AWS.CloudFormation.Test
             return output.Replace(newLine.ToString(), string.Empty);
         }
 
-        public static void AddRdp2(Subnet subnetDmz1, Template template, Vpc vpc, DomainControllerPackage dcPackage)
+        public static Instance AddRdp2(Subnet subnetDmz1, Template template, Vpc vpc, DomainControllerPackage dcPackage)
         {
             var instanceRdp2 = new Instance(subnetDmz1, InstanceTypes.T2Nano, "ami-e4034a8e", OperatingSystem.Windows);
 
@@ -583,11 +583,15 @@ namespace AWS.CloudFormation.Test
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
 
             instanceRdp2.AddSecurityGroup(rdp);
-
-
             instanceRdp2.AddElasticIp();
 
-            instanceRdp2.AddSecurityGroup(dcPackage.DomainMemberSecurityGroup);
+            if (dcPackage != null)
+            {
+                instanceRdp2.AddSecurityGroup(dcPackage.DomainMemberSecurityGroup);
+            }
+
+
+            return instanceRdp2;
         }
 
         private static LaunchConfiguration AddSql(Template template, string instanceName, InstanceTypes instanceSize, 
