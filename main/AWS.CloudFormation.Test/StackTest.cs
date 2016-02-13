@@ -1299,7 +1299,10 @@ namespace AWS.CloudFormation.Test
 
 
             dc1.Participate(tfsServer);
-            tfsServer.AddDependsOn(sqlServer4Tfs.Packages.Last().WaitCondition);
+            if (sqlServer4Tfs != null)
+            {
+                tfsServer.AddDependsOn(sqlServer4Tfs.Packages.Last().WaitCondition);
+            }
 
             var chefNode = tfsServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
