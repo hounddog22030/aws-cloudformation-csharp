@@ -1311,10 +1311,10 @@ namespace AWS.CloudFormation.Test
 
                 domainAdminUserInfoNode.Add("name", new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(DomainControllerPackage.DomainAdminUsernameParameterName)));
                 domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
-                tfsServer.AddSecurityGroup(tfsServerSecurityGroup);
                 var packageTfsApplicationTier = new TeamFoundationServerApplicationTier(BucketNameSoftware, sqlServer4Tfs);
                 tfsServer.Packages.Add(packageTfsApplicationTier);
             }
+            tfsServer.AddSecurityGroup(tfsServerSecurityGroup);
 
             return tfsServer;
         }
