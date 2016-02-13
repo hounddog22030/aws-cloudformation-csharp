@@ -16,9 +16,10 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         {
 
             
-            this.ServiceName = new FnJoin(FnJoinDelimiter.Period,
-                "com.amazonaws",
+            this.ServiceName = new FnJoin(FnJoinDelimiter.None,
+                "com.amazonaws.",
                 new ReferenceProperty("AWS::Region"),
+                ".",
                 serviceName);
             this.Vpc = vpc;
             this.RouteTableIds.Add(new ReferenceProperty(routeTableForSubnetsToNat1.LogicalId));

@@ -82,7 +82,7 @@ namespace AWS.CloudFormation.Test.Resource.EC2
 
         private Template GetEndpointTemplate(string nameBase)
         {
-            var template = new Template(StackTest.KeyPairName,$"Vpc{nameBase}",StackTest.CidrVpc);
+            var template = new Template(StackTest.KeyPairName,$"Vpc{nameBase}",StackTest.CidrVpc, "Vpc Description");
 
             var password = "a1111sdjfkAAAA";
 
@@ -102,29 +102,34 @@ namespace AWS.CloudFormation.Test.Resource.EC2
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd871hdj11", "Password for Master User For RDS SqlServer") { NoEcho = true });
 
-
-
-
             var vpc = template.Vpcs.Last();
-            RouteTable routeTableForSubnetsToNat1 = new RouteTable(vpc);
-            template.Resources.Add($"RouteTable1", routeTableForSubnetsToNat1);
 
-            Route routeForSubnetDomainController1ToVpcEndpoint = new Route("0.0.0.0/0", routeTableForSubnetsToNat1);
-            template.Resources.Add("routeForSubnetDomainController1ToVpcEndpoint", routeForSubnetDomainController1ToVpcEndpoint);
+            RouteTable routeTableForDomainControllerSubnet = new RouteTable(vpc);
+            template.Resources.Add($"RouteTable1", routeTableForDomainControllerSubnet);
+            
 
-
-            VpcEndpoint endpoint = new VpcEndpoint("s3",template.Vpcs.First(), routeTableForSubnetsToNat1);
+            VpcEndpoint endpoint = new VpcEndpoint("s3",template.Vpcs.First(), routeTableForDomainControllerSubnet);
             template.Resources.Add($"VpcEndpoint4{nameBase}",endpoint);
 
-            Subnet subnetDomainController1 = StackTest.AddSubnet4DomainController(vpc, null, null, template);
+            //Route routeForSubnetDomainController1ToVpcEndpoint = new Route("0.0.0.0/0", routeTableForSubnetsToNat1)
+            //{
+            //    Gateway = endpoint
+            //};
+            //routeForSubnetDomainController1ToVpcEndpoint.DependsOn.Add(endpoint.LogicalId);
+
+            //template.Resources.Add("routeForSubnetDomainController1ToVpcEndpoint", routeForSubnetDomainController1ToVpcEndpoint);
+
+            Subnet subnetDomainController1 = StackTest.AddSubnet4DomainController(vpc, routeTableForDomainControllerSubnet, null, template);
+            //SubnetRouteTableAssociation srta = new SubnetRouteTableAssociation(subnetDomainController1,routeTableForSubnetsToNat1);
+            //template.Resources.Add("srta", srta);
 
 
-            Instance instanceDomainController = new Instance(subnetDomainController1, InstanceTypes.T2Micro, StackTest.UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
+            Instance instanceDomainController = new Instance(subnetDomainController1, InstanceTypes.T2Nano, StackTest.UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
             template.Resources.Add("DomainController", instanceDomainController);
             var dcPackage = new DomainControllerPackage(subnetDomainController1);
             instanceDomainController.Packages.Add(dcPackage);
 
-            var DMZSubnet = new Subnet(vpc, StackTest.CidrDmz1, AvailabilityZone.UsEast1A, true);
+            var DMZSubnet = new Subnet(vpc, StackTest.CidrDmz1, AvailabilityZone.UsEast1A, false);
             template.Resources.Add("DMZSubnet", DMZSubnet);
             StackTest.AddRdp2(DMZSubnet, template, vpc, dcPackage);
 

@@ -12,8 +12,11 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         public Route(InternetGateway gateway, string destinationCidrBlock, RouteTable routeTable)
             : this(destinationCidrBlock, routeTable)
         {
-            Gateway = gateway;
-            this.DependsOn.Add(Gateway.LogicalId);
+            if (gateway != null)
+            {
+                Gateway = gateway;
+                this.DependsOn.Add(gateway.LogicalId);
+            }
         }
 
         public Route(string destinationCidrBlock, RouteTable routeTable) : base(ResourceType.AwsEc2Route)
@@ -43,11 +46,11 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         }
 
         [JsonIgnore]
-        public InternetGateway Gateway
+        public object Gateway
         {
             get
             {
-                return this.Properties.GetValue<InternetGateway>();
+                return this.Properties.GetValue<object>();
             }
             set
             {

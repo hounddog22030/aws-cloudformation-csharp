@@ -573,7 +573,7 @@ namespace AWS.CloudFormation.Test
 
         public static void AddRdp2(Subnet subnetDmz1, Template template, Vpc vpc, DomainControllerPackage dcPackage)
         {
-            var instanceRdp2 = new Instance(subnetDmz1, InstanceTypes.T2Micro, "ami-e4034a8e", OperatingSystem.Windows);
+            var instanceRdp2 = new Instance(subnetDmz1, InstanceTypes.T2Nano, "ami-e4034a8e", OperatingSystem.Windows);
 
             template.Resources.Add("rdp2", instanceRdp2);
 

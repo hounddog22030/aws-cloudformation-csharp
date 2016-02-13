@@ -19,7 +19,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             // C:\Users\Administrator\AppData\Local\Microsoft\Windows\INetCache\IE\NCO3L2C4\JetBrains.ReSharperUltimate.10.0.2.exe /VsVersion=14 /SpecificProductNames=ReSharper /Silent=True /PerMachine=True 
 
             this.Config.Files.Add("c:/cfn/scripts/ReSharperUltimate.10.0.2.exe")
-                .Add("source", "https://download.jetbrains.com/resharper/JetBrains.ReSharperUltimate.10.0.2.exe");
+                .Add("source", "https://s3.amazonaws.com/gtbb/JetBrains.ReSharperUltimate.10.0.2.exe");
             this.Config.Commands.AddCommand<Command>("InstallResharper").Command =
                 "c:/cfn/scripts/ReSharperUltimate.10.0.2.exe /VsVersion=14 /SpecificProductNames=ReSharper /Silent=True /PerMachine=True";
         }
