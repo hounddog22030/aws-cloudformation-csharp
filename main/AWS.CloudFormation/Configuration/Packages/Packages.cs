@@ -288,15 +288,15 @@ namespace AWS.CloudFormation.Configuration.Packages
             //const string AddNetworkLocalPath = "c:/cfn/scripts/add-network-to-sysadmin.ps1";
             //const string AddComputersLocalPath = "c:/cfn/scripts/add-network-to-sysadmin2.ps1";
             //const string EnableTcpLocalPath = "c:/cfn/scripts/SqlServer-EnableTcp.ps1";
-            const string SetUserToTfsService = "c:/cfn/scripts/configure-sql-4-tfs.ps1";
+            const string ConfigureSql4Tfs = "c:/cfn/scripts/configure-sql-4-tfs.ps1";
 
             base.AddToLaunchConfiguration(configuration);
 
-            var sysadminFile = this.Config.Files.GetFile(SetUserToTfsService);
-            sysadminFile.Source = "https://s3.amazonaws.com/gtbb/change-sql-account.ps1";
+            var sysadminFile = this.Config.Files.GetFile(ConfigureSql4Tfs);
+            sysadminFile.Source = "https://s3.amazonaws.com/gtbb/configure-sql-4-tfs.ps1";
             var command = this.Config.Commands.AddCommand<Command>("SetUserToTfsService");
 
-            command.Command = new PowershellFnJoin(FnJoinDelimiter.None, SetUserToTfsService,
+            command.Command = new PowershellFnJoin(FnJoinDelimiter.None, ConfigureSql4Tfs,
                 " ",
                 new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
                 " ",
