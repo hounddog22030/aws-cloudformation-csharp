@@ -1446,7 +1446,7 @@ namespace AWS.CloudFormation.Test
 
 
             var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances);
-            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "IDJP5673lwip";
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "SWCO1784eyrs";
             Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.', '-'), template);
         }
 
