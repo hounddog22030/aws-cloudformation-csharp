@@ -185,7 +185,7 @@ namespace AWS.CloudFormation.Test
 
             if (instancesToCreate.HasFlag(Create.Sql4Tfs))
             {
-                instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.C4Large, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
+                instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Small, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
                 x = instanceTfsSqlServer.Packages.Last().WaitCondition;
             }
 
