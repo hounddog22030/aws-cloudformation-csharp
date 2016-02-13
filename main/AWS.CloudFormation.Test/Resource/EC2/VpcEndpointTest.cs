@@ -129,7 +129,7 @@ namespace AWS.CloudFormation.Test.Resource.EC2
             var dcPackage = new DomainControllerPackage(subnetDomainController1);
             instanceDomainController.Packages.Add(dcPackage);
 
-            var DMZSubnet = new Subnet(vpc, StackTest.CidrDmz1, AvailabilityZone.UsEast1A, false);
+            var DMZSubnet = new Subnet(vpc, StackTest.CidrDmz1, AvailabilityZone.UsEast1A,true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
             StackTest.AddRdp2(DMZSubnet, template, vpc, dcPackage);
 
