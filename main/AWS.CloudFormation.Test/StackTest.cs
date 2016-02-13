@@ -28,9 +28,9 @@ namespace AWS.CloudFormation.Test
         public static Template GetTemplateFullStack(string topLevel, string appNameNetBiosName, Greek version, Create instancesToCreate)
         {
 
-            var password = GetPassword();
-
             var template = new Template(KeyPairName, $"Vpc{version}", CidrVpc, $"{GetGitBranch()}:{GetGitHash()}");
+
+            var password = GetPassword();
 
             var domainPassword = new ParameterBase(DomainControllerPackage.DomainAdminPasswordParameterName, "String", password, "Password for domain administrator.")
             {
@@ -323,7 +323,7 @@ namespace AWS.CloudFormation.Test
         private const string CidrSqlServer4TfsSubnet = "10.0.1.0/24";
         private const string CidrTfsServerSubnet = "10.0.2.0/24";
         private const string CidrBuildServerSubnet = "10.0.3.0/24";
-        private const string CidrWorkstationSubnet = "10.0.4.0/24";
+        public const string CidrWorkstationSubnet = "10.0.4.0/24";
         private const string CidrDatabase4BuildSubnet2 = "10.0.5.0/24";
         public const string KeyPairName = "corp.getthebuybox.com";
         public const string CidrVpc = "10.0.0.0/16";
@@ -398,7 +398,7 @@ namespace AWS.CloudFormation.Test
             return dcPackage;
         }
 
-        private static Subnet AddSubnetWorkstation(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup, Template template)
+        public static Subnet AddSubnetWorkstation(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup, Template template)
         {
             var subnetWorkstation = new Subnet(vpc, CidrWorkstationSubnet, AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
             template.Resources.Add("Subnet4Workstation", subnetWorkstation);
@@ -488,7 +488,7 @@ namespace AWS.CloudFormation.Test
             return subnetDomainController2;
         }
 
-        private static Subnet AddSubnet4DomainController(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup,
+        public static Subnet AddSubnet4DomainController(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup,
             Template template)
         {
             var subnetDomainController1 = new Subnet(vpc, CidrDomainController1Subnet, AvailabilityZone.UsEast1A, nat1,
@@ -514,7 +514,7 @@ namespace AWS.CloudFormation.Test
             return sqlServer4TfsSecurityGroup;
         }
 
-        private static SecurityGroup AddNatSecurityGroup(Vpc vpc, Template template)
+        public static SecurityGroup AddNatSecurityGroup(Vpc vpc, Template template)
         {
             SecurityGroup natSecurityGroup =
                 new SecurityGroup(
@@ -571,7 +571,7 @@ namespace AWS.CloudFormation.Test
             return output.Replace(newLine.ToString(), string.Empty);
         }
 
-        private static void AddRdp2(Subnet subnetDmz1, Template template, Vpc vpc, DomainControllerPackage dcPackage)
+        public static void AddRdp2(Subnet subnetDmz1, Template template, Vpc vpc, DomainControllerPackage dcPackage)
         {
             var instanceRdp2 = new Instance(subnetDmz1, InstanceTypes.T2Micro, "ami-e4034a8e", OperatingSystem.Windows);
 
@@ -587,8 +587,7 @@ namespace AWS.CloudFormation.Test
 
             instanceRdp2.AddElasticIp();
 
-            throw new NotImplementedException();
-            //dcPackage.AddToDomainMemberSecurityGroup(instanceRdp2);
+            instanceRdp2.AddSecurityGroup(dcPackage.DomainMemberSecurityGroup);
         }
 
         private static LaunchConfiguration AddSql(Template template, string instanceName, InstanceTypes instanceSize, 
@@ -1319,7 +1318,7 @@ namespace AWS.CloudFormation.Test
         //    SubnetRouteTableAssociation routeTableAssociation = new SubnetRouteTableAssociation(template, subnet, routeTable);
         //}
 
-        private static Instance AddNat(Template template, Subnet subnet, SecurityGroup natSecurityGroup)
+        public static Instance AddNat(Template template, Subnet subnet, SecurityGroup natSecurityGroup)
         {
             var nat = new Instance(null,InstanceTypes.T2Micro,"ami-4c9e4b24",OperatingSystem.Linux)
             {

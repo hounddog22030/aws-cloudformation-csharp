@@ -12,17 +12,21 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
     public class VpcEndpoint : ResourceBase
     {
 
-        public VpcEndpoint(string serviceName, Vpc vpc) : base(ResourceType.AwsEc2VpcEndpoint)
+        public VpcEndpoint(string serviceName, Vpc vpc, RouteTable routeTableForSubnetsToNat1) : base(ResourceType.AwsEc2VpcEndpoint)
         {
+
             
             this.ServiceName = new FnJoin(FnJoinDelimiter.Period,
                 "com.amazonaws",
                 new ReferenceProperty("AWS::Region"),
                 serviceName);
             this.Vpc = vpc;
+            this.RouteTableIds.Add(new ReferenceProperty(routeTableForSubnetsToNat1.LogicalId));
         }
 
         protected override bool SupportsTags => false;
+
+
 
         [JsonIgnore]
         public object PolicyDocument
@@ -31,9 +35,16 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             set { this.Properties.SetValue(value); }
         }
         [JsonIgnore]
-        public List<string> RouteTableIds
+        public List<object> RouteTableIds
         {
-            get { return this.Properties.GetValue<List<string>>(); }
+            get
+            {
+                if (this.Properties.GetValue<List<object>>() == null)
+                {
+                    this.RouteTableIds = new List<object>();
+                }
+                return this.Properties.GetValue<List<object>>();
+            }
             set { this.Properties.SetValue(value); }
         }
         [JsonIgnore]
