@@ -458,6 +458,10 @@ namespace AWS.CloudFormation.Configuration.Packages
             var fileName = System.IO.Path.GetFileNameWithoutExtension(msiUri.AbsolutePath).Replace(".", string.Empty).Replace("-", String.Empty);
             var msi = new CloudFormationDictionary();
             msi.Add(fileName, msiUri.AbsoluteUri);
+            var secondConfigSetName = $"ConfigSet{this.ConfigName}HttpToHttps";
+            var secondConfigName = $"Config{this.ConfigName}HttpToHttps";
+            var secondConfig = configuration.Metadata.Init.ConfigSets.GetConfigSet(secondConfigSetName).GetConfig(secondConfigName);
+            secondConfig.Packages.Add("msi", msi);
 
         }
     }
