@@ -210,6 +210,10 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         {
             get
             {
+                if (this.Properties.GetValue<List<BlockDeviceMapping>>()==null)
+                {
+                    this.BlockDeviceMappings = new List<BlockDeviceMapping>();
+                }
                 return this.Properties.GetValue<List<BlockDeviceMapping>>();
             }
             set
