@@ -1354,6 +1354,7 @@ namespace AWS.CloudFormation.Test
 
         public enum Greek
         {
+            None = 0,
             Alpha,
             Beta,
             Gamma,
@@ -1378,7 +1379,6 @@ namespace AWS.CloudFormation.Test
             Chi,
             Psi,
             Omega,
-            None = 0
         }
 
         [TestMethod]
