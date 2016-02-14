@@ -1378,7 +1378,7 @@ namespace AWS.CloudFormation.Test
             Chi,
             Psi,
             Omega,
-            None
+            None = 0
         }
 
         [TestMethod]
@@ -1388,7 +1388,7 @@ namespace AWS.CloudFormation.Test
 
             var stacks = Stack.Stack.GetActiveStacks();
 
-            Greek version = Greek.Alpha;
+            Greek version = Greek.None;
 
             foreach (var thisGreek in Enum.GetValues(typeof (Greek)))
             {
