@@ -99,7 +99,7 @@ namespace AWS.CloudFormation.Resource
         private string _logicalId;
 
         [JsonIgnore]
-        public string LogicalId
+        public virtual string LogicalId
         {
             get
             {

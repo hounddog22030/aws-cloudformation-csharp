@@ -196,8 +196,22 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             return newIngressEgress;
         }
 
-        protected override bool SupportsTags {
-            get { return true; }
+        protected override bool SupportsTags => true;
+
+        public override string LogicalId
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(base.LogicalId))
+                {
+                    this.LogicalId = $"SecurityGroup{this.GroupDescription.Replace(" ", String.Empty)}";
+                }
+                return base.LogicalId;
+            }
+            internal set
+            {
+                base.LogicalId = value;
+            }
         }
     }
 }

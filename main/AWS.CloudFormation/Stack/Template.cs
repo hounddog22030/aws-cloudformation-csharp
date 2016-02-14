@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource;
@@ -65,8 +66,20 @@ namespace AWS.CloudFormation.Stack
 
         public string Description { get; }
 
+        private string _stackName;
         [JsonIgnore]
-        public string StackName { get; set; }
+        public string StackName {
+            get { return _stackName; }
+            set
+            {
+                Regex r = new Regex("[a-zA-Z][-a-zA-Z0-9]*");
+                if (r.Match(value).Length!=value.Length)
+                {
+                    throw new ArgumentException("Value does not match [a-zA-Z][-a-zA-Z0-9]*");
+                }
+                _stackName = value;
+            }
+        }
 
         [JsonProperty(PropertyName = "AWSTemplateFormatVersion")]
         public string AwsTemplateFormatVersion { get; }

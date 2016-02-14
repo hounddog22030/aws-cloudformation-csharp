@@ -49,7 +49,7 @@ namespace AWS.CloudFormation.Stack
         }
         public static CreateStackResponse CreateStack(Template template)
         {
-            return CreateStack(template,$"Stack{Guid.NewGuid().ToString().Replace("{",string.Empty).Replace("}",string.Empty)}");
+            return CreateStack(template,template.StackName);
         }
 
         public static void UpdateStack(string stackName, Template template)
@@ -110,6 +110,11 @@ namespace AWS.CloudFormation.Stack
         }
 
         public string Name { get; }
+
+        public static void UpdateStack(Template template)
+        {
+            UpdateStack(template.StackName, template);
+        }
     }
 
     public static class MyExtensions

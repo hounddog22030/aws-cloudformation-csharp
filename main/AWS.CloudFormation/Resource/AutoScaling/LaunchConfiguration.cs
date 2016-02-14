@@ -274,6 +274,10 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         {
             get
             {
+                if (this.Properties.GetValue<CloudFormationDictionary>() == null)
+                {
+                    this.UserData=new CloudFormationDictionary();
+                }
                 return this.Properties.GetValue<CloudFormationDictionary>();
             }
             set

@@ -64,31 +64,18 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
             tempInstances.Add(new ReferenceProperty(instance));
             this.Instances = tempInstances.ToArray();
         }
-        public void AddSubnet(Subnet Subnet)
-        {
-            List<ReferenceProperty> tempSubnets = new List<ReferenceProperty>();
-            if (this.Subnets != null && this.Subnets.Length > 0)
-            {
-                tempSubnets.AddRange(this.Subnets);
-            }
-            tempSubnets.Add(new ReferenceProperty(Subnet));
-            this.Subnets = tempSubnets.ToArray();
-        }
-        public void AddListener(string loadBalancePort,string instancePort, string protocol)
-        {
-            List<Listener> tempListeners = new List<Listener>();
-            if (this.Listeners != null && this.Listeners.Length > 0)
-            {
-                tempListeners.AddRange(this.Listeners);
-            }
-            tempListeners.Add(new Listener(loadBalancePort, instancePort, protocol));
-            this.Listeners = tempListeners.ToArray();
-        }
 
         [JsonIgnore]
-        public Listener[] Listeners
+        public List<Listener> Listeners
         {
-            get { return this.Properties.GetValue<Listener[]>(); }
+            get
+            {
+                if (this.Properties.GetValue<List<Listener>>() == null)
+                {
+                    this.Listeners = new List<Listener>();
+                }
+                return this.Properties.GetValue<List<Listener>>();
+            }
             set { this.Properties.SetValue(value); }
         }
 
@@ -100,9 +87,16 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
         }
 
         [JsonIgnore]
-        public ReferenceProperty[] Subnets
+        public List<object> Subnets
         {
-            get { return this.Properties.GetValue<ReferenceProperty[]>(); }
+            get
+            {
+                if (this.Properties.GetValue<List<object>>() == null)
+                {
+                    this.Subnets = new List<object>();
+                }
+                return this.Properties.GetValue<List<object>>();
+            }
             set { this.Properties.SetValue(value); }
         }
 
@@ -115,18 +109,17 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
 
         public class Listener
         {
-            public Listener(string loadBalancerPort, string instancePort, string protocol)
+            public Listener(int loadBalancerPort, int instancePort, string protocol)
             {
                 LoadBalancerPort = loadBalancerPort;
                 InstancePort = instancePort;
                 Protocol = protocol;
             }
 
-            public string LoadBalancerPort { get; }
-            public string InstancePort { get; }
+            public int LoadBalancerPort { get; }
+            public int InstancePort { get; }
             public string Protocol { get; }
-
-
+            public string SSLCertificateId { get; set; }
         }
 
         protected override bool SupportsTags {
