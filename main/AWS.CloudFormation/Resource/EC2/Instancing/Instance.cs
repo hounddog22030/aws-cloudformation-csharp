@@ -25,7 +25,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             OperatingSystem operatingSystem, Ebs.VolumeTypes volumeType, int volumeSize)
             : this(subnet, instanceType, imageId, operatingSystem)
         {
-            this.AddDisk(volumeType, volumeSize, this.GetRootDeviceId());
+            this.AddDisk(volumeType, volumeSize, this.GetRootDeviceId(),true);
         }
         public Instance(Subnet subnet, InstanceTypes instanceType, string imageId,
             OperatingSystem operatingSystem, Volume rootVolume)
