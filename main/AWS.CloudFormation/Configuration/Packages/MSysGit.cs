@@ -26,7 +26,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 .Add("source", $"https://s3.amazonaws.com/{this.BucketName}/software/{fileName}");
 
 
-            this.Config.Commands.AddCommand<Command>(fileName.Replace('.','x')).Command = $"{filePath} /silent";
+            this.Config.Commands.AddCommand<Command>(fileName.Replace('.','-')).Command = $"{filePath} /silent";
         }
     }
 }

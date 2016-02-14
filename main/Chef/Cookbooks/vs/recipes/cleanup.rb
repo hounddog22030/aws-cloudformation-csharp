@@ -13,5 +13,5 @@ dirToDelete = 'c:/users/default/AppData'
 directory "#{dirToDelete}" do
 	recursive true
 	action :delete
-	only_if { File.exist?("#{dirToDelete}") }
+	only_if { ::File.directory?(dirToDelete) }
 end
