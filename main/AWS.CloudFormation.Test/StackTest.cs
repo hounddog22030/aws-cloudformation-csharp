@@ -331,8 +331,8 @@ namespace AWS.CloudFormation.Test
         private const string CidrDatabase4BuildSubnet2 = "10.0.5.0/24";
         public const string KeyPairName = "corp.getthebuybox.com";
         public const string CidrVpc = "10.0.0.0/16";
-        public const string UsEastWindows2012R2Ami = " ami-40f0d32a";
-        private const string UsEastWindows2012R2SqlServerExpressAmi = " ami-25f6d54f";
+        public const string UsEastWindows2012R2Ami = "ami-40f0d32a";
+        private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-25f6d54f";
         private const string BucketNameSoftware = "gtbb";
 
         public static Template GetTemplateWithParameters()
