@@ -77,7 +77,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this.Instance,
                     this.Instance.GetAvailableDevice());
                 blockDeviceMapping.Ebs.SnapshotId = this.SnapshotId;
-                this.Instance.AddBlockDeviceMapping(blockDeviceMapping);
+                this.Instance.BlockDeviceMappings.Add(blockDeviceMapping);
             }
             if (this.Msi != null)
             {

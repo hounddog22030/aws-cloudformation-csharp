@@ -111,7 +111,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         public ObservableCollection<PackageBase<ConfigSet>> Packages { get; }
 
         public BlockDeviceMapping AddDisk(Ebs.VolumeTypes ec2DiskType,
-            int sizeInGigabytes,
+            uint sizeInGigabytes,
             bool deleteOnTermination)
         {
             return this.AddDisk(ec2DiskType, sizeInGigabytes, this.GetAvailableDevice(), deleteOnTermination);
@@ -119,19 +119,18 @@ namespace AWS.CloudFormation.Resource.AutoScaling
 
 
         public BlockDeviceMapping AddDisk(Ebs.VolumeTypes ec2DiskType, 
-            int sizeInGigabytes, 
+            uint sizeInGigabytes, 
             string deviceId, 
             bool deleteOnTermination)
         {
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this, deviceId);
-
             blockDeviceMapping.Ebs.VolumeSize = sizeInGigabytes;
             blockDeviceMapping.Ebs.VolumeType = ec2DiskType;
             blockDeviceMapping.Ebs.DeleteOnTermination = deleteOnTermination;
-            this.AddBlockDeviceMapping(blockDeviceMapping);
+            this.BlockDeviceMappings.Add(blockDeviceMapping);
             return blockDeviceMapping;
         }
-        public BlockDeviceMapping AddDisk(Ebs.VolumeTypes ec2DiskType, int sizeInGigabytes)
+        public BlockDeviceMapping AddDisk(Ebs.VolumeTypes ec2DiskType, uint sizeInGigabytes)
         {
             return AddDisk(ec2DiskType,sizeInGigabytes,this.GetAvailableDevice(),true);
         }
@@ -207,6 +206,19 @@ namespace AWS.CloudFormation.Resource.AutoScaling
 
 
         [JsonIgnore]
+        public List<BlockDeviceMapping> BlockDeviceMappings
+        {
+            get
+            {
+                return this.Properties.GetValue<List<BlockDeviceMapping>>();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
+            }
+        }
+
+        [JsonIgnore]
         public InstanceTypes InstanceType
         {
             get
@@ -232,44 +244,12 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             }
         }
 
-        [JsonIgnore]
-        public CloudFormationDictionary[] BlockDeviceMappings
-        {
-            get
-            {
-                return this.Properties.GetValue<CloudFormationDictionary[]>();
-            }
-            set
-            {
-                this.Properties.SetValue(value);
-            }
-        }
         public void AddBlockDeviceMapping(string deviceName, uint volumeSize, Ebs.VolumeTypes volumeType)
         {
-            var tempBlockDeviceMapping = new List<CloudFormationDictionary>();
-            if (this.BlockDeviceMappings != null)
-            {
-                tempBlockDeviceMapping.AddRange(this.BlockDeviceMappings);
-            }
-            var c = new CloudFormationDictionary();
-            c.Add("DeviceName", deviceName);
-            var ebs = c.Add("Ebs");
-            ebs.Add("VolumeSize", volumeSize.ToString());
-            ebs.Add("VolumeType", volumeType);
-            tempBlockDeviceMapping.Add(c);
-            this.BlockDeviceMappings = tempBlockDeviceMapping.ToArray();
-        }
-
-        public void AddBlockDeviceMapping(BlockDeviceMapping blockDeviceMapping)
-        {
-            var tempBlockDeviceMapping = new List<CloudFormationDictionary>();
-
-            if (this.BlockDeviceMappings != null)
-            {
-                tempBlockDeviceMapping.AddRange(this.BlockDeviceMappings);
-            }
-            tempBlockDeviceMapping.Add(blockDeviceMapping);
-            this.BlockDeviceMappings = tempBlockDeviceMapping.ToArray();
+            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this, deviceName);
+            blockDeviceMapping.Ebs.VolumeSize = volumeSize;
+            blockDeviceMapping.Ebs.VolumeType = volumeType;
+            this.BlockDeviceMappings.Add(blockDeviceMapping);
         }
 
         [JsonIgnore]
