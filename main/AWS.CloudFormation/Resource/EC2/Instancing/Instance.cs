@@ -22,27 +22,11 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
     {
 
         public Instance(Subnet subnet, InstanceTypes instanceType, string imageId,
-            OperatingSystem operatingSystem, Ebs.VolumeTypes volumeType, int volumeSize)
+            OperatingSystem operatingSystem, Ebs.VolumeTypes volumeType, uint volumeSize)
             : this(subnet, instanceType, imageId, operatingSystem)
         {
-            this.AddDisk(volumeType, volumeSize, this.GetRootDeviceId());
+            this.AddDisk(volumeType, volumeSize, this.GetRootDeviceId(),true);
         }
-        public Instance(Subnet subnet, InstanceTypes instanceType, string imageId,
-            OperatingSystem operatingSystem, Volume rootVolume)
-            : this(subnet, instanceType, imageId, operatingSystem)
-        {
-            rootVolume.AttachmentType=VolumeAttachmentType.Root;
-            if (string.IsNullOrEmpty(rootVolume.LogicalId))
-            {
-                rootVolume.LogicalId = $"Volume{this.LogicalId}Root";
-            }
-            this.VolumesToAttach.Add(rootVolume);
-
-            BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(this, this.RootDeviceId,true);
-            
-            this.AddBlockDeviceMapping(blockDeviceMapping);
-        }
-
         private string GetRootDeviceId()
         {
             switch (OperatingSystem)

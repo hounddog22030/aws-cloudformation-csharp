@@ -142,6 +142,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Scripts\configure-sql-4-tfs.ps1" />
     <None Include="Scripts\add-network-to-sysadmin2.ps1" />
     <None Include="Scripts\CreateWindowsShare.ps1" />
     <None Include="Scripts\add-network-to-sysadmin.ps1" />

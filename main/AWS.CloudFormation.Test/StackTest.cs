@@ -131,7 +131,8 @@ namespace AWS.CloudFormation.Test
             securityGroupSqlSever4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MsSqlServer);
             securityGroupDb4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MySql);
 
-            Instance instanceDomainController = new Instance(subnetDomainController1, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
+            Instance instanceDomainController = new Instance(subnetDomainController1, InstanceTypes.C4Large, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
+            instanceDomainController.BlockDeviceMappings.First().Ebs.DeleteOnTermination = false;
             template.Resources.Add("DomainController", instanceDomainController);
             instanceDomainController.DependsOn.Add(nat1.LogicalId);
 
@@ -175,7 +176,7 @@ namespace AWS.CloudFormation.Test
 
             AddDhcpOptions(elements, netBiosServersElements, vpc, template);
 
-            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
+            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.C4Large, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
             template.Resources.Add($"Rdp", instanceRdp);
             dcPackage.Participate(instanceRdp);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
@@ -185,7 +186,7 @@ namespace AWS.CloudFormation.Test
 
             if (instancesToCreate.HasFlag(Create.Sql4Tfs))
             {
-                instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Micro, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
+                instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.C4Large, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
                 x = instanceTfsSqlServer.Packages.Last().WaitCondition;
             }
 
@@ -195,7 +196,11 @@ namespace AWS.CloudFormation.Test
             if (instancesToCreate.HasFlag(Create.Tfs))
             {
                 tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
-                tfsApplicationTierInstalled = tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().First().WaitCondition;
+                var package =  tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().FirstOrDefault();
+                if (package != null)
+                {
+                    tfsApplicationTierInstalled = package.WaitCondition;
+                }
             }
 
             DbSubnetGroup subnetGroupSqlExpress4Build = new DbSubnetGroup("DbSubnet Group for SQL Server database for build server");
@@ -245,7 +250,7 @@ namespace AWS.CloudFormation.Test
                 rdsSqlExpress4Build.AddVpcSecurityGroup(securityGroupSqlSever4Build);
             }
 
-            if (instancesToCreate.HasFlag(Create.Build))
+            if (instancesToCreate.HasFlag(Create.Tfs) && instancesToCreate.HasFlag(Create.Build))
             {
                 var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer,
                  tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
@@ -272,7 +277,7 @@ namespace AWS.CloudFormation.Test
                 backupServer.AddSecurityGroup(backupServerSecurityGroup);
                 template.Resources.Add("BackupServer", backupServer);
                 dcPackage.Participate(backupServer);
-                backupServer.AddDisk(Ebs.VolumeTypes.Magnetic, 60);
+                backupServer.AddDisk(Ebs.VolumeTypes.Magnetic, 60, false);
                 backupServer.Packages.Add(new WindowsShare(
                     "d:/backups",
                     "backups", 
@@ -327,8 +332,8 @@ namespace AWS.CloudFormation.Test
         private const string CidrDatabase4BuildSubnet2 = "10.0.5.0/24";
         public const string KeyPairName = "corp.getthebuybox.com";
         public const string CidrVpc = "10.0.0.0/16";
-        public const string UsEastWindows2012R2Ami = "ami-9a0558f0";
-        private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-a3005dc9";
+        public const string UsEastWindows2012R2Ami = "ami-40f0d32a";
+        private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-25f6d54f";
         private const string BucketNameSoftware = "gtbb";
 
         public static Template GetTemplateWithParameters()
@@ -361,7 +366,7 @@ namespace AWS.CloudFormation.Test
             SqlServer4Build = Build *2,
             MySql4Build = SqlServer4Build * 2,
             BackupServer = MySql4Build * 2,
-            Workstation = BackupServer,
+            Workstation = BackupServer * 2,
             FullStack = int.MaxValue
         }
 
@@ -606,7 +611,7 @@ namespace AWS.CloudFormation.Test
         private static Instance AddDomainController(Template template, Subnet subnet)
         {
             //"ami-805d79ea",
-            var DomainController = new Instance(subnet,InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows);
+            var DomainController = new Instance(subnet,InstanceTypes.C4Large, UsEastWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add("DomainController", DomainController);
 
             return DomainController;
@@ -733,10 +738,8 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
-            Volume rootVolume = new Volume(50);
-            template.Resources.Add("VolumeTestRoot", rootVolume);
+            Instance w = new Instance(DMZSubnet,InstanceTypes.T2Large, UsEastWindows2012R2Ami,OperatingSystem.Windows,Ebs.VolumeTypes.GeneralPurpose, 50);
 
-            Instance w = new Instance(DMZSubnet,InstanceTypes.T2Large, UsEastWindows2012R2Ami,OperatingSystem.Windows,rootVolume);
             template.Resources.Add("workstation",w);
             w.AddSecurityGroup(rdp);
             w.AddElasticIp();
@@ -763,15 +766,15 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add(w.LogicalId,w);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "/dev/xvdf");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
-            w.AddBlockDeviceMapping(blockDeviceMapping);
+            w.BlockDeviceMappings.Add(blockDeviceMapping);
 
             blockDeviceMapping = new BlockDeviceMapping(w, "/dev/xvdg");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
-            w.AddBlockDeviceMapping(blockDeviceMapping);
+            w.BlockDeviceMappings.Add(blockDeviceMapping);
 
             blockDeviceMapping = new BlockDeviceMapping(w, "/dev/xvdh");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
-            w.AddBlockDeviceMapping(blockDeviceMapping);
+            w.BlockDeviceMappings.Add(blockDeviceMapping);
             w.AddSecurityGroup(rdp);
 
             w.AddElasticIp();
@@ -795,16 +798,16 @@ namespace AWS.CloudFormation.Test
 
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "xvdf");
             blockDeviceMapping.Ebs.SnapshotId = "snap-87e3eb87";
-            w.AddBlockDeviceMapping(blockDeviceMapping);
+            w.BlockDeviceMappings.Add(blockDeviceMapping);
 
             blockDeviceMapping = new BlockDeviceMapping(w, "xvdg");
             blockDeviceMapping.Ebs.SnapshotId = "snap-5e27a85a";
-            w.AddBlockDeviceMapping(blockDeviceMapping);
+            w.BlockDeviceMappings.Add(blockDeviceMapping);
 
             blockDeviceMapping = new BlockDeviceMapping(w, "xvdh");
             blockDeviceMapping.Ebs.SnapshotId = "snap-4e69d94b";
-            w.AddBlockDeviceMapping(blockDeviceMapping);
-            throw new NotImplementedException();
+            w.BlockDeviceMappings.Add(blockDeviceMapping);
+
             //w.AddChefExec(BucketNameSoftware, "MountDrives.tar.gz", "MountDrives");
             //w.AddSecurityGroup(rdp);
             //w.AddElasticIp();
@@ -1036,7 +1039,7 @@ namespace AWS.CloudFormation.Test
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
             blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.GeneralPurpose;
             blockDeviceMapping.Ebs.VolumeSize = 30;
-            workstation.AddBlockDeviceMapping(blockDeviceMapping);
+            workstation.BlockDeviceMappings.Add(blockDeviceMapping);
             workstation.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 6);
 
 
@@ -1135,7 +1138,7 @@ namespace AWS.CloudFormation.Test
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
             blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.GeneralPurpose;
             blockDeviceMapping.Ebs.VolumeSize = 30;
-            workstation.AddBlockDeviceMapping(blockDeviceMapping);
+            workstation.BlockDeviceMappings.Add(blockDeviceMapping);
             workstation.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 6);
             workstation.AddElasticIp();
 
@@ -1186,15 +1189,15 @@ namespace AWS.CloudFormation.Test
 
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "xvdf");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
-            w.AddBlockDeviceMapping(blockDeviceMapping);
+            w.BlockDeviceMappings.Add(blockDeviceMapping);
 
             blockDeviceMapping = new BlockDeviceMapping(w, "xvdg");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
-            w.AddBlockDeviceMapping(blockDeviceMapping);
+            w.BlockDeviceMappings.Add(blockDeviceMapping);
 
             blockDeviceMapping = new BlockDeviceMapping(w, "xvdh");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
-            w.AddBlockDeviceMapping(blockDeviceMapping);
+            w.BlockDeviceMappings.Add(blockDeviceMapping);
             throw new NotImplementedException();
             //w.AddChefExec(BucketNameSoftware, "MountDrives.tar.gz", "MountDrives");
 
@@ -1299,16 +1302,19 @@ namespace AWS.CloudFormation.Test
 
 
             dc1.Participate(tfsServer);
-            tfsServer.AddDependsOn(sqlServer4Tfs.Packages.Last().WaitCondition);
+            if (sqlServer4Tfs != null)
+            {
+                tfsServer.AddDependsOn(sqlServer4Tfs.Packages.Last().WaitCondition);
+                var chefNode = tfsServer.GetChefNodeJsonContent();
+                var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
 
-            var chefNode = tfsServer.GetChefNodeJsonContent();
-            var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
-
-            domainAdminUserInfoNode.Add("name", new FnJoin( FnJoinDelimiter.None, new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(DomainControllerPackage.DomainAdminUsernameParameterName)));
-            domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
+                domainAdminUserInfoNode.Add("name", new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(DomainControllerPackage.DomainAdminUsernameParameterName)));
+                domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
+                var packageTfsApplicationTier = new TeamFoundationServerApplicationTier(BucketNameSoftware, sqlServer4Tfs);
+                tfsServer.Packages.Add(packageTfsApplicationTier);
+            }
             tfsServer.AddSecurityGroup(tfsServerSecurityGroup);
-            var packageTfsApplicationTier = new TeamFoundationServerApplicationTier(BucketNameSoftware,sqlServer4Tfs);
-            tfsServer.Packages.Add(packageTfsApplicationTier);
+
             return tfsServer;
         }
 
@@ -1347,6 +1353,7 @@ namespace AWS.CloudFormation.Test
 
         public enum Greek
         {
+            None = 0,
             Alpha,
             Beta,
             Gamma,
@@ -1371,7 +1378,6 @@ namespace AWS.CloudFormation.Test
             Chi,
             Psi,
             Omega,
-            None
         }
 
         [TestMethod]
@@ -1381,7 +1387,7 @@ namespace AWS.CloudFormation.Test
 
             var stacks = Stack.Stack.GetActiveStacks();
 
-            Greek version = Greek.Alpha;
+            Greek version = Greek.None;
 
             foreach (var thisGreek in Enum.GetValues(typeof (Greek)))
             {
@@ -1401,8 +1407,8 @@ namespace AWS.CloudFormation.Test
             var appName = "dev";
 
             //Create instances = Create.Dc2 | Create.BackupServer | Create.Rdp1;
-            //Create instances = Create.FullStack;
-            Create instances = (Create)0;
+            Create instances = Create.FullStack;
+            //Create instances = (Create)0;
             var templateToCreateStack = GetTemplateFullStack(topLevel, appName, version, instances);
             templateToCreateStack.StackName = $"{version}-{appName}-{topLevel}".Replace('.','-');
 
@@ -1423,22 +1429,24 @@ namespace AWS.CloudFormation.Test
         {
             Assert.IsFalse(HasGitDifferences());
 
-            Greek version = Greek.Upsilon;
+            Greek version = Greek.Alpha;
 
             var fullyQualifiedDomainName = $"{version}.dev.yadayadasoftware.com";
 
             //colors &= ~Blah.BLUE;
 
             Create instances = Create.FullStack;
-            //instances = Create.Dc2 | Create.Sql4Tfs | Create.Workstation | Create.BackupServer | Create.Rdp1 | Create.Tfs;
             instances = (Create)0;
+            //instances = Create.Dc2 | Create.Sql4Tfs | Create.Workstation | Create.BackupServer | Create.Rdp1 | Create.Tfs;
             //instances = Create.Dc2 | Create.Workstation | Create.BackupServer | Create.Rdp1;
-            instances = Create.Dc2 | Create.Sql4Tfs | Create.BackupServer | Create.Tfs | Create.Build;
+            //instances = Create.Dc2 | Create.BackupServer | Create.Build | Create.Workstation | Create.Sql4Tfs | Create.Tfs;
+            //instances = Create.BackupServer | Create.Sql4Tfs | Create.Tfs;
             //            Create.Workstation;
+            instances = Create.BackupServer;
 
 
             var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances);
-            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "PUKI1388rbex";
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "UNTG3074khss";
             Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.', '-'), template);
         }
 
