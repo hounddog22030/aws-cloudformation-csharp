@@ -450,5 +450,15 @@ namespace AWS.CloudFormation.Configuration.Packages
         {
             this.SnapshotId = string.Empty;
         }
+
+        public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
+        {
+            base.AddToLaunchConfiguration(configuration);
+            var msiUri = new Uri($"https://s3.amazonaws.com/{BucketName}/software/WebDeploy_amd64_en-US.msi");
+            var fileName = System.IO.Path.GetFileNameWithoutExtension(msiUri.AbsolutePath).Replace(".", string.Empty).Replace("-", String.Empty);
+            var msi = new CloudFormationDictionary();
+            msi.Add(fileName, msiUri.AbsoluteUri);
+
+        }
     }
 }

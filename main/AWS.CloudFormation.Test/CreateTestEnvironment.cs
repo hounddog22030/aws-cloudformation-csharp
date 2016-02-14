@@ -35,7 +35,11 @@ namespace AWS.CloudFormation.Test
             foreach (var stack in stacks)
             {
                 var stackVersionString = stack.Split('-')[0];
-                maxVersion = (StackTest.Greek)System.Enum.Parse(typeof(StackTest.Greek), stackVersionString, true);
+                var thisVersion = (StackTest.Greek)System.Enum.Parse(typeof(StackTest.Greek), stackVersionString, true);
+                if (thisVersion > maxVersion)
+                {
+                    maxVersion = thisVersion;
+                }
             }
             maxVersion++;
             var name = $"{maxVersion}.{baseName}";
@@ -83,7 +87,7 @@ namespace AWS.CloudFormation.Test
             loadBalancer.SecurityGroups.Add(securityGroupLoadBalancer);
 
             LoadBalancer.Listener listenerHttps = new LoadBalancer.Listener((int)Ports.Ssl, (int)Ports.Http, "https");
-            listenerHttps.SSLCertificateId = "arn:aws:acm:us-east-1:570182474766:certificate/c3a2dd9a-8140-442a-a20d-0f6865d7f526";
+            listenerHttps.SSLCertificateId = "arn:aws:acm:us-east-1:570182474766:certificate/8a2fbdad-509f-46ae-ba78-f510f0a944ee";
             loadBalancer.Instances.Add(new ReferenceProperty(instanceWebServer));
             loadBalancer.Listeners.Add(listenerHttps);
 
