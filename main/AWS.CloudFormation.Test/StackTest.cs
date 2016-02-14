@@ -276,7 +276,7 @@ namespace AWS.CloudFormation.Test
                 backupServer.AddSecurityGroup(backupServerSecurityGroup);
                 template.Resources.Add("BackupServer", backupServer);
                 dcPackage.Participate(backupServer);
-                backupServer.AddDisk(Ebs.VolumeTypes.Magnetic, 60);
+                backupServer.AddDisk(Ebs.VolumeTypes.Magnetic, 60, false);
                 backupServer.Packages.Add(new WindowsShare(
                     "d:/backups",
                     "backups", 
@@ -1430,13 +1430,14 @@ namespace AWS.CloudFormation.Test
         {
             Assert.IsFalse(HasGitDifferences());
 
-            Greek version = Greek.Omega;
+            Greek version = Greek.Alpha;
 
             var fullyQualifiedDomainName = $"{version}.dev.yadayadasoftware.com";
 
             //colors &= ~Blah.BLUE;
 
             Create instances = Create.FullStack;
+            instances = Create.BackupServer;
             //instances = Create.Dc2 | Create.Sql4Tfs | Create.Workstation | Create.BackupServer | Create.Rdp1 | Create.Tfs;
             //instances = Create.Dc2 | Create.Workstation | Create.BackupServer | Create.Rdp1;
             //instances = Create.Dc2 | Create.BackupServer | Create.Build | Create.Workstation | Create.Sql4Tfs | Create.Tfs;
@@ -1445,7 +1446,7 @@ namespace AWS.CloudFormation.Test
 
 
             var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances);
-            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "SWCO1784eyrs";
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "UNTG3074khss";
             Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.', '-'), template);
         }
 
