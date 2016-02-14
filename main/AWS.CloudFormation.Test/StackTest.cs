@@ -84,6 +84,7 @@ namespace AWS.CloudFormation.Test
                 subnetDomainController2 = AddSubnet4DomainController2(vpc, routeTableForSubnetsToNat2, natSecurityGroup, template);
 
 
+
                 Route routeForAz2 = new Route(Template.CidrIpTheWorld, routeTableForSubnetsToNat2);
                 template.Resources.Add($"RouteForAz2", routeForAz2);
                 routeForAz2.DestinationCidrBlock = "0.0.0.0/0";
@@ -156,6 +157,7 @@ namespace AWS.CloudFormation.Test
                 instanceDomainController2.DependsOn.Add(nat2.LogicalId);
                 dcPackage.Participate(instanceDomainController2);
                 dc2PrivateIp = new FnGetAtt(instanceDomainController2, FnGetAttAttribute.AwsEc2InstancePrivateIp);
+                dcPackage.AddReplicationSite(subnetDomainController2, true);
                 dcPackage.MakeSecondaryDomainController(instanceDomainController2);
             }
 
@@ -394,7 +396,7 @@ namespace AWS.CloudFormation.Test
             instanceDomainController.Packages.Add(new Chrome());
 
             dcPackage.AddReplicationSite(subnetDmz1,false);
-            dcPackage.AddReplicationSite(subnetDmz2, true);
+            dcPackage.AddReplicationSite(subnetDmz2, false);
             dcPackage.AddReplicationSite(subnetSqlServer4Tfs, false);
             dcPackage.AddReplicationSite(subnetTfsServer, false);
             dcPackage.AddReplicationSite(subnetBuildServer, false);
