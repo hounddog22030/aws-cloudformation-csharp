@@ -131,7 +131,7 @@ namespace AWS.CloudFormation.Test
             securityGroupSqlSever4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MsSqlServer);
             securityGroupDb4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MySql);
 
-            Instance instanceDomainController = new Instance(subnetDomainController1, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
+            Instance instanceDomainController = new Instance(subnetDomainController1, InstanceTypes.C4Large, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
             template.Resources.Add("DomainController", instanceDomainController);
             instanceDomainController.DependsOn.Add(nat1.LogicalId);
 
@@ -175,7 +175,7 @@ namespace AWS.CloudFormation.Test
 
             AddDhcpOptions(elements, netBiosServersElements, vpc, template);
 
-            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
+            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.C4Large, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
             template.Resources.Add($"Rdp", instanceRdp);
             dcPackage.Participate(instanceRdp);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
@@ -185,7 +185,7 @@ namespace AWS.CloudFormation.Test
 
             if (instancesToCreate.HasFlag(Create.Sql4Tfs))
             {
-                instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Small, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
+                instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.C4Large, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
                 x = instanceTfsSqlServer.Packages.Last().WaitCondition;
             }
 
@@ -331,8 +331,8 @@ namespace AWS.CloudFormation.Test
         private const string CidrDatabase4BuildSubnet2 = "10.0.5.0/24";
         public const string KeyPairName = "corp.getthebuybox.com";
         public const string CidrVpc = "10.0.0.0/16";
-        public const string UsEastWindows2012R2Ami = "ami-9a0558f0";
-        private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-a3005dc9";
+        public const string UsEastWindows2012R2Ami = " ami-40f0d32a";
+        private const string UsEastWindows2012R2SqlServerExpressAmi = " ami-25f6d54f";
         private const string BucketNameSoftware = "gtbb";
 
         public static Template GetTemplateWithParameters()
@@ -610,7 +610,7 @@ namespace AWS.CloudFormation.Test
         private static Instance AddDomainController(Template template, Subnet subnet)
         {
             //"ami-805d79ea",
-            var DomainController = new Instance(subnet,InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows);
+            var DomainController = new Instance(subnet,InstanceTypes.C4Large, UsEastWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add("DomainController", DomainController);
 
             return DomainController;
@@ -1438,7 +1438,6 @@ namespace AWS.CloudFormation.Test
 
             Create instances = Create.FullStack;
             //instances = Create.Dc2 | Create.Sql4Tfs | Create.Workstation | Create.BackupServer | Create.Rdp1 | Create.Tfs;
-            instances = (Create)0;
             //instances = Create.Dc2 | Create.Workstation | Create.BackupServer | Create.Rdp1;
             //instances = Create.Dc2 | Create.BackupServer | Create.Build | Create.Workstation | Create.Sql4Tfs | Create.Tfs;
             //instances = Create.BackupServer | Create.Sql4Tfs | Create.Tfs;
