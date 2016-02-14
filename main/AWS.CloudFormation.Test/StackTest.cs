@@ -132,6 +132,7 @@ namespace AWS.CloudFormation.Test
             securityGroupDb4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MySql);
 
             Instance instanceDomainController = new Instance(subnetDomainController1, InstanceTypes.C4Large, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
+            instanceDomainController.BlockDeviceMappings.First().Ebs.DeleteOnTermination = false;
             template.Resources.Add("DomainController", instanceDomainController);
             instanceDomainController.DependsOn.Add(nat1.LogicalId);
 
