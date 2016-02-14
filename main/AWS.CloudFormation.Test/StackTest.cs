@@ -1424,7 +1424,7 @@ namespace AWS.CloudFormation.Test
         public void CreateDevelopmentTemplateFileTest()
         {
             //DomainDnsName = $"alpha.dev.yadayadasoftware.com";
-            var templateToCreateStack = GetTemplateFullStack("yadayadasoftware.com", "dev", Greek.Theta, Create.FullStack);
+            var templateToCreateStack = GetTemplateFullStack("yadayadasoftware.com", "dev", Greek.Alpha,Create.FullStack);
             TemplateEngine.CreateTemplateFile(templateToCreateStack);
         }
 
@@ -1433,24 +1433,12 @@ namespace AWS.CloudFormation.Test
         {
             Assert.IsFalse(HasGitDifferences());
 
-            Greek version = Greek.Alpha;
+            Greek version = Greek.Theta;
 
             var fullyQualifiedDomainName = $"{version}.dev.yadayadasoftware.com";
-
-            //colors &= ~Blah.BLUE;
-
             Create instances = Create.FullStack;
-            instances = (Create)0;
-            //instances = Create.Dc2 | Create.Sql4Tfs | Create.Workstation | Create.BackupServer | Create.Rdp1 | Create.Tfs;
-            //instances = Create.Dc2 | Create.Workstation | Create.BackupServer | Create.Rdp1;
-            //instances = Create.Dc2 | Create.BackupServer | Create.Build | Create.Workstation | Create.Sql4Tfs | Create.Tfs;
-            //instances = Create.BackupServer | Create.Sql4Tfs | Create.Tfs;
-            //            Create.Workstation;
-            instances = Create.BackupServer;
-
-
             var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances);
-            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "UNTG3074khss";
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "QDTH1674hndc";
             Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.', '-'), template);
         }
 
