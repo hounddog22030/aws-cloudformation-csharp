@@ -70,6 +70,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="CreateTestEnvironment.cs" />
     <Compile Include="Resource\EC2\VpcEndpointTest.cs" />
     <Compile Include="Resource\RDS\DbInstanceTest.cs" />
     <Compile Include="Route53\HostedZoneTest.cs" />
@@ -91,6 +92,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="data\web.config" />
     <None Include="Examples\dev.template" />
     <None Include="Examples\nested\parent.template" />
     <None Include="Examples\nested\subtemplate1.template" />

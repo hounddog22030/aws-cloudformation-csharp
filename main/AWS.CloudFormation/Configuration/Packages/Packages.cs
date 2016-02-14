@@ -62,7 +62,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
         public LaunchConfiguration Instance { get; internal set; }
 
-        public Uri Msi { get; }
+        public Uri Msi { get; set; }
 
 
         public string SnapshotId { get; protected set; }
@@ -82,13 +82,12 @@ namespace AWS.CloudFormation.Configuration.Packages
             if (this.Msi != null)
             {
                 var fileName = System.IO.Path.GetFileNameWithoutExtension(Msi.AbsolutePath).Replace(".", string.Empty).Replace("-", String.Empty);
-                var configSet = this.Config; // configuration.Metadata.Init.ConfigSets.GetConfigSet(fileName).GetConfig(fileName);
+                var configSet = this.Config; 
                 if (!configSet.Packages.ContainsKey("msi"))
                 {
                     var msi = new CloudFormationDictionary();
                     msi.Add(fileName, Msi.AbsoluteUri);
                     configSet.Packages.Add("msi", msi);
-
                 }
             }
             if (!string.IsNullOrEmpty(this.BucketName))

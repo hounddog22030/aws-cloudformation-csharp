@@ -134,6 +134,9 @@ namespace AWS.CloudFormation.Configuration.Packages
             currentCommand.Command = new PowershellFnJoin(" -Command ",InstallWindowsServerBackup);
             currentCommand.WaitAfterCompletion = 0.ToString();
 
+            //"Get-ADReplicationSiteLink -Filter * | Set-ADReplicationSiteLink -SitesIncluded @{add='AZ2'} -ReplicationFrequencyInMinutes 15\""
+
+
         }
 
         private void InstallDomainControllerCommon(LaunchConfiguration instance)
@@ -154,7 +157,9 @@ namespace AWS.CloudFormation.Configuration.Packages
 
         public void MakeSecondaryDomainController(LaunchConfiguration secondary)
         {
+            
             secondary.AddSecurityGroup(this.DomainControllerSecurityGroup);
+
             InstallDomainControllerCommon(secondary);
             var config = secondary.Metadata.Init.ConfigSets.GetConfigSet(this.ConfigSetName).GetConfig(this.ConfigName);
 
@@ -283,7 +288,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
 
         }
-        public void AddReplicationSite(Subnet subnet)
+        public void AddReplicationSite(Subnet subnet, bool isDomainController)
         {
             var currentConfig = this.Config;
             string commandName = $"CreateSite4{subnet.LogicalId}";
@@ -315,6 +320,13 @@ namespace AWS.CloudFormation.Configuration.Packages
                 currentCommand.Test = new PowershellFnJoin(
                         checkAdReplicationSubnet,
                         subnet.CidrBlock);
+
+                if (isDomainController)
+                {
+                    currentCommand = currentConfig.Commands.AddCommand<Command>($"SetADReplicationSiteLink{subnet.LogicalId}");
+                    currentCommand.Command = new PowershellFnJoin($"Get-ADReplicationSiteLink -Filter * | Set-ADReplicationSiteLink -SitesIncluded @{{add = '{subnet.LogicalId}'}} -ReplicationFrequencyInMinutes 15\"");
+                    currentCommand.WaitAfterCompletion = 0.ToString();
+                }
             }
         }
     }

@@ -84,6 +84,7 @@ namespace AWS.CloudFormation.Test
                 subnetDomainController2 = AddSubnet4DomainController2(vpc, routeTableForSubnetsToNat2, natSecurityGroup, template);
 
 
+
                 Route routeForAz2 = new Route(Template.CidrIpTheWorld, routeTableForSubnetsToNat2);
                 template.Resources.Add($"RouteForAz2", routeForAz2);
                 routeForAz2.DestinationCidrBlock = "0.0.0.0/0";
@@ -156,6 +157,7 @@ namespace AWS.CloudFormation.Test
                 instanceDomainController2.DependsOn.Add(nat2.LogicalId);
                 dcPackage.Participate(instanceDomainController2);
                 dc2PrivateIp = new FnGetAtt(instanceDomainController2, FnGetAttAttribute.AwsEc2InstancePrivateIp);
+                dcPackage.AddReplicationSite(subnetDomainController2, true);
                 dcPackage.MakeSecondaryDomainController(instanceDomainController2);
             }
 
@@ -267,7 +269,7 @@ namespace AWS.CloudFormation.Test
 
             if (instancesToCreate.HasFlag(Create.BackupServer))
             {
-                LaunchConfiguration backupServer = new LaunchConfiguration(subnetDomainController1, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsEc2Instance);
+                LaunchConfiguration backupServer = new LaunchConfiguration(subnetDomainController1, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsEc2Instance,true);
                 SecurityGroup backupServerSecurityGroup = new SecurityGroup("SecurityGroup4BackupServer", vpc);
                 template.Resources.Add("SecurityGroup4BackupServer", backupServerSecurityGroup);
                 backupServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -393,13 +395,13 @@ namespace AWS.CloudFormation.Test
             instanceDomainController.Packages.Add(dcPackage);
             instanceDomainController.Packages.Add(new Chrome());
 
-            dcPackage.AddReplicationSite(subnetDmz1);
-            dcPackage.AddReplicationSite(subnetDmz2);
-            dcPackage.AddReplicationSite(subnetSqlServer4Tfs);
-            dcPackage.AddReplicationSite(subnetTfsServer);
-            dcPackage.AddReplicationSite(subnetBuildServer);
-            dcPackage.AddReplicationSite(subnetDatabase4BuildServer2);
-            dcPackage.AddReplicationSite(subnetWorkstation);
+            dcPackage.AddReplicationSite(subnetDmz1,false);
+            dcPackage.AddReplicationSite(subnetDmz2, false);
+            dcPackage.AddReplicationSite(subnetSqlServer4Tfs, false);
+            dcPackage.AddReplicationSite(subnetTfsServer, false);
+            dcPackage.AddReplicationSite(subnetBuildServer, false);
+            dcPackage.AddReplicationSite(subnetDatabase4BuildServer2, false);
+            dcPackage.AddReplicationSite(subnetWorkstation, false);
             return dcPackage;
         }
 
@@ -641,7 +643,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
 
-            var launchConfig = new LaunchConfiguration(null, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration);
+            var launchConfig = new LaunchConfiguration(null, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration,false);
             template.Resources.Add("Xyz", launchConfig );
             launchConfig.AssociatePublicIpAddress = true;
             launchConfig.AddSecurityGroup(rdp);
@@ -1228,7 +1230,7 @@ namespace AWS.CloudFormation.Test
             launchGroup.AddSubnetToVpcZoneIdentifier(subnet);
 
 
-            var buildServer = new LaunchConfiguration(null,instanceSize, UsEastWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration);
+            var buildServer = new LaunchConfiguration(null,instanceSize, UsEastWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration,false);
             template.Resources.Add("LaunchConfigurationBuildServer",buildServer);
 
             launchGroup.LaunchConfiguration = buildServer;
