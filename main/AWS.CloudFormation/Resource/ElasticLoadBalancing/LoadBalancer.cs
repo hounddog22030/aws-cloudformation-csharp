@@ -54,17 +54,6 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
 
         }
 
-        public void AddInstance(EC2.Instancing.Instance instance)
-        {
-            List<ReferenceProperty> tempInstances = new List<ReferenceProperty>();
-            if (this.Instances != null && this.Instances.Length > 0)
-            {
-                tempInstances.AddRange(this.Instances);
-            }
-            tempInstances.Add(new ReferenceProperty(instance));
-            this.Instances = tempInstances.ToArray();
-        }
-
         [JsonIgnore]
         public List<Listener> Listeners
         {
@@ -80,9 +69,16 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
         }
 
         [JsonIgnore]
-        public ReferenceProperty[] Instances
+        public List<ReferenceProperty> Instances
         {
-            get { return this.Properties.GetValue<ReferenceProperty[]>(); }
+            get
+            {
+                if (this.Properties.GetValue<List<ReferenceProperty>>() == null)
+                {
+                    this.Instances = new List<ReferenceProperty>();
+                }
+                return this.Properties.GetValue<List<ReferenceProperty>>();
+            }
             set { this.Properties.SetValue(value); }
         }
 

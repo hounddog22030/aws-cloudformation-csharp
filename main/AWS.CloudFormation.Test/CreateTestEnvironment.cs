@@ -46,7 +46,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateTestEnvironmentTest()
         {
-            var name = "Delta.test.app1.yadayadasoftware.com";
+            var name = "Epsilon.test.app1.yadayadasoftware.com";
             Template t = GetTestEnvironmentTemplate(name);
             Stack.Stack.UpdateStack(t);
         }
@@ -72,11 +72,9 @@ namespace AWS.CloudFormation.Test
             loadBalancer.SecurityGroups.Add(securityGroupLoadBalancer);
             LoadBalancer.Listener listenerHttps = new LoadBalancer.Listener((int)Ports.Ssl, (int)Ports.Http,"https");
             listenerHttps.SSLCertificateId = "arn:aws:acm:us-east-1:570182474766:certificate/5249aee1-0a70-4a45-a1f9-914173ba7a98";
-
+            loadBalancer.Instances.Add(new ReferenceProperty(instanceWebServer));
             loadBalancer.Listeners.Add(listenerHttps);
             returnTemplate.Resources.Add("LoadBalancer", loadBalancer);
-
-            
 
             SecurityGroup securityGroupElbToWebServer = new SecurityGroup("Allows Elb To Web Server",vpc);
             returnTemplate.Resources.Add(securityGroupElbToWebServer.LogicalId, securityGroupElbToWebServer);
@@ -90,8 +88,6 @@ namespace AWS.CloudFormation.Test
             returnTemplate.Resources.Add(securityGroupRdpFromFairfaxToWebServer.LogicalId, securityGroupRdpFromFairfaxToWebServer);
             securityGroupRdpFromFairfaxToWebServer.AddIngress(new Fairfax(), Protocol.All, Ports.RemoteDesktopProtocol);
             instanceWebServer.AddSecurityGroup(securityGroupRdpFromFairfaxToWebServer);
-
-
 
             return returnTemplate;
 
