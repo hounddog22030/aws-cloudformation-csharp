@@ -393,13 +393,13 @@ namespace AWS.CloudFormation.Test
             instanceDomainController.Packages.Add(dcPackage);
             instanceDomainController.Packages.Add(new Chrome());
 
-            dcPackage.AddReplicationSite(subnetDmz1);
-            dcPackage.AddReplicationSite(subnetDmz2);
-            dcPackage.AddReplicationSite(subnetSqlServer4Tfs);
-            dcPackage.AddReplicationSite(subnetTfsServer);
-            dcPackage.AddReplicationSite(subnetBuildServer);
-            dcPackage.AddReplicationSite(subnetDatabase4BuildServer2);
-            dcPackage.AddReplicationSite(subnetWorkstation);
+            dcPackage.AddReplicationSite(subnetDmz1,false);
+            dcPackage.AddReplicationSite(subnetDmz2, true);
+            dcPackage.AddReplicationSite(subnetSqlServer4Tfs, false);
+            dcPackage.AddReplicationSite(subnetTfsServer, false);
+            dcPackage.AddReplicationSite(subnetBuildServer, false);
+            dcPackage.AddReplicationSite(subnetDatabase4BuildServer2, false);
+            dcPackage.AddReplicationSite(subnetWorkstation, false);
             return dcPackage;
         }
 
