@@ -69,6 +69,20 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
         }
 
         [JsonIgnore]
+        public HealthCheck HealthCheck
+        {
+            get
+            {
+                if (this.Properties.GetValue<HealthCheck>() == null)
+                {
+                    this.HealthCheck = new HealthCheck();
+                }
+                return this.Properties.GetValue<HealthCheck>();
+            }
+            set { this.Properties.SetValue(value); }
+        }
+
+        [JsonIgnore]
         public List<ReferenceProperty> Instances
         {
             get
@@ -121,5 +135,14 @@ namespace AWS.CloudFormation.Resource.ElasticLoadBalancing
         protected override bool SupportsTags {
             get { return false;}
         }
+
+    }
+    public class HealthCheck
+    {
+        public string HealthyThreshold { get; set; }
+        public string Interval { get; set; }
+        public string Target { get; set; }
+        public string Timeout { get; set; }
+        public string UnhealthyThreshold { get; set; }
     }
 }

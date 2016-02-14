@@ -107,7 +107,12 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         [EnumMember(Value = "PrivateIp")]
         AwsEc2InstancePrivateIp,
         [EnumMember(Value = "Endpoint.Address")]
-        AwsRdsDbInstanceEndpointAddress
+        AwsRdsDbInstanceEndpointAddress,
+        [EnumMember(Value = "DNSName")]
+        AwsElasticLoadBalancingLoadBalancer
+
+        //AWS::ElasticLoadBalancing::LoadBalancer
+
         //
     }
 

@@ -9,6 +9,7 @@ using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.ElasticLoadBalancing;
 using AWS.CloudFormation.Resource.Networking;
+using AWS.CloudFormation.Resource.Route53;
 using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OperatingSystem = AWS.CloudFormation.Resource.EC2.Instancing.OperatingSystem;
@@ -65,15 +66,31 @@ namespace AWS.CloudFormation.Test
 
             SecurityGroup securityGroupLoadBalancer = new SecurityGroup("Security Group for ELB",vpc);
             securityGroupLoadBalancer.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Ssl);
+            securityGroupLoadBalancer.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Http);
             returnTemplate.Resources.Add(securityGroupLoadBalancer.LogicalId, securityGroupLoadBalancer);
 
             LoadBalancer loadBalancer = new LoadBalancer();
+
+            loadBalancer.HealthCheck.Target = "HTTP:80/iisstart.html";
+            loadBalancer.HealthCheck.HealthyThreshold = 2.ToString();
+            loadBalancer.HealthCheck.Interval = 300.ToString();
+            loadBalancer.HealthCheck.Timeout = 10.ToString();
+            loadBalancer.HealthCheck.UnhealthyThreshold = 10.ToString();
+
+
+
             loadBalancer.Subnets.Add(new ReferenceProperty(subnetDmz));
             loadBalancer.SecurityGroups.Add(securityGroupLoadBalancer);
-            LoadBalancer.Listener listenerHttps = new LoadBalancer.Listener((int)Ports.Ssl, (int)Ports.Http,"https");
-            listenerHttps.SSLCertificateId = "arn:aws:acm:us-east-1:570182474766:certificate/5249aee1-0a70-4a45-a1f9-914173ba7a98";
+
+            LoadBalancer.Listener listenerHttps = new LoadBalancer.Listener((int)Ports.Ssl, (int)Ports.Http, "https");
+            listenerHttps.SSLCertificateId = "arn:aws:acm:us-east-1:570182474766:certificate/d5f75bf3-1bb9-4aaf-92cc-ae9630b8a997";
             loadBalancer.Instances.Add(new ReferenceProperty(instanceWebServer));
             loadBalancer.Listeners.Add(listenerHttps);
+
+            LoadBalancer.Listener listenerHttp = new LoadBalancer.Listener((int)Ports.Http, (int)Ports.Http, "http");
+            loadBalancer.Instances.Add(new ReferenceProperty(instanceWebServer));
+            loadBalancer.Listeners.Add(listenerHttp);
+
             returnTemplate.Resources.Add("LoadBalancer", loadBalancer);
 
             SecurityGroup securityGroupElbToWebServer = new SecurityGroup("Allows Elb To Web Server",vpc);
@@ -81,13 +98,20 @@ namespace AWS.CloudFormation.Test
             securityGroupElbToWebServer.AddIngress(securityGroupLoadBalancer, Protocol.Tcp, Ports.Http);
             instanceWebServer.AddSecurityGroup(securityGroupElbToWebServer);
 
-            var x = instanceWebServer.Packages.Last().WaitCondition;
-
             instanceWebServer.AddElasticIp();
             SecurityGroup securityGroupRdpFromFairfaxToWebServer = new SecurityGroup("Allows RDP access from Fairfax",vpc);
             returnTemplate.Resources.Add(securityGroupRdpFromFairfaxToWebServer.LogicalId, securityGroupRdpFromFairfaxToWebServer);
             securityGroupRdpFromFairfaxToWebServer.AddIngress(new Fairfax(), Protocol.All, Ports.RemoteDesktopProtocol);
             instanceWebServer.AddSecurityGroup(securityGroupRdpFromFairfaxToWebServer);
+
+            RecordSet recordSetElasticLoadBalancer = RecordSet.AddByHostedZoneName(returnTemplate,
+                $"www.{domain}.".Replace(".", string.Empty),
+                "yadayadasoftware.com.",
+                $"www.{domain}.", RecordSet.RecordSetTypeEnum.CNAME);
+
+            recordSetElasticLoadBalancer.AddResourceRecord(new FnGetAtt(loadBalancer, FnGetAttAttribute.AwsElasticLoadBalancingLoadBalancer));
+
+            loadBalancer.DependsOn.Add(instanceWebServer.Packages.Last().WaitCondition.LogicalId);
 
             return returnTemplate;
 
