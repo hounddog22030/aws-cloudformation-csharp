@@ -1283,6 +1283,8 @@ namespace AWS.CloudFormation.Test
             workstation.Packages.Add(new VisualStudio(BucketNameSoftware));
             workstation.Packages.Add(new ReSharper());
             workstation.Packages.Add(new Chrome());
+            workstation.Packages.Add(new MSysGit(BucketNameSoftware));
+            
 
             //var waitConditionWorkstationAvailable = workstation.AddFinalizer("waitConditionWorkstationAvailable",TimeoutMax);
 
@@ -1422,7 +1424,7 @@ namespace AWS.CloudFormation.Test
         public void CreateDevelopmentTemplateFileTest()
         {
             //DomainDnsName = $"alpha.dev.yadayadasoftware.com";
-            var templateToCreateStack = GetTemplateFullStack("yadayadasoftware.com", "dev", Greek.Alpha,Create.FullStack);
+            var templateToCreateStack = GetTemplateFullStack("yadayadasoftware.com", "dev", Greek.Theta, Create.FullStack);
             TemplateEngine.CreateTemplateFile(templateToCreateStack);
         }
 
