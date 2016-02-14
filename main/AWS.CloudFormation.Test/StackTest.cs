@@ -737,10 +737,8 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
-            Volume rootVolume = new Volume(50);
-            template.Resources.Add("VolumeTestRoot", rootVolume);
+            Instance w = new Instance(DMZSubnet,InstanceTypes.T2Large, UsEastWindows2012R2Ami,OperatingSystem.Windows,Ebs.VolumeTypes.GeneralPurpose, 50);
 
-            Instance w = new Instance(DMZSubnet,InstanceTypes.T2Large, UsEastWindows2012R2Ami,OperatingSystem.Windows,rootVolume);
             template.Resources.Add("workstation",w);
             w.AddSecurityGroup(rdp);
             w.AddElasticIp();
@@ -767,15 +765,15 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add(w.LogicalId,w);
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "/dev/xvdf");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
-            w.AddBlockDeviceMapping(blockDeviceMapping);
+            w.BlockDeviceMappings.Add(blockDeviceMapping);
 
             blockDeviceMapping = new BlockDeviceMapping(w, "/dev/xvdg");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
-            w.AddBlockDeviceMapping(blockDeviceMapping);
+            w.BlockDeviceMappings.Add(blockDeviceMapping);
 
             blockDeviceMapping = new BlockDeviceMapping(w, "/dev/xvdh");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
-            w.AddBlockDeviceMapping(blockDeviceMapping);
+            w.BlockDeviceMappings.Add(blockDeviceMapping);
             w.AddSecurityGroup(rdp);
 
             w.AddElasticIp();
@@ -799,16 +797,16 @@ namespace AWS.CloudFormation.Test
 
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "xvdf");
             blockDeviceMapping.Ebs.SnapshotId = "snap-87e3eb87";
-            w.AddBlockDeviceMapping(blockDeviceMapping);
+            w.BlockDeviceMappings.Add(blockDeviceMapping);
 
             blockDeviceMapping = new BlockDeviceMapping(w, "xvdg");
             blockDeviceMapping.Ebs.SnapshotId = "snap-5e27a85a";
-            w.AddBlockDeviceMapping(blockDeviceMapping);
+            w.BlockDeviceMappings.Add(blockDeviceMapping);
 
             blockDeviceMapping = new BlockDeviceMapping(w, "xvdh");
             blockDeviceMapping.Ebs.SnapshotId = "snap-4e69d94b";
-            w.AddBlockDeviceMapping(blockDeviceMapping);
-            throw new NotImplementedException();
+            w.BlockDeviceMappings.Add(blockDeviceMapping);
+
             //w.AddChefExec(BucketNameSoftware, "MountDrives.tar.gz", "MountDrives");
             //w.AddSecurityGroup(rdp);
             //w.AddElasticIp();
@@ -1040,7 +1038,7 @@ namespace AWS.CloudFormation.Test
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
             blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.GeneralPurpose;
             blockDeviceMapping.Ebs.VolumeSize = 30;
-            workstation.AddBlockDeviceMapping(blockDeviceMapping);
+            workstation.BlockDeviceMappings.Add(blockDeviceMapping);
             workstation.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 6);
 
 
@@ -1139,7 +1137,7 @@ namespace AWS.CloudFormation.Test
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
             blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.GeneralPurpose;
             blockDeviceMapping.Ebs.VolumeSize = 30;
-            workstation.AddBlockDeviceMapping(blockDeviceMapping);
+            workstation.BlockDeviceMappings.Add(blockDeviceMapping);
             workstation.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 6);
             workstation.AddElasticIp();
 
@@ -1190,15 +1188,15 @@ namespace AWS.CloudFormation.Test
 
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(w, "xvdf");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
-            w.AddBlockDeviceMapping(blockDeviceMapping);
+            w.BlockDeviceMappings.Add(blockDeviceMapping);
 
             blockDeviceMapping = new BlockDeviceMapping(w, "xvdg");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
-            w.AddBlockDeviceMapping(blockDeviceMapping);
+            w.BlockDeviceMappings.Add(blockDeviceMapping);
 
             blockDeviceMapping = new BlockDeviceMapping(w, "xvdh");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
-            w.AddBlockDeviceMapping(blockDeviceMapping);
+            w.BlockDeviceMappings.Add(blockDeviceMapping);
             throw new NotImplementedException();
             //w.AddChefExec(BucketNameSoftware, "MountDrives.tar.gz", "MountDrives");
 

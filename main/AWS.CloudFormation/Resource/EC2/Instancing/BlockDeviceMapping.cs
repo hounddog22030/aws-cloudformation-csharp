@@ -17,24 +17,32 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         public BlockDeviceMapping(ResourceBase resource, string deviceName) : base(resource)
         {
             Ebs = new Ebs(resource);
-            this.Add("Ebs", Ebs);
-            this.Add("DeviceName", deviceName);
+            DeviceName = deviceName;
         }
-        public BlockDeviceMapping(ResourceBase resource, string deviceName, bool noDevice) : base(resource)
+        public BlockDeviceMapping(ResourceBase resource, string deviceName, bool deleteOnTermination) : this(resource,deviceName)
         {
-            this.Add("DeviceName", deviceName);
-            if (noDevice)
-            {
-                this.Add("NoDevice",new object());
-            }
-            else
-            {
-                throw new NotSupportedException();
-            }
+            this.Ebs.DeleteOnTermination = deleteOnTermination;
         }
 
-        public Ebs Ebs { get;}
-        public object NoDevice { get; set; }
+        [JsonIgnore]
+        public Ebs Ebs
+        {
+            get { return this.GetValue<Ebs>(); }
+            set { this.SetValue(value); }
+        }
+
+        [JsonIgnore]
+        public object NoDevice
+        {
+            get { return this.GetValue<object>(); }
+            set { this.SetValue(value); }
+        }
+
+        public string DeviceName
+        {
+            get { return this.GetValue<string>(); }
+            set { this.SetValue(value); }
+        }
     }
     public class Ebs : CloudFormationDictionary
     {
@@ -43,37 +51,25 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             
         }
 
+        [JsonIgnore]
+
         public string SnapshotId
         {
-            get
-            {
-                if (this.ContainsKey("SnapshotId"))
-                {
-                    return (string)this["SnapshotId"];
-                }
-                return null;
-            }
-            set { this["SnapshotId"] = value; }
+            get { return this.GetValue<string>(); }
+            set { this.SetValue(value); }
         }
-        
 
-        public int VolumeSize
+
+        [JsonIgnore]
+        public uint VolumeSize
         {
-            get
-            {
-                if (this.ContainsKey("VolumeSize"))
-                {
-                    return (int)this["VolumeSize"];
-                }
-                return 0;
-            }
-            set { this["VolumeSize"] = value; }
+            get { return this.GetValue<uint>(); }
+            set { this.SetValue(value); }
         }
 
         [JsonConverter(typeof(EnumConverter))]
         public enum VolumeTypes
         {
-            none,
             [EnumMember(Value="gp2")]
             GeneralPurpose,
             [EnumMember(Value = "standard")]
@@ -82,31 +78,18 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             ProvisionedIops
         }
 
-        //[JsonProperty(ItemConverterType = typeof(Enum))]
+        [JsonIgnore]
         public VolumeTypes VolumeType
         {
-            get
-            {
-                if (this.ContainsKey("VolumeType"))
-                {
-                    return (VolumeTypes)this["VolumeType"];
-                }
-                return VolumeTypes.none;
-            }
-            set { this["VolumeType"] = value; }
+            get { return this.GetValue<VolumeTypes>(); }
+            set { this.SetValue(value); }
         }
 
+        [JsonIgnore]
         public bool DeleteOnTermination
         {
-            get
-            {
-                if (this.ContainsKey("DeleteOnTermination"))
-                {
-                    return (bool)this["DeleteOnTermination"];
-                }
-                return true;
-            }
-            set { this["DeleteOnTermination"] = value; }
+            get { return this.GetValue<bool>(); }
+            set { this.SetValue(value); }
         }
     }
 }
