@@ -131,7 +131,7 @@ namespace AWS.CloudFormation.Test
             securityGroupSqlSever4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MsSqlServer);
             securityGroupDb4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MySql);
 
-            Instance instanceDomainController = new Instance(subnetDomainController1, InstanceTypes.C4Large, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
+            Instance instanceDomainController = new Instance(subnetDomainController1, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
             template.Resources.Add("DomainController", instanceDomainController);
             instanceDomainController.DependsOn.Add(nat1.LogicalId);
 
@@ -175,7 +175,7 @@ namespace AWS.CloudFormation.Test
 
             AddDhcpOptions(elements, netBiosServersElements, vpc, template);
 
-            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.C4Large, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
+            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
             template.Resources.Add($"Rdp", instanceRdp);
             dcPackage.Participate(instanceRdp);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
@@ -1441,7 +1441,7 @@ namespace AWS.CloudFormation.Test
             instances = (Create)0;
             //instances = Create.Dc2 | Create.Workstation | Create.BackupServer | Create.Rdp1;
             //instances = Create.Dc2 | Create.BackupServer | Create.Build | Create.Workstation | Create.Sql4Tfs | Create.Tfs;
-            instances = Create.BackupServer | Create.Sql4Tfs | Create.Tfs;
+            //instances = Create.BackupServer | Create.Sql4Tfs | Create.Tfs;
             //            Create.Workstation;
 
 
