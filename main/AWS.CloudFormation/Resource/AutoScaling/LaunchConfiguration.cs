@@ -32,9 +32,15 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         public const int NetBiosMaxLength = 15;
 
 
-        public LaunchConfiguration(Subnet subnet, InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem, ResourceType resourceType)
+        public LaunchConfiguration( Subnet subnet, 
+                                    InstanceTypes instanceType, 
+                                    string imageId, 
+                                    OperatingSystem operatingSystem, 
+                                    ResourceType resourceType,
+                                    bool rename)
             : base(resourceType)
         {
+            this.Rename = rename;
             _availableDevices = new List<string>();
             if (subnet != null)
             {
@@ -62,6 +68,9 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             
         }
 
+        [JsonIgnore]
+        public bool Rename { get; set; }
+
         protected override void OnTemplateSet(Template template)
         {
             base.OnTemplateSet(template);
@@ -75,7 +84,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             SetUserData();
             this.DisableFirewall();
             this.SetTimeZone();
-            if (OperatingSystem == OperatingSystem.Windows &&
+            if (this.Rename && OperatingSystem == OperatingSystem.Windows &&
                 this.Type != ResourceType.AwsAutoScalingLaunchConfiguration)
             {
                 this.AddRename();

@@ -269,7 +269,7 @@ namespace AWS.CloudFormation.Test
 
             if (instancesToCreate.HasFlag(Create.BackupServer))
             {
-                LaunchConfiguration backupServer = new LaunchConfiguration(subnetDomainController1, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsEc2Instance);
+                LaunchConfiguration backupServer = new LaunchConfiguration(subnetDomainController1, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsEc2Instance,true);
                 SecurityGroup backupServerSecurityGroup = new SecurityGroup("SecurityGroup4BackupServer", vpc);
                 template.Resources.Add("SecurityGroup4BackupServer", backupServerSecurityGroup);
                 backupServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -643,7 +643,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
 
-            var launchConfig = new LaunchConfiguration(null, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration);
+            var launchConfig = new LaunchConfiguration(null, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration,false);
             template.Resources.Add("Xyz", launchConfig );
             launchConfig.AssociatePublicIpAddress = true;
             launchConfig.AddSecurityGroup(rdp);
@@ -1230,7 +1230,7 @@ namespace AWS.CloudFormation.Test
             launchGroup.AddSubnetToVpcZoneIdentifier(subnet);
 
 
-            var buildServer = new LaunchConfiguration(null,instanceSize, UsEastWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration);
+            var buildServer = new LaunchConfiguration(null,instanceSize, UsEastWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration,false);
             template.Resources.Add("LaunchConfigurationBuildServer",buildServer);
 
             launchGroup.LaunchConfiguration = buildServer;

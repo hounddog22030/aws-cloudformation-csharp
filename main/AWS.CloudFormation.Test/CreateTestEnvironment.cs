@@ -60,7 +60,7 @@ namespace AWS.CloudFormation.Test
 
             Subnet subnetDmz = new Subnet(vpc,"10.0.0.0/24", AvailabilityZone.UsEast1A, true);
             returnTemplate.Resources.Add("subnetDmz",subnetDmz);
-            Instance instanceWebServer = new Instance(subnetDmz,InstanceTypes.T2Nano, StackTest.UsEastWindows2012R2Ami,OperatingSystem.Windows);
+            Instance instanceWebServer = new Instance(subnetDmz,InstanceTypes.C4Large, StackTest.UsEastWindows2012R2Ami,OperatingSystem.Windows,false);
             returnTemplate.Resources.Add("instanceWebServer",instanceWebServer);
             instanceWebServer.Packages.Add(new InternetInformationServerPackage(null, "gtbb", "yadayada_iis"));
 
@@ -71,7 +71,7 @@ namespace AWS.CloudFormation.Test
 
             LoadBalancer loadBalancer = new LoadBalancer();
 
-            loadBalancer.HealthCheck.Target = "HTTP:80/iisstart.html";
+            loadBalancer.HealthCheck.Target = "HTTP:80/healthcheck.htm";
             loadBalancer.HealthCheck.HealthyThreshold = 2.ToString();
             loadBalancer.HealthCheck.Interval = 300.ToString();
             loadBalancer.HealthCheck.Timeout = 10.ToString();
@@ -83,7 +83,7 @@ namespace AWS.CloudFormation.Test
             loadBalancer.SecurityGroups.Add(securityGroupLoadBalancer);
 
             LoadBalancer.Listener listenerHttps = new LoadBalancer.Listener((int)Ports.Ssl, (int)Ports.Http, "https");
-            listenerHttps.SSLCertificateId = "arn:aws:acm:us-east-1:570182474766:certificate/d5f75bf3-1bb9-4aaf-92cc-ae9630b8a997";
+            listenerHttps.SSLCertificateId = "arn:aws:acm:us-east-1:570182474766:certificate/c3a2dd9a-8140-442a-a20d-0f6865d7f526";
             loadBalancer.Instances.Add(new ReferenceProperty(instanceWebServer));
             loadBalancer.Listeners.Add(listenerHttps);
 

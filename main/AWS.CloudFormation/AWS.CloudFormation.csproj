@@ -158,6 +158,7 @@
     <None Include="Scripts\check-ADReplicationSubnet-exists.ps1" />
     <None Include="Scripts\check-ADReplicationSite-exists.ps1" />
     <None Include="Scripts\check-for-user-exists.ps1" />
+    <None Include="Scripts\web.config" />
     <None Include="users.csv" />
   </ItemGroup>
   <ItemGroup>
@@ -171,6 +172,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Scripts\change-sql-account.ps1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\healthcheck.htm" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -41,14 +41,19 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
         }
 
-
-        public Instance(Subnet subnet, InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem)
-            : base(subnet,instanceType, imageId, operatingSystem, ResourceType.AwsEc2Instance)
+        public Instance(Subnet subnet, InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem,
+            bool rename) : base(subnet, instanceType, imageId, operatingSystem, ResourceType.AwsEc2Instance,rename)
         {
             SourceDestCheck = true;
             NetworkInterfaces = new List<NetworkInterface>();
-            this.Tags.Add( new Tag("Name", this.LogicalId));
-            this.VolumesToAttach = new List<Volume>(); 
+            this.Tags.Add(new Tag("Name", this.LogicalId));
+            this.VolumesToAttach = new List<Volume>();
+        }
+
+
+        public Instance(Subnet subnet, InstanceTypes instanceType, string imageId, OperatingSystem operatingSystem)
+            : this(subnet, instanceType, imageId, operatingSystem, true)
+        {
         }
 
         [JsonIgnore]

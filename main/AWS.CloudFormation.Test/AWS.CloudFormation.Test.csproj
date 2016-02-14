@@ -92,6 +92,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="data\web.config" />
     <None Include="Examples\dev.template" />
     <None Include="Examples\nested\parent.template" />
     <None Include="Examples\nested\subtemplate1.template" />
