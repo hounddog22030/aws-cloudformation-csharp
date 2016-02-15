@@ -30,7 +30,7 @@ ec2helper_mount 'MountEc2Drives' do
 end
 
 execute 'Install Visual Studio' do
-	command lazy { "#{exe_path} /quiet /ADMINFILE #{admin_xml}" }
+	command lazy { "start /high #{exe_path} /quiet /ADMINFILE #{admin_xml}" }
 	timeout 43200
 	returns [0,3010]
 	not_if { File.exist?(sentinel_file) }
