@@ -447,14 +447,15 @@ namespace AWS.CloudFormation.Configuration.Packages
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
             base.AddToLaunchConfiguration(configuration);
-            var msiUri = new Uri($"https://s3.amazonaws.com/{BucketName}/software/WebDeploy_amd64_en-US.msi");
-            var fileName = System.IO.Path.GetFileNameWithoutExtension(msiUri.AbsolutePath).Replace(".", string.Empty).Replace("-", String.Empty);
-            var msi = new CloudFormationDictionary();
-            msi.Add(fileName, msiUri.AbsoluteUri);
             var secondConfigSetName = $"ConfigSet{this.ConfigName}HttpToHttps";
             var secondConfigName = $"Config{this.ConfigName}HttpToHttps";
             var secondConfig = configuration.Metadata.Init.ConfigSets.GetConfigSet(secondConfigSetName).GetConfig(secondConfigName);
-            secondConfig.Packages.Add("msi", msi);
+
+            var msi = secondConfig.Packages.Add("msi", new CloudFormationDictionary());
+
+            var msiUri = new Uri($"https://s3.amazonaws.com/{BucketName}/software/WebDeploy_amd64_en-US.msi");
+            var fileName = System.IO.Path.GetFileNameWithoutExtension(msiUri.AbsolutePath).Replace(".", "x").Replace("-", String.Empty);
+            msi.Add(fileName, msiUri.AbsoluteUri);
 
         }
     }

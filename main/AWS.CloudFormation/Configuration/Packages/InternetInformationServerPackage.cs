@@ -29,12 +29,11 @@ namespace AWS.CloudFormation.Configuration.Packages
             var msiUri = new Uri("https://s3.amazonaws.com/gtbb/software/rewrite_amd64.msi");
             var fileName = System.IO.Path.GetFileNameWithoutExtension(msiUri.AbsolutePath).Replace(".", string.Empty).Replace("-", String.Empty);
             var msi = new CloudFormationDictionary();
-            msi.Add(fileName, msiUri.AbsoluteUri);
             secondConfig.Packages.Add("msi", msi);
+            msi.Add(fileName, msiUri.AbsoluteUri);
 
             msiUri = new Uri($"https://s3.amazonaws.com/{BucketName}/software/WebDeploy_amd64_en-US.msi");
             fileName = System.IO.Path.GetFileNameWithoutExtension(msiUri.AbsolutePath).Replace(".", string.Empty).Replace("-", String.Empty);
-            msi = new CloudFormationDictionary();
             msi.Add(fileName, msiUri.AbsoluteUri);
         }
     }
