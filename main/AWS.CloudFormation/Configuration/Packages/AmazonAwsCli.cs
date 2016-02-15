@@ -10,7 +10,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 {
     public class AmazonAwsCli : PackageBase<ConfigSet>
     {
-        public AmazonAwsCli() : base("https://s3.amazonaws.com/gtbb/software/AWSCLI64.msi")
+        public AmazonAwsCli() : base(new Uri("https://s3.amazonaws.com/gtbb/software/AWSCLI64.msi"))
         {
             
         }
