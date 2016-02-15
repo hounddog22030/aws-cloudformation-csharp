@@ -454,7 +454,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             var msi = secondConfig.Packages.Add("msi", new CloudFormationDictionary());
 
             var msiUri = new Uri($"https://s3.amazonaws.com/{BucketName}/software/WebDeploy_amd64_en-US.msi");
-            var fileName = System.IO.Path.GetFileNameWithoutExtension(msiUri.AbsolutePath).Replace(".", "x").Replace("-", String.Empty);
+            var fileName = System.IO.Path.GetFileNameWithoutExtension(msiUri.AbsolutePath).Replace(".", "x").Replace("-", "x");
             msi.Add(fileName, msiUri.AbsoluteUri);
 
         }
