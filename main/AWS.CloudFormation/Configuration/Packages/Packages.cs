@@ -252,7 +252,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
         public VisualStudio(string bucketName) : base("snap-5e27a85a", bucketName, "vs")
         {
-            this.WaitAfterCompletion = new TimeSpan(0,2,0);
+            this.WaitAfterCompletion = new TimeSpan(0,0,15);
         }
 
     }
