@@ -226,7 +226,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         {
             var chefCommandConfig = this.Config.Commands.AddCommand<Command>(recipe.Replace(':','-'));
 
-            chefCommandConfig.Command = $"C:/opscode/chef/bin/chef-client.bat -z -o {recipe} -c c:/chef/{CookbookName}/client.rb";
+            chefCommandConfig.Command = $"start /high \"c:/opscode/chef/bin/../embedded/bin/ruby.exe\" \"C:/opscode/chef/bin/chef-client.bat\" -z -o {recipe} -c c:/chef/{CookbookName}/client.rb";
 
             return chefCommandConfig;
 
