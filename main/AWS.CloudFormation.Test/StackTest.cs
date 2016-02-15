@@ -1240,6 +1240,7 @@ namespace AWS.CloudFormation.Test
             domainControllerPackage.Participate(buildServer);
             buildServer.Packages.Add(new VisualStudio(BucketNameSoftware));
             buildServer.Packages.Add(new TeamFoundationServerBuildServerAgentOnly(tfsServer, BucketNameSoftware, sqlExpress4Build));
+            buildServer.Packages.Add(new AmazonAwsCli());
 
             if (tfsServerComplete != null)
             {

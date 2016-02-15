@@ -87,7 +87,7 @@ namespace AWS.CloudFormation.Test
             loadBalancer.SecurityGroups.Add(securityGroupLoadBalancer);
 
             LoadBalancer.Listener listenerHttps = new LoadBalancer.Listener((int)Ports.Ssl, (int)Ports.Http, "https");
-            listenerHttps.SSLCertificateId = "arn:aws:acm:us-east-1:570182474766:certificate/8a2fbdad-509f-46ae-ba78-f510f0a944ee";
+            listenerHttps.SSLCertificateId = "arn:aws:acm:us-east-1:570182474766:certificate/ec3dcdfd-cc6d-4af7-8119-290bf134fa4f";
             loadBalancer.Instances.Add(new ReferenceProperty(instanceWebServer));
             loadBalancer.Listeners.Add(listenerHttps);
 

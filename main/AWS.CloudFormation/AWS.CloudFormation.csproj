@@ -74,6 +74,7 @@
     <Compile Include="Common\CloudFormationDictionary.cs" />
     <Compile Include="Common\CollectionAsIdsConverter.cs" />
     <Compile Include="Common\ObservableDictionary.cs" />
+    <Compile Include="Configuration\Packages\AmazonAwsCli.cs" />
     <Compile Include="Configuration\Packages\Chrome.cs" />
     <Compile Include="Configuration\Packages\DomainControllerPackage.cs" />
     <Compile Include="Configuration\Packages\ExecuteRemotePowershellScript.cs" />

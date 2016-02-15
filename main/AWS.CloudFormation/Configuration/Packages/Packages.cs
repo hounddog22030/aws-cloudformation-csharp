@@ -444,19 +444,19 @@ namespace AWS.CloudFormation.Configuration.Packages
             this.SnapshotId = string.Empty;
         }
 
-        public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
-        {
-            base.AddToLaunchConfiguration(configuration);
-            var secondConfigSetName = $"ConfigSet{this.ConfigName}HttpToHttps";
-            var secondConfigName = $"Config{this.ConfigName}HttpToHttps";
-            var secondConfig = configuration.Metadata.Init.ConfigSets.GetConfigSet(secondConfigSetName).GetConfig(secondConfigName);
+        //public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
+        //{
+        //    base.AddToLaunchConfiguration(configuration);
+        //    var secondConfigSetName = $"ConfigSet{this.ConfigName}HttpToHttps";
+        //    var secondConfigName = $"Config{this.ConfigName}HttpToHttps";
+        //    var secondConfig = configuration.Metadata.Init.ConfigSets.GetConfigSet(secondConfigSetName).GetConfig(secondConfigName);
 
-            var msi = secondConfig.Packages.Add("msi", new CloudFormationDictionary());
+        //var msi = secondConfig.Packages.Add("msi", new CloudFormationDictionary());
 
-            var msiUri = new Uri($"https://s3.amazonaws.com/{BucketName}/software/WebDeploy_amd64_en-US.msi");
-            var fileName = System.IO.Path.GetFileNameWithoutExtension(msiUri.AbsolutePath).Replace(".", "x").Replace("-", "x");
-            msi.Add(fileName, msiUri.AbsoluteUri);
+        //var msiUri = new Uri($"https://s3.amazonaws.com/{BucketName}/software/WebDeploy_amd64_en-US.msi");
+        //var fileName = System.IO.Path.GetFileNameWithoutExtension(msiUri.AbsolutePath).Replace(".", "x").Replace("-", "x");
+        //msi.Add(fileName, msiUri.AbsoluteUri);
 
-        }
+        //}
     }
 }
