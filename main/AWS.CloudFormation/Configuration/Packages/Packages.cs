@@ -255,13 +255,6 @@ namespace AWS.CloudFormation.Configuration.Packages
             this.WaitAfterCompletion = new TimeSpan(0,2,0);
         }
 
-        public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
-        {
-            base.AddToLaunchConfiguration(configuration);
-            var commandConfig = this.Config.Commands.AddCommand<Command>("DeleteDefaultUserAppData");
-            commandConfig.Command = "rmdir /s /q c:\\users\\default\\appdata";
-            commandConfig.WaitAfterCompletion = 0.ToString();
-        }
     }
 
     public class Iis : PackageChef
