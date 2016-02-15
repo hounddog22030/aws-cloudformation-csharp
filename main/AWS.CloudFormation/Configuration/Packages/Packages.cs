@@ -116,7 +116,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         }
 
         protected string ConfigSetName => $"{this.GetType().Name.Replace(".", string.Empty)}";
-        protected string ConfigName => $"{this.GetType().Name.Replace(".", string.Empty)}";
+        protected internal string ConfigName => $"{this.GetType().Name.Replace(".", string.Empty)}";
 
         protected Config Config
         {

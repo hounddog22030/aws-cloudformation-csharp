@@ -1285,7 +1285,7 @@ namespace AWS.CloudFormation.Test
             workstation.Packages.Add(new ReSharper());
             workstation.Packages.Add(new Chrome());
             workstation.Packages.Add(new MSysGit(BucketNameSoftware));
-            workstation.Packages.Add(new NodeJs());
+            workstation.Packages.Add(new TfsCrossPlatformCommandLineInterface());
 
 
             //var waitConditionWorkstationAvailable = workstation.AddFinalizer("waitConditionWorkstationAvailable",TimeoutMax);
