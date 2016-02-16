@@ -4,6 +4,7 @@
 #
 # Copyright (c) 2014 Ryan Irujo, All Rights Reserved.
 
+include_recipe 'iis::mod_auth_basic'
 include_recipe 'ec2helper'
 include_recipe 'tfs::install'
 
@@ -22,4 +23,5 @@ end
 # Installing Team Foundation Server Standard.
 execute 'Configure Team Foundation Server STD' do
 	command "#{tfsconfigure_exe_file} unattend /configure /unattendfile:#{configurationFile}"
+	not_if {Win32::Service.exists?("TFSJobAgent")}
 end
