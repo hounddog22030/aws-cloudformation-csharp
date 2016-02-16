@@ -255,6 +255,17 @@ namespace AWS.CloudFormation.Configuration.Packages
             this.WaitAfterCompletion = new TimeSpan(0,0,15);
         }
 
+        public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
+        {
+            base.AddToLaunchConfiguration(configuration);
+            //https://s3.amazonaws.com/gtbb/software/PowerShellTools.14.0.vsix
+            const string powerShellToolsVsixLocalPath = "c:/cfn/scripts/PowerShellTools.14.0.vsix";
+            var powerShellToolsVsix = this.Config.Files.GetFile(powerShellToolsVsixLocalPath);
+            powerShellToolsVsix.Source = "https://s3.amazonaws.com/gtbb/software/PowerShellTools.14.0.vsix";
+            var installPowerSehllToolsVsix = this.Config.Commands.AddCommand<Command>("PowerShellTools140vsix");
+            installPowerSehllToolsVsix.Command = $"start /wait \"C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\Common7\\IDE\\VSIXInstaller.exe\" {powerShellToolsVsixLocalPath}";
+            installPowerSehllToolsVsix.WaitAfterCompletion = 0.ToString();
+        }
     }
 
     public class Iis : PackageChef
@@ -383,6 +394,10 @@ namespace AWS.CloudFormation.Configuration.Packages
             tfsNode.Add("application_server_sqlname", new FnGetAtt(this.SqlServer, FnGetAttAttribute.AwsEc2InstancePrivateDnsName ));
             tfsNode.Add(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName));
             tfsNode.Add(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName));
+
+            var installBasicAuthenticationCommand = this.Config.Commands.AddCommand<Command>("InstallBasicAuth");
+            installBasicAuthenticationCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None, "-Command \"Import-Module ServerManager;Add-WindowsFeature Web-Basic-Auth;\"");
+            installBasicAuthenticationCommand.WaitAfterCompletion = 0.ToString();
         }
     }
 

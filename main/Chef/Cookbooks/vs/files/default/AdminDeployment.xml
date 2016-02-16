@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AdminDeploymentCustomizations xmlns="http://schemas.microsoft.com/wix/2011/AdminDeployment">
-   <BundleCustomizations TargetDir="default" NoWeb="yes"/>
+   <BundleCustomizations TargetDir="default" NoWeb="default"/>
 
    <SelectableItemCustomizations>
      <SelectableItemCustomization Id="Blend" Hidden="no" Selected="no" />  
@@ -38,6 +38,8 @@
      <SelectableItemCustomization Id="WinJSHidden" Selected="no" />
      <SelectableItemCustomization Id="WinSDKHidden" Selected="no" />
      <SelectableItemCustomization Id="WebTools" Hidden="no" Selected="no" />
+     <SelectableItemCustomization Id="VS_SDK_GroupV3" Hidden="no" Selected="yes" FriendlyName="Visual Studio Extensibility Tools Update 1" />
+     <SelectableItemCustomization Id="VS_SDK_Breadcrumb_GroupV3" Selected="yes" FriendlyName="Visual Studio Extensibility Tools Update 1" />
    </SelectableItemCustomizations>
 
 </AdminDeploymentCustomizations>
