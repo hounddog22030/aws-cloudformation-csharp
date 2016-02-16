@@ -395,9 +395,9 @@ namespace AWS.CloudFormation.Configuration.Packages
             tfsNode.Add(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName));
             tfsNode.Add(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName));
 
-            var installBasicAuthenticationCommand = this.Config.Commands.AddCommand<Command>("InstallBasicAuth");
-            installBasicAuthenticationCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None, "-Command \"Import-Module ServerManager;Add-WindowsFeature Web-Basic-Auth;\"");
-            installBasicAuthenticationCommand.WaitAfterCompletion = 0.ToString();
+            //var installBasicAuthenticationCommand = this.Config.Commands.AddCommand<Command>("InstallBasicAuth");
+            //installBasicAuthenticationCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None, "-Command \"Import-Module ServerManager;Add-WindowsFeature Web-Basic-Auth;\"");
+            //installBasicAuthenticationCommand.WaitAfterCompletion = 0.ToString();
         }
     }
 
