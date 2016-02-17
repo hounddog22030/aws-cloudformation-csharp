@@ -28,7 +28,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 configuration.Packages.Insert(thisPackageIndex,new NodeJs());
             }
             var commandConfig = this.Config.Commands.AddCommand<Command>("InstallTfxCli");
-            commandConfig.Command = "npm i -g tfx-cli";
+            commandConfig.Command = "\"c:/Program Files/nodejs/npm.cmd\" i -g tfx-cli";
             commandConfig.WaitAfterCompletion = 0.ToString();
             this.Config.IgnoreErrors = true.ToString();
         }
