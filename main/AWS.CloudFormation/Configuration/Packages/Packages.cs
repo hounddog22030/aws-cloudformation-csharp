@@ -269,17 +269,6 @@ namespace AWS.CloudFormation.Configuration.Packages
             this.WaitAfterCompletion = new TimeSpan(0,0,15);
         }
 
-        public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
-        {
-            base.AddToLaunchConfiguration(configuration);
-            //https://s3.amazonaws.com/gtbb/software/PowerShellTools.14.0.vsix
-            const string powerShellToolsVsixLocalPath = "c:/cfn/scripts/PowerShellTools.14.0.vsix";
-            var powerShellToolsVsix = this.Config.Files.GetFile(powerShellToolsVsixLocalPath);
-            powerShellToolsVsix.Source = "https://s3.amazonaws.com/gtbb/software/PowerShellTools.14.0.vsix";
-            var installPowerSehllToolsVsix = this.Config.Commands.AddCommand<Command>("PowerShellTools140vsix");
-            installPowerSehllToolsVsix.Command = $"start /wait \"C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\Common7\\IDE\\VSIXInstaller.exe\" {powerShellToolsVsixLocalPath}";
-            installPowerSehllToolsVsix.WaitAfterCompletion = 0.ToString();
-        }
     }
 
     public class Iis : PackageChef
