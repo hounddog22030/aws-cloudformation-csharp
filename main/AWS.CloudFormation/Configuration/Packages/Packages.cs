@@ -143,6 +143,20 @@ namespace AWS.CloudFormation.Configuration.Packages
                 return _waitCondition;
             }
         }
+
+        protected int GetPackageIndex(LaunchConfiguration configuration, Type packageType)
+        {
+            int returnValue = -1;
+            for (int i = 0; i < configuration.Packages.Count; i++)
+            {
+                if (configuration.Packages[i].GetType() == packageType)
+                {
+                    returnValue = i;
+                    break;
+                }
+            }
+            return returnValue;
+        }
     }
 
     public class Dir1 : PackageBase<ConfigSet>
@@ -394,29 +408,8 @@ namespace AWS.CloudFormation.Configuration.Packages
             tfsNode.Add("application_server_sqlname", new FnGetAtt(this.SqlServer, FnGetAttAttribute.AwsEc2InstancePrivateDnsName ));
             tfsNode.Add(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName));
             tfsNode.Add(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName));
-
-            int myPackageIndex = this.GetPackageIndex(configuration,this.GetType());
-
-            configuration.Packages.Insert(myPackageIndex+1,new TfsCrossPlatformCommandLineInterface());
-
-            //var installBasicAuthenticationCommand = this.Config.Commands.AddCommand<Command>("InstallBasicAuth");
-            //installBasicAuthenticationCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None, "-Command \"Import-Module ServerManager;Add-WindowsFeature Web-Basic-Auth;\"");
-            //installBasicAuthenticationCommand.WaitAfterCompletion = 0.ToString();
         }
 
-        private int GetPackageIndex(LaunchConfiguration configuration, Type packageType)
-        {
-            int returnValue = -1;
-            for (int i = 0; i < configuration.Packages.Count; i++)
-            {
-                if (configuration.Packages[i].GetType() == packageType)
-                {
-                    returnValue= i;
-                    break;
-                }
-            }
-            return returnValue;
-        }
     }
 
     public class TeamFoundationServerBuildServerBase : TeamFoundationServer

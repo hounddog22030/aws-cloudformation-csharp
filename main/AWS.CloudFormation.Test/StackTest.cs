@@ -1436,7 +1436,6 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateDevelopmentTest()
         {
-            Assert.IsFalse(HasGitDifferences());
 
             Greek version = Greek.Theta;
 
@@ -1444,6 +1443,9 @@ namespace AWS.CloudFormation.Test
             Create instances = Create.FullStack;
             var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances);
             ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "QDTH1674hndc";
+
+            Assert.IsFalse(HasGitDifferences());
+
             Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.', '-'), template);
         }
 
