@@ -41,6 +41,11 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
         {
             
             var returnValue = this.AddCommand<Resource.EC2.Instancing.Metadata.Config.Command.Command>($"SignalComplete{waitCondition.LogicalId}");
+
+            if (string.IsNullOrEmpty(waitCondition.LogicalId))
+            {
+                throw new InvalidOperationException();
+            }
             var logFile = $"c:\\cfn\\log\\{waitCondition.LogicalId}.log";
             returnValue.Command = new FnJoin(FnJoinDelimiter.None,
                 "cfn-signal.exe -e 0 \"",
