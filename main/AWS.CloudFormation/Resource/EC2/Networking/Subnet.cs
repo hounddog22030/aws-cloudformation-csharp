@@ -81,8 +81,12 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             {
                 SubnetRouteTableAssociation routeTableAssociation = new SubnetRouteTableAssociation(this, this.RouteTableForGateway);
                 this.Template.Resources.Add(routeTableAssociation.LogicalId, routeTableAssociation);
-                this.NatSecurityGroup.AddIngress((ICidrBlock)this, Protocol.All, Ports.Min, Ports.Max);
-                this.NatSecurityGroup.AddIngress((ICidrBlock)this, Protocol.Icmp, Ports.All);
+                if (this.NatSecurityGroup != null)
+                {
+
+                    this.NatSecurityGroup.AddIngress((ICidrBlock)this, Protocol.All, Ports.Min, Ports.Max);
+                    this.NatSecurityGroup.AddIngress((ICidrBlock)this, Protocol.Icmp, Ports.All);
+                }
             }
 
 

@@ -28,20 +28,19 @@ namespace AWS.CloudFormation.Stack
         public const string ParameterKeyPairName = "KeyPairName";
         public const string ParameterDomainAdminPassword = "DomainAdminPassword";
 
-        public Template(string defaultKeyName, string vpcName, string vpcCidrBlock ) : this(defaultKeyName,vpcName,vpcCidrBlock,null)
+        public Template(string defaultKeyName, string vpcName, string vpcCidrBlock) : this(defaultKeyName,vpcName,vpcCidrBlock,null)
         {
             
         }
 
         public Template(string keyPairName, string vpcName, string vpcCidrBlock, string description) : base()
         {
-
             Outputs = new CloudFormationDictionary();
             AwsTemplateFormatVersion = AwsTemplateFormatVersion20100909;
-            this.Resources = new ObservableDictionary<string,ResourceBase>();
+            this.Resources = new ObservableDictionary<string, ResourceBase>();
             this.Resources.CollectionChanged += Resources_CollectionChanged;
             this.Parameters = new CloudFormationDictionary();
-            this.Parameters.Add(ParameterKeyPairName, new ParameterBase(ParameterKeyPairName, "AWS::EC2::KeyPair::KeyName", keyPairName,"Key Pair to decrypt instance password."));
+            this.Parameters.Add(ParameterKeyPairName, new ParameterBase(ParameterKeyPairName, "AWS::EC2::KeyPair::KeyName", keyPairName, "Key Pair to decrypt instance password."));
             Vpc vpc = new Vpc(vpcCidrBlock);
             this.Resources.Add(vpcName, vpc);
 
@@ -50,6 +49,7 @@ namespace AWS.CloudFormation.Stack
             {
                 this.Description = description;
             }
+
         }
 
         private void Resources_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
