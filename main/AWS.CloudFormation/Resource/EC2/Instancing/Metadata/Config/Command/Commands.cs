@@ -16,8 +16,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
         public enum CommandType
         {
             None,
-            Custom,
-            CompleteWaitHandle
+            Custom
         }
 
         public Commands(LaunchConfiguration resource) : base(resource)
@@ -34,13 +33,6 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
             {
                 case CommandType.Custom:
                     return this.AddCommand<Resource.EC2.Instancing.Metadata.Config.Command.Command>(key);
-                case CommandType.CompleteWaitHandle:
-                    throw new NotImplementedException();
-                    //var returnValue = this.AddCommand<Resource.EC2.Instancing.Metadata.Config.Command.Command>(key);
-                    //returnValue.Command.AddCommandLine(true, "cfn-signal.exe -e 0 \"",
-                    //                                    new ReferenceProperty(data[0]),
-                    //                                    "\"");
-                    //return returnValue;
                 default:
                     throw new InvalidEnumArgumentException();
             }
@@ -49,10 +41,14 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
         {
             
             var returnValue = this.AddCommand<Resource.EC2.Instancing.Metadata.Config.Command.Command>($"SignalComplete{waitCondition.LogicalId}");
+            var logFile = $"c:\\cfn\\log\\{waitCondition.LogicalId}.log";
             returnValue.Command = new FnJoin(FnJoinDelimiter.None,
                 "cfn-signal.exe -e 0 \"",
                 new ReferenceProperty(waitCondition.Handle),
-                "\"");
+                $"\">{logFile}");
+            returnValue.Test = $"IF EXIST \"{logFile}\" EXIT /B 1";
+            returnValue.WaitAfterCompletion = 0.ToString();
+            
             return returnValue;
         }
 
