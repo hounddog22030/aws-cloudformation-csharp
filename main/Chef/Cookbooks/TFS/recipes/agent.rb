@@ -23,7 +23,7 @@ end
 LogFileInstallAgent = "#{Chef::Config['file_cache_path']}/InstallAgent.log"
 
 execute 'InstallAgent' do
-	command "start /high #{node[:tfs][:build_agent_command_file_path]} /ServerUrl:http://#{node[:tfs][:application_server_netbios_name]}:8080/tfs /Configure /Name:#{ENV['COMPUTERNAME']} /force /RunningAsService /PoolName:default  /WindowsServiceLogonAccount:\"#{node[:domainAdmin][:name]}\" /WindowsServiceLogonPassword:\"#{node[:domainAdmin][:password]}\" /NoPrompt"
+	command "#{node[:PsTools][:exe_path]} -accepteula -h -u #{node[:domainAdmin][:name]} -p #{node[:domainAdmin][:password]} #{node[:tfs][:build_agent_command_file_path]} /ServerUrl:http://#{node[:tfs][:application_server_netbios_name]}:8080/tfs /Configure /Name:#{ENV['COMPUTERNAME']} /force /RunningAsService /PoolName:default  /WindowsServiceLogonAccount:\"#{node[:domainAdmin][:name]}\" /WindowsServiceLogonPassword:\"#{node[:domainAdmin][:password]}\" /NoPrompt"
 	action :nothing
 end
 
