@@ -130,7 +130,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             {
                 if (_waitCondition == null)
                 {
-                    var name = $"WaitCondition4{this.Instance.LogicalId}4{this.GetType().Name}"
+                    var name = $"WaitCondition4{this.Instance.LogicalId}4{this.GetType().Name}{DateTime.Now.Ticks}"
                         .Replace(".", string.Empty)
                         .Replace(":", string.Empty);
 
