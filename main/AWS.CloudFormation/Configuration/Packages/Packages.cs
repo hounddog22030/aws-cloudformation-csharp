@@ -429,7 +429,15 @@ namespace AWS.CloudFormation.Configuration.Packages
             base.AddToLaunchConfiguration(configuration);
             var node = this.Instance.GetChefNodeJsonContent();
             var tfsNode = node.Add("tfs");
-            tfsNode.Add("application_server_netbios_name", new FnGetAtt(this.ApplicationServer, FnGetAttAttribute.AwsEc2InstancePrivateDnsName));
+
+            tfsNode.Add("application_server_netbios_name",
+                new FnJoin(FnJoinDelimiter.Period,
+                    this.ApplicationServer.LogicalId,
+                    new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
+                    "dev",
+                    new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
+                    new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)));
+
             if (this.SqlServer4Build != null)
             {
                 tfsNode.Add("sqlexpress4build_private_dns_name", new FnGetAtt(this.SqlServer4Build, FnGetAttAttribute.AwsRdsDbInstanceEndpointAddress));
