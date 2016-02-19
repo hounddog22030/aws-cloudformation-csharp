@@ -49,6 +49,30 @@ namespace AWS.CloudFormation.Test
         }
 
         [TestMethod]
+        public void CreateTestEnvironmentFileTest()
+        {
+            var baseName = "test.app1.yadayadasoftware.com";
+            var stackBaseName = baseName.Replace('.', '-');
+            var stacks = Stack.Stack.GetActiveStacks().Where(s => s.Name.Contains(stackBaseName)).Select(s => s.Name);
+            StackTest.Greek maxVersion = StackTest.Greek.None;
+
+            foreach (var stack in stacks)
+            {
+                var stackVersionString = stack.Split('-')[0];
+                var thisVersion = (StackTest.Greek)System.Enum.Parse(typeof(StackTest.Greek), stackVersionString, true);
+                if (thisVersion > maxVersion)
+                {
+                    maxVersion = thisVersion;
+                }
+            }
+            maxVersion++;
+            var name = $"{maxVersion}.{baseName}";
+
+            Template t = GetTestEnvironmentTemplate(name);
+            TemplateEngine.UploadTemplate(t, "gtbb/templates");
+        }
+
+        [TestMethod]
         public void UpdateTestEnvironmentTest()
         {
             var name = "Epsilon.test.app1.yadayadasoftware.com";

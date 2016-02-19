@@ -176,9 +176,10 @@ namespace AWS.CloudFormation.Test
                 netBiosServersElements = new object[] { dc1PrivateIp };
             }
 
-            AddDhcpOptions(elements, netBiosServersElements, vpc, template);
+            var dhcpOptions = AddDhcpOptions(elements, netBiosServersElements, vpc, template);
 
             var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
+            instanceRdp.DependsOn.Add(dhcpOptions.LogicalId);
             template.Resources.Add($"Rdp", instanceRdp);
             dcPackage.Participate(instanceRdp);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
@@ -189,6 +190,8 @@ namespace AWS.CloudFormation.Test
             if (instancesToCreate.HasFlag(Create.Sql4Tfs))
             {
                 instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Small, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
+                instanceTfsSqlServer.DependsOn.Add(dhcpOptions.LogicalId);
+
                 x = instanceTfsSqlServer.Packages.Last().WaitCondition;
             }
 
@@ -198,6 +201,8 @@ namespace AWS.CloudFormation.Test
             if (instancesToCreate.HasFlag(Create.Tfs))
             {
                 tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
+                tfsServer.DependsOn.Add(dhcpOptions.LogicalId);
+
                 var package =  tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().FirstOrDefault();
                 if (package != null)
                 {
@@ -256,6 +261,8 @@ namespace AWS.CloudFormation.Test
             {
                 var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer,
                  tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
+                buildServer.DependsOn.Add(dhcpOptions.LogicalId);
+
             }
 
             if (instancesToCreate.HasFlag(Create.Workstation))
@@ -265,6 +272,7 @@ namespace AWS.CloudFormation.Test
                     subnetWorkstation,
                     dcPackage,
                     workstationSecurityGroup);
+                workstation.DependsOn.Add(dhcpOptions.LogicalId);
             }
 
             if (instancesToCreate.HasFlag(Create.BackupServer))
@@ -292,6 +300,8 @@ namespace AWS.CloudFormation.Test
                     new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
                     "\\Domain Admins'")));
                 x = backupServer.Packages.Last().WaitCondition;
+                backupServer.DependsOn.Add(dhcpOptions.LogicalId);
+
             }
 
 
