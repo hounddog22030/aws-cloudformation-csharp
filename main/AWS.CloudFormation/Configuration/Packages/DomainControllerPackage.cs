@@ -124,8 +124,6 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             this.Instance.AddSecurityGroup(this.DomainControllerSecurityGroup);
 
-            configuration.AddDisk(Ebs.VolumeTypes.Magnetic, 40);
-
             const string InstallWindowsServerBackup = "c:/cfn/scripts/InstallBackup.ps1";
             var installWindowsServerBackupPath = this.Config.Files.GetFile(InstallWindowsServerBackup);
             installWindowsServerBackupPath.Source = "https://s3.amazonaws.com/gtbb/InstallBackup.ps1";
