@@ -435,7 +435,6 @@ namespace AWS.CloudFormation.Configuration.Packages
                     this.ApplicationServer.LogicalId,
                     new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
                     "dev",
-                    new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
                     new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)));
 
             if (this.SqlServer4Build != null)
