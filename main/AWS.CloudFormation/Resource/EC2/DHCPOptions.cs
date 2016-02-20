@@ -65,6 +65,10 @@ namespace AWS.CloudFormation.Resource.EC2
         {
             get
             {
+                if (this.Properties.GetValue<List<object>>() == null)
+                {
+                    this.Properties.SetValue(new List<object>());
+                }
                 return this.Properties.GetValue<List<object>>();
             }
             set
@@ -77,6 +81,10 @@ namespace AWS.CloudFormation.Resource.EC2
         {
             get
             {
+                if (this.Properties.GetValue<List<object>>() == null)
+                {
+                    this.Properties.SetValue(new List<object>());
+                }
                 return this.Properties.GetValue<List<object>>();
             }
             set
