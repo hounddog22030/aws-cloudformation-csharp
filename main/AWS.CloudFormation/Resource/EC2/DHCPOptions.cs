@@ -16,8 +16,11 @@ namespace AWS.CloudFormation.Resource.EC2
         public DhcpOptions(object domainName, Vpc vpc, FnJoin dnsServers, FnJoin netBiosNameServers) 
             : base(ResourceType.DhcpOptions)
         {
+            if (domainName != null)
+            {
+                this.DomainName = domainName;
+            }
             this.Vpc = vpc;
-            this.DomainName = domainName;
             this.AddDomainNameServer(dnsServers);
             this.AddNetBiosNameServers(netBiosNameServers);
         }

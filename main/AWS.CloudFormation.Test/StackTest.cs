@@ -346,10 +346,7 @@ namespace AWS.CloudFormation.Test
             FnJoin dnsServers = new FnJoin(FnJoinDelimiter.Comma, elements);
             FnJoin netBiosServers = new FnJoin(FnJoinDelimiter.Comma, netBiosServersElements);
 
-            DhcpOptions dhcpOptions = new DhcpOptions(new FnJoin(FnJoinDelimiter.Period,
-                new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
-                new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
-                new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)), vpc, dnsServers, netBiosServers);
+            DhcpOptions dhcpOptions = new DhcpOptions(null, vpc, dnsServers, netBiosServers);
             template.Resources.Add("DhcpOptions", dhcpOptions);
             dhcpOptions.NetbiosNodeType = "2";
             return dhcpOptions;
