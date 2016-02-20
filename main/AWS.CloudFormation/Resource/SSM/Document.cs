@@ -40,7 +40,9 @@ namespace AWS.CloudFormation.Resource.SSM
         protected SsmRuntime()
         {
             this.Properties = new T();
-            this.Add("runtimeConfig", this.Properties.RuntimeConfigName);
+            var runtimeConfig = new CloudFormationDictionary();
+            runtimeConfig.Add(this.Properties.RuntimeConfigName, this.Properties);
+            this.Add("runtimeConfig", runtimeConfig);
         }
 
         [JsonIgnore]
