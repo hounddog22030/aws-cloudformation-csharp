@@ -78,7 +78,7 @@ namespace AWS.CloudFormation.Test
 
 
             SimpleAd simpleAd = new SimpleAd(domainNameFnJoin,
-                                                StackTest.GetPassword(), DirectorySize.Small, template.Vpcs.First(),
+                                                new ReferenceProperty(DomainControllerPackage.DomainAdminPasswordParameterName), DirectorySize.Small, template.Vpcs.First(),
                                                 subnetDmz1,
                                                 subnetDmz2);
             simpleAd.ShortName = new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName);
