@@ -230,6 +230,7 @@ namespace AWS.CloudFormation.Test
             if (instancesToCreate.HasFlag(Create.BackupServer))
             {
                 Subnet backupServerSubnet = new Subnet(vpc,"10.0.255.0/16",AvailabilityZone.UsEast1A, routeTableForSubnetsToNat1,natSecurityGroup);
+                template.Resources.Add(backupServerSubnet.LogicalId, backupServerSubnet);
                 LaunchConfiguration backupServer = new LaunchConfiguration(backupServerSubnet, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsEc2Instance,true);
                 SecurityGroup backupServerSecurityGroup = new SecurityGroup("SecurityGroup4BackupServer", vpc);
                 template.Resources.Add("SecurityGroup4BackupServer", backupServerSecurityGroup);
