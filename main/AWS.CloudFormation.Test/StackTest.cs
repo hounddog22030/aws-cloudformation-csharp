@@ -8,6 +8,7 @@ using AWS.CloudFormation.Configuration.Packages;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.AutoScaling;
+using AWS.CloudFormation.Resource.DirectoryService;
 using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
@@ -42,13 +43,14 @@ namespace AWS.CloudFormation.Test
             template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainAppNameParameterName, "String", appNameNetBiosName, "Name of the application (e.g. Dev,Test,Prod)"));
             template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainVersionParameterName, "String", version.ToString().ToLowerInvariant(), "Fully qualified domain name for the stack (e.g. example.com)"));
             template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainNetBiosNameParameterName, "String", version.ToString() + appNameNetBiosName, "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
-            template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainAdminUsernameParameterName, "String", "johnny", "Domain Admin User"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "tfsservice", "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, "String", "Hello12345.", "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd871hdj11", "Password for Master User For RDS SqlServer") { NoEcho = true });
 
             var domainAdminPasswordReference = new ReferenceProperty(Template.ParameterDomainAdminPassword);
+
+            DomainControllerPackage dcPackage = null;
 
             Vpc vpc = template.Vpcs.First();
             vpc.EnableDnsHostnames = true;
@@ -70,29 +72,6 @@ namespace AWS.CloudFormation.Test
             routeForAz1.DestinationCidrBlock = "0.0.0.0/0";
             routeForAz1.Instance = nat1;
             routeForAz1.RouteTable = routeTableForSubnetsToNat1;
-
-
-            Subnet subnetDomainController1 = AddSubnet4DomainController(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template);
-            Subnet subnetDomainController2 = null;
-
-            if (instancesToCreate.HasFlag(Create.Dc2))
-            {
-                nat2 = AddNat(template, subnetDmz2, natSecurityGroup);
-                nat2.DependsOn.Add(vpc.VpcGatewayAttachment.LogicalId);
-                RouteTable routeTableForSubnetsToNat2 = new RouteTable(vpc);
-                template.Resources.Add($"RouteTable2", routeTableForSubnetsToNat2);
-                subnetDomainController2 = AddSubnet4DomainController2(vpc, routeTableForSubnetsToNat2, natSecurityGroup, template);
-
-
-
-                Route routeForAz2 = new Route(Template.CidrIpTheWorld, routeTableForSubnetsToNat2);
-                template.Resources.Add($"RouteForAz2", routeForAz2);
-                routeForAz2.DestinationCidrBlock = "0.0.0.0/0";
-                routeForAz2.Instance = nat2;
-                routeForAz2.RouteTable = routeTableForSubnetsToNat2;
-
-            }
-
 
 
             SecurityGroup sqlServer4TfsSecurityGroup = AddSqlServer4TfsSecurityGroup(vpc, template, subnetDmz1, subnetDmz2);
@@ -132,56 +111,33 @@ namespace AWS.CloudFormation.Test
             securityGroupSqlSever4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MsSqlServer);
             securityGroupDb4Build.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.MySql);
 
-            Instance instanceDomainController = new Instance(subnetDomainController1, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
-            instanceDomainController.BlockDeviceMappings.First().Ebs.DeleteOnTermination = false;
-            template.Resources.Add("DomainController", instanceDomainController);
-            instanceDomainController.DependsOn.Add(nat1.LogicalId);
-
-
             DbSubnetGroup mySqlSubnetGroupForDatabaseForBuild = new DbSubnetGroup("Second subnet for database for build server");
             template.Resources.Add("DbSubnetGroup4Build2Database", mySqlSubnetGroupForDatabaseForBuild);
 
             mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
             mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
 
-            DomainControllerPackage dcPackage = AddDomainControllerPackage(subnetDomainController1, instanceDomainController, subnetDmz1, subnetDmz2, subnetSqlServer4Tfs, subnetTfsServer, subnetBuildServer, subnetDatabase4BuildServer2, subnetWorkstation);
 
-            Instance instanceDomainController2 = null;
-            FnGetAtt dc2PrivateIp = null;
+            SimpleAd simpleAd = new SimpleAd( new FnJoin(FnJoinDelimiter.Period,
+                                                new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
+                                                "dev",
+                                                new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
+                                                new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)), 
+                                                StackTest.GetPassword(), DirectorySize.Small, template.Vpcs.First(), 
+                                                subnetDmz1, 
+                                                subnetDmz2, 
+                                                subnetSqlServer4Tfs, 
+                                                subnetTfsServer, 
+                                                subnetBuildServer,
+                                                subnetDatabase4BuildServer2,
+                                                subnetWorkstation);
+            simpleAd.ShortName = new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName);
 
+            template.Resources.Add("SimpleAd", simpleAd);
 
-            if (instancesToCreate.HasFlag(Create.Dc2))
-            {
-                instanceDomainController2 = new Instance(subnetDomainController2, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
-                template.Resources.Add("DomainControll2", instanceDomainController2);
-                instanceDomainController2.DependsOn.Add(nat2.LogicalId);
-                dcPackage.Participate(instanceDomainController2);
-                dc2PrivateIp = new FnGetAtt(instanceDomainController2, FnGetAttAttribute.AwsEc2InstancePrivateIp);
-                dcPackage.AddReplicationSite(subnetDomainController2, true);
-                dcPackage.MakeSecondaryDomainController(instanceDomainController2);
-            }
-
-            FnGetAtt dc1PrivateIp = new FnGetAtt(instanceDomainController, FnGetAttAttribute.AwsEc2InstancePrivateIp);
-            object[] elements = null;
-            object[] netBiosServersElements = null;
-
-            if (instancesToCreate.HasFlag(Create.Dc2))
-            {
-                elements = new object[] { dc1PrivateIp, dc2PrivateIp, "10.0.0.2" };
-                netBiosServersElements = new object[] { dc1PrivateIp, dc2PrivateIp };
-            }
-            else
-            {
-                elements = new object[] { dc1PrivateIp, "10.0.0.2" };
-                netBiosServersElements = new object[] { dc1PrivateIp };
-            }
-
-            var dhcpOptions = AddDhcpOptions(elements, netBiosServersElements, vpc, template);
 
             var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
-            instanceRdp.DependsOn.Add(dhcpOptions.LogicalId);
             template.Resources.Add($"Rdp", instanceRdp);
-            dcPackage.Participate(instanceRdp);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
             var x = instanceRdp.Packages.Last().WaitCondition;
 
@@ -190,8 +146,6 @@ namespace AWS.CloudFormation.Test
             if (instancesToCreate.HasFlag(Create.Sql4Tfs))
             {
                 instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Small, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
-                instanceTfsSqlServer.DependsOn.Add(dhcpOptions.LogicalId);
-
                 x = instanceTfsSqlServer.Packages.Last().WaitCondition;
             }
 
@@ -201,7 +155,6 @@ namespace AWS.CloudFormation.Test
             if (instancesToCreate.HasFlag(Create.Tfs))
             {
                 tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
-                tfsServer.DependsOn.Add(dhcpOptions.LogicalId);
 
                 var package =  tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().FirstOrDefault();
                 if (package != null)
@@ -261,7 +214,6 @@ namespace AWS.CloudFormation.Test
             {
                 var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer,
                  tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
-                buildServer.DependsOn.Add(dhcpOptions.LogicalId);
 
             }
 
@@ -272,12 +224,12 @@ namespace AWS.CloudFormation.Test
                     subnetWorkstation,
                     dcPackage,
                     workstationSecurityGroup);
-                workstation.DependsOn.Add(dhcpOptions.LogicalId);
             }
 
             if (instancesToCreate.HasFlag(Create.BackupServer))
             {
-                LaunchConfiguration backupServer = new LaunchConfiguration(subnetDomainController1, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsEc2Instance,true);
+                Subnet backupServerSubnet = new Subnet(vpc,"10.0.255.0/16",AvailabilityZone.UsEast1A, routeTableForSubnetsToNat1,natSecurityGroup);
+                LaunchConfiguration backupServer = new LaunchConfiguration(backupServerSubnet, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsEc2Instance,true);
                 SecurityGroup backupServerSecurityGroup = new SecurityGroup("SecurityGroup4BackupServer", vpc);
                 template.Resources.Add("SecurityGroup4BackupServer", backupServerSecurityGroup);
                 backupServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -286,7 +238,6 @@ namespace AWS.CloudFormation.Test
                 backupServerSecurityGroup.AddIngress(vpc, Protocol.Udp, Ports.Min, Ports.Max);
                 backupServer.AddSecurityGroup(backupServerSecurityGroup);
                 template.Resources.Add("BackupServer", backupServer);
-                dcPackage.Participate(backupServer);
                 backupServer.AddDisk(Ebs.VolumeTypes.Magnetic, 60, false);
                 backupServer.Packages.Add(new WindowsShare(
                     "d:/backups",
@@ -300,7 +251,6 @@ namespace AWS.CloudFormation.Test
                     new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
                     "\\Domain Admins'")));
                 x = backupServer.Packages.Last().WaitCondition;
-                backupServer.DependsOn.Add(dhcpOptions.LogicalId);
 
             }
 

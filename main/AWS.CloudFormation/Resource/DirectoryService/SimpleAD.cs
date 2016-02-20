@@ -23,7 +23,7 @@ namespace AWS.CloudFormation.Resource.DirectoryService
     }
     public class SimpleAd : ResourceBase
     {
-        public SimpleAd(string name, string password, DirectorySize size, Vpc vpc, params Subnet[] subnets) : base(ResourceType.AwsDirectoryServiceSimpleAd)
+        public SimpleAd(object name, string password, DirectorySize size, Vpc vpc, params Subnet[] subnets) : base(ResourceType.AwsDirectoryServiceSimpleAd)
         {
             Name = name;
             Password = password;
@@ -59,11 +59,11 @@ namespace AWS.CloudFormation.Resource.DirectoryService
             private set { this.Properties.SetValue(value); }
         }
         [JsonIgnore]
-        public string Name
+        public object Name
         {
             get
             {
-                return this.Properties.GetValue<string>();
+                return this.Properties.GetValue<object>();
             }
             private set { this.Properties.SetValue(value); }
         }
@@ -76,6 +76,17 @@ namespace AWS.CloudFormation.Resource.DirectoryService
             }
             private set { this.Properties.SetValue(value); }
         }
+
+        [JsonIgnore]
+        public object ShortName
+        {
+            get
+            {
+                return this.Properties.GetValue<object>();
+            }
+            set { this.Properties.SetValue(value); }
+        }
+
     }
 
     public class VpcSettings

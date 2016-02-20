@@ -25,8 +25,8 @@ namespace AWS.CloudFormation.Test.Resource.DirectoryService
             Subnet subnet2 = new Subnet(vpc, "10.0.1.0/24", AvailabilityZone.UsEast1E, true);
             t.Resources.Add(subnet2.LogicalId, subnet2);
 
-            SimpleAd simpleAd = new SimpleAd("yadayadasoftwarecom.awsdirectory.com", StackTest.GetPassword(),DirectorySize.Small, t.Vpcs.First(), subnet1, subnet2);
-
+            SimpleAd simpleAd = new SimpleAd("alpha.dev.yadayadasoftwarecom.awsdirectory.com", StackTest.GetPassword(),DirectorySize.Small, t.Vpcs.First(), subnet1, subnet2);
+            simpleAd.ShortName = "alphadev";
             t.Resources.Add("simpleAd",simpleAd);
             Stack.Stack.CreateStack(t);
         }
