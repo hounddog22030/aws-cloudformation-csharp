@@ -39,7 +39,8 @@ namespace AWS.CloudFormation.Resource.SSM
     {
         protected SsmRuntime()
         {
-            this.Properties = this.Add("runtimeConfig", new T()) as T;
+            T runtimeConfigProperties = new T();
+            this.Add("runtimeConfig", runtimeConfigProperties.RuntimeConfigName);
         }
 
         [JsonIgnore]
@@ -63,11 +64,21 @@ namespace AWS.CloudFormation.Resource.SSM
 
     public abstract class SsmRuntimeConfigProperties : CloudFormationDictionary
     {
+        protected SsmRuntimeConfigProperties(string runtimeConfigName)
+        {
+            RuntimeConfigName = runtimeConfigName;
+        }
+
+        internal string RuntimeConfigName { get; }
         
     }
 
     public class SsmRuntimeConfigDomainJoinProperties : SsmRuntimeConfigProperties
     {
+        public SsmRuntimeConfigDomainJoinProperties() : base("aws:domainJoin")
+        {
+            
+        }
         [JsonIgnore]
         public object DirectoryId
         {
