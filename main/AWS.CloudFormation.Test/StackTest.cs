@@ -33,15 +33,18 @@ namespace AWS.CloudFormation.Test
 
             var template = new Template(KeyPairName, $"Vpc{version}", CidrVpc, $"{GetGitBranch()}:{GetGitHash()}");
 
-            var activeDirectory = new Document();
-            template.Resources.Add("ActiveDirectorySsm", activeDirectory);
-            activeDirectory.Content.Add("schemaVersion", "1.2");
-            var runtimeConfig = activeDirectory.Content.Add("runtimeConfig", new CloudFormationDictionary());
-            var awsDomainJoin = runtimeConfig.Add("aws:domainJoin");
-            var awsDomainJoinProperties = awsDomainJoin.Add("properties");
-            awsDomainJoinProperties.Add("directoryId", "mydirectoryid");
-            awsDomainJoinProperties.Add("directoryName", "somewhere.com");
-            awsDomainJoinProperties.Add("dnsIpAddresses", "10.0.0.2");
+            var activeDirectoryDocument = new Document<SsmRuntimeConfigDomainJoin>();
+            template.Resources.Add("ActiveDirectorySsm", activeDirectoryDocument);
+            activeDirectoryDocument.RuntimeConfig.Properties.DirectoryName = "sadfsadf.com";
+            activeDirectoryDocument.RuntimeConfig.Properties.DnsIpAddresses = "10.0.0.2";
+            activeDirectoryDocument.RuntimeConfig.Properties.DirectoryName = "mydirectoryid";
+
+            //var runtimeConfig = activeDirectory.Content.Add("runtimeConfig", new CloudFormationDictionary());
+            //var awsDomainJoin = runtimeConfig.Add("aws:domainJoin");
+            //var awsDomainJoinProperties = awsDomainJoin.Add("properties");
+            //awsDomainJoinProperties.Add("directoryId", "mydirectoryid");
+            //awsDomainJoinProperties.Add("directoryName", "somewhere.com");
+            //awsDomainJoinProperties.Add("dnsIpAddresses", "10.0.0.2");
 
             var password = GetPassword();
 
@@ -1365,7 +1368,10 @@ namespace AWS.CloudFormation.Test
             Omega,
             TwentySix,
             TwentySeven,
-            TwentyEight
+            TwentyEight,
+            TwentyNine,
+            Thirty,
+            ThirtyOne
         }
 
         [TestMethod]
