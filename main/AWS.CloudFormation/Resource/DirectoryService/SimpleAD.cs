@@ -4,9 +4,14 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using AWS.CloudFormation.Configuration.Packages;
 using AWS.CloudFormation.Property;
+using AWS.CloudFormation.Resource.AutoScaling;
+using AWS.CloudFormation.Resource.EC2.Instancing;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Serialization;
+using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Resource.DirectoryService
@@ -32,14 +37,7 @@ namespace AWS.CloudFormation.Resource.DirectoryService
         }
 
         protected override bool SupportsTags => false;
-        //"CreateAlias" : Boolean,
-        //    "Description" : String,
-        //    "EnableSso" : Boolean,
-        //    "Name" : String,
-        //    "Password" : String,
-        //    "ShortName" : String,
-        //    "Size" : String,
-        //    "VpcSettings" : VpcSettings
+
         [JsonIgnore]
         public VpcSettings VpcSettings
         {
@@ -85,6 +83,43 @@ namespace AWS.CloudFormation.Resource.DirectoryService
                 return this.Properties.GetValue<object>();
             }
             set { this.Properties.SetValue(value); }
+        }
+
+        public static void AddInstanceToDomain(Instance participant)
+        {
+
+            const string CheckForDomainPsPath = "c:/cfn/scripts/check-for-domain.ps1";
+
+            var joinCommandConfig = participant.Metadata.Init.ConfigSets.GetConfigSet($"JoinDomain").GetConfig("JoinDomain");
+
+            var checkForDomainPs = joinCommandConfig.Files.GetFile(CheckForDomainPsPath);
+            checkForDomainPs.Source = "https://s3.amazonaws.com/gtbb/check-for-domain.ps1";
+
+            var joinCommand = joinCommandConfig.Commands.AddCommand<Command>("JoinDomain");
+            joinCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None,
+                "-Command \"",
+                "Add-Computer -DomainName ",
+                new FnJoin(FnJoinDelimiter.Period,
+                            new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
+                            new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
+                            new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)),
+                " -Credential (New-Object System.Management.Automation.PSCredential('",
+                new ReferenceProperty(DomainControllerPackage.DomainAdminUsernameParameterName),
+                "@",
+                new FnJoin(FnJoinDelimiter.Period,
+                new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
+                new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
+                new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)),
+                "',(ConvertTo-SecureString \"",
+                new ReferenceProperty(DomainControllerPackage.DomainAdminPasswordParameterName),
+                "\" -AsPlainText -Force))) ",
+                "-Restart\"");
+            joinCommand.WaitAfterCompletion = "forever";
+            joinCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
+
+            var nodeJson = participant.GetChefNodeJsonContent();
+            nodeJson.Add("domain", new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName));
+
         }
 
     }
