@@ -72,15 +72,15 @@ namespace AWS.CloudFormation.Test
             simpleAd.ShortName = new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName);
             template.Resources.Add("SimpleAd", simpleAd);
 
-            FnGetAtt directoryServicesDnsAddresses = new FnGetAtt(simpleAd, FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses);
-            object[] elements = null;
-            object[] netBiosServersElements = null;
+            //FnGetAtt directoryServicesDnsAddresses = new FnGetAtt(simpleAd, FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses);
+            //object[] elements = null;
+            //object[] netBiosServersElements = null;
 
-            elements = new object[] { directoryServicesDnsAddresses };
-            netBiosServersElements = new object[] { directoryServicesDnsAddresses };
+            //elements = new object[] { directoryServicesDnsAddresses };
+            //netBiosServersElements = new object[] { directoryServicesDnsAddresses };
 
-            var dhcpOptions = AddDhcpOptions(simpleAd, vpc, template);
-            dhcpOptions.DependsOn.Add(simpleAd.LogicalId);
+            //var dhcpOptions = AddDhcpOptions(simpleAd, vpc, template);
+            //dhcpOptions.DependsOn.Add(simpleAd.LogicalId);
 
             Instance nat1 = AddNat(template, subnetDmz1, natSecurityGroup);
             nat1.DependsOn.Add(vpc.VpcGatewayAttachment.LogicalId);
