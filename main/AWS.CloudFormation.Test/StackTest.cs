@@ -1200,7 +1200,7 @@ namespace AWS.CloudFormation.Test
 
             buildServer.AddBlockDeviceMapping("/dev/sda1", 100, Ebs.VolumeTypes.GeneralPurpose);
 
-            domainControllerPackage.Participate(buildServer);
+            //domainControllerPackage.Participate(buildServer);
             buildServer.Packages.Add(new VisualStudio(BucketNameSoftware));
             buildServer.Packages.Add(new TeamFoundationServerBuildServerAgentOnly(tfsServer, BucketNameSoftware, sqlExpress4Build));
             buildServer.Packages.Add(new AmazonAwsCli());
