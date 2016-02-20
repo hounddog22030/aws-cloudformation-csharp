@@ -60,7 +60,7 @@ namespace AWS.CloudFormation.Test
 
             var domainAdminPasswordReference = new ReferenceProperty(Template.ParameterDomainAdminPassword);
 
-            DomainControllerPackage dcPackage = null;
+            
 
             Vpc vpc = template.Vpcs.First();
             vpc.EnableDnsHostnames = true;
@@ -69,6 +69,7 @@ namespace AWS.CloudFormation.Test
             SecurityGroup natSecurityGroup = AddNatSecurityGroup(vpc, template);
             Subnet subnetDmz1 = AddDmz1(vpc, template);
             Subnet subnetDmz2 = AddDmz2(vpc, template);
+            DomainControllerPackage dcPackage = new DomainControllerPackage(subnetDmz1);
 
             var domainNameFnJoin = new FnJoin(FnJoinDelimiter.Period,
                 new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
@@ -162,7 +163,9 @@ namespace AWS.CloudFormation.Test
 
             var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
             instanceRdp.DependsOn.Add(simpleAd.LogicalId);
-            instanceRdp.SsmAssociations.Add(new SsmAssociation(new ReferenceProperty(activeDirectoryDocument.LogicalId)));
+            dcPackage.Participate(instanceRdp);
+            //instanceRdp.SsmAssociations.Add(new SsmAssociation(new ReferenceProperty(activeDirectoryDocument.LogicalId)));
+
             template.Resources.Add($"Rdp", instanceRdp);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
             var x = instanceRdp.Packages.Last().WaitCondition;
