@@ -126,12 +126,7 @@ namespace AWS.CloudFormation.Test
                                                 new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)), 
                                                 StackTest.GetPassword(), DirectorySize.Small, template.Vpcs.First(), 
                                                 subnetDmz1, 
-                                                subnetDmz2, 
-                                                subnetSqlServer4Tfs, 
-                                                subnetTfsServer, 
-                                                subnetBuildServer,
-                                                subnetDatabase4BuildServer2,
-                                                subnetWorkstation);
+                                                subnetDmz2);
             simpleAd.ShortName = new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName);
 
             template.Resources.Add("SimpleAd", simpleAd);
