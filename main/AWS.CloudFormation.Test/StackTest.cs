@@ -16,6 +16,7 @@ using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Resource.RDS;
+using AWS.CloudFormation.Resource.SSM;
 using AWS.CloudFormation.Resource.Wait;
 using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -30,6 +31,10 @@ namespace AWS.CloudFormation.Test
         {
 
             var template = new Template(KeyPairName, $"Vpc{version}", CidrVpc, $"{GetGitBranch()}:{GetGitHash()}");
+
+            var activeDirectory = new Document();
+            template.Resources.Add("ActiveDirectorySsm", activeDirectory);
+            activeDirectory.Content.Add("schemaVersion", "1.2");
 
             var password = GetPassword();
 
