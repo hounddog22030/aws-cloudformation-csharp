@@ -252,9 +252,6 @@ namespace AWS.CloudFormation.Configuration.Packages
             var joinCommand = joinCommandConfig.Commands.AddCommand<Command>("JoinDomain");
             joinCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None,
                 "-Command \"",
-                    "if ((gwmi win32_computersystem).partofdomain -eq $true)             {",
-                        "write-host -fore green \"I am domain joined!\"",
-                    "} else {",
                 "Add-Computer -DomainName ",
                 new FnJoin(FnJoinDelimiter.Period,
                             new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
@@ -267,10 +264,11 @@ namespace AWS.CloudFormation.Configuration.Packages
                 "',(ConvertTo-SecureString \"",
                 new ReferenceProperty(DomainAdminPasswordParameterName),
                 "\" -AsPlainText -Force))) ",
-                "-Restart\"",
-                " }");
+                "-Restart\"");
             joinCommand.WaitAfterCompletion = "forever";
             joinCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
+            var xFile = joinCommandConfig.Files.GetFile("c:/cfn/scripts/joindomain.txt");
+            xFile.Content.Add("x", joinCommand.Command);
 
             //participant.AddDependsOn(this.WaitCondition);
             //this.AddToDomainMemberSecurityGroup(participantLaunchConfiguration);
