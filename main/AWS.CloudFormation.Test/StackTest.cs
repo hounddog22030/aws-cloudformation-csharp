@@ -566,7 +566,7 @@ namespace AWS.CloudFormation.Test
         {
             var sqlServer = new Instance(subnet, instanceSize, UsEastWindows2012R2SqlServerExpressAmi, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 70);
             template.Resources.Add(instanceName,sqlServer);
-            domainControllerPackage.Participate(sqlServer);
+            //domainControllerPackage.Participate(sqlServer);
             var sqlServerPackage = new SqlServerExpressFromAmi(BucketNameSoftware);
             sqlServer.Packages.Add(sqlServerPackage);
             sqlServer.AddSecurityGroup(sqlServerSecurityGroup);
