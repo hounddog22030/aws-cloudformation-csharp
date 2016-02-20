@@ -39,22 +39,12 @@ namespace AWS.CloudFormation.Resource.SSM
     {
         protected SsmRuntime()
         {
-            T runtimeConfigProperties = new T();
-            this.Add("runtimeConfig", runtimeConfigProperties.RuntimeConfigName);
+            this.Properties = new T();
+            this.Add("runtimeConfig", this.Properties);
         }
 
         [JsonIgnore]
-        public T Properties
-        {
-            get
-            {
-                return this.GetValue<T>();
-            }
-            set
-            {
-                this.SetValue(value);
-            }
-        }
+        public T Properties { get; set; }
     }
 
     public class SsmRuntimeConfigDomainJoin : SsmRuntime<SsmRuntimeConfigDomainJoinProperties>
