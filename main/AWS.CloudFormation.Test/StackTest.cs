@@ -33,12 +33,6 @@ namespace AWS.CloudFormation.Test
 
             var template = new Template(KeyPairName, $"Vpc{version}", CidrVpc, $"{GetGitBranch()}:{GetGitHash()}");
 
-            var activeDirectoryDocument = new Document<SsmRuntimeConfigDomainJoin>();
-            template.Resources.Add("ActiveDirectorySsm", activeDirectoryDocument);
-            activeDirectoryDocument.Content.Properties.DirectoryName = "sadfsadf.com";
-            activeDirectoryDocument.Content.Properties.DnsIpAddresses = "10.0.0.2";
-            activeDirectoryDocument.Content.Properties.DirectoryId = "mydirectoryid";
-
             //var runtimeConfig = activeDirectory.Content.Add("runtimeConfig", new CloudFormationDictionary());
             //var awsDomainJoin = runtimeConfig.Add("aws:domainJoin");
             //var awsDomainJoinProperties = awsDomainJoin.Add("properties");
@@ -76,15 +70,16 @@ namespace AWS.CloudFormation.Test
             Subnet subnetDmz1 = AddDmz1(vpc, template);
             Subnet subnetDmz2 = AddDmz2(vpc, template);
 
+            var domainNameFnJoin = new FnJoin(FnJoinDelimiter.Period,
+                new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
+                "dev",
+                new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName));
 
-            SimpleAd simpleAd = new SimpleAd(new FnJoin(FnJoinDelimiter.Period,
-                                                new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
-                                                "dev",
-                                                new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)),
+
+            SimpleAd simpleAd = new SimpleAd(domainNameFnJoin,
                                                 StackTest.GetPassword(), DirectorySize.Small, template.Vpcs.First(),
                                                 subnetDmz1,
                                                 subnetDmz2);
-            simpleAd.DependsOn.Add(activeDirectoryDocument.LogicalId);
             simpleAd.ShortName = new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName);
             template.Resources.Add("SimpleAd", simpleAd);
 
@@ -97,6 +92,14 @@ namespace AWS.CloudFormation.Test
 
             var dhcpOptions = AddDhcpOptions(simpleAd, vpc, template);
             dhcpOptions.DependsOn.Add(simpleAd.LogicalId);
+
+            var activeDirectoryDocument = new Document<SsmRuntimeConfigDomainJoin>();
+            activeDirectoryDocument.DependsOn.Add(simpleAd.LogicalId);
+            template.Resources.Add("ActiveDirectorySsm", activeDirectoryDocument);
+            activeDirectoryDocument.Content.Properties.DirectoryName = domainNameFnJoin;
+            activeDirectoryDocument.Content.Properties.DnsIpAddresses = directoryServicesDnsAddresses;
+            activeDirectoryDocument.Content.Properties.DirectoryId = appNameNetBiosName;
+
 
             Instance nat1 = AddNat(template, subnetDmz1, natSecurityGroup);
             nat1.DependsOn.Add(vpc.VpcGatewayAttachment.LogicalId);
