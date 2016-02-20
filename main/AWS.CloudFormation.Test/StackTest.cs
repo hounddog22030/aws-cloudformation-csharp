@@ -163,10 +163,10 @@ namespace AWS.CloudFormation.Test
 
             var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
             instanceRdp.DependsOn.Add(simpleAd.LogicalId);
-            dcPackage.Participate(instanceRdp);
             //instanceRdp.SsmAssociations.Add(new SsmAssociation(new ReferenceProperty(activeDirectoryDocument.LogicalId)));
 
             template.Resources.Add($"Rdp", instanceRdp);
+            dcPackage.Participate(instanceRdp);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
             var x = instanceRdp.Packages.Last().WaitCondition;
 

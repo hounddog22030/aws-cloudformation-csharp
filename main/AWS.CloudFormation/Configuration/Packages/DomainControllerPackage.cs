@@ -245,9 +245,9 @@ namespace AWS.CloudFormation.Configuration.Packages
             checkForDomainPs.Source = "https://s3.amazonaws.com/gtbb/check-for-domain.ps1";
 
 
-            var addActiveDirectoryPowershell = joinCommandConfig.Commands.AddCommand<Command>("AddRSATADPowerShell");
-            addActiveDirectoryPowershell.Command = new PowershellFnJoin(FnJoinDelimiter.None, "Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter");
-            addActiveDirectoryPowershell.WaitAfterCompletion = 0.ToString();
+            //var addActiveDirectoryPowershell = joinCommandConfig.Commands.AddCommand<Command>("AddRSATADPowerShell");
+            //addActiveDirectoryPowershell.Command = new PowershellFnJoin(FnJoinDelimiter.None, "Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter");
+            //addActiveDirectoryPowershell.WaitAfterCompletion = 0.ToString();
 
             var joinCommand = joinCommandConfig.Commands.AddCommand<Command>("JoinDomain");
             joinCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None,
