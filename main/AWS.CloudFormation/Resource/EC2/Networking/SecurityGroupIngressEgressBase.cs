@@ -109,7 +109,10 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         [EnumMember(Value = "Endpoint.Address")]
         AwsRdsDbInstanceEndpointAddress,
         [EnumMember(Value = "DNSName")]
-        AwsElasticLoadBalancingLoadBalancer
+        AwsElasticLoadBalancingLoadBalancer,
+        [EnumMember(Value = "DnsIpAddresses")]
+        AwsDirectoryServiceSimpleAdDnsIpAddresses
+        //DnsIpAddresses
 
         //AWS::ElasticLoadBalancing::LoadBalancer
 

@@ -72,6 +72,16 @@ namespace AWS.CloudFormation.Test
             simpleAd.ShortName = new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName);
             template.Resources.Add("SimpleAd", simpleAd);
 
+            FnGetAtt directoryServicesDnsAddresses = new FnGetAtt(simpleAd, FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses);
+            object[] elements = null;
+            object[] netBiosServersElements = null;
+
+            elements = new object[] { directoryServicesDnsAddresses, "10.0.0.2" };
+            netBiosServersElements = new object[] { directoryServicesDnsAddresses };
+
+            var dhcpOptions = AddDhcpOptions(elements, netBiosServersElements, vpc, template);
+            dhcpOptions.DependsOn(simpleAd);
+
             Instance nat1 = AddNat(template, subnetDmz1, natSecurityGroup);
             nat1.DependsOn.Add(vpc.VpcGatewayAttachment.LogicalId);
             Instance nat2 = null;
@@ -1376,8 +1386,8 @@ namespace AWS.CloudFormation.Test
             var appName = "dev";
 
             //Create instances = Create.Dc2 | Create.BackupServer | Create.Rdp1;
-            Create instances = Create.FullStack;
-            //Create instances = (Create)0;
+            //Create instances = Create.FullStack;
+            Create instances = (Create)0;
             var templateToCreateStack = GetTemplateFullStack(topLevel, appName, version, instances);
             templateToCreateStack.StackName = $"{version}-{appName}-{topLevel}".Replace('.','-');
 
