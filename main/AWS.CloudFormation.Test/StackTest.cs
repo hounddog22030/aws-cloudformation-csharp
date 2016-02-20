@@ -438,7 +438,7 @@ namespace AWS.CloudFormation.Test
 
         private static Subnet AddDmz2(Vpc vpc, Template template)
         {
-            Subnet subnetDmz2 = new Subnet(vpc, CidrDmz2, AvailabilityZone.UsEast1A, true);
+            Subnet subnetDmz2 = new Subnet(vpc, CidrDmz2, AvailabilityZone.UsEast1E, true);
             template.Resources.Add("SubnetDmz2", subnetDmz2);
             return subnetDmz2;
         }
