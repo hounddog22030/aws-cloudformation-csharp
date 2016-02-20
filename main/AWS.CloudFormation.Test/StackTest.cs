@@ -542,7 +542,7 @@ namespace AWS.CloudFormation.Test
             return natSecurityGroup;
         }
 
-        private static string GetPassword()
+        internal static string GetPassword()
         {
             var random = new Random(((int) DateTime.Now.Ticks%int.MaxValue));
 

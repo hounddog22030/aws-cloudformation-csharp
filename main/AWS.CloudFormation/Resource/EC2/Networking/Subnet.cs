@@ -48,6 +48,18 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             }
         }
 
+        public override string LogicalId {
+            get
+            {
+                if (string.IsNullOrEmpty(base.LogicalId))
+                {
+                    this.LogicalId = $"Subnet{this.CidrBlock}".Replace(".", string.Empty).Replace("/", string.Empty);
+                }
+                return base.LogicalId;
+            }
+            internal set { base.LogicalId = value; }
+        }
+
         [JsonIgnore]
         public string CidrBlock
         {
