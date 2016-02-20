@@ -90,7 +90,7 @@ namespace AWS.CloudFormation.Resource.DirectoryService
 
             const string CheckForDomainPsPath = "c:/cfn/scripts/check-for-domain.ps1";
 
-            var joinCommandConfig = participant.Metadata.Init.ConfigSets.GetConfigSet($"JoinDomain").GetConfig("JoinDomain");
+            var joinCommandConfig = participant.Metadata.Init.ConfigSets.GetConfigSet("JoinDomain").GetConfig("JoinDomain");
 
             var checkForDomainPs = joinCommandConfig.Files.GetFile(CheckForDomainPsPath);
             checkForDomainPs.Source = "https://s3.amazonaws.com/gtbb/check-for-domain.ps1";
