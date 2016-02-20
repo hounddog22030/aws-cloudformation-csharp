@@ -152,6 +152,7 @@
     <None Include="App.config" />
     <None Include="Scripts\configure-sql-4-tfs.ps1" />
     <None Include="Scripts\add-network-to-sysadmin2.ps1" />
+    <None Include="Scripts\create-user.ps1" />
     <None Include="Scripts\CreateWindowsShare.ps1" />
     <None Include="Scripts\add-network-to-sysadmin.ps1" />
     <None Include="Scripts\check-for-domain.ps1" />
@@ -165,6 +166,7 @@
     <None Include="Scripts\check-ADReplicationSubnet-exists.ps1" />
     <None Include="Scripts\check-ADReplicationSite-exists.ps1" />
     <None Include="Scripts\check-for-user-exists.ps1" />
+    <None Include="Scripts\users.csv" />
     <None Include="Scripts\web.config" />
     <None Include="users.csv" />
   </ItemGroup>
