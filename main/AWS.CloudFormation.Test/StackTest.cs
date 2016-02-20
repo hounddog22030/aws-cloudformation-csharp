@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Configuration.Packages;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource;
@@ -35,6 +36,12 @@ namespace AWS.CloudFormation.Test
             var activeDirectory = new Document();
             template.Resources.Add("ActiveDirectorySsm", activeDirectory);
             activeDirectory.Content.Add("schemaVersion", "1.2");
+            var runtimeConfig = activeDirectory.Content.Add("runtimeConfig", new CloudFormationDictionary());
+            var awsDomainJoin = runtimeConfig.Add("aws:domainJoin");
+            var awsDomainJoinProperties = awsDomainJoin.Add("properties");
+            awsDomainJoinProperties.Add("directoryId", "mydirectoryid");
+            awsDomainJoinProperties.Add("directoryName", "somewhere.com");
+            awsDomainJoinProperties.Add("dnsIpAddresses", "10.0.0.2");
 
             var password = GetPassword();
 
