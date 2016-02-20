@@ -1351,6 +1351,9 @@ namespace AWS.CloudFormation.Test
             Chi,
             Psi,
             Omega,
+            TwentySix,
+            TwentySeven,
+            TwentyEight
         }
 
         [TestMethod]
