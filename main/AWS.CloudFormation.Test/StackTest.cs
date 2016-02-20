@@ -37,7 +37,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("ActiveDirectorySsm", activeDirectoryDocument);
             activeDirectoryDocument.Content.Properties.DirectoryName = "sadfsadf.com";
             activeDirectoryDocument.Content.Properties.DnsIpAddresses = "10.0.0.2";
-            activeDirectoryDocument.Content.Properties.DirectoryName = "mydirectoryid";
+            activeDirectoryDocument.Content.Properties.DirectoryId = "mydirectoryid";
 
             //var runtimeConfig = activeDirectory.Content.Add("runtimeConfig", new CloudFormationDictionary());
             //var awsDomainJoin = runtimeConfig.Add("aws:domainJoin");
@@ -84,6 +84,7 @@ namespace AWS.CloudFormation.Test
                                                 StackTest.GetPassword(), DirectorySize.Small, template.Vpcs.First(),
                                                 subnetDmz1,
                                                 subnetDmz2);
+            simpleAd.DependsOn.Add(activeDirectoryDocument.LogicalId);
             simpleAd.ShortName = new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName);
             template.Resources.Add("SimpleAd", simpleAd);
 
