@@ -249,6 +249,8 @@ namespace AWS.CloudFormation.Configuration.Packages
             //addActiveDirectoryPowershell.Command = new PowershellFnJoin(FnJoinDelimiter.None, "Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter");
             //addActiveDirectoryPowershell.WaitAfterCompletion = 0.ToString();
 
+            //start /high powershell.exe -Command "Add-Computer -DomainName nu.dev.yadayadasoftware.com -Credential (New-Object System.Management.Automation.PSCredential('Nudev\admin',(ConvertTo-SecureString "MSKB4417hfcm" -AsPlainText -Force))) -Restart"
+
             var joinCommand = joinCommandConfig.Commands.AddCommand<Command>("JoinDomain");
             joinCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None,
                 "-Command \"",
@@ -258,9 +260,12 @@ namespace AWS.CloudFormation.Configuration.Packages
                             new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
                             new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)),
                 " -Credential (New-Object System.Management.Automation.PSCredential('",
-                new ReferenceProperty(DomainNetBiosNameParameterName),
-                "\\",
                 new ReferenceProperty(DomainAdminUsernameParameterName),
+                "@",
+                new FnJoin(FnJoinDelimiter.Period,
+                new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
+                new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
+                new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)),
                 "',(ConvertTo-SecureString \"",
                 new ReferenceProperty(DomainAdminPasswordParameterName),
                 "\" -AsPlainText -Force))) ",
