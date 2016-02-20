@@ -272,7 +272,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             joinCommand.WaitAfterCompletion = "forever";
             joinCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
 
-            participant.AddDependsOn(this.WaitCondition);
+            //participant.AddDependsOn(this.WaitCondition);
             //this.AddToDomainMemberSecurityGroup(participantLaunchConfiguration);
             var nodeJson = participantLaunchConfiguration.GetChefNodeJsonContent();
             nodeJson.Add("domain", new ReferenceProperty(DomainNetBiosNameParameterName));
