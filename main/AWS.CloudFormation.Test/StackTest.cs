@@ -101,8 +101,11 @@ namespace AWS.CloudFormation.Test
             activeDirectoryDocument.Content.Properties.DirectoryId = appNameNetBiosName;
 
 
+            
             Instance nat1 = AddNat(template, subnetDmz1, natSecurityGroup);
             nat1.DependsOn.Add(vpc.VpcGatewayAttachment.LogicalId);
+            nat1.DependsOn.Add(activeDirectoryDocument.LogicalId);
+
             Instance nat2 = null;
 
             RouteTable routeTableForSubnetsToNat1 = new RouteTable(vpc);
@@ -159,6 +162,7 @@ namespace AWS.CloudFormation.Test
 
             var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
             instanceRdp.DependsOn.Add(simpleAd.LogicalId);
+            instanceRdp.SsmAssociations.Add(new SsmAssociation(new ReferenceProperty(activeDirectoryDocument.LogicalId)));
             template.Resources.Add($"Rdp", instanceRdp);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
             var x = instanceRdp.Packages.Last().WaitCondition;

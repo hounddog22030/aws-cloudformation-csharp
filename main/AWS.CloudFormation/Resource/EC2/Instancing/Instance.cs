@@ -180,5 +180,32 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             VolumeAttachment attachment = new VolumeAttachment(deviceId, this, volume);
             this.Template.Resources.Add(attachment.LogicalId, attachment);
         }
+
+        [JsonIgnore]
+        public List<SsmAssociation> SsmAssociations
+        {
+            get
+            {
+                if (this.Properties.GetValue<List<SsmAssociation>>() == null)
+                {
+                    this.SsmAssociations = new List<SsmAssociation>();
+                }
+                return this.Properties.GetValue<List<SsmAssociation>>();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
+            }
+        }
+    }
+
+    public class SsmAssociation
+    {
+        public SsmAssociation(object documentName)
+        {
+            DocumentName = documentName;
+        }
+
+        public object DocumentName { get; }
     }
 }

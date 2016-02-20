@@ -23,7 +23,9 @@ namespace AWS.CloudFormation.Resource
     public enum ResourceType
     {
         [EnumMember(Value = "AWS::AutoScaling::AutoScalingGroup")] AwsAutoScalingAutoScalingGroup,
+        //http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-as-launchconfig.html
         [EnumMember(Value = "AWS::AutoScaling::LaunchConfiguration")] AwsAutoScalingLaunchConfiguration,
+        //http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-instance.html
         [EnumMember(Value = "AWS::EC2::Instance")] AwsEc2Instance,
         [EnumMember(Value = "AWS::CloudFormation::Init")] AwsCloudFormationInit,
         [EnumMember(Value = "AWS::CloudFormation::Authentication")] AwsCloudFormationAuthentication,
