@@ -76,7 +76,7 @@ namespace AWS.CloudFormation.Test
             object[] elements = null;
             object[] netBiosServersElements = null;
 
-            elements = new object[] { directoryServicesDnsAddresses, "10.0.0.2" };
+            elements = new object[] { directoryServicesDnsAddresses };
             netBiosServersElements = new object[] { directoryServicesDnsAddresses };
 
             var dhcpOptions = AddDhcpOptions(elements, netBiosServersElements, vpc, template);
