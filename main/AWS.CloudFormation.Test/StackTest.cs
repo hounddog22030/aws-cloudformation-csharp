@@ -79,7 +79,7 @@ namespace AWS.CloudFormation.Test
             elements = new object[] { directoryServicesDnsAddresses };
             netBiosServersElements = new object[] { directoryServicesDnsAddresses };
 
-            var dhcpOptions = AddDhcpOptions(elements, netBiosServersElements, vpc, template);
+            var dhcpOptions = AddDhcpOptions(simpleAd, vpc, template);
             dhcpOptions.DependsOn.Add(simpleAd.LogicalId);
 
             Instance nat1 = AddNat(template, subnetDmz1, natSecurityGroup);
@@ -340,17 +340,6 @@ namespace AWS.CloudFormation.Test
             FullStack = int.MaxValue
         }
 
-
-        private static DhcpOptions AddDhcpOptions(object[] elements, object[] netBiosServersElements, Vpc vpc, Template template)
-        {
-            FnJoin dnsServers = new FnJoin(FnJoinDelimiter.Comma, elements);
-            FnJoin netBiosServers = new FnJoin(FnJoinDelimiter.Comma, netBiosServersElements);
-
-            DhcpOptions dhcpOptions = new DhcpOptions(null, vpc, dnsServers, netBiosServers);
-            template.Resources.Add("DhcpOptions", dhcpOptions);
-            dhcpOptions.NetbiosNodeType = "2";
-            return dhcpOptions;
-        }
 
         private static DhcpOptions AddDhcpOptions(SimpleAd simpleAd, Vpc vpc, Template template)
         {
