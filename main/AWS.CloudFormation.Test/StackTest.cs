@@ -35,9 +35,9 @@ namespace AWS.CloudFormation.Test
 
             var activeDirectoryDocument = new Document<SsmRuntimeConfigDomainJoin>();
             template.Resources.Add("ActiveDirectorySsm", activeDirectoryDocument);
-            activeDirectoryDocument.RuntimeConfig.Properties.DirectoryName = "sadfsadf.com";
-            activeDirectoryDocument.RuntimeConfig.Properties.DnsIpAddresses = "10.0.0.2";
-            activeDirectoryDocument.RuntimeConfig.Properties.DirectoryName = "mydirectoryid";
+            activeDirectoryDocument.Content.Properties.DirectoryName = "sadfsadf.com";
+            activeDirectoryDocument.Content.Properties.DnsIpAddresses = "10.0.0.2";
+            activeDirectoryDocument.Content.Properties.DirectoryName = "mydirectoryid";
 
             //var runtimeConfig = activeDirectory.Content.Add("runtimeConfig", new CloudFormationDictionary());
             //var awsDomainJoin = runtimeConfig.Add("aws:domainJoin");

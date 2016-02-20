@@ -18,30 +18,13 @@ namespace AWS.CloudFormation.Resource.SSM
         protected override bool SupportsTags => false;
 
         [JsonIgnore]
-        public CloudFormationDictionary Content
-        {
-            get
-            {
-                if (this.Properties.GetValue<CloudFormationDictionary>() == null)
-                {
-                    this.Content = new CloudFormationDictionary();
-                }
-                return this.Properties.GetValue<CloudFormationDictionary>();
-            }
-            set
-            {
-                this.Properties.SetValue(value);
-            }
-        }
-
-        [JsonIgnore]
-        public T RuntimeConfig
+        public T Content
         {
             get
             {
                 if (this.Properties.GetValue<T>() == null)
                 {
-                    this.RuntimeConfig = new T();
+                    this.Content = new T();
                 }
                 return this.Properties.GetValue<T>();
             }
@@ -50,9 +33,6 @@ namespace AWS.CloudFormation.Resource.SSM
                 this.Properties.SetValue(value);
             }
         }
-
-
-
     }
 
     public abstract class SsmRuntime<T> : CloudFormationDictionary where T: SsmRuntimeConfigProperties, new()
