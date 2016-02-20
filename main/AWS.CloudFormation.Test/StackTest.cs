@@ -352,6 +352,14 @@ namespace AWS.CloudFormation.Test
             return dhcpOptions;
         }
 
+        private static DhcpOptions AddDhcpOptions(SimpleAd simpleAd, Vpc vpc, Template template)
+        {
+            DhcpOptions dhcpOptions = new DhcpOptions(vpc, simpleAd);
+            template.Resources.Add("DhcpOptions", dhcpOptions);
+            dhcpOptions.NetbiosNodeType = "2";
+            return dhcpOptions;
+        }
+
         private static DomainControllerPackage AddDomainControllerPackage(Subnet subnetDomainController1,
             Instance instanceDomainController, Subnet subnetDmz1, Subnet subnetDmz2, Subnet subnetSqlServer4Tfs,
             Subnet subnetTfsServer, Subnet subnetBuildServer, Subnet subnetDatabase4BuildServer2, Subnet subnetWorkstation)

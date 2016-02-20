@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Resource.DirectoryService;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
@@ -23,6 +24,13 @@ namespace AWS.CloudFormation.Resource.EC2
             this.Vpc = vpc;
             this.AddDomainNameServer(dnsServers);
             this.AddNetBiosNameServers(netBiosNameServers);
+        }
+
+        public DhcpOptions(Vpc vpc, SimpleAd simpleAd) : base(ResourceType.DhcpOptions)
+        {
+            this.Vpc = vpc;
+            this.AddDomainNameServer(new FnGetAtt(simpleAd, FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses));
+            this.AddNetBiosNameServers(new FnGetAtt(simpleAd, FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses));
         }
 
         [JsonIgnore]
