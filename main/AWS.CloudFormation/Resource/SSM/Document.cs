@@ -41,7 +41,7 @@ namespace AWS.CloudFormation.Resource.SSM
             {
                 if (this.Properties.GetValue<T>() == null)
                 {
-                    this.Content = new T();
+                    this.RuntimeConfig = new T();
                 }
                 return this.Properties.GetValue<T>();
             }
