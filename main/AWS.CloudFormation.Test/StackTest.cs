@@ -1272,7 +1272,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("Tfs",tfsServer);
 
 
-            dc1.Participate(tfsServer);
+            //dc1.Participate(tfsServer);
             if (sqlServer4Tfs != null)
             {
                 tfsServer.AddDependsOn(sqlServer4Tfs.Packages.Last().WaitCondition);
