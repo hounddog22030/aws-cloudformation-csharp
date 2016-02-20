@@ -37,16 +37,16 @@ namespace AWS.CloudFormation.Resource.SSM
 
     public abstract class SsmRuntime<T> : CloudFormationDictionary where T: SsmRuntimeConfigProperties, new()
     {
+        protected SsmRuntime()
+        {
+            this.Properties = this.Add("runtimeConfig", new T()) as T;
+        }
 
         [JsonIgnore]
         public T Properties
         {
             get
             {
-                if (this.GetValue<CloudFormationDictionary>() == null)
-                {
-                    this.Properties = new T();
-                }
                 return this.GetValue<T>();
             }
             set
@@ -58,10 +58,6 @@ namespace AWS.CloudFormation.Resource.SSM
 
     public class SsmRuntimeConfigDomainJoin : SsmRuntime<SsmRuntimeConfigDomainJoinProperties>
     {
-        public SsmRuntimeConfigDomainJoin()
-        {
-            this.Add("runtimeConfig", "aws:domainJoin");
-        }
 
     }
 
