@@ -80,7 +80,7 @@ namespace AWS.CloudFormation.Test
             netBiosServersElements = new object[] { directoryServicesDnsAddresses };
 
             var dhcpOptions = AddDhcpOptions(elements, netBiosServersElements, vpc, template);
-            dhcpOptions.DependsOn(simpleAd);
+            dhcpOptions.DependsOn.Add(simpleAd.LogicalId);
 
             Instance nat1 = AddNat(template, subnetDmz1, natSecurityGroup);
             nat1.DependsOn.Add(vpc.VpcGatewayAttachment.LogicalId);
