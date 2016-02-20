@@ -29,8 +29,8 @@ namespace AWS.CloudFormation.Resource.EC2
         public DhcpOptions(Vpc vpc, SimpleAd simpleAd) : base(ResourceType.DhcpOptions)
         {
             this.Vpc = vpc;
-            this.AddDomainNameServer(new FnGetAtt(simpleAd, FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses));
-            this.AddNetBiosNameServers(new FnGetAtt(simpleAd, FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses));
+            this.DomainNameServers = new FnGetAtt(simpleAd, FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses);
+            this.NetbiosNameServers = new FnGetAtt(simpleAd, FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses);
         }
 
         [JsonIgnore]
@@ -60,11 +60,11 @@ namespace AWS.CloudFormation.Resource.EC2
         }
 
         [JsonIgnore]
-        public string[] DomainNameServers
+        public object DomainNameServers
         {
             get
             {
-                return this.Properties.GetValue<string[]>();
+                return this.Properties.GetValue<object>();
             }
             set
             {
@@ -72,11 +72,11 @@ namespace AWS.CloudFormation.Resource.EC2
             }
         }
         [JsonIgnore]
-        public string[] NetbiosNameServers
+        public object NetbiosNameServers
         {
             get
             {
-                return this.Properties.GetValue<string[]>();
+                return this.Properties.GetValue<object>();
             }
             set
             {
