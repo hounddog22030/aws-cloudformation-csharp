@@ -272,6 +272,8 @@ namespace AWS.CloudFormation.Configuration.Packages
                 "-Restart\"");
             joinCommand.WaitAfterCompletion = "forever";
             joinCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
+            var xFile = joinCommandConfig.Files.GetFile("c:/cfn/scripts/joindomain.txt");
+            xFile.Content.Add("x", joinCommand.Command);
 
             //participant.AddDependsOn(this.WaitCondition);
             //this.AddToDomainMemberSecurityGroup(participantLaunchConfiguration);
