@@ -39,6 +39,7 @@ namespace AWS.CloudFormation.Test
             };
 
             template.Parameters.Add(domainPassword);
+            template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainAdminUsernameParameterName, "String", "admin", "Admin username"));
             template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainTopLevelNameParameterName, "String", topLevel, "Top level domain name for the stack (e.g. example.com)"));
             template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainAppNameParameterName, "String", appNameNetBiosName, "Name of the application (e.g. Dev,Test,Prod)"));
             template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainVersionParameterName, "String", version.ToString().ToLowerInvariant(), "Fully qualified domain name for the stack (e.g. example.com)"));
