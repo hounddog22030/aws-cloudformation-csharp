@@ -174,9 +174,7 @@ namespace AWS.CloudFormation.Test
             var addUserCommand = addUserConfig.Commands.AddCommand<Command>("addusercommand");
             var createUserPowershellScript = addUserConfig.Files.GetFile("c:/cfn/scripts/createuser.ps1");
             createUserPowershellScript.Source = "https://s3.amazonaws.com/gtbb/createuser.ps1";
-            var psTools = addUserConfig.Files.GetFile("c:/cfn/tools/pstools.zip");
-            psTools.Source = "https://s3.amazonaws.com/gtbb/software/pstools.zip";
-            //
+            addUserConfig.Sources.Add("c:/cfn/tools/pstools", "https://s3.amazonaws.com/gtbb/software/pstools.zip");
             addUserCommand.Command = $"c:\\cfn\\tools\\pstools\\psexec.exe -accepteula -h -u {version}dev\\administrator -p {password} powershell.exe -ExecutionPolicy RemoteSigned c:\\cfn\\scripts\\createuser.ps1";
 
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
