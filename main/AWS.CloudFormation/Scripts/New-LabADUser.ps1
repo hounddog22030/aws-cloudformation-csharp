@@ -28,6 +28,7 @@ foreach ($user in $users) {
 		$Search
 		$objUser = [ADSI]$Search
 		$objUser
+		$user.password
 		$objUser.SetPassword($user.password)
 		$objUser.userAccountControl
 		$objUser.userAccountControl = 544
