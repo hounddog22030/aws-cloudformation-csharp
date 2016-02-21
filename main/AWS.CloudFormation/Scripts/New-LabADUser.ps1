@@ -1,55 +1,37 @@
-﻿[CmdletBinding()]
-param(
-	[Parameter(Position=0, Mandatory=$false)]
-	[System.Int32]
-	$count = 1,
-
-	[Parameter(Position=1, Mandatory=$false)]
-	[System.String]
-	$password = [System.Web.Security.Membership]::GeneratePassword(10,2),
-		
-	[Parameter(Position=2, Mandatory=$false)]
-	[System.String]
-	$UpnSuffix = [System.DirectoryServices.ActiveDirectory.Forest]::GetCurrentForest().RootDomain.Name,
-
-	[Parameter(Position=3, Mandatory=$false)]
-	[System.String]
-	$Description = "",	
-	
-	[Parameter(Position=4, Mandatory=$false)]
-	[System.String]
-	$OrganizationalUnit = ("CN=users," + ([ADSI]"LDAP://RootDSE").defaultNamingContext)
-)
-
-begin {
+﻿begin {
     $users = Import-Csv $PSScriptRoot\users.csv
 }
 
 process {
-    $userpwd = ConvertTo-SecureString -AsPlainText $password -Force
 	
-    1..$count | %{
-	    $r1 = Get-Random -Min 1 -Maximum 1000
-	    $r2 = Get-Random -Min 1 -Maximum 1000
+$Root = [ADSI]"LDAP://RootDSE"
+		$Root
+
+foreach ($user in $users) {
+ 
+	    $firstname = $user.firstname
+	    $lastname = $user.lastname
 		
-	    $firstname = $users[$r1].firstname
-	    $lastname = $users[$r2].lastname
-		
-	    $upn = "$($firstname[0])$lastname@$UpnSuffix".ToLower()
+#	    $upn = "$($firstname[0])$lastname@$UpnSuffix".ToLower()
 	    $name = "$firstname $lastname"
 	    $alias = "$($firstname[0])$lastname".ToLower()
 		
-	    New-ADUser -Name $name `
-	    -GivenName $firstname `
-	    -Surname $lastname `
-	    -SamAccountName $alias `
-	    -DisplayName $name `
-	    -AccountPassword $userpwd `
-	    -PassThru `
-	    -Enabled $true `
-	    -UserPrincipalName $upn `
-	    -Description $Description `
-	    -Path $OrganizationalUnit `
-	    -EA 0
+		$Search = "LDAP://CN=Users," + $Root.rootDomainNamingContext
+		$Search
+		$Container =  [ADSI]($Search)
+		$Container
+		$usr = $Container.Create("user","cn=$alias")
+		$usr.Put("sAMAccountName",$alias)
+		$usr.CommitChanges()
+
+		$Search = "LDAP://CN=" + $alias + ",CN=Users," + $Root.rootDomainNamingContext
+		$Search
+		$objUser = [ADSI]$Search
+		$objUser
+		$objUser.SetPassword($user.password)
+		$objUser.userAccountControl
+		$objUser.userAccountControl = 544
+		$objUser.userAccountControl
+		$objUser.CommitChanges()
     }
 }
