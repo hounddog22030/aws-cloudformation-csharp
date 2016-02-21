@@ -161,7 +161,7 @@ namespace AWS.CloudFormation.Test
             mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
             mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
 
-            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Nano, "ami-5585af3f", OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
+            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Nano, "ami-4b91bb21", OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
             instanceRdp.DependsOn.Add(simpleAd.LogicalId);
             //instanceRdp.SsmAssociations.Add(new SsmAssociation(new ReferenceProperty(activeDirectoryDocument.LogicalId)));
 
