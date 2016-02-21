@@ -169,13 +169,7 @@ namespace AWS.CloudFormation.Test
 
             template.Resources.Add("Rdp", instanceRdp);
             dcPackage.Participate(instanceRdp);
-
-            var addUserConfig = instanceRdp.Metadata.Init.ConfigSets.GetConfigSet("adduserconfigset").GetConfig("adduserconfig");
-            var addUserCommand = addUserConfig.Commands.AddCommand<Command>("addusercommand");
-            var createUserPowershellScript = addUserConfig.Files.GetFile("c:/cfn/scripts/createuser.ps1");
-            createUserPowershellScript.Source = "https://s3.amazonaws.com/gtbb/createuser.ps1";
-            addUserConfig.Sources.Add("c:/cfn/tools/pstools", "https://s3.amazonaws.com/gtbb/software/pstools.zip");
-            addUserCommand.Command = $"c:\\cfn\\tools\\pstools\\psexec.exe -accepteula -h -u {version}dev\\administrator -p {password} powershell.exe -ExecutionPolicy RemoteSigned c:\\cfn\\scripts\\createuser.ps1";
+            instanceRdp.Packages.Add(new CreateUsers());
 
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
             var x = instanceRdp.Packages.Last().WaitCondition;

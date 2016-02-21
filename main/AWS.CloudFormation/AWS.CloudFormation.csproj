@@ -76,6 +76,7 @@
     <Compile Include="Common\ObservableDictionary.cs" />
     <Compile Include="Configuration\Packages\AmazonAwsCli.cs" />
     <Compile Include="Configuration\Packages\Chrome.cs" />
+    <Compile Include="Configuration\Packages\CreateUsers.cs" />
     <Compile Include="Configuration\Packages\DomainControllerPackage.cs" />
     <Compile Include="Configuration\Packages\ExecuteRemotePowershellScript.cs" />
     <Compile Include="Configuration\Packages\InternetInformationServerPackage.cs" />
