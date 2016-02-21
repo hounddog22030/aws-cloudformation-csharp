@@ -161,11 +161,11 @@ namespace AWS.CloudFormation.Test
             mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
             mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
 
-            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
+            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Nano, "ami-5585af3f", OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
             instanceRdp.DependsOn.Add(simpleAd.LogicalId);
             //instanceRdp.SsmAssociations.Add(new SsmAssociation(new ReferenceProperty(activeDirectoryDocument.LogicalId)));
 
-            template.Resources.Add($"Rdp", instanceRdp);
+            template.Resources.Add("Rdp", instanceRdp);
             dcPackage.Participate(instanceRdp);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
             var x = instanceRdp.Packages.Last().WaitCondition;
