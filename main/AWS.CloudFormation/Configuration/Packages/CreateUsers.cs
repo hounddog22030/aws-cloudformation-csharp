@@ -20,9 +20,10 @@ namespace AWS.CloudFormation.Configuration.Packages
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
             base.AddToLaunchConfiguration(configuration);
+            this.Config.Files.GetFile("c:/cfn/scripts/users.csv").Source = "https://s3.amazonaws.com/gtbb/users.csv";
             var addUserCommand = this.Config.Commands.AddCommand<Command>("addusercommand");
-            var createUserPowershellScript = this.Config.Files.GetFile("c:/cfn/scripts/createuser.ps1");
-            createUserPowershellScript.Source = "https://s3.amazonaws.com/gtbb/createuser.ps1";
+            var createUserPowershellScript = this.Config.Files.GetFile("c:/cfn/scripts/New-LabADUser.ps1");
+            createUserPowershellScript.Source = "https://s3.amazonaws.com/gtbb/New-LabADUser.ps1";
             this.Config.Sources.Add("c:/cfn/tools/pstools", "https://s3.amazonaws.com/gtbb/software/pstools.zip");
             addUserCommand.Command = new FnJoin(FnJoinDelimiter.None,
                     "c:\\cfn\\tools\\pstools\\psexec.exe -accepteula -h -u ",
@@ -30,7 +31,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                     "\\administrator",
                     " -p ",
                     new ReferenceProperty(DomainControllerPackage.DomainAdminPasswordParameterName),
-                    " powershell.exe -ExecutionPolicy RemoteSigned c:\\cfn\\scripts\\createuser.ps1");
+                    " powershell.exe -ExecutionPolicy RemoteSigned c:\\cfn\\scripts\\New-LabADUser.ps1");
 
         }
     }
