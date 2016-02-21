@@ -153,6 +153,7 @@
     <None Include="Scripts\configure-sql-4-tfs.ps1" />
     <None Include="Scripts\add-network-to-sysadmin2.ps1" />
     <None Include="Scripts\create-user.ps1" />
+    <None Include="Scripts\createuser.ps1" />
     <None Include="Scripts\CreateWindowsShare.ps1" />
     <None Include="Scripts\add-network-to-sysadmin.ps1" />
     <None Include="Scripts\check-for-domain.ps1" />
@@ -183,6 +184,7 @@
     <None Include="Scripts\change-sql-account.ps1" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Scripts\create-user.txt" />
     <Content Include="Scripts\healthcheck.htm" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

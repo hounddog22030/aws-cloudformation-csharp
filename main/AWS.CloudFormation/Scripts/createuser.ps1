@@ -4,7 +4,7 @@ $Search = "LDAP://CN=Users," + $Root.rootDomainNamingContext
 $Search
 $Container =  [ADSI]($Search)
 $Container
-$name = "marco"
+$name = "marcorubio"
 $usr = $Container.Create("user","cn=$name")
 $usr.Put("sAMAccountName",$name)
 

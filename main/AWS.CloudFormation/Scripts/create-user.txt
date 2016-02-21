@@ -1,0 +1,9 @@
+﻿$Root = [ADSI]"LDAP://RootDSE"
+$Root
+$Search = "LDAP://CN=Users,"+$Root.rootDomainNamingContext
+$Search
+$Container =  [ADSI]($Search)
+$Container
+$usr = $Container.Create("user","cn=Baaobs Smith")
+$usr.Put("sAMAccountName","bobbbsobb")
+$usr.CommitChanges()
