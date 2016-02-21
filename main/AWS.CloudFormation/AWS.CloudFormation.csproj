@@ -184,6 +184,7 @@
     <None Include="Scripts\change-sql-account.ps1" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Scripts\create-user-vbs.txt" />
     <Content Include="Scripts\create-user.txt" />
     <Content Include="Scripts\healthcheck.htm" />
   </ItemGroup>

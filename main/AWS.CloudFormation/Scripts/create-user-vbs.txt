@@ -1,0 +1,28 @@
+﻿'<<<< Prompt for username >>>>
+username = INPUTBOX("Please Enter a username:")
+password = INPUTBOX("Please Enter a password:")
+IF username = "" OR password = "" THEN wscript.quit
+
+'<<<< RootDSE is used to obtain the default naming context (saves hard-coding the domain) >>>>
+SET objRoot = GETOBJECT("LDAP://RootDSE")
+
+'**** Bind to the default users container ****
+SET objContainer = GETOBJECT("LDAP://cn=users," & objRoot.GET("defaultnamingcontext"))
+
+'<<<< Create the user object >>>>
+SET objUser = objContainer.Create("user","cn=" & username)
+
+'<<<< The sAMAccountName is the username the user will use to logon >>>>
+objUser.sAMAccountName = username
+
+'<<<< Save the changes >>>>
+objUser.Setinfo
+
+'<<<< Set a password >>>>
+objUser.setpassword password
+
+'<<<< Enable the account >>>>
+objUser.AccountDisabled = 0
+
+'<<<< Save the changes >>>>
+objUser.Setinfo
