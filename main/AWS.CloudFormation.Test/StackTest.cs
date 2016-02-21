@@ -162,7 +162,7 @@ namespace AWS.CloudFormation.Test
             mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
             mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
             //"ami-4b91bb21"
-            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.C4Large, UsEastWindows2012R2Ami , OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
+            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Micro, UsEastWindows2012R2Ami , OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
             instanceRdp.DependsOn.Add(simpleAd.LogicalId);
             
             //instanceRdp.SsmAssociations.Add(new SsmAssociation(new ReferenceProperty(activeDirectoryDocument.LogicalId)));
@@ -174,10 +174,10 @@ namespace AWS.CloudFormation.Test
             var addUserCommand = addUserConfig.Commands.AddCommand<Command>("addusercommand");
             var createUserPowershellScript = addUserConfig.Files.GetFile("c:/cfn/scripts/createuser.ps1");
             createUserPowershellScript.Source = "https://s3.amazonaws.com/gtbb/createuser.ps1";
-            var psTools = addUserConfig.Files.GetFile("c:/pstools");
+            var psTools = addUserConfig.Files.GetFile("c:/cfn/tools/pstools.zip");
             psTools.Source = "https://s3.amazonaws.com/gtbb/software/pstools.zip";
             //
-            addUserCommand.Command = $"c:\\pstools\\psexec.exe -accepteula -h -u {version}dev\\administrator -p {password} powershell.exe -ExecutionPolicy RemoteSigned c:\\cfn\\scripts\\createuser.ps1";
+            addUserCommand.Command = $"c:\\cfn\\tools\\pstools\\psexec.exe -accepteula -h -u {version}dev\\administrator -p {password} powershell.exe -ExecutionPolicy RemoteSigned c:\\cfn\\scripts\\createuser.ps1";
 
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
             var x = instanceRdp.Packages.Last().WaitCondition;
