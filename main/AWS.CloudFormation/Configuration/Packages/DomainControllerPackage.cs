@@ -27,6 +27,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         public const string DomainVersionParameterName = "DomainVersion";
         public const string DomainNetBiosNameParameterName = "DomainNetBiosName";
         public const string DomainAdminPasswordParameterName = "DomainAdminPassword";
+        public const string DomainFqdn = "DomainFqdn";
 
         const string CheckForDomainPsPath = "c:/cfn/scripts/check-for-domain.ps1";
 
@@ -234,6 +235,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 return _domainControllerSecurityGroup;
             }
         }
+
 
         public override void Participate(ResourceBase participant)
         {
