@@ -97,7 +97,7 @@ namespace AWS.CloudFormation.Test
             dhcpOptions.DependsOn.Add(simpleAd.LogicalId);
 
             var activeDirectoryDocument = new Document<SsmRuntimeConfigDomainJoin>();
-            activeDirectoryDocument.DependsOn.Add(simpleAd.LogicalId);
+            //activeDirectoryDocument.DependsOn.Add(simpleAd.LogicalId);
             template.Resources.Add("ActiveDirectorySsm", activeDirectoryDocument);
             activeDirectoryDocument.Content.Properties.DirectoryName = domainNameFnJoin;
             activeDirectoryDocument.Content.Properties.DnsIpAddresses = directoryServicesDnsAddresses;
@@ -165,10 +165,10 @@ namespace AWS.CloudFormation.Test
             //"ami-4b91bb21"
             var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Micro, UsEastWindows2012R2Ami , OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
             instanceRdp.DependsOn.Add(simpleAd.LogicalId);
-            
+            instanceRdp.DependsOn.Add(nat1.LogicalId);
+            instanceRdp.DependsOn.Add(routeForAz1.LogicalId);
             instanceRdp.SsmAssociations.Add(new SsmAssociation(new ReferenceProperty(activeDirectoryDocument.LogicalId)));
-            instanceRdp.IamInstanceProfile = "DomainJoiner";
-
+            instanceRdp.IamInstanceProfile = "DomainJoinerRole";
             template.Resources.Add("Rdp", instanceRdp);
             //dcPackage.Participate(instanceRdp);
             instanceRdp.Packages.Add(new CreateUsers());
