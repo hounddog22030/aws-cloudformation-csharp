@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Configuration.Packages;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource;
@@ -12,13 +11,9 @@ using AWS.CloudFormation.Resource.AutoScaling;
 using AWS.CloudFormation.Resource.DirectoryService;
 using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing;
-using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
-using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
-using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Resource.RDS;
-using AWS.CloudFormation.Resource.SSM;
 using AWS.CloudFormation.Resource.Wait;
 using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -180,6 +175,7 @@ namespace AWS.CloudFormation.Test
                 instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Small, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
                 x = instanceTfsSqlServer.Packages.Last().WaitCondition;
                 instanceTfsSqlServer.DependsOn.Add(simpleAd.LogicalId);
+                SimpleAd.AddInstanceToDomain(instanceTfsSqlServer.RenameConfig);
             }
 
             LaunchConfiguration tfsServer = null;
@@ -189,6 +185,7 @@ namespace AWS.CloudFormation.Test
             {
                 tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
                 tfsServer.DependsOn.Add(simpleAd.LogicalId);
+                SimpleAd.AddInstanceToDomain(tfsServer.RenameConfig);
 
                 var package =  tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().FirstOrDefault();
                 if (package != null)
@@ -249,6 +246,7 @@ namespace AWS.CloudFormation.Test
                 var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer,
                  tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
                 buildServer.DependsOn.Add(simpleAd.LogicalId);
+                SimpleAd.AddInstanceToDomain(buildServer.RenameConfig);
 
             }
 
@@ -260,6 +258,7 @@ namespace AWS.CloudFormation.Test
                     dcPackage,
                     workstationSecurityGroup);
                 workstation.DependsOn.Add(simpleAd.LogicalId);
+                SimpleAd.AddInstanceToDomain(workstation.RenameConfig);
             }
 
             if (instancesToCreate.HasFlag(Create.BackupServer))
@@ -276,6 +275,8 @@ namespace AWS.CloudFormation.Test
                 backupServerSecurityGroup.AddIngress(vpc, Protocol.Udp, Ports.Min, Ports.Max);
                 backupServer.AddSecurityGroup(backupServerSecurityGroup);
                 template.Resources.Add("BackupServer", backupServer);
+                SimpleAd.AddInstanceToDomain(backupServer.RenameConfig);
+
                 backupServer.AddDisk(Ebs.VolumeTypes.Magnetic, 60, false);
                 backupServer.Packages.Add(new WindowsShare(
                     "d:/backups",
