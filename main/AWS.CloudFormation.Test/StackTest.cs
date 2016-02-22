@@ -167,7 +167,7 @@ namespace AWS.CloudFormation.Test
             instanceRdp.DependsOn.Add(simpleAd.LogicalId);
             
             instanceRdp.SsmAssociations.Add(new SsmAssociation(new ReferenceProperty(activeDirectoryDocument.LogicalId)));
-            instanceRdp.IamInstanceProfile = "arn:aws:iam::570182474766:user/DomainJoiner";
+            instanceRdp.IamInstanceProfile = "DomainJoiner";
 
             template.Resources.Add("Rdp", instanceRdp);
             //dcPackage.Participate(instanceRdp);
