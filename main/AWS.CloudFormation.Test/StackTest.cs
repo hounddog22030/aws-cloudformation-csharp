@@ -166,9 +166,9 @@ namespace AWS.CloudFormation.Test
             instanceRdp.DependsOn.Add(nat1.LogicalId);
             instanceRdp.DependsOn.Add(routeForAz1.LogicalId);
             //instanceRdp.SsmAssociations.Add(new SsmAssociation(new ReferenceProperty(activeDirectoryDocument.LogicalId)));
-            instanceRdp.IamInstanceProfile = "DomainJoinerRole";
+            //instanceRdp.IamInstanceProfile = "DomainJoinerRole";
             template.Resources.Add("Rdp", instanceRdp);
-            dcPackage.Participate(instanceRdp);
+            SimpleAd.AddInstanceToDomain(instanceRdp.RenameConfig);
             instanceRdp.Packages.Add(new CreateUsers());
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
             var x = instanceRdp.Packages.Last().WaitCondition;
