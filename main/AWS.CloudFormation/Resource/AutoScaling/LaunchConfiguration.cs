@@ -93,6 +93,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
 
         private const int NetBiosMachineNameLengthLimit = 15;
 
+        [JsonIgnore]
         public Config RenameConfig { get; private set; }
 
         private void AddRename()
