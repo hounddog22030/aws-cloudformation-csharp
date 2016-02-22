@@ -170,7 +170,6 @@
     <None Include="Scripts\check-for-user-exists.ps1" />
     <None Include="Scripts\users.csv" />
     <None Include="Scripts\web.config" />
-    <None Include="users.csv" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\System.Net.IPNetwork\System.Net.IPNetwork.csproj">
