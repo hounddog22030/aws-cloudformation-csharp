@@ -1436,12 +1436,12 @@ namespace AWS.CloudFormation.Test
         public void UpdateDevelopmentTest()
         {
 
-            Greek version = Greek.Theta;
+            Greek version = Greek.Psi;
 
             var fullyQualifiedDomainName = $"{version}.dev.yadayadasoftware.com";
             Create instances = Create.FullStack;
             var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances);
-            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "QDTH1674hndc";
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "GDEN5840ljug";
 
             Assert.IsFalse(HasGitDifferences());
 
