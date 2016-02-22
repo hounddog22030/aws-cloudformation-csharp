@@ -101,15 +101,13 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("ActiveDirectorySsm", activeDirectoryDocument);
             activeDirectoryDocument.Content.Properties.DirectoryName = domainNameFnJoin;
             activeDirectoryDocument.Content.Properties.DnsIpAddresses = directoryServicesDnsAddresses;
-            activeDirectoryDocument.Content.Properties.DirectoryId = appNameNetBiosName;
+            activeDirectoryDocument.Content.Properties.DirectoryId = new FnGetAtt(simpleAd,FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses);
 
 
             
             Instance nat1 = AddNat(template, subnetDmz1, natSecurityGroup);
-            nat1.DependsOn.Add(vpc.VpcGatewayAttachment.LogicalId);
-            nat1.DependsOn.Add(activeDirectoryDocument.LogicalId);
-
             Instance nat2 = null;
+            nat1.DependsOn.Add(vpc.VpcGatewayAttachment.LogicalId);
 
             RouteTable routeTableForSubnetsToNat1 = new RouteTable(vpc);
             template.Resources.Add($"RouteTable1", routeTableForSubnetsToNat1);
