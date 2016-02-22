@@ -166,12 +166,12 @@ namespace AWS.CloudFormation.Test
             var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Micro, UsEastWindows2012R2Ami , OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
             instanceRdp.DependsOn.Add(simpleAd.LogicalId);
             
-            //instanceRdp.SsmAssociations.Add(new SsmAssociation(new ReferenceProperty(activeDirectoryDocument.LogicalId)));
+            instanceRdp.SsmAssociations.Add(new SsmAssociation(new ReferenceProperty(activeDirectoryDocument.LogicalId)));
+            instanceRdp.IamInstanceProfile = "arn:aws:iam::570182474766:user/DomainJoiner";
 
             template.Resources.Add("Rdp", instanceRdp);
-            dcPackage.Participate(instanceRdp);
+            //dcPackage.Participate(instanceRdp);
             instanceRdp.Packages.Add(new CreateUsers());
-
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
             var x = instanceRdp.Packages.Last().WaitCondition;
 

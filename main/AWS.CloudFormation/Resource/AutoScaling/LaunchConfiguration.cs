@@ -256,6 +256,18 @@ namespace AWS.CloudFormation.Resource.AutoScaling
                 this.Properties.SetValue(value);
             }
         }
+        [JsonIgnore]
+        public object IamInstanceProfile
+        {
+            get
+            {
+                return this.Properties.GetValue<object>();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
+            }
+        }
 
         public void AddBlockDeviceMapping(string deviceName, uint volumeSize, Ebs.VolumeTypes volumeType)
         {
