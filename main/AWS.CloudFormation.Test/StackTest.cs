@@ -96,12 +96,12 @@ namespace AWS.CloudFormation.Test
             var dhcpOptions = AddDhcpOptions(simpleAd, vpc, template);
             dhcpOptions.DependsOn.Add(simpleAd.LogicalId);
 
-            var activeDirectoryDocument = new Document<SsmRuntimeConfigDomainJoin>();
-            //activeDirectoryDocument.DependsOn.Add(simpleAd.LogicalId);
-            template.Resources.Add("ActiveDirectorySsm", activeDirectoryDocument);
-            activeDirectoryDocument.Content.Properties.DirectoryName = domainNameFnJoin;
-            activeDirectoryDocument.Content.Properties.DnsIpAddresses = directoryServicesDnsAddresses;
-            activeDirectoryDocument.Content.Properties.DirectoryId = new FnGetAtt(simpleAd,FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses);
+            //var activeDirectoryDocument = new Document<SsmRuntimeConfigDomainJoin>();
+            ////activeDirectoryDocument.DependsOn.Add(simpleAd.LogicalId);
+            //template.Resources.Add("ActiveDirectorySsm", activeDirectoryDocument);
+            //activeDirectoryDocument.Content.Properties.DirectoryName = domainNameFnJoin;
+            //activeDirectoryDocument.Content.Properties.DnsIpAddresses = directoryServicesDnsAddresses;
+            //activeDirectoryDocument.Content.Properties.DirectoryId = new FnGetAtt(simpleAd,FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses);
 
 
             
@@ -165,10 +165,10 @@ namespace AWS.CloudFormation.Test
             instanceRdp.DependsOn.Add(simpleAd.LogicalId);
             instanceRdp.DependsOn.Add(nat1.LogicalId);
             instanceRdp.DependsOn.Add(routeForAz1.LogicalId);
-            instanceRdp.SsmAssociations.Add(new SsmAssociation(new ReferenceProperty(activeDirectoryDocument.LogicalId)));
+            //instanceRdp.SsmAssociations.Add(new SsmAssociation(new ReferenceProperty(activeDirectoryDocument.LogicalId)));
             instanceRdp.IamInstanceProfile = "DomainJoinerRole";
             template.Resources.Add("Rdp", instanceRdp);
-            //dcPackage.Participate(instanceRdp);
+            dcPackage.Participate(instanceRdp);
             instanceRdp.Packages.Add(new CreateUsers());
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
             var x = instanceRdp.Packages.Last().WaitCondition;
