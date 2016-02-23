@@ -209,7 +209,10 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             Config chefConfig = ((ConfigSet) configuration.Metadata.Init.ConfigSets.First().Value).First().Value as Config;
             var nodeJson = chefConfig.Files.GetFile("c:/chef/node.json");
-            nodeJson.Add("domain", new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName));
+            if (!nodeJson.ContainsKey("domain"))
+            {
+                nodeJson.Add("domain", new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName));
+            }
             return nodeJson.Content;
         }
 
