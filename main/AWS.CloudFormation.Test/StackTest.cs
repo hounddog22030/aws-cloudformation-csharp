@@ -11,6 +11,7 @@ using AWS.CloudFormation.Resource.AutoScaling;
 using AWS.CloudFormation.Resource.DirectoryService;
 using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Resource.RDS;
