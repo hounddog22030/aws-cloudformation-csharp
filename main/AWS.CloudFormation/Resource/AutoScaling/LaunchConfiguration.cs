@@ -102,7 +102,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
                 {
                     this.RenameConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigSetRenameConfig);
                 }
-                return this.RenameConfig;
+                return _renameConfig;
 
 
             }
