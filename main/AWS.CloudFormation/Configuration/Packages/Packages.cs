@@ -382,7 +382,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
     public class TeamFoundationServerApplicationTier : TeamFoundationServer
     {
-        public TeamFoundationServerApplicationTier(string bucketName, LaunchConfiguration sqlServer) : base(bucketName, "applicationtier")
+        public TeamFoundationServerApplicationTier(string bucketName, LaunchConfiguration sqlServer) : base(bucketName, "iisconfig")
         {
             SqlServer = sqlServer;
         }
