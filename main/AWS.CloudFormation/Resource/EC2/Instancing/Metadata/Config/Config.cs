@@ -57,6 +57,12 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config
             }
             set { this["ignoreErrors"] = value; }
         }
+
+        public ConfigFileContent GetChefNodeJsonContent()
+        {
+            var nodeJson = this.Files.GetFile("c:/chef/node.json");
+            return nodeJson.Content;
+        }
     }
 
     public class Packages : CloudFormationDictionary

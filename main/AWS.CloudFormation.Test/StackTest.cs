@@ -39,18 +39,18 @@ namespace AWS.CloudFormation.Test
 
             var password = GetPassword();
 
-            var domainPassword = new ParameterBase(DomainControllerPackage.DomainAdminPasswordParameterName, "String", password, "Password for domain administrator.")
+            var domainPassword = new ParameterBase(SimpleAd.DomainAdminPasswordParameterName, "String", password, "Password for domain administrator.")
             {
                 NoEcho = true
             };
 
             template.Parameters.Add(domainPassword);
-            template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainAdminUsernameParameterName, "String", "administrator", "Admin username"));
-            template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainTopLevelNameParameterName, "String", topLevel, "Top level domain name for the stack (e.g. example.com)"));
-            template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainAppNameParameterName, "String", appNameNetBiosName, "Name of the application (e.g. Dev,Test,Prod)"));
-            template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainVersionParameterName, "String", version.ToString().ToLowerInvariant(), "Fully qualified domain name for the stack (e.g. example.com)"));
-            template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainNetBiosNameParameterName, "String", version.ToString() + appNameNetBiosName, "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
-            template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainFqdn, "String", $"{version}.{appNameNetBiosName}.{topLevel}", "Fully qualified domain name"));
+            template.Parameters.Add(new ParameterBase(SimpleAd.DomainAdminUsernameParameterName, "String", "administrator", "Admin username"));
+            template.Parameters.Add(new ParameterBase(SimpleAd.DomainTopLevelNameParameterName, "String", topLevel, "Top level domain name for the stack (e.g. example.com)"));
+            template.Parameters.Add(new ParameterBase(SimpleAd.DomainAppNameParameterName, "String", appNameNetBiosName, "Name of the application (e.g. Dev,Test,Prod)"));
+            template.Parameters.Add(new ParameterBase(SimpleAd.DomainVersionParameterName, "String", version.ToString().ToLowerInvariant(), "Fully qualified domain name for the stack (e.g. example.com)"));
+            template.Parameters.Add(new ParameterBase(SimpleAd.DomainNetBiosNameParameterName, "String", version.ToString() + appNameNetBiosName, "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
+            template.Parameters.Add(new ParameterBase(SimpleAd.DomainFqdnParameterName, "String", $"{version}.{appNameNetBiosName}.{topLevel}", "Fully qualified domain name"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "tfsservice", "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, "String", "H3ll0!23$5!!", "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
@@ -67,19 +67,18 @@ namespace AWS.CloudFormation.Test
             SecurityGroup natSecurityGroup = AddNatSecurityGroup(vpc, template);
             Subnet subnetDmz1 = AddDmz1(vpc, template);
             Subnet subnetDmz2 = AddDmz2(vpc, template);
-            DomainControllerPackage dcPackage = new DomainControllerPackage(subnetDmz1);
 
             var domainNameFnJoin = new FnJoin(FnJoinDelimiter.Period,
-                new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
+                new ReferenceProperty(SimpleAd.DomainVersionParameterName),
                 "dev",
-                new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName));
+                new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName));
 
 
             SimpleAd simpleAd = new SimpleAd(domainNameFnJoin,
-                                                new ReferenceProperty(DomainControllerPackage.DomainAdminPasswordParameterName), DirectorySize.Small, template.Vpcs.First(),
+                                                new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName), DirectorySize.Small, template.Vpcs.First(),
                                                 subnetDmz1,
                                                 subnetDmz2);
-            simpleAd.ShortName = new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName);
+            simpleAd.ShortName = new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName);
             template.Resources.Add("SimpleAd", simpleAd);
 
             FnGetAtt directoryServicesDnsAddresses = new FnGetAtt(simpleAd, FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses);
@@ -173,7 +172,7 @@ namespace AWS.CloudFormation.Test
 
             if (instancesToCreate.HasFlag(Create.Sql4Tfs))
             {
-                instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Small, subnetSqlServer4Tfs, dcPackage, sqlServer4TfsSecurityGroup);
+                instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Small, subnetSqlServer4Tfs, sqlServer4TfsSecurityGroup);
                 x = instanceTfsSqlServer.Packages.Last().WaitCondition;
                 instanceTfsSqlServer.DependsOn.Add(simpleAd.LogicalId);
                 SimpleAd.AddInstanceToDomain(instanceTfsSqlServer.RenameConfig);
@@ -184,7 +183,7 @@ namespace AWS.CloudFormation.Test
 
             if (instancesToCreate.HasFlag(Create.Tfs))
             {
-                tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, dcPackage, tfsServerSecurityGroup);
+                tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, tfsServerSecurityGroup);
                 tfsServer.DependsOn.Add(simpleAd.LogicalId);
                 SimpleAd.AddInstanceToDomain(tfsServer.RenameConfig);
 
@@ -245,7 +244,7 @@ namespace AWS.CloudFormation.Test
             if (instancesToCreate.HasFlag(Create.Tfs) && instancesToCreate.HasFlag(Create.Build))
             {
                 var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer,
-                 tfsServer, tfsApplicationTierInstalled, dcPackage, securityGroupBuildServer, rdsSqlExpress4Build);
+                 tfsServer, tfsApplicationTierInstalled, securityGroupBuildServer, rdsSqlExpress4Build);
                 buildServer.DependsOn.Add(simpleAd.LogicalId);
                 SimpleAd.AddInstanceToDomain(buildServer.RenameConfig);
 
@@ -254,10 +253,7 @@ namespace AWS.CloudFormation.Test
             if (instancesToCreate.HasFlag(Create.Workstation))
             {
                 //uses 33gb
-                var workstation = AddWorkstation(template,
-                    subnetWorkstation,
-                    dcPackage,
-                    workstationSecurityGroup);
+                var workstation = AddWorkstation(template, subnetWorkstation, workstationSecurityGroup);
                 workstation.DependsOn.Add(simpleAd.LogicalId);
                 SimpleAd.AddInstanceToDomain(workstation.RenameConfig);
             }
@@ -284,11 +280,11 @@ namespace AWS.CloudFormation.Test
                     "backups", 
                     new FnJoin(FnJoinDelimiter.None,
                     "'",
-                    new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
+                    new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
                     "\\tfsservice'"),
                     new FnJoin(FnJoinDelimiter.None,
                     "'",
-                    new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
+                    new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
                     "\\Domain Admins'")));
                 x = backupServer.Packages.Last().WaitCondition;
             }
@@ -380,23 +376,23 @@ namespace AWS.CloudFormation.Test
             return dhcpOptions;
         }
 
-        private static DomainControllerPackage AddDomainControllerPackage(Subnet subnetDomainController1,
-            Instance instanceDomainController, Subnet subnetDmz1, Subnet subnetDmz2, Subnet subnetSqlServer4Tfs,
-            Subnet subnetTfsServer, Subnet subnetBuildServer, Subnet subnetDatabase4BuildServer2, Subnet subnetWorkstation)
-        {
-            DomainControllerPackage dcPackage = new DomainControllerPackage(subnetDomainController1);
-            instanceDomainController.Packages.Add(dcPackage);
-            instanceDomainController.Packages.Add(new Chrome());
+        //private static DomainControllerPackage AddDomainControllerPackage(Subnet subnetDomainController1,
+        //    Instance instanceDomainController, Subnet subnetDmz1, Subnet subnetDmz2, Subnet subnetSqlServer4Tfs,
+        //    Subnet subnetTfsServer, Subnet subnetBuildServer, Subnet subnetDatabase4BuildServer2, Subnet subnetWorkstation)
+        //{
+        //    DomainControllerPackage dcPackage = new DomainControllerPackage(subnetDomainController1);
+        //    instanceDomainController.Packages.Add(dcPackage);
+        //    instanceDomainController.Packages.Add(new Chrome());
 
-            dcPackage.AddReplicationSite(subnetDmz1,false);
-            dcPackage.AddReplicationSite(subnetDmz2, false);
-            dcPackage.AddReplicationSite(subnetSqlServer4Tfs, false);
-            dcPackage.AddReplicationSite(subnetTfsServer, false);
-            dcPackage.AddReplicationSite(subnetBuildServer, false);
-            dcPackage.AddReplicationSite(subnetDatabase4BuildServer2, false);
-            dcPackage.AddReplicationSite(subnetWorkstation, false);
-            return dcPackage;
-        }
+        //    dcPackage.AddReplicationSite(subnetDmz1,false);
+        //    dcPackage.AddReplicationSite(subnetDmz2, false);
+        //    dcPackage.AddReplicationSite(subnetSqlServer4Tfs, false);
+        //    dcPackage.AddReplicationSite(subnetTfsServer, false);
+        //    dcPackage.AddReplicationSite(subnetBuildServer, false);
+        //    dcPackage.AddReplicationSite(subnetDatabase4BuildServer2, false);
+        //    dcPackage.AddReplicationSite(subnetWorkstation, false);
+        //    return dcPackage;
+        //}
 
         public static Subnet AddSubnetWorkstation(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup, Template template)
         {
@@ -571,7 +567,7 @@ namespace AWS.CloudFormation.Test
             return output.Replace(newLine.ToString(), string.Empty);
         }
 
-        public static Instance AddRdp2(Subnet subnetDmz1, Template template, Vpc vpc, DomainControllerPackage dcPackage)
+        public static Instance AddRdp2(Subnet subnetDmz1, Template template, Vpc vpc)
         {
             var instanceRdp2 = new Instance(subnetDmz1, InstanceTypes.T2Nano, "ami-e4034a8e", OperatingSystem.Windows);
 
@@ -585,21 +581,15 @@ namespace AWS.CloudFormation.Test
             instanceRdp2.AddSecurityGroup(rdp);
             instanceRdp2.AddElasticIp();
 
-            if (dcPackage != null)
-            {
-                instanceRdp2.AddSecurityGroup(dcPackage.DomainMemberSecurityGroup);
-            }
-
-
             return instanceRdp2;
         }
 
         private static LaunchConfiguration AddSql(Template template, string instanceName, InstanceTypes instanceSize, 
-            Subnet subnet, DomainControllerPackage domainControllerPackage, SecurityGroup sqlServerSecurityGroup)
+            Subnet subnet, SecurityGroup sqlServerSecurityGroup)
         {
             var sqlServer = new Instance(subnet, instanceSize, UsEastWindows2012R2SqlServerExpressAmi, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 70);
             template.Resources.Add(instanceName,sqlServer);
-            //domainControllerPackage.Participate(sqlServer);
+
             var sqlServerPackage = new SqlServerExpressFromAmi(BucketNameSoftware);
             sqlServer.Packages.Add(sqlServerPackage);
             sqlServer.AddSecurityGroup(sqlServerSecurityGroup);
@@ -914,7 +904,7 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(vpc, CidrDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
-            Instance w = AddWorkstation(template, DMZSubnet, null, rdp);
+            Instance w = AddWorkstation(template, DMZSubnet, rdp);
             w.AddElasticIp();
             CreateTestStack(template, this.TestContext);
 
@@ -954,10 +944,9 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             var dc1 = AddDomainController(template, DMZSubnet);
-            var dcPackage = dc1.Packages.First() as DomainControllerPackage;
             dc1.AddElasticIp();
             dc1.AddSecurityGroup(rdp);
-            var w = AddBuildServer(template, InstanceTypes.T2Nano,  DMZSubnet, null, null, dcPackage, rdp,null);
+            var w = AddBuildServer(template, InstanceTypes.T2Nano,  DMZSubnet, null, null, rdp,null);
             throw new NotImplementedException();
             //w.AddElasticIp();
 
@@ -1213,7 +1202,6 @@ namespace AWS.CloudFormation.Test
             Subnet subnet,
             LaunchConfiguration tfsServer,
             WaitCondition tfsServerComplete, 
-            DomainControllerPackage domainControllerPackage, 
             SecurityGroup buildServerSecurityGroup, 
             DbInstance sqlExpress4Build)
         {
@@ -1233,7 +1221,6 @@ namespace AWS.CloudFormation.Test
 
             buildServer.AddBlockDeviceMapping("/dev/sda1", 100, Ebs.VolumeTypes.GeneralPurpose);
 
-            //domainControllerPackage.Participate(buildServer);
             buildServer.Packages.Add(new VisualStudio(BucketNameSoftware));
             buildServer.Packages.Add(new TeamFoundationServerBuildServerAgentOnly(tfsServer, BucketNameSoftware, sqlExpress4Build));
             buildServer.Packages.Add(new AmazonAwsCli());
@@ -1247,7 +1234,7 @@ namespace AWS.CloudFormation.Test
             var chefNode = buildServer.GetChefNodeJsonContent();
             var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
 
-            domainAdminUserInfoNode.Add("name", new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(DomainControllerPackage.DomainAdminUsernameParameterName)));
+            domainAdminUserInfoNode.Add("name", new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName)));
             domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
             buildServer.AddSecurityGroup(buildServerSecurityGroup);
 
@@ -1258,18 +1245,12 @@ namespace AWS.CloudFormation.Test
 
         private static Instance AddWorkstation(  Template template, 
                                                         Subnet subnet, 
-                                                        DomainControllerPackage instanceDomainControllerPackage, 
                                                         SecurityGroup workstationSecurityGroup)
         {
             if (subnet == null) throw new ArgumentNullException(nameof(subnet));
 
             Instance workstation = new Instance(subnet, InstanceTypes.T2Large, UsEastWindows2012R2SqlServerExpressAmi, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 214);
             template.Resources.Add("Workstation",workstation);
-
-            if (instanceDomainControllerPackage != null)
-            {
-                instanceDomainControllerPackage.Participate(workstation);
-            }
 
             if (workstationSecurityGroup != null)
             {
@@ -1296,7 +1277,6 @@ namespace AWS.CloudFormation.Test
             InstanceTypes instanceSize, 
             Subnet privateSubnet1, 
             LaunchConfiguration sqlServer4Tfs, 
-            DomainControllerPackage dc1, 
             SecurityGroup tfsServerSecurityGroup)
         {
             var tfsServer = new Instance(privateSubnet1,instanceSize,UsEastWindows2012R2Ami, OperatingSystem.Windows,Ebs.VolumeTypes.GeneralPurpose,
@@ -1312,7 +1292,7 @@ namespace AWS.CloudFormation.Test
                 var chefNode = tfsServer.GetChefNodeJsonContent();
                 var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
 
-                domainAdminUserInfoNode.Add("name", new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(DomainControllerPackage.DomainAdminUsernameParameterName)));
+                domainAdminUserInfoNode.Add("name", new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName)));
                 domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
                 var packageTfsApplicationTier = new TeamFoundationServerApplicationTier(BucketNameSoftware, sqlServer4Tfs);
                 tfsServer.Packages.Add(packageTfsApplicationTier);

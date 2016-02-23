@@ -9,19 +9,21 @@ process {
 	foreach ($user in $users) {
 			$firstname = $user.firstname
 			$lastname = $user.lastname
+			$principal = $users.principal
 			$name = "$firstname $lastname"
-			$alias = "$($firstname[0])$lastname".ToLower()
 			$Search = "LDAP://CN=Users," + $Root.rootDomainNamingContext
 			$Container =  [ADSI]($Search)
 			$Container
-			$usr = $Container.Create("user","cn=$alias")
-			$usr.Put("sAMAccountName",$alias)
+			$usr = $Container.Create("user","cn=$name")
+			$usr.Put("sAMAccountName",$principal)
 			$usr.CommitChanges()
 
-			$Search = "LDAP://CN=" + $alias + ",CN=Users," + $Root.rootDomainNamingContext
+			$Search = "LDAP://CN=" + $principal + ",CN=Users," + $Root.rootDomainNamingContext
 			$Search
 			$objUser = [ADSI]$Search
 			$objUser
+			$password = $users.password
+			Write-Host "password=$password"
 			$objUser.SetPassword('H3ll0!23$5!!')
 			$objUser.userAccountControl
 			$objUser.userAccountControl = 66048

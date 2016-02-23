@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.AutoScaling;
+using AWS.CloudFormation.Resource.DirectoryService;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
@@ -24,12 +25,12 @@ namespace AWS.CloudFormation.Configuration.Packages
             RecordSet routing = RecordSet.AddByHostedZoneName(
                 this.Instance.Template,
                 $"RecordSet4{this.Instance.LogicalId}",
-                new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName),"."),
+                new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName),"."),
                 new FnJoin( FnJoinDelimiter.Period, 
                             this.Instance.LogicalId,
-                            new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
-                            new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
-                            new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)),
+                            new ReferenceProperty(SimpleAd.DomainVersionParameterName),
+                            new ReferenceProperty(SimpleAd.DomainAppNameParameterName),
+                            new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName)),
                 RecordSet.RecordSetTypeEnum.A);
 
             var eip = new ElasticIp(this.Instance);
@@ -60,13 +61,13 @@ namespace AWS.CloudFormation.Configuration.Packages
                                             " C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN ",
                                             this.Instance.LogicalId,
                                             ".",
-                                            new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
+                                            new ReferenceProperty(SimpleAd.DomainVersionParameterName),
                                             ".",
-                                            new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
+                                            new ReferenceProperty(SimpleAd.DomainAppNameParameterName),
                                             ".",
-                                            new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName),
+                                            new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName),
                                             " -DomainNetBiosName ",
-                                            new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
+                                            new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
                                             " -GroupName 'domain admins'");
             installRdsCommand.Test = "IF EXIST c:/rdp.cer EXIT 1";
         }

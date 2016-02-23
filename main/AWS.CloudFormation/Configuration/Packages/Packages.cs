@@ -11,6 +11,7 @@ using AWS.CloudFormation.Resource;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Stack;
 using AWS.CloudFormation.Resource.AutoScaling;
+using AWS.CloudFormation.Resource.DirectoryService;
 using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
@@ -302,9 +303,9 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             command.Command = new PowershellFnJoin(FnJoinDelimiter.None, ConfigureSql4Tfs,
                 " ",
-                new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
+                new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
                 " ",
-                new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
+                new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
                 "\\",
                 new ReferenceProperty("TfsServiceAccountName"),
                 " ",
@@ -318,11 +319,11 @@ namespace AWS.CloudFormation.Configuration.Packages
             //sysadminFile.Source = "https://s3.amazonaws.com/gtbb/add-network-to-sysadmin2.ps1";
 
             //command = this.Config.Commands.AddCommand<Command>("AddDomainAdminsToSysadmin");
-            //command.Command = new PowershellFnJoin(AddNetworkLocalPath, new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName));
+            //command.Command = new PowershellFnJoin(AddNetworkLocalPath, new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName));
             //command.WaitAfterCompletion = 0.ToString();
 
             //command = this.Config.Commands.AddCommand<Command>("AddComputersLocalPath");
-            //command.Command = new PowershellFnJoin(AddComputersLocalPath, new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName));
+            //command.Command = new PowershellFnJoin(AddComputersLocalPath, new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName));
             //command.WaitAfterCompletion = 0.ToString();
 
             //sysadminFile = this.Config.Files.GetFile(EnableTcpLocalPath);
@@ -359,9 +360,9 @@ namespace AWS.CloudFormation.Configuration.Packages
             var command = this.Config.Commands.AddCommand<Command>("CreateBackupShare");
             command.Command = new PowershellFnJoin(FnJoinDelimiter.None,
                 "New-Item \"d:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"d:\\Backups\" -FullAccess @('NT AUTHORITY\\NETWORK SERVICE','",
-                new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName),
+                new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
                 "\\",
-                new ReferenceProperty(DomainControllerPackage.DomainAdminUsernameParameterName),
+                new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName),
                 "')");
             command.WaitAfterCompletion = 0.ToString();
             command.Test = "IF EXIST G:\\BACKUPS EXIT /B 1";
@@ -394,7 +395,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             base.AddToLaunchConfiguration(configuration);
             var node = this.Instance.GetChefNodeJsonContent();
             var tfsNode = node.Add("tfs");
-            tfsNode.Add("application_server_sqlname", new FnJoin(FnJoinDelimiter.Period, "sql4tfs", new ReferenceProperty(DomainControllerPackage.DomainFqdn)));
+            tfsNode.Add("application_server_sqlname", new FnJoin(FnJoinDelimiter.Period, "sql4tfs", new ReferenceProperty(SimpleAd.DomainFqdnParameterName)));
             tfsNode.Add(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName));
             tfsNode.Add(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName));
         }
@@ -433,9 +434,9 @@ namespace AWS.CloudFormation.Configuration.Packages
             tfsNode.Add("application_server_netbios_name",
                 new FnJoin(FnJoinDelimiter.Period,
                     this.ApplicationServer.LogicalId,
-                    new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
+                    new ReferenceProperty(SimpleAd.DomainVersionParameterName),
                     "dev",
-                    new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)));
+                    new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName)));
 
             if (this.SqlServer4Build != null)
             {

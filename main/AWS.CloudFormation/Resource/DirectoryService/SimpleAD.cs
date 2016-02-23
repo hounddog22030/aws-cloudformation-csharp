@@ -29,6 +29,14 @@ namespace AWS.CloudFormation.Resource.DirectoryService
     }
     public class SimpleAd : ResourceBase
     {
+        public const string DomainVersionParameterName = "DomainVersion";
+        public const string DomainAppNameParameterName = "DomainAppName";
+        public const string DomainTopLevelNameParameterName = "DomainTopLevelName";
+        public const string DomainAdminUsernameParameterName = "DomainAdminUsername";
+        public const string DomainAdminPasswordParameterName = "DomainAdminPassword";
+        public const string DomainNetBiosNameParameterName = "DomainNetBiosName";
+        public const string DomainFqdnParameterName = "DomainFqdn";
+
         public SimpleAd(object name, object password, DirectorySize size, Vpc vpc, params Subnet[] subnets) : base(ResourceType.AwsDirectoryServiceSimpleAd)
         {
             Name = name;
@@ -100,25 +108,25 @@ namespace AWS.CloudFormation.Resource.DirectoryService
                 "-Command \"",
                 "Add-Computer -DomainName ",
                 new FnJoin(FnJoinDelimiter.Period,
-                            new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
-                            new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
-                            new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)),
+                            new ReferenceProperty(SimpleAd.DomainVersionParameterName),
+                            new ReferenceProperty(SimpleAd.DomainAppNameParameterName),
+                            new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName)),
                 " -Credential (New-Object System.Management.Automation.PSCredential('",
-                new ReferenceProperty(DomainControllerPackage.DomainAdminUsernameParameterName),
+                new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName),
                 "@",
                 new FnJoin(FnJoinDelimiter.Period,
-                new ReferenceProperty(DomainControllerPackage.DomainVersionParameterName),
-                new ReferenceProperty(DomainControllerPackage.DomainAppNameParameterName),
-                new ReferenceProperty(DomainControllerPackage.DomainTopLevelNameParameterName)),
+                new ReferenceProperty(SimpleAd.DomainVersionParameterName),
+                new ReferenceProperty(SimpleAd.DomainAppNameParameterName),
+                new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName)),
                 "',(ConvertTo-SecureString \"",
-                new ReferenceProperty(DomainControllerPackage.DomainAdminPasswordParameterName),
+                new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName),
                 "\" -AsPlainText -Force))) ",
                 "-Restart\"");
             joinCommand.WaitAfterCompletion = "forever";
             joinCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
 
-            //var nodeJson = config.GetChefNodeJsonContent();
-            //nodeJson.Add("domain", new ReferenceProperty(DomainControllerPackage.DomainNetBiosNameParameterName));
+            ConfigFileContent nodeJson = config.GetChefNodeJsonContent();
+            nodeJson.Add("domain", new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName));
 
         }
 

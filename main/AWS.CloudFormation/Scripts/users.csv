@@ -1,4 +1,4 @@
-firstname,lastname,password
-Tfs,FsService,H3ll0!23$5!!
-Tim,Developer,H3ll0!23$5!!
-Build,Uild Service,H3ll0!23$5!!
+principal,firstname,lastname,password
+tfsservice,Tfs,Service,H3ll0!23$5!!
+tim.developer,Tim,Developer,H3ll0!23$5!!
+tfsbuild,Build,Build Service,H3ll0!23$5!!

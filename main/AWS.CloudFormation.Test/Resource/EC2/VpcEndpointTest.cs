@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AWS.CloudFormation.Configuration.Packages;
 using AWS.CloudFormation.Property;
+using AWS.CloudFormation.Resource.DirectoryService;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
@@ -87,17 +88,17 @@ namespace AWS.CloudFormation.Test.Resource.EC2
 
             var password = "a1111sdjfkAAAA";
 
-            var domainPassword = new ParameterBase(DomainControllerPackage.DomainAdminPasswordParameterName, "String", password, "Password for domain administrator.")
+            var domainPassword = new ParameterBase(SimpleAd.DomainAdminPasswordParameterName, "String", password, "Password for domain administrator.")
             {
                 NoEcho = true
             };
 
             template.Parameters.Add(domainPassword);
-            template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainTopLevelNameParameterName, "String", "nothing.nothing", "Top level domain name for the stack (e.g. example.com)"));
-            template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainAppNameParameterName, "String", "nothing", "Name of the application (e.g. Dev,Test,Prod)"));
-            template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainVersionParameterName, "String", StackTest.Greek.Alpha, "Fully qualified domain name for the stack (e.g. example.com)"));
-            template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainNetBiosNameParameterName, "String", StackTest.Greek.Alpha + "nothing", "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
-            template.Parameters.Add(new ParameterBase(DomainControllerPackage.DomainAdminUsernameParameterName, "String", "johnny", "Domain Admin User"));
+            template.Parameters.Add(new ParameterBase(SimpleAd.DomainTopLevelNameParameterName, "String", "nothing.nothing", "Top level domain name for the stack (e.g. example.com)"));
+            template.Parameters.Add(new ParameterBase(SimpleAd.DomainAppNameParameterName, "String", "nothing", "Name of the application (e.g. Dev,Test,Prod)"));
+            template.Parameters.Add(new ParameterBase(SimpleAd.DomainVersionParameterName, "String", StackTest.Greek.Alpha, "Fully qualified domain name for the stack (e.g. example.com)"));
+            template.Parameters.Add(new ParameterBase(SimpleAd.DomainNetBiosNameParameterName, "String", StackTest.Greek.Alpha + "nothing", "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
+            template.Parameters.Add(new ParameterBase(SimpleAd.DomainAdminUsernameParameterName, "String", "johnny", "Domain Admin User"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "tfsservice", "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, "String", "H3ll0!23$5!!", "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
@@ -123,7 +124,7 @@ namespace AWS.CloudFormation.Test.Resource.EC2
 
             var DMZSubnet = new Subnet(vpc, StackTest.CidrDmz1, AvailabilityZone.UsEast1A,true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
-            var rdp = StackTest.AddRdp2(DMZSubnet, template, vpc, null);
+            var rdp = StackTest.AddRdp2(DMZSubnet, template, vpc);
             var rdpToDomainController = new SecurityGroup("RdpAccess", vpc);
             template.Resources.Add("rdpToDomainController", rdpToDomainController);
             rdpToDomainController.AddIngress(DMZSubnet, Protocol.Tcp, Ports.Min, Ports.Max);
