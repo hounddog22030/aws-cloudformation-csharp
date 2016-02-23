@@ -204,6 +204,15 @@ namespace AWS.CloudFormation.Configuration.Packages
         public string CookbookName { get; }
         public string RecipeList { get; private set; }
 
+        public ConfigFileContent GetChefNodeJsonContent(LaunchConfiguration configuration)
+        {
+
+            Config chefConfig = ((ConfigSet) configuration.Metadata.Init.ConfigSets.First().Value).First().Value as Config;
+            var nodeJson = chefConfig.Files.GetFile("c:/chef/node.json");
+            nodeJson.Add("domain", new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName));
+            return nodeJson.Content;
+        }
+
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
             base.AddToLaunchConfiguration(configuration);
@@ -213,7 +222,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             string accessKeyString = (string)appSettingsReader.GetValue("S3AccessKey", typeof(string));
             string secretKeyString = (string)appSettingsReader.GetValue("S3SecretKey", typeof(string));
 
-            var chefConfigContent = configuration.GetChefNodeJsonContent();
+            var chefConfigContent = GetChefNodeJsonContent(configuration);
 
             if (!chefConfigContent.ContainsKey("s3_file"))
             {
@@ -350,7 +359,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             configuration.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 20);
             configuration.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 10);
             configuration.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 10);
-            var node = configuration.GetChefNodeJsonContent();
+            var node = GetChefNodeJsonContent(configuration);
             var sqlServerNode = node.Add("sqlserver");
             sqlServerNode.Add("SQLUSERDBDIR", "d:\\SqlUserDb");
             sqlServerNode.Add("SQLUSERDBLOGDIR", "e:\\SqlUserDbLog");
@@ -393,11 +402,15 @@ namespace AWS.CloudFormation.Configuration.Packages
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
             base.AddToLaunchConfiguration(configuration);
-            var node = this.Instance.GetChefNodeJsonContent();
+            var node = GetChefNodeJsonContent(configuration);
             var tfsNode = node.Add("tfs");
             tfsNode.Add("application_server_sqlname", new FnJoin(FnJoinDelimiter.Period, "sql4tfs", new ReferenceProperty(SimpleAd.DomainFqdnParameterName)));
             tfsNode.Add(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName));
             tfsNode.Add(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName));
+
+            var domainAdminUserInfoNode = node.AddNode("domainAdmin");
+            domainAdminUserInfoNode.Add("name", new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName)));
+            domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
         }
 
     }
@@ -428,7 +441,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
         {
             base.AddToLaunchConfiguration(configuration);
-            var node = this.Instance.GetChefNodeJsonContent();
+            var node = GetChefNodeJsonContent(configuration);
             var tfsNode = node.Add("tfs");
 
             tfsNode.Add("application_server_netbios_name",

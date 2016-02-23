@@ -1231,11 +1231,6 @@ namespace AWS.CloudFormation.Test
                 buildServer.AddDependsOn(tfsServerComplete);
             }
 
-            var chefNode = buildServer.GetChefNodeJsonContent();
-            var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
-
-            domainAdminUserInfoNode.Add("name", new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName)));
-            domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
             buildServer.AddSecurityGroup(buildServerSecurityGroup);
 
             var x = buildServer.Packages.Last().WaitCondition;
@@ -1289,11 +1284,6 @@ namespace AWS.CloudFormation.Test
             if (sqlServer4Tfs != null)
             {
                 tfsServer.AddDependsOn(sqlServer4Tfs.Packages.Last().WaitCondition);
-                var chefNode = tfsServer.GetChefNodeJsonContent();
-                var domainAdminUserInfoNode = chefNode.AddNode("domainAdmin");
-
-                domainAdminUserInfoNode.Add("name", new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName)));
-                domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
                 var packageTfsApplicationTier = new TeamFoundationServerApplicationTier(BucketNameSoftware, sqlServer4Tfs);
                 tfsServer.Packages.Add(packageTfsApplicationTier);
             }

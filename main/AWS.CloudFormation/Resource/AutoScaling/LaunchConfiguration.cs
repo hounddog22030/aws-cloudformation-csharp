@@ -177,13 +177,13 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             }
         }
 
-        public ConfigFileContent GetChefNodeJsonContent()
-        {
+        //public ConfigFileContent GetChefNodeJsonContent()
+        //{
 
-            var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigName);
-            var nodeJson = chefConfig.Files.GetFile("c:/chef/node.json");
-            return nodeJson.Content;
-        }
+        //    var chefConfig = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigName);
+        //    var nodeJson = chefConfig.Files.GetFile("c:/chef/node.json");
+        //    return nodeJson.Content;
+        //}
 
         [JsonIgnore]
         public readonly string RootDeviceId;

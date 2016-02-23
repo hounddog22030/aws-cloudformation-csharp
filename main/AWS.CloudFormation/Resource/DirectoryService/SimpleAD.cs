@@ -124,10 +124,6 @@ namespace AWS.CloudFormation.Resource.DirectoryService
                 "-Restart\"");
             joinCommand.WaitAfterCompletion = "forever";
             joinCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
-
-            ConfigFileContent nodeJson = config.GetChefNodeJsonContent();
-            nodeJson.Add("domain", new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName));
-
         }
 
     }

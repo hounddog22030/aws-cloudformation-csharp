@@ -19,10 +19,10 @@ end
 
 # Installing Team Foundation Server Standard.
 execute 'Configure Team Foundation Server STD' do
-	command "#{node[:tfs][:config_exe_path]} unattend /configure /unattendfile:#{configurationFile}"
+	command "\"#{node[:tfs][:config_exe_path]}\" unattend /configure /unattendfile:#{configurationFile}"
 	not_if {::Win32::Service.exists?("TFSJobAgent")}
 end
 
 execute 'Configure Team Foundation Server STD' do
-	command "#{node[:tfs][:security_exe_path]} /g+ \"Project Collection Build Service Accounts\" n:\"#{node[:domain]}\tfsbuild\" /collection:http://tfs:8080/tfs/YadaYada"
+	command "\"#{node[:tfs][:security_exe_path]}\" /g+ \"Project Collection Build Service Accounts\" n:\"#{node[:domain]}\tfsbuild\" /collection:http://tfs:8080/tfs/YadaYada"
 end
