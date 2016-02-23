@@ -164,7 +164,9 @@ namespace AWS.CloudFormation.Test
             //instanceRdp.IamInstanceProfile = "DomainJoinerRole";
             template.Resources.Add("Rdp", instanceRdp);
             SimpleAd.AddInstanceToDomain(instanceRdp.RenameConfig);
-            instanceRdp.Packages.Add(new CreateUsers());
+            var createUsersPackage = new CreateUsers();
+            instanceRdp.Packages.Add(createUsersPackage);
+
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
             var x = instanceRdp.Packages.Last().WaitCondition;
 
@@ -173,6 +175,7 @@ namespace AWS.CloudFormation.Test
             if (instancesToCreate.HasFlag(Create.Sql4Tfs))
             {
                 instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Small, subnetSqlServer4Tfs, sqlServer4TfsSecurityGroup);
+                instanceTfsSqlServer.DependsOn.Add(createUsersPackage.WaitCondition.LogicalId);
                 x = instanceTfsSqlServer.Packages.Last().WaitCondition;
                 instanceTfsSqlServer.DependsOn.Add(simpleAd.LogicalId);
                 SimpleAd.AddInstanceToDomain(instanceTfsSqlServer.RenameConfig);
