@@ -37,7 +37,7 @@ namespace AWS.CloudFormation.Resource.DirectoryService
         public const string DomainNetBiosNameParameterName = "DomainNetBiosName";
         public const string DomainFqdnParameterName = "DomainFqdn";
 
-        public SimpleAd(object name, object password, DirectorySize size, Vpc vpc, params Subnet[] subnets) : base(ResourceType.AwsDirectoryServiceSimpleAd)
+        public SimpleAd(object name, object password, DirectorySize size, Vpc vpc, params Subnet[] subnets) : base(ResourceType.AwsDirectoryServiceMicrosoftAd)
         {
             Name = name;
             Password = password;
