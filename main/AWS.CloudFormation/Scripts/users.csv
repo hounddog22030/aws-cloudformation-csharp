@@ -1,4 +1,4 @@
 principal,firstname,lastname,password,nullcol
-tfsservice,Tfs,Service,H3ll0!23$5!!,null
-tim.developer,Tim,Developer,H3ll0!23$5!!,null
-tfsbuild,Build,Service,H3ll0!23$5!!,null
+tfsservice,Tfs,Service,Hello12345.,null
+tim.developer,Tim,Developer,Hello12345.,null
+tfsbuild,Build,Service,Hello12345.,null

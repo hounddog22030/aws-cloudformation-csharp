@@ -3357,7 +3357,7 @@
     },
     "TfsServicePassword": {
       "Type": "String",
-      "Default": "H3ll0!23$5!!",
+      "Default": "Hello12345.",
       "Description": "Password for Tfs Application Server Service and Tfs SqlServer Service Account "
     }
   },
