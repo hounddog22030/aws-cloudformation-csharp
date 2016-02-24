@@ -27,6 +27,8 @@ namespace AWS.CloudFormation.Resource.DirectoryService
         [EnumMember(Value = "Large")]
         Large
     }
+
+
     public class SimpleAd : ResourceBase
     {
         public const string DomainVersionParameterName = "DomainVersion";
@@ -41,7 +43,7 @@ namespace AWS.CloudFormation.Resource.DirectoryService
         {
             Name = name;
             Password = password;
-            Size = size;
+            //Size = size;
             VpcSettings = new VpcSettings(vpc,subnets);
         }
 
