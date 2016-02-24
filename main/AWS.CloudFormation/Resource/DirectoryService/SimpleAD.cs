@@ -106,6 +106,8 @@ namespace AWS.CloudFormation.Resource.DirectoryService
             checkForDomainPs.Source = "https://s3.amazonaws.com/gtbb/check-for-domain.ps1";
 
             var joinCommand = config.Commands.AddCommand<Command>("JoinDomain");
+
+
             joinCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None,
                 "-Command \"",
                 "Add-Computer -DomainName ",
