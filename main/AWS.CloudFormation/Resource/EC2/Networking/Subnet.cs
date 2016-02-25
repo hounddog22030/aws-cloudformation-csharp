@@ -104,14 +104,17 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 
             if (_addInternetGatewayRoute)
             {
-                RouteTable routeTable4 = new RouteTable(this.Vpc);
-                template.Resources.Add($"RouteTable4{this.LogicalId}", routeTable4);
-                Route route2 = new Route(this.Vpc.InternetGateway, "0.0.0.0/0", routeTable4);
+                this.RouteTable = new RouteTable(this.Vpc);
+                template.Resources.Add($"RouteTable4{this.LogicalId}", this.RouteTable);
+                Route route2 = new Route(this.Vpc.InternetGateway, "0.0.0.0/0", this.RouteTable);
                 template.Resources.Add($"Route4{this.LogicalId}", route2);
-                SubnetRouteTableAssociation routeTableAssociation2 = new SubnetRouteTableAssociation(this, routeTable4);
+                SubnetRouteTableAssociation routeTableAssociation2 = new SubnetRouteTableAssociation(this, this.RouteTable);
                 template.Resources.Add(routeTableAssociation2.LogicalId, routeTableAssociation2);
             }
         }
+
+        [JsonIgnore]
+        public RouteTable RouteTable { get; private set; }
 
         protected override bool SupportsTags => true;
 
