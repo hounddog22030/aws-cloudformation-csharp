@@ -25,6 +25,12 @@ namespace AWS.CloudFormation.Test
     [TestClass]
     public class StackTest
     {
+
+        public const string VpcPrimeId = "vpc-f1406795";
+        public const string CidrPrimeSubnet1 = "10.0.0.0/28";
+        public const string CidrPrimeSubnet2 = "10.0.0.240/28";
+        public const string DnsPrime = "10.0.0.10, 10.0.0.253";
+
         public static Template GetTemplateFullStack(string topLevel, string appNameNetBiosName, Greek version, Create instancesToCreate)
         {
 
@@ -36,6 +42,7 @@ namespace AWS.CloudFormation.Test
             //awsDomainJoinProperties.Add("directoryId", "mydirectoryid");
             //awsDomainJoinProperties.Add("directoryName", "somewhere.com");
             //awsDomainJoinProperties.Add("dnsIpAddresses", "10.0.0.2");
+
 
             var password = GetPassword();
 
@@ -64,6 +71,9 @@ namespace AWS.CloudFormation.Test
             vpc.EnableDnsHostnames = true;
             vpc.EnableDnsSupport = true;
 
+            var vpcPeering = new VpcPeeringConnection(vpc, VpcPrimeId);
+            template.Resources.Add(vpcPeering.LogicalId,vpcPeering);
+
             SecurityGroup natSecurityGroup = AddNatSecurityGroup(vpc, template);
             Subnet subnetDmz1 = AddDmz1(vpc, template);
             Subnet subnetDmz2 = AddDmz2(vpc, template);
@@ -74,22 +84,25 @@ namespace AWS.CloudFormation.Test
                 new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName));
 
 
-            SimpleAd simpleAd = new SimpleAd(domainNameFnJoin,
-                                                new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName), DirectorySize.Small, template.Vpcs.First(),
-                                                subnetDmz1,
-                                                subnetDmz2);
-            simpleAd.ShortName = new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName);
-            template.Resources.Add("SimpleAd", simpleAd);
+            //SimpleAd simpleAd = new SimpleAd(domainNameFnJoin,
+            //                                    new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName), DirectorySize.Small, template.Vpcs.First(),
+            //                                    subnetDmz1,
+            //                                    subnetDmz2);
+            //simpleAd.ShortName = new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName);
+            //template.Resources.Add("SimpleAd", simpleAd);
 
-            FnGetAtt directoryServicesDnsAddresses = new FnGetAtt(simpleAd, FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses);
-            object[] elements = null;
-            object[] netBiosServersElements = null;
+            //FnGetAtt directoryServicesDnsAddresses = new FnGetAtt(simpleAd, FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses);
+            //object[] elements = null;
+            //object[] netBiosServersElements = null;
 
-            elements = new object[] { directoryServicesDnsAddresses };
-            netBiosServersElements = new object[] { directoryServicesDnsAddresses };
+            //elements = new object[] { directoryServicesDnsAddresses };
+            //netBiosServersElements = new object[] { directoryServicesDnsAddresses };
 
-            var dhcpOptions = AddDhcpOptions(simpleAd, vpc, template);
-            dhcpOptions.DependsOn.Add(simpleAd.LogicalId);
+            //var dhcpOptions = AddDhcpOptions(simpleAd, vpc, template);
+            DhcpOptions dhcpOptions = new DhcpOptions(vpc, DnsPrime, DnsPrime);
+            template.Resources.Add("DhcpOptions", dhcpOptions);
+            dhcpOptions.NetbiosNodeType = "2";
+
 
             //var activeDirectoryDocument = new Document<SsmRuntimeConfigDomainJoin>();
             ////activeDirectoryDocument.DependsOn.Add(simpleAd.LogicalId);
@@ -106,12 +119,17 @@ namespace AWS.CloudFormation.Test
 
             RouteTable routeTableForSubnetsToNat1 = new RouteTable(vpc);
             template.Resources.Add($"RouteTable1", routeTableForSubnetsToNat1);
-            
-            Route routeForAz1 = new Route(Template.CidrIpTheWorld, routeTableForSubnetsToNat1);
-            template.Resources.Add($"RouteForAz1", routeForAz1);
-            routeForAz1.DestinationCidrBlock = "0.0.0.0/0";
-            routeForAz1.Instance = nat1;
-            routeForAz1.RouteTable = routeTableForSubnetsToNat1;
+
+            Route routeFromAz1ToNat = new Route(Template.CidrIpTheWorld, routeTableForSubnetsToNat1);
+            template.Resources.Add($"RouteForAz1", routeFromAz1ToNat);
+            routeFromAz1ToNat.DestinationCidrBlock = "0.0.0.0/0";
+            routeFromAz1ToNat.Instance = nat1;
+            routeFromAz1ToNat.RouteTable = routeTableForSubnetsToNat1;
+
+            Route routeFromAz1ToPrimeSubnet1 = new Route(vpcPeering, CidrPrimeSubnet1, routeTableForSubnetsToNat1);
+            template.Resources.Add($"RouteFromAz1ToPrimeSubnet1", routeFromAz1ToPrimeSubnet1);
+            Route routeFromAz1ToPrimeSubnet2 = new Route(vpcPeering, CidrPrimeSubnet2, routeTableForSubnetsToNat1);
+            template.Resources.Add($"routeFromAz1ToPrimeSubnet2", routeFromAz1ToPrimeSubnet2);
 
             SecurityGroup sqlServer4TfsSecurityGroup = AddSqlServer4TfsSecurityGroup(vpc, template, subnetDmz1, subnetDmz2);
             Subnet subnetSqlServer4Tfs = AddSubnetSqlServer4Tfs(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template);
@@ -155,29 +173,33 @@ namespace AWS.CloudFormation.Test
 
             mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
             mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
-            //"ami-4b91bb21"
-            var instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Micro, UsEastWindows2012R2Ami , OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
-            instanceRdp.DependsOn.Add(simpleAd.LogicalId);
-            instanceRdp.DependsOn.Add(nat1.LogicalId);
-            instanceRdp.DependsOn.Add(routeForAz1.LogicalId);
-            //instanceRdp.SsmAssociations.Add(new SsmAssociation(new ReferenceProperty(activeDirectoryDocument.LogicalId)));
-            //instanceRdp.IamInstanceProfile = "DomainJoinerRole";
-            template.Resources.Add("Rdp", instanceRdp);
-            SimpleAd.AddInstanceToDomain(instanceRdp.RenameConfig);
-            var createUsersPackage = new CreateUsers();
-            instanceRdp.Packages.Add(createUsersPackage);
 
-            instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
-            var x = instanceRdp.Packages.Last().WaitCondition;
+            LaunchConfiguration instanceRdp = null;
+            if (instancesToCreate.HasFlag(Create.RdpGateway))
+            {
+                instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
+                //instanceRdp.DependsOn.Add(simpleAd.LogicalId);
+                instanceRdp.DependsOn.Add(nat1.LogicalId);
+                instanceRdp.DependsOn.Add(routeFromAz1ToNat.LogicalId);
+                //instanceRdp.SsmAssociations.Add(new SsmAssociation(new ReferenceProperty(activeDirectoryDocument.LogicalId)));
+                //instanceRdp.IamInstanceProfile = "DomainJoinerRole";
+                template.Resources.Add("Rdp", instanceRdp);
+                SimpleAd.AddInstanceToDomain(instanceRdp.RenameConfig);
+                var createUsersPackage = new CreateUsers();
+                instanceRdp.Packages.Add(createUsersPackage);
+
+                instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
+                var x = instanceRdp.Packages.Last().WaitCondition;
+            }
 
             LaunchConfiguration instanceTfsSqlServer = null;
 
             if (instancesToCreate.HasFlag(Create.Sql4Tfs))
             {
                 instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Small, subnetSqlServer4Tfs, sqlServer4TfsSecurityGroup);
-                instanceTfsSqlServer.DependsOn.Add(createUsersPackage.WaitCondition.LogicalId);
-                x = instanceTfsSqlServer.Packages.Last().WaitCondition;
-                instanceTfsSqlServer.DependsOn.Add(simpleAd.LogicalId);
+                //instanceTfsSqlServer.DependsOn.Add(createUsersPackage.WaitCondition.LogicalId);
+                var x = instanceTfsSqlServer.Packages.Last().WaitCondition;
+                //instanceTfsSqlServer.DependsOn.Add(simpleAd.LogicalId);
                 SimpleAd.AddInstanceToDomain(instanceTfsSqlServer.RenameConfig);
             }
 
@@ -187,7 +209,7 @@ namespace AWS.CloudFormation.Test
             if (instancesToCreate.HasFlag(Create.Tfs))
             {
                 tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, tfsServerSecurityGroup);
-                tfsServer.DependsOn.Add(simpleAd.LogicalId);
+                //tfsServer.DependsOn.Add(simpleAd.LogicalId);
                 SimpleAd.AddInstanceToDomain(tfsServer.RenameConfig);
 
                 var package =  tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().FirstOrDefault();
@@ -248,7 +270,7 @@ namespace AWS.CloudFormation.Test
             {
                 var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer,
                  tfsServer, tfsApplicationTierInstalled, securityGroupBuildServer, rdsSqlExpress4Build);
-                buildServer.DependsOn.Add(simpleAd.LogicalId);
+                //buildServer.DependsOn.Add(simpleAd.LogicalId);
                 SimpleAd.AddInstanceToDomain(buildServer.RenameConfig);
 
             }
@@ -257,7 +279,7 @@ namespace AWS.CloudFormation.Test
             {
                 //uses 33gb
                 var workstation = AddWorkstation(template, subnetWorkstation, workstationSecurityGroup);
-                workstation.DependsOn.Add(simpleAd.LogicalId);
+                //workstation.DependsOn.Add(simpleAd.LogicalId);
                 SimpleAd.AddInstanceToDomain(workstation.RenameConfig);
             }
 
@@ -266,7 +288,7 @@ namespace AWS.CloudFormation.Test
                 Subnet backupServerSubnet = new Subnet(vpc,"10.0.254.0/24",AvailabilityZone.UsEast1A, routeTableForSubnetsToNat1,natSecurityGroup);
                 template.Resources.Add(backupServerSubnet.LogicalId, backupServerSubnet);
                 LaunchConfiguration backupServer = new LaunchConfiguration(backupServerSubnet, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsEc2Instance,true);
-                backupServer.DependsOn.Add(simpleAd.LogicalId);
+                //backupServer.DependsOn.Add(simpleAd.LogicalId);
                 SecurityGroup backupServerSecurityGroup = new SecurityGroup("SecurityGroup4BackupServer", vpc);
                 template.Resources.Add("SecurityGroup4BackupServer", backupServerSecurityGroup);
                 backupServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -289,7 +311,7 @@ namespace AWS.CloudFormation.Test
                     "'",
                     new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
                     "\\Domain Admins'")));
-                x = backupServer.Packages.Last().WaitCondition;
+                var x = backupServer.Packages.Last().WaitCondition;
             }
 
 
@@ -360,7 +382,8 @@ namespace AWS.CloudFormation.Test
         public enum Create
         {
             Dc2 = 1,
-            Sql4Tfs = Dc2 * 2,
+            RdpGateway = Dc2 * 2,
+            Sql4Tfs = RdpGateway * 2,
             Tfs = Sql4Tfs * 2,
             Build = Tfs * 2,
             SqlServer4Build = Build *2,
@@ -1390,8 +1413,8 @@ namespace AWS.CloudFormation.Test
             var appName = "dev";
 
             //Create instances = Create.Dc2 | Create.BackupServer | Create.Rdp1;
-            Create instances = Create.FullStack;
-            //Create instances = (Create)0;
+            //Create instances = Create.FullStack;
+            Create instances = (Create)0;
             var templateToCreateStack = GetTemplateFullStack(topLevel, appName, version, instances);
             templateToCreateStack.StackName = $"{version}-{appName}-{topLevel}".Replace('.','-');
 

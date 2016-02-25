@@ -18,6 +18,19 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 
         protected override bool SupportsTags => true;
 
+        public override string LogicalId
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(base.LogicalId))
+                {
+                    this.LogicalId = $"{this.VpcId}To{PeerVpcId}";
+                }
+                return base.LogicalId;
+            }
+            internal set { base.LogicalId = value; }
+        }
+
         [JsonIgnore]
         public string VpcId
         {
