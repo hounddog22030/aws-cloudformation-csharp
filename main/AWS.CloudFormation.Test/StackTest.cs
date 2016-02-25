@@ -41,7 +41,7 @@ namespace AWS.CloudFormation.Test
             //var awsDomainJoinProperties = awsDomainJoin.Add("properties");
             //awsDomainJoinProperties.Add("directoryId", "mydirectoryid");
             //awsDomainJoinProperties.Add("directoryName", "somewhere.com");
-            //awsDomainJoinProperties.Add("dnsIpAddresses", "10.0.0.2");
+            //awsDomainJoinProperties.Add("dnsIpAddresses", "10.1.0.2");
 
 
             var password = GetPassword();
@@ -285,7 +285,7 @@ namespace AWS.CloudFormation.Test
 
             if (instancesToCreate.HasFlag(Create.BackupServer))
             {
-                Subnet backupServerSubnet = new Subnet(vpc,"10.0.254.0/24",AvailabilityZone.UsEast1A, routeTableForSubnetsToNat1,natSecurityGroup);
+                Subnet backupServerSubnet = new Subnet(vpc,"10.1.254.0/24",AvailabilityZone.UsEast1A, routeTableForSubnetsToNat1,natSecurityGroup);
                 template.Resources.Add(backupServerSubnet.LogicalId, backupServerSubnet);
                 LaunchConfiguration backupServer = new LaunchConfiguration(backupServerSubnet, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsEc2Instance,true);
                 //backupServer.DependsOn.Add(simpleAd.LogicalId);
@@ -343,17 +343,17 @@ namespace AWS.CloudFormation.Test
         }
 
         //private const string DomainAdminPassword = "kasdfiajs!!9";
-        public const string CidrDmz1 = "10.0.127.0/28";
-        private const string CidrDmz2 = "10.0.255.0/28";
-        private const string CidrDomainController1Subnet = "10.0.0.0/24";
-        private const string CidrDomainController2Subnet = "10.0.128.0/24";
-        private const string CidrSqlServer4TfsSubnet = "10.0.1.0/24";
-        private const string CidrTfsServerSubnet = "10.0.2.0/24";
-        private const string CidrBuildServerSubnet = "10.0.3.0/24";
-        public const string CidrWorkstationSubnet = "10.0.4.0/24";
-        private const string CidrDatabase4BuildSubnet2 = "10.0.5.0/24";
+        public const string CidrDmz1 = "10.1.127.0/28";
+        private const string CidrDmz2 = "10.1.255.0/28";
+        private const string CidrDomainController1Subnet = "10.1.0.0/24";
+        private const string CidrDomainController2Subnet = "10.1.128.0/24";
+        private const string CidrSqlServer4TfsSubnet = "10.1.1.0/24";
+        private const string CidrTfsServerSubnet = "10.1.2.0/24";
+        private const string CidrBuildServerSubnet = "10.1.3.0/24";
+        public const string CidrWorkstationSubnet = "10.1.4.0/24";
+        private const string CidrDatabase4BuildSubnet2 = "10.1.5.0/24";
         public const string KeyPairName = "corp.getthebuybox.com";
-        public const string CidrVpc = "10.0.0.0/16";
+        public const string CidrVpc = "10.1.0.0/16";
         public const string UsEastWindows2012R2Ami = "ami-40f0d32a";
         private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-25f6d54f";
         private const string BucketNameSoftware = "gtbb";
@@ -1470,7 +1470,7 @@ namespace AWS.CloudFormation.Test
         public void AddingSameResourceTwiceFails()
         {
             var t = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
-            var v = new Vpc("10.0.0.0/16");
+            var v = new Vpc("10.1.0.0/16");
             t.Resources.Add("X", v);
 
             var s = new Subnet(v,null,AvailabilityZone.UsEast1A, true);
