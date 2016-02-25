@@ -1,4 +1,5 @@
 ﻿using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Resource.Networking;
 
@@ -21,12 +22,12 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         public Route(VpcPeeringConnection vpcPeeringConnection, string destinationCidrBlock, RouteTable routeTable)
             : this(destinationCidrBlock, routeTable)
         {
-            VpcPeeringConnectionId = vpcPeeringConnection.VpcId;
+            VpcPeeringConnectionId = new ReferenceProperty(vpcPeeringConnection);
             this.DependsOn.Add(vpcPeeringConnection.LogicalId);
         }
 
         [JsonIgnore]
-        public string VpcPeeringConnectionId
+        public object VpcPeeringConnectionId
         {
             get { return this.Properties.GetValue<string>(); }
             set { this.Properties.SetValue(value); }
