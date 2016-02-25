@@ -86,6 +86,12 @@ namespace AWS.CloudFormation.Test
 
             Subnet subnetDmz2 = AddDmz2(vpc, template);
 
+            Route routeFromDmz2ToPrimeSubnet1 = new Route(vpcPeering, CidrPrimeSubnet1, subnetDmz2.RouteTable);
+            template.Resources.Add($"routeFromDmz2ToPrimeSubnet1", routeFromDmz2ToPrimeSubnet1);
+
+            Route routeFromDmz2ToPrimeSubnet2 = new Route(vpcPeering, CidrPrimeSubnet2, subnetDmz2.RouteTable);
+            template.Resources.Add($"routeFromDmz2ToPrimeSubnet2", routeFromDmz2ToPrimeSubnet2);
+
             var domainNameFnJoin = new FnJoin(FnJoinDelimiter.Period,
                 new ReferenceProperty(SimpleAd.DomainVersionParameterName),
                 "dev",
