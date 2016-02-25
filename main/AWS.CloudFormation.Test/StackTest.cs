@@ -75,7 +75,18 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add(vpcPeering.LogicalId,vpcPeering);
 
             SecurityGroup natSecurityGroup = AddNatSecurityGroup(vpc, template);
+
             Subnet subnetDmz1 = AddDmz1(vpc, template);
+
+            RouteTable routeTableForDmz1ToVpcPrime = new RouteTable(vpc);
+            template.Resources.Add($"RouteTableForDmz1ToPrime", routeTableForDmz1ToVpcPrime);
+
+            Route routeFromDmz1ToPrimeSubnet1 = new Route(vpcPeering, CidrPrimeSubnet1, routeTableForDmz1ToVpcPrime);
+            template.Resources.Add($"routeFromDmz1ToPrime", routeFromDmz1ToPrimeSubnet1);
+
+            Route routeFromDmz1ToPrimeSubnet2 = new Route(vpcPeering, CidrPrimeSubnet2, routeTableForDmz1ToVpcPrime);
+            template.Resources.Add($"routeFromDmz1ToPrimeSubnet2", routeFromDmz1ToPrimeSubnet2);
+
             Subnet subnetDmz2 = AddDmz2(vpc, template);
 
             var domainNameFnJoin = new FnJoin(FnJoinDelimiter.Period,
