@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.DirectoryService;
 using Newtonsoft.Json;
 
@@ -12,7 +13,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
     {
         public VpcPeeringConnection(Vpc vpc, object peerVpcId) : base(ResourceType.AwsEc2VpcPeeringConnection)
         {
-            this.VpcId = vpc.LogicalId;
+            this.VpcId = new ReferenceProperty(vpc.LogicalId);
             this.PeerVpcId = peerVpcId;
         }
 
@@ -32,11 +33,11 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         }
 
         [JsonIgnore]
-        public string VpcId
+        public object VpcId
         {
             get
             {
-                return this.Properties.GetValue<string>();
+                return this.Properties.GetValue<object>();
             }
             private set { this.Properties.SetValue(value); }
         }
