@@ -99,7 +99,7 @@ namespace AWS.CloudFormation.Test
             //netBiosServersElements = new object[] { directoryServicesDnsAddresses };
 
             //var dhcpOptions = AddDhcpOptions(simpleAd, vpc, template);
-            DhcpOptions dhcpOptions = new DhcpOptions(vpc, DnsPrime, DnsPrime);
+            DhcpOptions dhcpOptions = new DhcpOptions(vpc,  DnsPrime.Split(','), DnsPrime.Split(','));
             template.Resources.Add("DhcpOptions", dhcpOptions);
             dhcpOptions.NetbiosNodeType = "2";
 
