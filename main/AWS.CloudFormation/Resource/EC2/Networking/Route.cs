@@ -18,6 +18,19 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
                 this.DependsOn.Add(gateway.LogicalId);
             }
         }
+        public Route(VpcPeeringConnection vpcPeeringConnection, string destinationCidrBlock, RouteTable routeTable)
+            : this(destinationCidrBlock, routeTable)
+        {
+            VpcPeeringConnectionId = vpcPeeringConnection.VpcId;
+            this.DependsOn.Add(vpcPeeringConnection.LogicalId);
+        }
+
+        [JsonIgnore]
+        public string VpcPeeringConnectionId
+        {
+            get { return this.Properties.GetValue<string>(); }
+            set { this.Properties.SetValue(value); }
+        }
 
         public Route(string destinationCidrBlock, RouteTable routeTable) : base(ResourceType.AwsEc2Route)
         {

@@ -33,6 +33,12 @@ namespace AWS.CloudFormation.Resource.EC2
             this.DomainNameServers = new FnGetAtt(simpleAd, FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses);
             this.NetbiosNameServers = new FnGetAtt(simpleAd, FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses);
         }
+        public DhcpOptions(Vpc vpc, string dnsServers, string netBiosServers) : base(ResourceType.DhcpOptions)
+        {
+            this.Vpc = vpc;
+            this.DomainNameServers = dnsServers;
+            this.NetbiosNameServers = netBiosServers;
+        }
 
         [JsonIgnore]
         public Vpc Vpc { get;  }
