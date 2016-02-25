@@ -36,6 +36,7 @@ namespace AWS.CloudFormation.Resource.EC2
         public DhcpOptions(Vpc vpc, string[] dnsServers, string[] netBiosServers) : base(ResourceType.DhcpOptions)
         {
             this.Vpc = vpc;
+            this.DependsOn.Add(vpc.LogicalId);
             this.DomainNameServers = dnsServers;
             this.NetbiosNameServers = netBiosServers;
         }

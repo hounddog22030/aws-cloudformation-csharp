@@ -16,6 +16,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             this.LogicalId = $"{vpc.LogicalId}To{PeerVpcId}".Replace("-", string.Empty);
             this.VpcId = new ReferenceProperty(vpc.LogicalId);
             this.PeerVpcId = peerVpcId;
+            this.DependsOn.Add(vpc.LogicalId);
         }
 
         protected override bool SupportsTags => true;
