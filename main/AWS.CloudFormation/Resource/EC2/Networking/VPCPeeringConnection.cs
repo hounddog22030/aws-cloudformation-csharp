@@ -13,24 +13,12 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
     {
         public VpcPeeringConnection(Vpc vpc, object peerVpcId) : base(ResourceType.AwsEc2VpcPeeringConnection)
         {
+            this.LogicalId = $"{vpc.LogicalId}To{PeerVpcId}".Replace("-", string.Empty);
             this.VpcId = new ReferenceProperty(vpc.LogicalId);
             this.PeerVpcId = peerVpcId;
         }
 
         protected override bool SupportsTags => true;
-
-        public override string LogicalId
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(base.LogicalId))
-                {
-                    this.LogicalId = $"{this.VpcId}To{PeerVpcId}".Replace("-",string.Empty);
-                }
-                return base.LogicalId;
-            }
-            internal set { base.LogicalId = value; }
-        }
 
         [JsonIgnore]
         public object VpcId
