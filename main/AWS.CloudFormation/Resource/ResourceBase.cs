@@ -116,7 +116,7 @@ namespace AWS.CloudFormation.Resource
                 _logicalId = value;
                 if (SupportsTags)
                 {
-                    this.Tags["Name"] = value ;
+                    this.Tags.Add(new Tag("Name", value));
                 }
 
             }
@@ -170,17 +170,17 @@ namespace AWS.CloudFormation.Resource
         }
 
         [JsonIgnore]
-        public CloudFormationDictionary Tags
+        public TagDictionary Tags
         {
 
             get
             {
                 if (SupportsTags)
                 {
-                    var returnValue = this.Properties.GetValue<CloudFormationDictionary>();
+                    var returnValue = this.Properties.GetValue<TagDictionary>();
                     if (returnValue == null)
                     {
-                        this.Tags = new CloudFormationDictionary();
+                        this.Tags = new TagDictionary();
                         return this.Tags;
                     }
                     return returnValue;
