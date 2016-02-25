@@ -24,7 +24,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             {
                 if (string.IsNullOrEmpty(base.LogicalId))
                 {
-                    this.LogicalId = $"{this.VpcId}To{PeerVpcId}";
+                    this.LogicalId = $"{this.VpcId}To{PeerVpcId}".Replace("-",string.Empty);
                 }
                 return base.LogicalId;
             }
