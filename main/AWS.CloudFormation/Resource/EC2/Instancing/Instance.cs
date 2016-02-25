@@ -46,7 +46,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
         {
             SourceDestCheck = true;
             NetworkInterfaces = new List<NetworkInterface>();
-            this.Tags.Add(new Tag("Name", this.LogicalId));
+            this.Tags["Name"] = this.LogicalId;
             this.VolumesToAttach = new List<Volume>();
         }
 
