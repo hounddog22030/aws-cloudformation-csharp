@@ -44,7 +44,7 @@ namespace AWS.CloudFormation.Test
             //awsDomainJoinProperties.Add("dnsIpAddresses", "10.1.0.2");
 
 
-            var password = GetPassword();
+            var password = "dg68ug0K7U83MWQF";
 
             var domainPassword = new ParameterBase(SimpleAd.DomainAdminPasswordParameterName, "String", password, "Password for domain administrator.")
             {
@@ -1434,12 +1434,12 @@ namespace AWS.CloudFormation.Test
         public void UpdateDevelopmentTest()
         {
 
-            Greek version = Greek.Psi;
+            Greek version = Greek.Xi;
 
             var fullyQualifiedDomainName = $"{version}.dev.yadayadasoftware.com";
-            Create instances = Create.FullStack;
+            Create instances = Create.RdpGateway;
             var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances);
-            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "GDEN5840ljug";
+            ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "dg68ug0K7U83MWQF";
 
             Assert.IsFalse(HasGitDifferences());
 
