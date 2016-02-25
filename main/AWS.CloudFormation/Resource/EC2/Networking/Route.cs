@@ -29,7 +29,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         [JsonIgnore]
         public object VpcPeeringConnectionId
         {
-            get { return this.Properties.GetValue<string>(); }
+            get { return this.Properties.GetValue<object>(); }
             set { this.Properties.SetValue(value); }
         }
 
