@@ -113,12 +113,14 @@ namespace AWS.CloudFormation.Resource
             }
             internal set
             {
-                _logicalId = value;
-                if (SupportsTags)
+                if (_logicalId != value)
                 {
-                    this.Tags.Add(new Tag("Name", value));
+                    _logicalId = value;
+                    if (SupportsTags)
+                    {
+                        this.Tags.Add(new Tag("Name", value));
+                    }
                 }
-
             }
         }
 
