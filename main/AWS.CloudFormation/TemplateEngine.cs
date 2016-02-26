@@ -35,8 +35,8 @@ namespace AWS.CloudFormation
 
         public static Uri UploadTemplate(Template template, string path)
         {
-            //string existingBucketName = "gtbb/software/cf";
             var file = CreateTemplateFile(template);
+
             string filePath = file.FullName;
 
             TransferUtility fileTransferUtility = new
