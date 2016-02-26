@@ -76,7 +76,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateTemplateFileTest()
         {
-            var template = StackTest.GetTemplateFullStack("yadayadasoftware.com", "dev", StackTest.Greek.Xi, StackTest.Create.FullStack);
+            var template = StackTest.GetTemplateFullStack("yadayadasoftware.com", "dev", StackTest.Greek.Xi, "StackXi", StackTest.Create.FullStack);
 
             FileInfo file = TemplateEngine.CreateTemplateFile(template);
             Assert.IsNotNull(file);
@@ -101,7 +101,7 @@ namespace AWS.CloudFormation.Test
             InvalidOperationException o = null;
             try
             {
-                var template = new Template(Guid.NewGuid().ToString(),null,null);
+                var template = new Template(Guid.NewGuid().ToString(),null,null,null);
                 template.Parameters.Clear();
                 var i1 = new Instance(null,  InstanceTypes.T2Nano, "ami-b17f35db", OperatingSystem.Windows);
                 template.Resources.Add(Guid.NewGuid().ToString(),i1);
@@ -113,10 +113,26 @@ namespace AWS.CloudFormation.Test
             Assert.IsNotNull(o);
         }
 
+        [TestMethod]
+        public void UploadTemplateThrowsExceptionOnNullName()
+        {
+            Template t = new Template("bob.pem","none","10.0.0.0/16","name","description");
+            ArgumentNullException caught = null;
+            try
+            {
+                TemplateEngine.UploadTemplate(t, "gtbb/templates");
+            }
+            catch (ArgumentNullException ex)
+            {
+                caught = ex;
+            }
+            Assert.IsNotNull(caught);
+        }
+
         private static Template GetTemplate()
         {
             string defaultKeyName = "InvalidKeyName";
-            var template = new Template(defaultKeyName,null,null);
+            var template = new Template(defaultKeyName,null,null,null);
             var i1 = new Instance(null,InstanceTypes.T2Nano, "ami-b17f35db", OperatingSystem.Windows);
             template.Resources.Add("instance1", i1);
             var vpc = new Vpc("0.0.0.0/0");

@@ -39,7 +39,7 @@ namespace AWS.CloudFormation.Test.Resource.RDS
 
         private Template GetSqlExpressDbTemplate()
         {
-            var template = new Template("corp.getthebuybox.com", "vpcBasicDbInstanceTest", "10.0.0.0/16");
+            var template = new Template("corp.getthebuybox.com", "vpcBasicDbInstanceTest", "StackBasicDbInstanceTest", "10.0.0.0/16");
 
             var vpc = template.Vpcs.First();
             vpc.EnableDnsHostnames = true;
@@ -107,7 +107,7 @@ namespace AWS.CloudFormation.Test.Resource.RDS
 
         private Template GetMySqlTemplate()
         {
-            var template = new Template("corp.getthebuybox.com", "vpcBasicDbInstanceTest", "10.0.0.0/16");
+            var template = new Template("corp.getthebuybox.com", "vpcBasicDbInstanceTest", "StackBasicDbInstanceTest", "10.0.0.0/16");
 
             var vpc = template.Vpcs.First();
             vpc.EnableDnsHostnames = true;
@@ -170,7 +170,7 @@ namespace AWS.CloudFormation.Test.Resource.RDS
         }
         private Template GetSingleDbAuroraTemplate()
         {
-            var template = new Template("corp.getthebuybox.com", "vpcBasicDbInstanceTest", "10.0.0.0/16");
+            var template = new Template("corp.getthebuybox.com", "vpcBasicDbInstanceTest", "StackBasicDbInstanceTest", "10.0.0.0/16");
 
             var vpc = template.Vpcs.First();
             vpc.EnableDnsHostnames = true;

@@ -20,33 +20,9 @@ namespace AWS.CloudFormation.Stack
         {
             var templateUri = TemplateEngine.UploadTemplate(template, "gtbb/templates");
 
-            AmazonCloudFormationClient client = new AmazonCloudFormationClient(RegionEndpoint.USEast1);
-
-            CreateStackRequest request = new CreateStackRequest
-            {
-                DisableRollback = true,
-                StackName = name,
-                TemplateURL = templateUri.AbsoluteUri
-            };
-
-            
-
-            try
-            {
-                var response = client.CreateStack(request);
-
-                if (response.HttpStatusCode < HttpStatusCode.OK || response.HttpStatusCode >= HttpStatusCode.MultipleChoices)
-                {
-                    throw new Exception(response.ToString());
-                }
-                return response;
-            }
-            catch (Amazon.Runtime.Internal.HttpErrorResponseException ex)
-            {
-                throw new Exception(ex.Message);
-            }
-
+            return CreateStack(templateUri);
         }
+
         public static CreateStackResponse CreateStack(Template template)
         {
             return CreateStack(template,template.StackName);
@@ -114,6 +90,33 @@ namespace AWS.CloudFormation.Stack
         public static void UpdateStack(Template template)
         {
             UpdateStack(template.StackName, template);
+        }
+
+        public static CreateStackResponse CreateStack(Uri templateUri)
+        {
+            AmazonCloudFormationClient client = new AmazonCloudFormationClient(RegionEndpoint.USEast1);
+
+            CreateStackRequest request = new CreateStackRequest
+            {
+                DisableRollback = true,
+                StackName = templateUri.Segments[templateUri.Segments.Length-1].Replace('.','-'),
+                TemplateURL = templateUri.AbsoluteUri
+            };
+
+            try
+            {
+                var response = client.CreateStack(request);
+
+                if (response.HttpStatusCode < HttpStatusCode.OK || response.HttpStatusCode >= HttpStatusCode.MultipleChoices)
+                {
+                    throw new Exception(response.ToString());
+                }
+                return response;
+            }
+            catch (Amazon.Runtime.Internal.HttpErrorResponseException ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
     }
 

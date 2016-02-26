@@ -55,7 +55,9 @@ namespace AWS.CloudFormation.Resource
         [EnumMember(Value = "AWS::DirectoryService::SimpleAD")] AwsDirectoryServiceSimpleAd,
         [EnumMember(Value = "AWS::DirectoryService::MicrosoftAD")] AwsDirectoryServiceMicrosoftAd,
         [EnumMember(Value = "AWS::SSM::Document")] AwsSsmDocument,
-        [EnumMember(Value = "AWS::EC2::VPCPeeringConnection")] AwsEc2VpcPeeringConnection
+        [EnumMember(Value = "AWS::EC2::VPCPeeringConnection")] AwsEc2VpcPeeringConnection,
+        //http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-stack.html
+        [EnumMember(Value = "AWS::CloudFormation::Stack")] AwsCloudFormationStack
     }
 
     public abstract class ResourceBase : ILogicalId

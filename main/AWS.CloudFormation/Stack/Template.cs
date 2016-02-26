@@ -28,21 +28,25 @@ namespace AWS.CloudFormation.Stack
         public const string ParameterKeyPairName = "KeyPairName";
         public const string ParameterDomainAdminPassword = "DomainAdminPassword";
 
-        public Template(string defaultKeyName, string vpcName, string vpcCidrBlock) : this(defaultKeyName,vpcName,vpcCidrBlock,null)
+        public Template(string defaultKeyName, string vpcName, string vpcCidrBlock, string stackName) : this(defaultKeyName,vpcName,vpcCidrBlock, stackName,null)
         {
             
         }
 
-        public Template(string keyPairName, string vpcName, string vpcCidrBlock, string description) : base()
+        public Template(string keyPairName, string vpcName, string vpcCidrBlock, string stackName, string description) : this(stackName,description)
         {
-            Outputs = new CloudFormationDictionary();
-            AwsTemplateFormatVersion = AwsTemplateFormatVersion20100909;
-            this.Resources = new ObservableDictionary<string, ResourceBase>();
-            this.Resources.CollectionChanged += Resources_CollectionChanged;
-            this.Parameters = new CloudFormationDictionary();
             this.Parameters.Add(ParameterKeyPairName, new ParameterBase(ParameterKeyPairName, "AWS::EC2::KeyPair::KeyName", keyPairName, "Key Pair to decrypt instance password."));
             Vpc vpc = new Vpc(vpcCidrBlock);
             this.Resources.Add(vpcName, vpc);
+
+        }
+
+        public Template(string name, string description)
+        {
+            Outputs = new CloudFormationDictionary();
+            AwsTemplateFormatVersion = AwsTemplateFormatVersion20100909;
+
+            this.StackName = name;
 
 
             if (!string.IsNullOrEmpty(description))
@@ -50,6 +54,9 @@ namespace AWS.CloudFormation.Stack
                 this.Description = description;
             }
 
+            this.Resources = new ObservableDictionary<string, ResourceBase>();
+            this.Resources.CollectionChanged += Resources_CollectionChanged;
+            this.Parameters = new CloudFormationDictionary();
         }
 
         private void Resources_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -67,10 +74,13 @@ namespace AWS.CloudFormation.Stack
         public string Description { get; }
 
         private string _stackName;
+        private string v1;
+        private string v2;
+
         [JsonIgnore]
         public string StackName {
             get { return _stackName; }
-            set
+            private set
             {
                 Regex r = new Regex("[a-zA-Z][-a-zA-Z0-9]*");
                 if (r.Match(value).Length!=value.Length)
