@@ -11,6 +11,11 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 {
     public class VpcPeeringConnection : ResourceBase
     {
+        public VpcPeeringConnection(object vpc, object peerVpcId) : base(ResourceType.AwsEc2VpcPeeringConnection)
+        {
+            this.VpcId = vpc;
+            this.PeerVpcId = peerVpcId;
+        }
         public VpcPeeringConnection(Vpc vpc, object peerVpcId) : base(ResourceType.AwsEc2VpcPeeringConnection)
         {
             this.LogicalId = $"{vpc.LogicalId}To{PeerVpcId}".Replace("-", string.Empty);
