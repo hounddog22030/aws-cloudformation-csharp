@@ -32,14 +32,42 @@ namespace AWS.CloudFormation.Test
         public const string CidrPrimeSubnet2 = "10.0.0.240/28";
         public const string DnsPrime = "10.0.0.10, 10.0.0.253";
 
+        public static Uri GetMasterTemplateUri()
+        {
+            var gitSuffix = $"{GetGitBranch()}:{GetGitHash()}";
+            var description = $"Master Stack:{gitSuffix}";
+
+            Template masterTemplate = new Template("MasterStackYadaYadaSoftwareCom", description);
+            Template primeTemplate = GetPrimeTemplate(gitSuffix);
+            Template development = GetTemplateFullStack("YadaYadaSoftwareCom", $"dev{Greek.Alpha}", Greek.Alpha, Create.None, gitSuffix, null);
+
+            Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
+            CloudFormation.Resource.CloudFormation.Stack devAlphaStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
+            masterTemplate.Resources.Add("AlphaDevYadaYadaSoftwareCom", devAlphaStack);
+
+            Uri primeUri = TemplateEngine.UploadTemplate(primeTemplate, "gtbb/templates");
+            CloudFormation.Resource.CloudFormation.Stack prime = new CloudFormation.Resource.CloudFormation.Stack(primeUri);
+            masterTemplate.Resources.Add("PrimeYadaYadaSoftwareCom", prime);
+
+            var vpcPeering = new VpcPeeringConnection(new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.VpcAlpha"), new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.VpcPrime"));
+            masterTemplate.Resources.Add("VpcAlphaToPrime", vpcPeering);
+
+            return TemplateEngine.UploadTemplate(masterTemplate, "gtbb/templates");
+        }
+
         public static Uri GetPrimeTemplateUri(string gitSuffix)
         {
-            Template primeTemplate = new Template("prime.yadayadasoftware.com", KeyPairName,"VpcPrime", CidrPrimeVpc, $"Stack for prime Vpc (AD):{gitSuffix}");
-            var output = new CloudFormationDictionary();
-            output.Add("Value", new ReferenceProperty(primeTemplate.Vpcs.First().LogicalId));
-            primeTemplate.Outputs.Add("VpcId", output);
-            var templateUri = TemplateEngine.UploadTemplate(primeTemplate, "gtbb/templates");
-            return templateUri;
+            return TemplateEngine.UploadTemplate(GetPrimeTemplate(gitSuffix), "gtbb/templates"); 
+        }
+
+        public static Template GetPrimeTemplate(string gitSuffix)
+        {
+            Template primeTemplate = new Template("prime.yadayadasoftware.com", KeyPairName, "VpcPrime", CidrPrimeVpc, $"Stack for prime Vpc (AD):{gitSuffix}");
+            //var output = new CloudFormationDictionary();
+            //output.Add("Value", new ReferenceProperty(primeTemplate.Vpcs.First().LogicalId));
+            //primeTemplate.Outputs.Add("VpcId", output);
+            return primeTemplate;
+
         }
 
         [TestMethod]
@@ -50,30 +78,6 @@ namespace AWS.CloudFormation.Test
             Assert.IsFalse(string.IsNullOrEmpty(parentTemplate.AbsoluteUri));
         }
 
-        public static Uri GetMasterTemplateUri()
-        {
-            var gitSuffix = $"{GetGitBranch()}:{GetGitHash()}";
-            var description = $"Master Stack:{gitSuffix}";
-
-            Template masterTemplate = new Template("MasterStackYadaYadaSoftwareCom", description);
-            Template primeTemplate = new Template("prime.yadayadasoftware.com", KeyPairName, "VpcPrime", CidrPrimeVpc, $"Stack for prime Vpc (AD):{gitSuffix}");
-            Template development = GetTemplateFullStack("YadaYadaSoftwareCom", $"dev{Greek.Alpha}", Greek.Alpha, Create.None, gitSuffix,null);
-
-            Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
-
-            CloudFormation.Resource.CloudFormation.Stack devAlphaStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
-            masterTemplate.Resources.Add("AlphaDevYadaYadaSoftwareCom", devAlphaStack);
-
-            Uri primeUri = TemplateEngine.UploadTemplate(primeTemplate, "gtbb/templates");
-            CloudFormation.Resource.CloudFormation.Stack prime = new CloudFormation.Resource.CloudFormation.Stack(primeUri);
-            masterTemplate.Resources.Add("PrimeYadaYadaSoftwareCom", prime);
-
-
-            var vpcPeering = new VpcPeeringConnection(new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.VpcAlpha" ), new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.VpcPrime"));
-            masterTemplate.Resources.Add("VpcPrimeToAlpha", vpcPeering);
-
-            return TemplateEngine.UploadTemplate(masterTemplate, "gtbb/templates");
-        }
 
         [TestMethod]
         public void GetMasterTemplateTest()
@@ -212,7 +216,7 @@ namespace AWS.CloudFormation.Test
             nat1.DependsOn.Add(vpc.VpcGatewayAttachment.LogicalId);
 
             RouteTable routeTableForSubnetsToNat1 = new RouteTable(vpc);
-            template.Resources.Add($"RouteTable1", routeTableForSubnetsToNat1);
+            template.Resources.Add($"RouteTableForPrivateSubnets", routeTableForSubnetsToNat1);
 
             Route routeFromAz1ToNat = new Route(Template.CidrIpTheWorld, routeTableForSubnetsToNat1);
             template.Resources.Add($"RouteForAz1", routeFromAz1ToNat);
