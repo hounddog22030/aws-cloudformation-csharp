@@ -110,6 +110,16 @@ namespace AWS.CloudFormation.Stack
         }
 
         public CloudFormationDictionary Outputs { get; }
+
+        public void AddOutputs()
+        {
+            foreach (var resource in this.Resources)
+            {
+                var valueDictionary = new CloudFormationDictionary();
+                valueDictionary.Add("Value", new ReferenceProperty(resource.Key));
+                this.Outputs.Add(resource.Key, valueDictionary);
+            }
+        }
     }
 
     public class ParameterBase : Dictionary<string,object>, ILogicalId
