@@ -33,9 +33,9 @@ namespace AWS.CloudFormation.Test
         public const string CidrPrimeSubnet2 = "10.0.0.240/28";
         public const string DnsPrime = "10.0.0.10, 10.0.0.253";
 
-        public static Uri GetPrimeTemplateUri()
+        public static Uri GetPrimeTemplateUri(string gitSuffix)
         {
-            Template parentTemplate = new Template("prime.yadayadasoftware.com", KeyPairName,"VpcPrime", CidrPrimeVpc, "Stack for prime Vpc (AD)");
+            Template parentTemplate = new Template("prime.yadayadasoftware.com", KeyPairName,"VpcPrime", CidrPrimeVpc, $"Stack for prime Vpc (AD):{gitSuffix}");
             var output = new CloudFormationDictionary();
             output.Add("Value", new ReferenceProperty(parentTemplate.Vpcs.First().LogicalId));
             parentTemplate.Outputs.Add("VpcId", output);
@@ -46,20 +46,23 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void GetPrimeTemplateTest()
         {
-            var parentTemplate = GetPrimeTemplateUri();
+            var parentTemplate = GetPrimeTemplateUri(GetGitSuffix());
             Assert.IsNotNull(parentTemplate);
             Assert.IsFalse(string.IsNullOrEmpty(parentTemplate.AbsoluteUri));
         }
 
         public static Uri GetMasterTemplateUri()
         {
-            Template masterTemplate = new Template("MasterStackYadaYadaSoftwareCom", "Master Stack");
+            var gitSuffix = $"{GetGitBranch()}:{GetGitHash()}";
+            var description = $"Master Stack:{gitSuffix}";
 
-            var primeUri = GetPrimeTemplateUri();
+            Template masterTemplate = new Template("MasterStackYadaYadaSoftwareCom", description);
+
+            var primeUri = GetPrimeTemplateUri(gitSuffix);
             CloudFormation.Resource.CloudFormation.Stack prime = new CloudFormation.Resource.CloudFormation.Stack(primeUri);
             masterTemplate.Resources.Add("PrimeYadaYadaSoftwareCom",prime);
 
-            Template development = GetTemplateFullStack("YadaYadaSoftwareCom", $"dev{Greek.Alpha}", Greek.Alpha, Create.None);
+            Template development = GetTemplateFullStack("YadaYadaSoftwareCom", $"dev{Greek.Alpha}", Greek.Alpha, Create.None, gitSuffix);
             Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
 
             CloudFormation.Resource.CloudFormation.Stack devAlphaStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
@@ -81,9 +84,14 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdatePrimeTest()
         {
-            var primeUri = GetPrimeTemplateUri();
+            var primeUri = GetPrimeTemplateUri(GetGitSuffix());
             Stack.Stack.UpdateStack("StackYadaYadaSoftwareComMaster-template-StackPrime-ZEE4RL4MR8DQ",primeUri);
 
+        }
+
+        private static string GetGitSuffix()
+        {
+            return $"{GetGitBranch()}:{GetGitHash()}";
         }
 
         [TestMethod]
@@ -102,7 +110,7 @@ namespace AWS.CloudFormation.Test
 
         //}
 
-        public static Template GetTemplateFullStack(string topLevel, string appNameNetBiosName, Greek version, Create instancesToCreate)
+        public static Template GetTemplateFullStack(string topLevel, string appNameNetBiosName, Greek version, Create instancesToCreate, string gitSuffix)
         {
 
             var template = new Template($"{version}.{appNameNetBiosName}.{topLevel}", KeyPairName, $"Vpc{version}", CidrVpc, $"{GetGitBranch()}:{GetGitHash()}" );
@@ -1502,7 +1510,7 @@ namespace AWS.CloudFormation.Test
             //Create instances = Create.FullStack;
             Create instances = (Create)0;
             //var templateToCreateStack = GetTemplateFullStack(topLevel, appName, version, $"{version}-{appName}-{topLevel}".Replace('.', '-'), instances);
-            var templateToCreateStack = GetTemplateFullStack(topLevel, appName, version, instances);
+            var templateToCreateStack = GetTemplateFullStack(topLevel, appName, version, instances, GetGitSuffix());
 
             CreateTestStack(templateToCreateStack, this.TestContext);
         }
@@ -1512,7 +1520,7 @@ namespace AWS.CloudFormation.Test
         public void CreateDevelopmentTemplateFileTest()
         {
             //DomainDnsName = $"alpha.dev.yadayadasoftware.com";
-            var templateToCreateStack = GetTemplateFullStack("yadayadasoftware.com", "dev", Greek.Alpha, Create.FullStack);
+            var templateToCreateStack = GetTemplateFullStack("yadayadasoftware.com", "dev", Greek.Alpha, Create.FullStack, GetGitSuffix());
             TemplateEngine.CreateTemplateFile(templateToCreateStack);
         }
 
@@ -1524,7 +1532,7 @@ namespace AWS.CloudFormation.Test
 
             var fullyQualifiedDomainName = $"{version}.dev.yadayadasoftware.com";
             Create instances = Create.RdpGateway;
-            var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances);
+            var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances, GetGitSuffix());
             ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "dg68ug0K7U83MWQF";
 
             Assert.IsFalse(HasGitDifferences());
@@ -1545,7 +1553,7 @@ namespace AWS.CloudFormation.Test
 
             Create instances = Create.FullStack;
 
-            var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version,  instances);
+            var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version,  instances, GetGitSuffix());
             ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "IDJP5673lwip";
             Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.', '-'), template);
         }
