@@ -61,8 +61,9 @@ namespace AWS.CloudFormation.Test
             var primeUri = GetPrimeTemplateUri(gitSuffix);
             CloudFormation.Resource.CloudFormation.Stack prime = new CloudFormation.Resource.CloudFormation.Stack(primeUri);
             masterTemplate.Resources.Add("PrimeYadaYadaSoftwareCom",prime);
-
+            
             Template development = GetTemplateFullStack("YadaYadaSoftwareCom", $"dev{Greek.Alpha}", Greek.Alpha, Create.None, gitSuffix);
+            development.Parameters.Add(new ParameterBase("PrimeVpcId", "String", new FnGetAtt(prime, "Outputs.VpcId" ), "Prime Vpc Id"));
             Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
 
             CloudFormation.Resource.CloudFormation.Stack devAlphaStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
