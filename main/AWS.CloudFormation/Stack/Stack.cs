@@ -28,9 +28,8 @@ namespace AWS.CloudFormation.Stack
             return CreateStack(template,template.StackName);
         }
 
-        public static void UpdateStack(string stackName, Template template)
+        public static void UpdateStack(string stackName, Uri templateUri)
         {
-            var templateUri = TemplateEngine.UploadTemplate(template, "gtbb/templates");
             AmazonCloudFormationClient client = new AmazonCloudFormationClient(RegionEndpoint.USEast1);
 
             UpdateStackRequest request = new UpdateStackRequest
@@ -38,7 +37,7 @@ namespace AWS.CloudFormation.Stack
                 StackName = stackName,
                 TemplateURL = templateUri.AbsoluteUri
             };
-            
+
             try
             {
                 var response = client.UpdateStack(request);
@@ -53,6 +52,12 @@ namespace AWS.CloudFormation.Stack
             {
                 throw new Exception(ex.Message);
             }
+
+        }
+        public static void UpdateStack(string stackName, Template template)
+        {
+            var templateUri = TemplateEngine.UploadTemplate(template, "gtbb/templates");
+            UpdateStack(stackName,templateUri);
         }
 
         public static List<Stack> GetActiveStacks()
@@ -84,6 +89,7 @@ namespace AWS.CloudFormation.Stack
 
             return returnValue;
         }
+
 
         public string Name { get; }
 

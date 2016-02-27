@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Configuration.Packages;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource;
@@ -34,7 +35,10 @@ namespace AWS.CloudFormation.Test
 
         public static Uri GetPrimeTemplateUri()
         {
-            Template parentTemplate = new Template(KeyPairName,"VpcParent", CidrPrimeVpc, "StackYadaYadaSoftwareComPrime","Stack for prime Vpc (AD)");
+            Template parentTemplate = new Template(KeyPairName,"VpcParent", CidrPrimeVpc, "PrimeStack-YadaYadaSoftwareCom","Stack for prime Vpc (AD)");
+            var output = new CloudFormationDictionary();
+            output.Add("Value", new ReferenceProperty(parentTemplate.Vpcs.First().LogicalId));
+            parentTemplate.Outputs.Add("VpcId", output);
             var templateUri = TemplateEngine.UploadTemplate(parentTemplate, "gtbb/templates");
             return templateUri;
         }
@@ -49,11 +53,18 @@ namespace AWS.CloudFormation.Test
 
         public static Uri GetMasterTemplateUri()
         {
-            Template masterTemplate = new Template("StackYadaYadaSoftwareComMaster", "Master Stack");
+            Template masterTemplate = new Template("MasterStack-YadaYadaSoftwareCom", "Master Stack");
             var primeUri = GetPrimeTemplateUri();
             CloudFormation.Resource.CloudFormation.Stack prime = new CloudFormation.Resource.CloudFormation.Stack(primeUri);
             masterTemplate.Resources.Add("StackPrime",prime);
             var templateUri = TemplateEngine.UploadTemplate(masterTemplate, "gtbb/templates");
+
+            Template development = GetTemplateFullStack("yadayadasoftware.com", $"dev{Greek.Alpha}", Greek.Alpha, Create.None);
+            Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
+
+            CloudFormation.Resource.CloudFormation.Stack devAlphaStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
+            masterTemplate.Resources.Add("DevAlpha", devAlphaStack);
+
             return templateUri;
         }
 
@@ -67,14 +78,30 @@ namespace AWS.CloudFormation.Test
         }
 
         [TestMethod]
-        public void RunMasterTemplate()
+        public void UpdatePrimeTest()
+        {
+            var primeUri = GetPrimeTemplateUri();
+            Stack.Stack.UpdateStack("StackYadaYadaSoftwareComMaster-template-StackPrime-ZEE4RL4MR8DQ",primeUri);
+
+        }
+
+        [TestMethod]
+        public void CreateMasterTemplate()
         {
             var templateUri = GetMasterTemplateUri();
             Stack.Stack.CreateStack(templateUri);
 
         }
 
-        public static Template GetTemplateFullStack(string topLevel, string appNameNetBiosName, Greek version, string toCreate, Create instancesToCreate)
+        //[TestMethod]
+        //public void UpdateMasterTemplate()
+        //{
+        //    var templateUri = GetMasterTemplateUri();
+        //    Stack.Stack.UpdateStack();
+
+        //}
+
+        public static Template GetTemplateFullStack(string topLevel, string appNameNetBiosName, Greek version, Create instancesToCreate)
         {
 
             var template = new Template(KeyPairName, $"Vpc{version}", CidrVpc, $"{GetGitBranch()}:{GetGitHash()}");
@@ -438,6 +465,7 @@ namespace AWS.CloudFormation.Test
         [Flags]
         public enum Create
         {
+            None = 0,
             Dc2 = 1,
             RdpGateway = Dc2 * 2,
             Sql4Tfs = RdpGateway * 2,
@@ -1472,7 +1500,8 @@ namespace AWS.CloudFormation.Test
             //Create instances = Create.Dc2 | Create.BackupServer | Create.Rdp1;
             //Create instances = Create.FullStack;
             Create instances = (Create)0;
-            var templateToCreateStack = GetTemplateFullStack(topLevel, appName, version, $"{version}-{appName}-{topLevel}".Replace('.', '-'), instances);
+            //var templateToCreateStack = GetTemplateFullStack(topLevel, appName, version, $"{version}-{appName}-{topLevel}".Replace('.', '-'), instances);
+            var templateToCreateStack = GetTemplateFullStack(topLevel, appName, version, instances);
 
             CreateTestStack(templateToCreateStack, this.TestContext);
         }
@@ -1482,7 +1511,7 @@ namespace AWS.CloudFormation.Test
         public void CreateDevelopmentTemplateFileTest()
         {
             //DomainDnsName = $"alpha.dev.yadayadasoftware.com";
-            var templateToCreateStack = GetTemplateFullStack("yadayadasoftware.com", "dev", Greek.Alpha, "StackAlpha", Create.FullStack);
+            var templateToCreateStack = GetTemplateFullStack("yadayadasoftware.com", "dev", Greek.Alpha, Create.FullStack);
             TemplateEngine.CreateTemplateFile(templateToCreateStack);
         }
 
@@ -1494,7 +1523,7 @@ namespace AWS.CloudFormation.Test
 
             var fullyQualifiedDomainName = $"{version}.dev.yadayadasoftware.com";
             Create instances = Create.RdpGateway;
-            var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, "IDontKnow", instances);
+            var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances);
             ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "dg68ug0K7U83MWQF";
 
             Assert.IsFalse(HasGitDifferences());
@@ -1515,7 +1544,7 @@ namespace AWS.CloudFormation.Test
 
             Create instances = Create.FullStack;
 
-            var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, "StackPsi", instances);
+            var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version,  instances);
             ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "IDJP5673lwip";
             Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.', '-'), template);
         }
