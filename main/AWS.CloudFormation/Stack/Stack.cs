@@ -105,7 +105,7 @@ namespace AWS.CloudFormation.Stack
             CreateStackRequest request = new CreateStackRequest
             {
                 DisableRollback = true,
-                StackName = templateUri.Segments[templateUri.Segments.Length-1].Replace('.','-'),
+                StackName = templateUri.Segments[templateUri.Segments.Length-1].Replace(".template",string.Empty).Replace('.','-'),
                 TemplateURL = templateUri.AbsoluteUri
             };
 
