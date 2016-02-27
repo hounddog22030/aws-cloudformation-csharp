@@ -129,9 +129,9 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             var info = new object[] { resource.LogicalId, attribute };
             this.Add("Fn::GetAtt", info);
         }
-        public FnGetAtt(ILogicalId resource, string attribute)
+        public FnGetAtt(string resource, string attribute)
         {
-            var info = new object[] { resource.LogicalId, attribute };
+            var info = new object[] { resource, attribute };
             this.Add("Fn::GetAtt", info);
         }
     }
