@@ -35,7 +35,7 @@ namespace AWS.CloudFormation.Test
 
         public static Uri GetPrimeTemplateUri()
         {
-            Template parentTemplate = new Template(KeyPairName,"VpcParent", CidrPrimeVpc, "PrimeStack-YadaYadaSoftwareCom","Stack for prime Vpc (AD)");
+            Template parentTemplate = new Template("prime.yadayadasoftware.com", KeyPairName,"VpcPrime", CidrPrimeVpc, "Stack for prime Vpc (AD)");
             var output = new CloudFormationDictionary();
             output.Add("Value", new ReferenceProperty(parentTemplate.Vpcs.First().LogicalId));
             parentTemplate.Outputs.Add("VpcId", output);
@@ -53,18 +53,19 @@ namespace AWS.CloudFormation.Test
 
         public static Uri GetMasterTemplateUri()
         {
-            Template masterTemplate = new Template("MasterStack-YadaYadaSoftwareCom", "Master Stack");
+            Template masterTemplate = new Template("MasterStackYadaYadaSoftwareCom", "Master Stack");
+
             var primeUri = GetPrimeTemplateUri();
             CloudFormation.Resource.CloudFormation.Stack prime = new CloudFormation.Resource.CloudFormation.Stack(primeUri);
-            masterTemplate.Resources.Add("StackPrime",prime);
-            var templateUri = TemplateEngine.UploadTemplate(masterTemplate, "gtbb/templates");
+            masterTemplate.Resources.Add("PrimeYadaYadaSoftwareCom",prime);
 
-            Template development = GetTemplateFullStack("yadayadasoftware.com", $"dev{Greek.Alpha}", Greek.Alpha, Create.None);
+            Template development = GetTemplateFullStack("YadaYadaSoftwareCom", $"dev{Greek.Alpha}", Greek.Alpha, Create.None);
             Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
 
             CloudFormation.Resource.CloudFormation.Stack devAlphaStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
-            masterTemplate.Resources.Add("DevAlpha", devAlphaStack);
+            masterTemplate.Resources.Add("AlphaDevYadaYadaSoftwareCom", devAlphaStack);
 
+            var templateUri = TemplateEngine.UploadTemplate(masterTemplate, "gtbb/templates");
             return templateUri;
         }
 
@@ -104,7 +105,7 @@ namespace AWS.CloudFormation.Test
         public static Template GetTemplateFullStack(string topLevel, string appNameNetBiosName, Greek version, Create instancesToCreate)
         {
 
-            var template = new Template(KeyPairName, $"Vpc{version}", CidrVpc, $"{GetGitBranch()}:{GetGitHash()}");
+            var template = new Template($"{version}.{appNameNetBiosName}.{topLevel}", KeyPairName, $"Vpc{version}", CidrVpc, $"{GetGitBranch()}:{GetGitHash()}" );
 
             //var runtimeConfig = activeDirectory.Content.Add("runtimeConfig", new CloudFormationDictionary());
             //var awsDomainJoin = runtimeConfig.Add("aws:domainJoin");
@@ -444,7 +445,7 @@ namespace AWS.CloudFormation.Test
 
         public static Template GetTemplateWithParameters()
         {
-            var template = new Template(KeyPairName, "Vpc", "StackWithParameters", CidrVpc);
+            var template = new Template("StackWithParameters", KeyPairName, "Vpc",  CidrVpc);
             var password = System.Web.Security.Membership.GeneratePassword(8, 0);
             var domainPassword = new ParameterBase(Template.ParameterDomainAdminPassword, "String", password, "Password for domain administrator.")
             {
@@ -1593,7 +1594,7 @@ namespace AWS.CloudFormation.Test
             {
                 throw new ArgumentNullException(nameof(vpcName));
             }
-            return new Template(KeyPairName, vpcName, $"Stack{vpcName}", CidrVpc);
+            return new Template($"Stack{vpcName}", KeyPairName, vpcName,  CidrVpc);
 
         }
 

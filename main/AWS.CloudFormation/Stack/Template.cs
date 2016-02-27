@@ -28,12 +28,12 @@ namespace AWS.CloudFormation.Stack
         public const string ParameterKeyPairName = "KeyPairName";
         public const string ParameterDomainAdminPassword = "DomainAdminPassword";
 
-        public Template(string defaultKeyName, string vpcName, string vpcCidrBlock, string stackName) : this(defaultKeyName,vpcName,vpcCidrBlock, stackName,null)
+        public Template(string stackName, string defaultKeyName, string vpcName, string vpcCidrBlock) : this(defaultKeyName,vpcName,vpcCidrBlock, stackName,null)
         {
             
         }
 
-        public Template(string keyPairName, string vpcName, string vpcCidrBlock, string stackName, string description) : this(stackName,description)
+        public Template(string stackName, string keyPairName, string vpcName, string vpcCidrBlock, string description) : this(stackName,description)
         {
             this.Parameters.Add(ParameterKeyPairName, new ParameterBase(ParameterKeyPairName, "AWS::EC2::KeyPair::KeyName", keyPairName, "Key Pair to decrypt instance password."));
             Vpc vpc = new Vpc(vpcCidrBlock);
@@ -46,7 +46,7 @@ namespace AWS.CloudFormation.Stack
             Outputs = new CloudFormationDictionary();
             AwsTemplateFormatVersion = AwsTemplateFormatVersion20100909;
 
-            this.StackName = name;
+            this.StackName = name.Replace('.','-');
 
 
             if (!string.IsNullOrEmpty(description))
