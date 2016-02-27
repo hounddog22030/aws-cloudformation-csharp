@@ -34,11 +34,11 @@ namespace AWS.CloudFormation.Test
 
         public static Uri GetPrimeTemplateUri(string gitSuffix)
         {
-            Template parentTemplate = new Template("prime.yadayadasoftware.com", KeyPairName,"VpcPrime", CidrPrimeVpc, $"Stack for prime Vpc (AD):{gitSuffix}");
+            Template primeTemplate = new Template("prime.yadayadasoftware.com", KeyPairName,"VpcPrime", CidrPrimeVpc, $"Stack for prime Vpc (AD):{gitSuffix}");
             var output = new CloudFormationDictionary();
-            output.Add("Value", new ReferenceProperty(parentTemplate.Vpcs.First().LogicalId));
-            parentTemplate.Outputs.Add("VpcId", output);
-            var templateUri = TemplateEngine.UploadTemplate(parentTemplate, "gtbb/templates");
+            output.Add("Value", new ReferenceProperty(primeTemplate.Vpcs.First().LogicalId));
+            primeTemplate.Outputs.Add("VpcId", output);
+            var templateUri = TemplateEngine.UploadTemplate(primeTemplate, "gtbb/templates");
             return templateUri;
         }
 
@@ -56,19 +56,23 @@ namespace AWS.CloudFormation.Test
             var description = $"Master Stack:{gitSuffix}";
 
             Template masterTemplate = new Template("MasterStackYadaYadaSoftwareCom", description);
-
-            var primeUri = GetPrimeTemplateUri(gitSuffix);
-            CloudFormation.Resource.CloudFormation.Stack prime = new CloudFormation.Resource.CloudFormation.Stack(primeUri);
-            masterTemplate.Resources.Add("PrimeYadaYadaSoftwareCom",prime);
-            
+            Template primeTemplate = new Template("prime.yadayadasoftware.com", KeyPairName, "VpcPrime", CidrPrimeVpc, $"Stack for prime Vpc (AD):{gitSuffix}");
             Template development = GetTemplateFullStack("YadaYadaSoftwareCom", $"dev{Greek.Alpha}", Greek.Alpha, Create.None, gitSuffix,null);
+
             Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
 
             CloudFormation.Resource.CloudFormation.Stack devAlphaStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
             masterTemplate.Resources.Add("AlphaDevYadaYadaSoftwareCom", devAlphaStack);
 
-            var templateUri = TemplateEngine.UploadTemplate(masterTemplate, "gtbb/templates");
-            return templateUri;
+            Uri primeUri = TemplateEngine.UploadTemplate(primeTemplate, "gtbb/templates");
+            CloudFormation.Resource.CloudFormation.Stack prime = new CloudFormation.Resource.CloudFormation.Stack(primeUri);
+            masterTemplate.Resources.Add("PrimeYadaYadaSoftwareCom", prime);
+
+
+            var vpcPeering = new VpcPeeringConnection(new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.VpcAlpha" ), new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.VpcPrime"));
+            masterTemplate.Resources.Add("VpcPrimeToAlpha", vpcPeering);
+
+            return TemplateEngine.UploadTemplate(masterTemplate, "gtbb/templates");
         }
 
         [TestMethod]
@@ -149,26 +153,24 @@ namespace AWS.CloudFormation.Test
             vpc.EnableDnsHostnames = true;
             vpc.EnableDnsSupport = true;
 
-            var vpcPeering = new VpcPeeringConnection(vpc, new FnGetAtt(primeName, "Outputs.VpcId"));
-            template.Resources.Add(vpcPeering.LogicalId, vpcPeering);
 
             SecurityGroup natSecurityGroup = AddNatSecurityGroup(vpc, template);
 
             Subnet subnetDmz1 = AddDmz1(vpc, template);
 
-            Route routeFromDmz1ToPrimeSubnet1 = new Route(vpcPeering, CidrPrimeSubnet1, subnetDmz1.RouteTable);
-            template.Resources.Add($"routeFromDmz1ToPrime", routeFromDmz1ToPrimeSubnet1);
+            //Route routeFromDmz1ToPrimeSubnet1 = new Route(vpcPeering, CidrPrimeSubnet1, subnetDmz1.RouteTable);
+            //template.Resources.Add($"routeFromDmz1ToPrime", routeFromDmz1ToPrimeSubnet1);
 
-            Route routeFromDmz1ToPrimeSubnet2 = new Route(vpcPeering, CidrPrimeSubnet2, subnetDmz1.RouteTable);
-            template.Resources.Add($"routeFromDmz1ToPrimeSubnet2", routeFromDmz1ToPrimeSubnet2);
+            //Route routeFromDmz1ToPrimeSubnet2 = new Route(vpcPeering, CidrPrimeSubnet2, subnetDmz1.RouteTable);
+            //template.Resources.Add($"routeFromDmz1ToPrimeSubnet2", routeFromDmz1ToPrimeSubnet2);
 
             Subnet subnetDmz2 = AddDmz2(vpc, template);
 
-            Route routeFromDmz2ToPrimeSubnet1 = new Route(vpcPeering, CidrPrimeSubnet1, subnetDmz2.RouteTable);
-            template.Resources.Add($"routeFromDmz2ToPrimeSubnet1", routeFromDmz2ToPrimeSubnet1);
+            //Route routeFromDmz2ToPrimeSubnet1 = new Route(vpcPeering, CidrPrimeSubnet1, subnetDmz2.RouteTable);
+            //template.Resources.Add($"routeFromDmz2ToPrimeSubnet1", routeFromDmz2ToPrimeSubnet1);
 
-            Route routeFromDmz2ToPrimeSubnet2 = new Route(vpcPeering, CidrPrimeSubnet2, subnetDmz2.RouteTable);
-            template.Resources.Add($"routeFromDmz2ToPrimeSubnet2", routeFromDmz2ToPrimeSubnet2);
+            //Route routeFromDmz2ToPrimeSubnet2 = new Route(vpcPeering, CidrPrimeSubnet2, subnetDmz2.RouteTable);
+            //template.Resources.Add($"routeFromDmz2ToPrimeSubnet2", routeFromDmz2ToPrimeSubnet2);
 
             var domainNameFnJoin = new FnJoin(FnJoinDelimiter.Period,
                 new ReferenceProperty(SimpleAd.DomainVersionParameterName),
@@ -218,10 +220,10 @@ namespace AWS.CloudFormation.Test
             routeFromAz1ToNat.Instance = nat1;
             routeFromAz1ToNat.RouteTable = routeTableForSubnetsToNat1;
 
-            Route routeFromAz1ToPrimeSubnet1 = new Route(vpcPeering, CidrPrimeSubnet1, routeTableForSubnetsToNat1);
-            template.Resources.Add($"RouteFromAz1ToPrimeSubnet1", routeFromAz1ToPrimeSubnet1);
-            Route routeFromAz1ToPrimeSubnet2 = new Route(vpcPeering, CidrPrimeSubnet2, routeTableForSubnetsToNat1);
-            template.Resources.Add($"routeFromAz1ToPrimeSubnet2", routeFromAz1ToPrimeSubnet2);
+            //Route routeFromAz1ToPrimeSubnet1 = new Route(vpcPeering, CidrPrimeSubnet1, routeTableForSubnetsToNat1);
+            //template.Resources.Add($"RouteFromAz1ToPrimeSubnet1", routeFromAz1ToPrimeSubnet1);
+            //Route routeFromAz1ToPrimeSubnet2 = new Route(vpcPeering, CidrPrimeSubnet2, routeTableForSubnetsToNat1);
+            //template.Resources.Add($"routeFromAz1ToPrimeSubnet2", routeFromAz1ToPrimeSubnet2);
 
             SecurityGroup sqlServer4TfsSecurityGroup = AddSqlServer4TfsSecurityGroup(vpc, template, subnetDmz1, subnetDmz2);
             Subnet subnetSqlServer4Tfs = AddSubnetSqlServer4Tfs(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template);
