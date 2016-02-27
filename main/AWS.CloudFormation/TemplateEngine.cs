@@ -35,6 +35,7 @@ namespace AWS.CloudFormation
 
         public static Uri UploadTemplate(Template template, string path)
         {
+            template.AddOutputs();
             var file = CreateTemplateFile(template);
 
             string filePath = file.FullName;
