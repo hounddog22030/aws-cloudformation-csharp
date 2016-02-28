@@ -10,7 +10,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 {
     public class Route : ResourceBase
     {
-        public Route(InternetGateway gateway, string destinationCidrBlock, RouteTable routeTable)
+        public Route(InternetGateway gateway, string destinationCidrBlock, object routeTable)
             : this(destinationCidrBlock, routeTable)
         {
             if (gateway != null)
@@ -19,11 +19,18 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
                 this.DependsOn.Add(gateway.LogicalId);
             }
         }
-        public Route(VpcPeeringConnection vpcPeeringConnection, string destinationCidrBlock, RouteTable routeTable)
+        public Route(VpcPeeringConnection vpcPeeringConnection, string destinationCidrBlock, object routeTable)
             : this(destinationCidrBlock, routeTable)
         {
             VpcPeeringConnectionId = new ReferenceProperty(vpcPeeringConnection);
             this.DependsOn.Add(vpcPeeringConnection.LogicalId);
+        }
+
+        public Route(string destinationCidrBlock, object routeTable) : base(ResourceType.AwsEc2Route)
+        {
+            DestinationCidrBlock = destinationCidrBlock;
+            RouteTable = routeTable;
+            this.LogicalId = routeTable + destinationCidrBlock;
         }
 
         [JsonIgnore]
@@ -31,12 +38,6 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         {
             get { return this.Properties.GetValue<object>(); }
             set { this.Properties.SetValue(value); }
-        }
-
-        public Route(string destinationCidrBlock, RouteTable routeTable) : base(ResourceType.AwsEc2Route)
-        {
-            DestinationCidrBlock = destinationCidrBlock;
-            RouteTable = routeTable;
         }
 
         [JsonIgnore]
@@ -47,11 +48,12 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         }
 
         [JsonIgnore]
-        public RouteTable RouteTable
+        [JsonProperty(PropertyName = "RouteTableId")]
+        public object RouteTable
         {
             get
             {
-                return this.Properties.GetValue<RouteTable>();
+                return this.Properties.GetValue<object>();
             }
             set
             {
