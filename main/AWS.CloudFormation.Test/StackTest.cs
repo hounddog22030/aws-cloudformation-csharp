@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Configuration.Packages;
 using AWS.CloudFormation.Property;
@@ -19,6 +20,7 @@ using AWS.CloudFormation.Resource.RDS;
 using AWS.CloudFormation.Resource.Wait;
 using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using ThirdParty.BouncyCastle.Math;
 using OperatingSystem = AWS.CloudFormation.Resource.EC2.Instancing.OperatingSystem;
 
 namespace AWS.CloudFormation.Test
@@ -55,9 +57,6 @@ namespace AWS.CloudFormation.Test
             Route routeFromAlphaToPrime = new Route(vpcPeeringAlphaToPrime, "10.0.0.0/16", new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.RouteTableForPrivateSubnets"));
             masterTemplate.Resources.Add(routeFromAlphaToPrime.LogicalId, routeFromAlphaToPrime);
 
-            //var vpcPeeringPrimeToAlpha = new VpcPeeringConnection(new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.VpcPrime"), new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.VpcAlpha"));
-            //masterTemplate.Resources.Add("VpcPrimeToAlpha", vpcPeeringPrimeToAlpha);
-
             Route routeFromPrimeToAlpha = new Route(vpcPeeringAlphaToPrime, "10.1.0.0/16", new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTableForAdSubnets"));
             masterTemplate.Resources.Add(routeFromPrimeToAlpha.LogicalId, routeFromPrimeToAlpha);
 
@@ -85,6 +84,27 @@ namespace AWS.CloudFormation.Test
 
             Subnet subnetForActiveDirectory2 = new Subnet(vpc, "10.0.0.32/28", AvailabilityZone.UsEast1E, routeTableForAdSubnets, null);
             primeTemplate.Resources.Add("SubnetAd2", subnetForActiveDirectory2);
+
+            SecurityGroup securityGroupAccessToAdServices = new SecurityGroup("SecurityGroupForDomainServices",vpc);
+            var netDns = IPNetwork.Parse("10.0.0.0", 8);
+            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.DnsQuery);
+            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.DnsQuery);
+            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.KerberosKeyDistribution);
+            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.KerberosKeyDistribution);
+            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.WinsManager);
+            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.Ldap);
+            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.Ldap);
+            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.Smb);
+            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.Smb);
+            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.ActiveDirectoryManagement2);
+            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.ActiveDirectoryManagement2);
+            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.Ldaps);
+            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.EphemeralRpcBegin, Ports.EphemeralRpcEnd);
+            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.Ldap2Begin, Ports.Ldap2End);
+            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.Ntp);
+            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.NetBios);
+            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Icmp, Ports.All);
+            primeTemplate.Resources.Add(securityGroupAccessToAdServices.LogicalId, securityGroupAccessToAdServices);
 
 
             return primeTemplate;
