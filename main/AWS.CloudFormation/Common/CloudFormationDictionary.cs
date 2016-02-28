@@ -7,11 +7,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using AWS.CloudFormation.Resource;
+using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Common
 {
-    public class CloudFormationDictionary : ObservableDictionary<string,object>
+    public class CloudFormationDictionary : ObservableDictionary<string,object>, IResource
     {
         public CloudFormationDictionary()
         {
@@ -28,7 +29,7 @@ namespace AWS.CloudFormation.Common
             return objectToAdd;
         }
 
-        public ResourceBase Resource { get; internal set; }
+        public virtual ResourceBase Resource { get; set; }
 
 
         public string Type
