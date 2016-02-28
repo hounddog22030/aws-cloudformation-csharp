@@ -43,8 +43,15 @@ namespace AWS.CloudFormation.Resource.DirectoryService
         {
             Name = name;
             Password = password;
-            //Size = size;
-            VpcSettings = new VpcSettings(vpc,subnets);
+            if (size != DirectorySize.None)
+            {
+                Size = size;
+            }
+            VpcSettings = new VpcSettings(vpc, subnets);
+        }
+        public SimpleAd(string name, object password, Vpc vpc, params Subnet[] subnets) : this(name,password,DirectorySize.None,vpc,subnets)
+        {
+            this.LogicalId = $"SimpleAd{name}";
         }
 
         protected override bool SupportsTags => false;
