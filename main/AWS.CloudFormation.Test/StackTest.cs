@@ -41,7 +41,6 @@ namespace AWS.CloudFormation.Test
             var description = $"Master Stack:{gitSuffix}";
 
             Template masterTemplate = new Template("MasterStackYadaYadaSoftwareCom", description);
-
             Template development = GetTemplateFullStack("YadaYadaSoftwareCom", $"dev{Greek.Alpha}", Greek.Alpha, Create.None, gitSuffix, null);
             Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
             CloudFormation.Resource.CloudFormation.Stack devAlphaStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
@@ -64,10 +63,8 @@ namespace AWS.CloudFormation.Test
             Route routeFromPrimeToAlpha = new Route(vpcPeeringAlphaToPrime, "10.1.0.0/16", new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTableForAdSubnets"));
             masterTemplate.Resources.Add(routeFromPrimeToAlpha.LogicalId, routeFromPrimeToAlpha);
 
-            var directoryAlias = new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.primeyadayadasoftwarecomAlias");
-            var dnsServers = new FnGetAtt(directoryAlias, FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses);
-
-            DhcpOptions dhcpOptions = new DhcpOptions("yadayadasoftware.com",vpcAlpha,new FnJoin(FnJoinDelimiter.Comma, dnsServers), new FnJoin(FnJoinDelimiter.Comma, dnsServers));
+            VpcDhcpOptionsAssociation association = new VpcDhcpOptionsAssociation(new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.DhcpOptionsId") , vpcAlpha);
+            masterTemplate.Resources.Add($"VpcDhcpOptionsAssociation4Alpha", association);
 
             return TemplateEngine.UploadTemplate(masterTemplate, "gtbb/templates");
         }
@@ -116,12 +113,15 @@ namespace AWS.CloudFormation.Test
             SimpleAd simpleAd = new SimpleAd("prime.yadayadasoftware.com",activeDirectoryAdminPassword,vpc,subnetForActiveDirectory1,subnetForActiveDirectory2);
             primeTemplate.Resources.Add(simpleAd.LogicalId, simpleAd);
 
-            var micrsoftAdAlias = new Output("prime.yadayadasoftware.comAlias", new FnGetAtt(simpleAd, FnGetAttAttribute.AwsDirectoryServiceSimpleAdAlias ));
-            primeTemplate.Outputs.Add(micrsoftAdAlias);
+            DhcpOptions dhcpOptions = new DhcpOptions(vpc,simpleAd);
+            primeTemplate.Resources.Add(dhcpOptions.LogicalId, dhcpOptions);
 
-            Subnet x = new Subnet(vpc, "10.0.254.0/28", AvailabilityZone.UsEast1A, true);
-            primeTemplate.Resources.Add(x.LogicalId, x);
+            Output outputDhcpOptions = new Output("DhcpOptionsId",new ReferenceProperty(dhcpOptions.LogicalId));
+            primeTemplate.Outputs.Add(outputDhcpOptions.LogicalId, outputDhcpOptions);
 
+
+            //SecurityGroup sg = new SecurityGroup("blah",vpc);
+            //primeTemplate.Resources.Add(sg.LogicalId,sg);
             return primeTemplate;
 
         }
@@ -260,9 +260,9 @@ namespace AWS.CloudFormation.Test
             //netBiosServersElements = new object[] { directoryServicesDnsAddresses };
 
             //var dhcpOptions = AddDhcpOptions(simpleAd, vpc, template);
-            DhcpOptions dhcpOptions = new DhcpOptions(vpc,  DnsPrime.Split(','), DnsPrime.Split(','));
-            template.Resources.Add("DhcpOptions", dhcpOptions);
-            dhcpOptions.NetbiosNodeType = "2";
+            //DhcpOptions dhcpOptions = new DhcpOptions(vpc,  DnsPrime.Split(','), DnsPrime.Split(','));
+            //template.Resources.Add("DhcpOptions", dhcpOptions);
+            //dhcpOptions.NetbiosNodeType = "2";
 
 
             //var activeDirectoryDocument = new Document<SsmRuntimeConfigDomainJoin>();

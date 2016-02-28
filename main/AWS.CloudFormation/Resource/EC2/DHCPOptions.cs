@@ -31,6 +31,7 @@ namespace AWS.CloudFormation.Resource.EC2
             this.Vpc = vpc;
             this.DomainNameServers = new FnGetAtt(simpleAd, FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses);
             this.NetbiosNameServers = new FnGetAtt(simpleAd, FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses);
+            this.LogicalId = $"Dhcp{Vpc}{simpleAd.Name}";
         }
         public DhcpOptions(Vpc vpc, string[] dnsServers, string[] netBiosServers) : base(ResourceType.DhcpOptions)
         {
@@ -40,15 +41,23 @@ namespace AWS.CloudFormation.Resource.EC2
             this.NetbiosNameServers = netBiosServers;
         }
 
-        public DhcpOptions(string domainName, FnGetAtt vpc, FnJoin dnsServers, FnJoin netBiosNameServers) : base(BASE)
+        public DhcpOptions(string domainName, FnJoin dnsServers, FnJoin netBiosNameServers) : base(ResourceType.DhcpOptions)
         {
+            var logicalId = string.Empty;
             if (domainName != null)
             {
                 this.DomainName = domainName;
+                logicalId = ResourceBase.NormalizeLogicalId(domainName);
             }
-            this.Vpc = vpc;
+
             this.DomainNameServers = dnsServers;
             this.NetbiosNameServers = netBiosNameServers;
+            logicalId += ResourceBase.NormalizeLogicalId(this.DomainNameServers.ToString());
+            logicalId += ResourceBase.NormalizeLogicalId(this.NetbiosNameServers.ToString());
+            this.LogicalId = logicalId;
+            this.NetbiosNodeType = "2";
+
+
         }
 
         [JsonIgnore]
@@ -57,8 +66,11 @@ namespace AWS.CloudFormation.Resource.EC2
         protected override void OnTemplateSet(Template template)
         {
             base.OnTemplateSet(template);
-            VpcDhcpOptionsAssociation association = new VpcDhcpOptionsAssociation(this, this.Vpc);
-            template.Resources.Add($"VpcDhcpOptionsAssociation4{this.LogicalId}", association);
+            if (this.Vpc != null)
+            {
+                VpcDhcpOptionsAssociation association = new VpcDhcpOptionsAssociation(this, this.Vpc);
+                template.Resources.Add($"VpcDhcpOptionsAssociation4{this.LogicalId}", association);
+            }
         }
 
 
