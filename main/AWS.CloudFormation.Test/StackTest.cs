@@ -49,11 +49,19 @@ namespace AWS.CloudFormation.Test
             CloudFormation.Resource.CloudFormation.Stack prime = new CloudFormation.Resource.CloudFormation.Stack(primeUri);
             masterTemplate.Resources.Add("PrimeYadaYadaSoftwareCom", prime);
 
-            var vpcPeering = new VpcPeeringConnection(new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.VpcAlpha"), new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.VpcPrime"));
-            masterTemplate.Resources.Add("VpcAlphaToPrime", vpcPeering);
+            var vpcPeeringAlphaToPrime = new VpcPeeringConnection(new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.VpcAlpha"), new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.VpcPrime"));
+            masterTemplate.Resources.Add("VpcAlphaToPrime", vpcPeeringAlphaToPrime);
 
-            Route routeFromAlphaToPrime = new Route(vpcPeering, "10.0.0.0/16", new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.RouteTableForPrivateSubnets"));
+            Route routeFromAlphaToPrime = new Route(vpcPeeringAlphaToPrime, "10.0.0.0/16", new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.RouteTableForPrivateSubnets"));
             masterTemplate.Resources.Add(routeFromAlphaToPrime.LogicalId, routeFromAlphaToPrime);
+
+            //var vpcPeeringPrimeToAlpha = new VpcPeeringConnection(new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.VpcPrime"), new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.VpcAlpha"));
+            //masterTemplate.Resources.Add("VpcPrimeToAlpha", vpcPeeringPrimeToAlpha);
+
+            Route routeFromPrimeToAlpha = new Route(vpcPeeringAlphaToPrime, "10.1.0.0/16", new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTableForAdSubnets"));
+            masterTemplate.Resources.Add(routeFromPrimeToAlpha.LogicalId, routeFromPrimeToAlpha);
+
+
 
             return TemplateEngine.UploadTemplate(masterTemplate, "gtbb/templates");
         }
@@ -70,13 +78,14 @@ namespace AWS.CloudFormation.Test
             Vpc vpc = primeTemplate.Vpcs.First();
 
             RouteTable routeTableForAdSubnets = new RouteTable(vpc);
-            primeTemplate.Resources.Add(routeTableForAdSubnets.LogicalId, routeTableForAdSubnets);
+            primeTemplate.Resources.Add("RouteTableForAdSubnets", routeTableForAdSubnets);
 
             Subnet subnetForActiveDirectory1 = new Subnet(vpc, "10.0.0.16/28", AvailabilityZone.UsEast1A, routeTableForAdSubnets, null);
             primeTemplate.Resources.Add("SubnetAd1", subnetForActiveDirectory1);
 
             Subnet subnetForActiveDirectory2 = new Subnet(vpc, "10.0.0.32/28", AvailabilityZone.UsEast1E, routeTableForAdSubnets, null);
             primeTemplate.Resources.Add("SubnetAd2", subnetForActiveDirectory2);
+
 
             return primeTemplate;
 
