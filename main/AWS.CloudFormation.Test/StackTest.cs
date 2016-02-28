@@ -66,6 +66,8 @@ namespace AWS.CloudFormation.Test
             VpcDhcpOptionsAssociation association = new VpcDhcpOptionsAssociation(new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.DhcpOptionsId") , vpcAlpha);
             masterTemplate.Resources.Add($"VpcDhcpOptionsAssociation4Alpha", association);
 
+            
+
             return TemplateEngine.UploadTemplate(masterTemplate, "gtbb/templates");
         }
 
@@ -119,9 +121,20 @@ namespace AWS.CloudFormation.Test
             Output outputDhcpOptions = new Output("DhcpOptionsId",new ReferenceProperty(dhcpOptions.LogicalId));
             primeTemplate.Outputs.Add(outputDhcpOptions.LogicalId, outputDhcpOptions);
 
+            Subnet subnetAdEditor = new Subnet(vpc,"10.0.0.48/28",AvailabilityZone.UsEast1A, true);
+            primeTemplate.Resources.Add(subnetAdEditor.LogicalId, subnetAdEditor);
 
-            //SecurityGroup sg = new SecurityGroup("blah",vpc);
-            //primeTemplate.Resources.Add(sg.LogicalId,sg);
+            SecurityGroup securityGroupAdEditor = new SecurityGroup("Security Group For AD Editor", vpc);
+            primeTemplate.Resources.Add(securityGroupAdEditor.LogicalId, securityGroupAdEditor);
+
+            securityGroupAdEditor.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+
+            Instance instanceAdEditor = new Instance(subnetAdEditor, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, false);
+            primeTemplate.Resources.Add("InstanceAdEditor", instanceAdEditor);
+            instanceAdEditor.AddSecurityGroup(securityGroupAdEditor);
+            instanceAdEditor.AddElasticIp();
+
+
             return primeTemplate;
 
         }
@@ -174,7 +187,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateMasterTemplate()
         {
-            var activeDirectoryPassword = "H&%j*#nj01!";
+            var activeDirectoryPassword = "CTFF8455ycxx";
             var templateUri = GetMasterTemplateUri(activeDirectoryPassword);
             Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom", templateUri);
 
@@ -515,7 +528,7 @@ namespace AWS.CloudFormation.Test
         private const string CidrDatabase4BuildSubnet2 = "10.1.5.0/24";
         public const string KeyPairName = "corp.getthebuybox.com";
         public const string CidrVpc = "10.1.0.0/16";
-        public const string UsEastWindows2012R2Ami = "ami-40f0d32a";
+        public const string UsEastWindows2012R2Ami = "ami-3586ac5f";
         private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-25f6d54f";
         private const string BucketNameSoftware = "gtbb";
 
