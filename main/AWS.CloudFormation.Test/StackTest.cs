@@ -34,8 +34,9 @@ namespace AWS.CloudFormation.Test
         public const string CidrPrimeSubnet2 = "10.0.0.240/28";
         public const string DnsPrime = "10.0.0.10, 10.0.0.253";
 
-        public static Uri GetMasterTemplateUri()
+        public static Uri GetMasterTemplateUri(string activeDirectoryAdminPassword )
         {
+            
             var gitSuffix = $"{GetGitBranch()}:{GetGitHash()}";
             var description = $"Master Stack:{gitSuffix}";
 
@@ -46,7 +47,7 @@ namespace AWS.CloudFormation.Test
             CloudFormation.Resource.CloudFormation.Stack devAlphaStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
             masterTemplate.Resources.Add("AlphaDevYadaYadaSoftwareCom", devAlphaStack);
 
-            Template primeTemplate = GetPrimeTemplate(gitSuffix);
+            Template primeTemplate = GetPrimeTemplate(gitSuffix, activeDirectoryAdminPassword);
             Uri primeUri = TemplateEngine.UploadTemplate(primeTemplate, "gtbb/templates");
             CloudFormation.Resource.CloudFormation.Stack prime = new CloudFormation.Resource.CloudFormation.Stack(primeUri);
             masterTemplate.Resources.Add("PrimeYadaYadaSoftwareCom", prime);
@@ -65,12 +66,12 @@ namespace AWS.CloudFormation.Test
             return TemplateEngine.UploadTemplate(masterTemplate, "gtbb/templates");
         }
 
-        public static Uri GetPrimeTemplateUri(string gitSuffix)
+        public static Uri GetPrimeTemplateUri(string gitSuffix,string activeDirectoryPassword)
         {
-            return TemplateEngine.UploadTemplate(GetPrimeTemplate(gitSuffix), "gtbb/templates"); 
+            return TemplateEngine.UploadTemplate(GetPrimeTemplate(gitSuffix, activeDirectoryPassword), "gtbb/templates"); 
         }
 
-        public static Template GetPrimeTemplate(string gitSuffix)
+        public static Template GetPrimeTemplate(string gitSuffix, string activeDirectoryAdminPassword)
         {
             Template primeTemplate = new Template("prime.yadayadasoftware.com", KeyPairName, "VpcPrime", CidrPrimeVpc, $"Stack for prime Vpc (AD):{gitSuffix}");
 
@@ -106,7 +107,8 @@ namespace AWS.CloudFormation.Test
             securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Icmp, Ports.All);
             primeTemplate.Resources.Add(securityGroupAccessToAdServices.LogicalId, securityGroupAccessToAdServices);
 
-
+            SimpleAd simpleAd = new SimpleAd("prime.yadayadasoftware.com",activeDirectoryAdminPassword,vpc,subnetForActiveDirectory1,subnetForActiveDirectory2);
+            primeTemplate.Resources.Add(simpleAd.LogicalId, simpleAd);
             return primeTemplate;
 
         }
@@ -114,7 +116,8 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void GetPrimeTemplateTest()
         {
-            var parentTemplate = GetPrimeTemplateUri(GetGitSuffix());
+            var password = GetPassword();
+            var parentTemplate = GetPrimeTemplateUri(GetGitSuffix(), password);
             Assert.IsNotNull(parentTemplate);
             Assert.IsFalse(string.IsNullOrEmpty(parentTemplate.AbsoluteUri));
         }
@@ -123,7 +126,8 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void GetMasterTemplateTest()
         {
-            var templateUri = GetMasterTemplateUri();
+            var activeDirectoryPassword = GetPassword();
+            var templateUri = GetMasterTemplateUri(activeDirectoryPassword);
             Assert.IsNotNull(templateUri);
             Assert.IsFalse(string.IsNullOrEmpty(templateUri.AbsoluteUri));
 
@@ -132,7 +136,8 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdatePrimeTest()
         {
-            var primeUri = GetPrimeTemplateUri(GetGitSuffix());
+            var password = GetPassword();    
+            var primeUri = GetPrimeTemplateUri(GetGitSuffix(), password);
             Stack.Stack.UpdateStack("StackYadaYadaSoftwareComMaster-template-StackPrime-ZEE4RL4MR8DQ",primeUri);
 
         }
@@ -145,7 +150,8 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateMasterTemplate()
         {
-            var templateUri = GetMasterTemplateUri();
+            var activeDirectoryPassword = GetPassword();
+            var templateUri = GetMasterTemplateUri(activeDirectoryPassword);
             Stack.Stack.CreateStack(templateUri);
 
         }
@@ -153,7 +159,8 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateMasterTemplate()
         {
-            var templateUri = GetMasterTemplateUri();
+            var activeDirectoryPassword = "H&%j*#nj01!";
+            var templateUri = GetMasterTemplateUri(activeDirectoryPassword);
             Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom", templateUri);
 
         }
