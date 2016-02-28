@@ -14,6 +14,7 @@ using AWS.CloudFormation.Resource.DirectoryService;
 using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing;
 using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Resource.RDS;
@@ -130,9 +131,39 @@ namespace AWS.CloudFormation.Test
             securityGroupAdEditor.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
 
             Instance instanceAdEditor = new Instance(subnetAdEditor, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, false);
-            primeTemplate.Resources.Add("InstanceAdEditor", instanceAdEditor);
+            primeTemplate.Resources.Add("InstanceAdEditor1", instanceAdEditor);
             instanceAdEditor.AddSecurityGroup(securityGroupAdEditor);
             instanceAdEditor.AddElasticIp();
+
+            primeTemplate.Parameters.Add(new ParameterBase(SimpleAd.DomainAdminPasswordParameterName, "String", activeDirectoryAdminPassword, "Admin password"));
+            primeTemplate.Parameters.Add(new ParameterBase(SimpleAd.DomainAdminUsernameParameterName, "String", "admin", "Admin username"));
+            primeTemplate.Parameters.Add(new ParameterBase(SimpleAd.DomainTopLevelNameParameterName, "String", "yadayadasoftware.com", "Top level domain name for the stack (e.g. example.com)"));
+            primeTemplate.Parameters.Add(new ParameterBase(SimpleAd.DomainVersionParameterName, "String", Greek.Alpha.ToString().ToLowerInvariant(), "Fully qualified domain name for the stack (e.g. example.com)"));
+            primeTemplate.Parameters.Add(new ParameterBase(SimpleAd.DomainNetBiosNameParameterName, "String", "prime", "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
+            primeTemplate.Parameters.Add(new ParameterBase(SimpleAd.DomainFqdnParameterName, "String", $"alpha.dev.yadayadasoftware.com", "Fully qualified domain name"));
+
+            SimpleAd.AddInstanceToDomain(instanceAdEditor.RenameConfig);
+            var createOuConfigSet = instanceAdEditor.Metadata.Init.ConfigSets.GetConfigSet("CreateOUs");
+
+            var createDevOuConfig = createOuConfigSet.GetConfig("CreateOUs");
+
+            var command = createDevOuConfig.Commands.AddCommand<Command>("InstallActiveDirectoryTools");
+            command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None, "Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter");
+
+            command = createDevOuConfig.Commands.AddCommand<Command>("AddDev");
+            command.Command = new FnJoinPsExecPowershell(   new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName),
+                                                            new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName),
+                                                            "New-ADOrganizationalUnit -Name 'Dev' -Path 'OU=prime,DC=prime,DC=yadayadasoftware,DC=com'");
+
+            command = createDevOuConfig.Commands.AddCommand<Command>("AddTest");
+            command.Command = new FnJoinPsExecPowershell(   new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName),
+                                                            new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName), 
+                                                            "New-ADOrganizationalUnit -Name 'Test' -Path 'OU=prime,DC=prime,DC=yadayadasoftware,DC=com'");
+
+            command = createDevOuConfig.Commands.AddCommand<Command>("AddProd");
+            command.Command = new FnJoinPsExecPowershell(   new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName),
+                                                            new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName), 
+                                                            "New-ADOrganizationalUnit -Name 'Prod' -Path 'OU=prime,DC=prime,DC=yadayadasoftware,DC=com'");
 
 
             return primeTemplate;
@@ -216,7 +247,6 @@ namespace AWS.CloudFormation.Test
             template.Parameters.Add(domainPassword);
             template.Parameters.Add(new ParameterBase(SimpleAd.DomainAdminUsernameParameterName, "String", "admin", "Admin username"));
             template.Parameters.Add(new ParameterBase(SimpleAd.DomainTopLevelNameParameterName, "String", topLevel, "Top level domain name for the stack (e.g. example.com)"));
-            template.Parameters.Add(new ParameterBase(SimpleAd.DomainAppNameParameterName, "String", appNameNetBiosName, "Name of the application (e.g. Dev,Test,Prod)"));
             template.Parameters.Add(new ParameterBase(SimpleAd.DomainVersionParameterName, "String", version.ToString().ToLowerInvariant(), "Fully qualified domain name for the stack (e.g. example.com)"));
             template.Parameters.Add(new ParameterBase(SimpleAd.DomainNetBiosNameParameterName, "String", version.ToString() + appNameNetBiosName, "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
             template.Parameters.Add(new ParameterBase(SimpleAd.DomainFqdnParameterName, "String", $"{version}.{appNameNetBiosName}.{topLevel}", "Fully qualified domain name"));

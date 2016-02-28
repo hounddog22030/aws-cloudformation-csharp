@@ -313,7 +313,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             sysadminFile.Source = "https://s3.amazonaws.com/gtbb/configure-sql-4-tfs.ps1";
             var command = this.Config.Commands.AddCommand<Command>("SetUserToTfsService");
 
-            command.Command = new PowershellFnJoin(FnJoinDelimiter.None, ConfigureSql4Tfs,
+            command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None, ConfigureSql4Tfs,
                 " ",
                 new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
                 " ",
@@ -370,7 +370,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             var backup = configuration.AddDisk(Ebs.VolumeTypes.Magnetic, 20);
             backup.Ebs.DeleteOnTermination = false;
             var command = this.Config.Commands.AddCommand<Command>("CreateBackupShare");
-            command.Command = new PowershellFnJoin(FnJoinDelimiter.None,
+            command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None,
                 "New-Item \"d:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"d:\\Backups\" -FullAccess @('NT AUTHORITY\\NETWORK SERVICE','",
                 new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
                 "\\",

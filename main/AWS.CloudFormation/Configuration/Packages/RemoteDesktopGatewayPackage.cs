@@ -28,8 +28,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName),"."),
                 new FnJoin( FnJoinDelimiter.Period, 
                             this.Instance.LogicalId,
-                            new ReferenceProperty(SimpleAd.DomainVersionParameterName),
-                            new ReferenceProperty(SimpleAd.DomainAppNameParameterName),
+                            new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
                             new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName)),
                 RecordSet.RecordSetTypeEnum.A);
 
@@ -48,7 +47,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 this.Instance.Metadata.Init.ConfigSets.GetConfigSet("RemoteDesktop")
                     .GetConfig("Install");
             var installRdsCommand = installRdsConfig.Commands.AddCommand<Command>("a-install-rds");
-            installRdsCommand.Command = new PowershellFnJoin("-Command \"Install-WindowsFeature RDS-Gateway,RSAT-RDS-Gateway\"");
+            installRdsCommand.Command = new FnJoinPowershellCommand("-Command \"Install-WindowsFeature RDS-Gateway,RSAT-RDS-Gateway\"");
 
             var configureRdgwPsScript = installRdsConfig.Files.GetFile("c:\\cfn\\scripts\\Configure-RDGW.ps1");
 
@@ -56,14 +55,12 @@ namespace AWS.CloudFormation.Configuration.Packages
                 "https://s3.amazonaws.com/gtbb/Configure-RDGW.ps1";
 
             installRdsCommand = installRdsConfig.Commands.AddCommand<Command>("b-configure-rdgw");
-            installRdsCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None,
+            installRdsCommand.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None,
                                             " -ExecutionPolicy RemoteSigned ",
                                             " C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN ",
                                             this.Instance.LogicalId,
                                             ".",
-                                            new ReferenceProperty(SimpleAd.DomainVersionParameterName),
-                                            ".",
-                                            new ReferenceProperty(SimpleAd.DomainAppNameParameterName),
+                                            new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
                                             ".",
                                             new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName),
                                             " -DomainNetBiosName ",

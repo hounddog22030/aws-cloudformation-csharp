@@ -95,7 +95,6 @@ namespace AWS.CloudFormation.Test.Resource.EC2
 
             template.Parameters.Add(domainPassword);
             template.Parameters.Add(new ParameterBase(SimpleAd.DomainTopLevelNameParameterName, "String", "nothing.nothing", "Top level domain name for the stack (e.g. example.com)"));
-            template.Parameters.Add(new ParameterBase(SimpleAd.DomainAppNameParameterName, "String", "nothing", "Name of the application (e.g. Dev,Test,Prod)"));
             template.Parameters.Add(new ParameterBase(SimpleAd.DomainVersionParameterName, "String", StackTest.Greek.Alpha, "Fully qualified domain name for the stack (e.g. example.com)"));
             template.Parameters.Add(new ParameterBase(SimpleAd.DomainNetBiosNameParameterName, "String", StackTest.Greek.Alpha + "nothing", "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
             template.Parameters.Add(new ParameterBase(SimpleAd.DomainAdminUsernameParameterName, "String", "johnny", "Domain Admin User"));

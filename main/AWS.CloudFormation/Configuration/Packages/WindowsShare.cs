@@ -33,7 +33,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             const string CreateWindowsShare = "c:/cfn/scripts/CreateWindowsShare.ps1";
             var script = this.Config.Files.GetFile(CreateWindowsShare);
             script.Source = "https://s3.amazonaws.com/gtbb/CreateWindowsShare.ps1";
-            command.Command = new PowershellFnJoin(FnJoinDelimiter.Space,
+            command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.Space,
                 CreateWindowsShare,
                 this.Path,
                 this.ShareName,
