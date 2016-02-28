@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.Eventing.Reader;
 using System.Linq;
+using System.Net;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Resource.Networking;
 
@@ -212,6 +213,16 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             {
                 base.LogicalId = value;
             }
+        }
+
+        public void AddIngress(IPNetwork network, Protocol protocol, Ports port)
+        {
+            AddIngress(network, protocol, port, port);
+        }
+
+        public void AddIngress(IPNetwork network, Protocol protocol, Ports beginPort, Ports endPort)
+        {
+            AddIngress(network.ToString(), protocol, beginPort,endPort);
         }
     }
 }

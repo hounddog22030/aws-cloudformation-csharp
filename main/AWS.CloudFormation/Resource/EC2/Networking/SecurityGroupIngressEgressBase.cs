@@ -41,7 +41,9 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         TeamFoundationServerHttp = 8080,
         TeamFoundationServerBuild = 9191,
         Ping = 1,
-        MySql = 3306
+        MySql = 3306,
+        EphemeralRpcBegin = 1024,
+        EphemeralRpcEnd = 65535
     }
 
     [Flags]
