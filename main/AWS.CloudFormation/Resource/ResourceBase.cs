@@ -115,6 +115,7 @@ namespace AWS.CloudFormation.Resource
             }
             internal set
             {
+                value = value.Replace(".", string.Empty).Replace("/", string.Empty);
                 if (_logicalId != value)
                 {
                     _logicalId = value;

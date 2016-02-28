@@ -1,5 +1,5 @@
 ﻿using AWS.CloudFormation.Common;
-
+using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
@@ -14,16 +14,22 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             {
                 this.DependsOn.Add(vpc.InternetGateway.LogicalId);
             }
+            this.LogicalId = $"RouteTableFor{vpc.LogicalId}";
+        }
+        public RouteTable(FnGetAtt vpcReference) : base(ResourceType.AwsEc2RouteTable)
+        {
+            this.Vpc = vpcReference;
         }
 
         [JsonIgnore]
-        public Vpc Vpc
+        [JsonProperty(PropertyName = "VpcId")]
+        public object Vpc
         {
             get
             {
-                return this.Properties.GetValue<Vpc>();
+                return this.Properties.GetValue<object>();
             }
-            set
+            private set
             {
                 this.Properties.SetValue(value);
             }
