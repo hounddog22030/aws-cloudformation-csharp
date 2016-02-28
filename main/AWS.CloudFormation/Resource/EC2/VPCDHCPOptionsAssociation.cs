@@ -12,20 +12,37 @@ namespace AWS.CloudFormation.Resource.EC2
 {
     public class VpcDhcpOptionsAssociation : ResourceBase
     {
-        public VpcDhcpOptionsAssociation(DhcpOptions dhcpOptions, Vpc vpc) : base(ResourceType.VpcDhcpOptionsAssociation)
+        public VpcDhcpOptionsAssociation(DhcpOptions dhcpOptions, Vpc vpc) : this(dhcpOptions, (object)vpc)
         {
-            this.DhcpOptionsId = new ReferenceProperty(dhcpOptions);
-            this.VpcId = new ReferenceProperty(vpc);
+        }
+
+        public VpcDhcpOptionsAssociation(DhcpOptions dhcpOptions, FnGetAtt vpc) : this(dhcpOptions,(object)vpc)
+        {
+        }
+
+        public VpcDhcpOptionsAssociation(DhcpOptions dhcpOptions, object vpc) : this(new ReferenceProperty(dhcpOptions), vpc )
+        {
+        }
+
+        public VpcDhcpOptionsAssociation(FnGetAtt dhcpOptions, FnGetAtt vpc) : this(dhcpOptions, (object)vpc)
+        {
+        }
+
+        private VpcDhcpOptionsAssociation(object dhcpOptions, object vpc) : base(ResourceType.VpcDhcpOptionsAssociation)
+        {
+            this.DhcpOptionsId = dhcpOptions;
+            this.VpcId = vpc;
+
         }
 
         protected override bool SupportsTags => false;
 
         [JsonIgnore]
-        public ReferenceProperty DhcpOptionsId
+        public object DhcpOptionsId
         {
             get
             {
-                return this.Properties.GetValue<ReferenceProperty>();
+                return this.Properties.GetValue<object>();
             }
             set
             {
@@ -35,7 +52,7 @@ namespace AWS.CloudFormation.Resource.EC2
 
 
         [JsonIgnore]
-        public ReferenceProperty VpcId
+        public object VpcId
         {
             get
             {

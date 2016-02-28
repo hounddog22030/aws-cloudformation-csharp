@@ -129,10 +129,10 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         public FnGetAtt(object resource, string attribute) : this((object)resource, (object)attribute)
         {
         }
-        public FnGetAtt(ILogicalId resource, FnGetAttAttribute attribute) : this((object)resource, (object)attribute)
+        public FnGetAtt(ILogicalId resource, FnGetAttAttribute attribute) : this((object)resource.LogicalId, (object)attribute)
         {
         }
-        public FnGetAtt(ILogicalId resource, string attribute) : this((object)resource, (object)attribute)
+        public FnGetAtt(ILogicalId resource, string attribute) : this((object)resource.LogicalId, (object)attribute)
         {
         }
 
