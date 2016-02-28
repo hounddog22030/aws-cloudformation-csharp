@@ -1,5 +1,6 @@
 ﻿using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Resource.AutoScaling;
+using AWS.CloudFormation.Stack;
 using Newtonsoft.Json;
 
 namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
@@ -23,6 +24,10 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
             }
             set
             {
+                if (value is IResource)
+                {
+                    ((IResource) value).Resource = this.Resource;
+                }
                 this["command"]=value;
             }
 

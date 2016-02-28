@@ -131,7 +131,7 @@ namespace AWS.CloudFormation.Test
             securityGroupAdEditor.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
 
             Instance instanceAdEditor = new Instance(subnetAdEditor, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, false);
-            primeTemplate.Resources.Add("InstanceAdEditor1", instanceAdEditor);
+            primeTemplate.Resources.Add("InstanceAdEditor2", instanceAdEditor);
             instanceAdEditor.AddSecurityGroup(securityGroupAdEditor);
             instanceAdEditor.AddElasticIp();
 
@@ -153,17 +153,17 @@ namespace AWS.CloudFormation.Test
             command = createDevOuConfig.Commands.AddCommand<Command>("AddDev");
             command.Command = new FnJoinPsExecPowershell(   new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName),
                                                             new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName),
-                                                            "New-ADOrganizationalUnit -Name 'Dev' -Path 'OU=prime,DC=prime,DC=yadayadasoftware,DC=com'");
+                                                            "New-ADOrganizationalUnit -Name 'Dev' -Path \"'OU=prime,DC=prime,DC=yadayadasoftware,DC=com'\"");
 
             command = createDevOuConfig.Commands.AddCommand<Command>("AddTest");
             command.Command = new FnJoinPsExecPowershell(   new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName),
-                                                            new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName), 
-                                                            "New-ADOrganizationalUnit -Name 'Test' -Path 'OU=prime,DC=prime,DC=yadayadasoftware,DC=com'");
+                                                            new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName),
+                                                            "New-ADOrganizationalUnit -Name 'Test' -Path \"'OU=prime,DC=prime,DC=yadayadasoftware,DC=com'\"");
 
             command = createDevOuConfig.Commands.AddCommand<Command>("AddProd");
             command.Command = new FnJoinPsExecPowershell(   new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName),
-                                                            new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName), 
-                                                            "New-ADOrganizationalUnit -Name 'Prod' -Path 'OU=prime,DC=prime,DC=yadayadasoftware,DC=com'");
+                                                            new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName),
+                                                            "New-ADOrganizationalUnit -Name 'Prod' -Path \"'OU=prime,DC=prime,DC=yadayadasoftware,DC=com'\"");
 
 
             return primeTemplate;

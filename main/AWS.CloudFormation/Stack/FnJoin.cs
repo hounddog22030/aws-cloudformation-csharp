@@ -5,6 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Property;
+using AWS.CloudFormation.Resource;
+using AWS.CloudFormation.Resource.AutoScaling;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
+using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config;
 
 namespace AWS.CloudFormation.Stack
 {
@@ -87,6 +91,11 @@ namespace AWS.CloudFormation.Stack
         Period = 4
     }
 
+    public interface IResource
+    {
+        ResourceBase Resource { get; set; }
+    }
+
     public class FnJoinPsExecPowershell : FnJoin
     {
         public FnJoinPsExecPowershell(ReferenceProperty userId, ReferenceProperty password, params object[] powerShellElements) : this((object)userId,password,powerShellElements)
@@ -100,7 +109,7 @@ namespace AWS.CloudFormation.Stack
         private FnJoinPsExecPowershell(object userId, object password, object[] powerShellElements)
         {
             var elementsTemp = new List<object>();
-            elementsTemp.Add("psexec.exe -accepteula -h -u");
+            elementsTemp.Add("c:/cfn/tools/pstools/psexec.exe -accepteula -h -u");
             elementsTemp.Add(userId);
             elementsTemp.Add("-p");
             elementsTemp.Add(password);
@@ -109,8 +118,25 @@ namespace AWS.CloudFormation.Stack
             this.SetDelimiterAndElements(FnJoinDelimiter.Space, elementsTemp.ToArray());
         }
 
+        public override ResourceBase Resource
+        {
+            get { return base.Resource; }
+            set
+            {
+                base.Resource = value;
+                LaunchConfiguration resourceAsLaunchConfiguration = value as LaunchConfiguration;
+                if (resourceAsLaunchConfiguration != null && resourceAsLaunchConfiguration.Metadata.Init.ConfigSets.Any())
+                {
+                    ConfigSet firstConfigSet = resourceAsLaunchConfiguration.Metadata.Init.ConfigSets.First().Value as ConfigSet;
+                    if (firstConfigSet.Any())
+                    {
+                        Config firstConfig = firstConfigSet.First().Value as Config;
+                        firstConfig.Sources["c:/cfn/tools/pstools"] = "https://s3.amazonaws.com/gtbb/software/pstools.zip";
+                    }
 
-
+                }
+            }
+        }
     }
 
 
