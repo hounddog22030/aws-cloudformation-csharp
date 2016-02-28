@@ -126,17 +126,21 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 
     public class FnGetAtt : CloudFormationDictionary
     {
-        public FnGetAtt(object resource, string attribute)
+        public FnGetAtt(object resource, string attribute) : this((object)resource, (object)attribute)
         {
-            var info = new object[] { resource, attribute };
-            this.Add("Fn::GetAtt", info);
         }
-        public FnGetAtt(ILogicalId resource, FnGetAttAttribute attribute)
+        public FnGetAtt(ILogicalId resource, FnGetAttAttribute attribute) : this((object)resource, (object)attribute)
         {
-            var info = new object[] { resource.LogicalId, attribute };
-            this.Add("Fn::GetAtt", info);
         }
-        public FnGetAtt(ILogicalId resource, string attribute)
+        public FnGetAtt(ILogicalId resource, string attribute) : this((object)resource, (object)attribute)
+        {
+        }
+
+        public FnGetAtt(FnGetAtt resource, FnGetAttAttribute attribute) : this((object)resource,(object)attribute)
+        {
+        }
+
+        private FnGetAtt(object resource, object attribute)
         {
             var info = new object[] { resource, attribute };
             this.Add("Fn::GetAtt", info);
