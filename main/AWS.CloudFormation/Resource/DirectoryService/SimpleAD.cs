@@ -32,7 +32,6 @@ namespace AWS.CloudFormation.Resource.DirectoryService
     public class SimpleAd : ResourceBase
     {
         public const string DomainVersionParameterName = "DomainVersion";
-        public const string DomainAppNameParameterName = "DomainAppName";
         public const string DomainTopLevelNameParameterName = "DomainTopLevelName";
         public const string DomainAdminUsernameParameterName = "DomainAdminUsername";
         public const string DomainAdminPasswordParameterName = "DomainAdminPassword";
@@ -115,19 +114,17 @@ namespace AWS.CloudFormation.Resource.DirectoryService
             var joinCommand = config.Commands.AddCommand<Command>("JoinDomain");
 
 
-            joinCommand.Command = new PowershellFnJoin(FnJoinDelimiter.None,
+            joinCommand.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None,
                 "-Command \"",
                 "Add-Computer -DomainName ",
                 new FnJoin(FnJoinDelimiter.Period,
-                            new ReferenceProperty(SimpleAd.DomainVersionParameterName),
-                            new ReferenceProperty(SimpleAd.DomainAppNameParameterName),
+                            new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
                             new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName)),
                 " -Credential (New-Object System.Management.Automation.PSCredential('",
                 new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName),
                 "@",
                 new FnJoin(FnJoinDelimiter.Period,
-                new ReferenceProperty(SimpleAd.DomainVersionParameterName),
-                new ReferenceProperty(SimpleAd.DomainAppNameParameterName),
+                new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
                 new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName)),
                 "',(ConvertTo-SecureString \"",
                 new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName),

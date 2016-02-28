@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
+using AWS.CloudFormation.Property;
 
 namespace AWS.CloudFormation.Stack
 {
@@ -37,6 +38,11 @@ namespace AWS.CloudFormation.Stack
         }
 
         public FnJoin(FnJoinDelimiter delimiter, params object[] elements)
+        {
+            SetDelimiterAndElements(delimiter,elements);
+        }
+
+        protected void SetDelimiterAndElements(FnJoinDelimiter delimiter, object[] elements)
         {
             switch (delimiter)
             {
@@ -81,9 +87,36 @@ namespace AWS.CloudFormation.Stack
         Period = 4
     }
 
-    public class PowershellFnJoin : FnJoin
+    public class FnJoinPsExecPowershell : FnJoin
     {
-        public PowershellFnJoin(FnJoinDelimiter delimiter, params object[] elements) : base(delimiter, elements)
+        public FnJoinPsExecPowershell(ReferenceProperty userId, ReferenceProperty password, params object[] powerShellElements) : this((object)userId,password,powerShellElements)
+        {
+            
+        }
+        public FnJoinPsExecPowershell(string userId, string password, params object[] powerShellElements) : this((object)userId, password, powerShellElements)
+        {
+        }
+
+        private FnJoinPsExecPowershell(object userId, object password, object[] powerShellElements)
+        {
+            var elementsTemp = new List<object>();
+            elementsTemp.Add("psexec.exe -accepteula -h -u");
+            elementsTemp.Add(userId);
+            elementsTemp.Add("-p");
+            elementsTemp.Add(password);
+            elementsTemp.Add(new FnJoinPowershellCommand(powerShellElements));
+            elementsTemp.AddRange(powerShellElements);
+            this.SetDelimiterAndElements(FnJoinDelimiter.Space, elementsTemp.ToArray());
+        }
+
+
+
+    }
+
+
+    public class FnJoinPowershellCommand : FnJoin
+    {
+        public FnJoinPowershellCommand(FnJoinDelimiter delimiter, params object[] elements) : base(delimiter, elements)
         {
             var temp = new List<object>();
             var commandLine = "powershell.exe ";
@@ -98,7 +131,7 @@ namespace AWS.CloudFormation.Stack
             this.Elements = temp.ToArray();
         }
 
-        public PowershellFnJoin(params object[] elements) : this(FnJoinDelimiter.Space, elements)
+        public FnJoinPowershellCommand(params object[] elements) : this(FnJoinDelimiter.Space, elements)
         {
         }
     }

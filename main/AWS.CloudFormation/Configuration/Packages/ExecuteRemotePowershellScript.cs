@@ -22,7 +22,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         {
             AddExecuteRemotePowershellScript(config, remoteUri, waitAfterCompletion, null);
         }
-        public static void AddExecuteRemotePowershellScript(Config config, Uri remoteUri, TimeSpan waitAfterCompletion, PowershellFnJoin test)
+        public static void AddExecuteRemotePowershellScript(Config config, Uri remoteUri, TimeSpan waitAfterCompletion, FnJoinPowershellCommand test)
         {
             if (waitAfterCompletion.TotalSeconds < 0)
             {
@@ -36,7 +36,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             ConfigCommand currentCommand = config.Commands.AddCommand<Command>(fileName.Replace(".", string.Empty).Replace("-", string.Empty));
             currentCommand.WaitAfterCompletion = 0.ToString();
-            currentCommand.Command = new PowershellFnJoin(localFileName);
+            currentCommand.Command = new FnJoinPowershellCommand(localFileName);
 
             if (test != null)
             {

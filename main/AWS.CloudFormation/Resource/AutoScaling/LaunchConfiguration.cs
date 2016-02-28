@@ -117,7 +117,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
                     : this.LogicalId.Length);
             
             var renameCommandConfig = this.RenameConfig.Commands.AddCommand<Command>(DefaultConfigSetRenameConfigRenamePowerShellCommand);
-            renameCommandConfig.Command = new PowershellFnJoin($"\"Rename-Computer -NewName {computerName} -Force -Restart\"");
+            renameCommandConfig.Command = new FnJoinPowershellCommand($"\"Rename-Computer -NewName {computerName} -Force -Restart\"");
             renameCommandConfig.WaitAfterCompletion = "forever";
             renameCommandConfig.Test = $"IF \"%COMPUTERNAME%\"==\"{computerName.ToUpperInvariant()}\" EXIT /B 1 ELSE EXIT /B 0";
         }
@@ -423,7 +423,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             {
                 var setup = this.Metadata.Init.ConfigSets.GetConfigSet(DefaultConfigSetName).GetConfig(DefaultConfigName);
                 var disableFirewallCommand = setup.Commands.AddCommand<Command>("DisableWindowsFirewall");
-                disableFirewallCommand.Command = new PowershellFnJoin("-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\"");
+                disableFirewallCommand.Command = new FnJoinPowershellCommand("-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\"");
                 disableFirewallCommand.WaitAfterCompletion = 0.ToString();
             }
         }
