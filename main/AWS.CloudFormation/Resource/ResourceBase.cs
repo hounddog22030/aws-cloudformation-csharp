@@ -115,7 +115,7 @@ namespace AWS.CloudFormation.Resource
             }
             internal set
             {
-                value = value.Replace(".", string.Empty).Replace("/", string.Empty);
+                value = NormalizeLogicalId(value);
                 if (_logicalId != value)
                 {
                     _logicalId = value;
@@ -125,6 +125,12 @@ namespace AWS.CloudFormation.Resource
                     }
                 }
             }
+        }
+
+        public static string NormalizeLogicalId(string value)
+        {
+            value = value.Replace(".", string.Empty).Replace("/", string.Empty);
+            return value;
         }
 
         public bool ShouldSerializeDependsOn()

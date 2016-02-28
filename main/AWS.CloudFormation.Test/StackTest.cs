@@ -34,7 +34,7 @@ namespace AWS.CloudFormation.Test
         public const string CidrPrimeSubnet2 = "10.0.0.240/28";
         public const string DnsPrime = "10.0.0.10, 10.0.0.253";
 
-        public static Uri GetMasterTemplateUri(string activeDirectoryAdminPassword )
+        public static Uri GetMasterTemplateUri(string activeDirectoryAdminPassword)
         {
             
             var gitSuffix = $"{GetGitBranch()}:{GetGitHash()}";
@@ -52,7 +52,10 @@ namespace AWS.CloudFormation.Test
             CloudFormation.Resource.CloudFormation.Stack prime = new CloudFormation.Resource.CloudFormation.Stack(primeUri);
             masterTemplate.Resources.Add("PrimeYadaYadaSoftwareCom", prime);
 
-            var vpcPeeringAlphaToPrime = new VpcPeeringConnection(new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.VpcAlpha"), new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.VpcPrime"));
+            var vpcPrime = new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.VpcPrime");
+            var vpcAlpha = new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.VpcAlpha");
+
+            var vpcPeeringAlphaToPrime = new VpcPeeringConnection(vpcAlpha, vpcPrime);
             masterTemplate.Resources.Add("VpcAlphaToPrime", vpcPeeringAlphaToPrime);
 
             Route routeFromAlphaToPrime = new Route(vpcPeeringAlphaToPrime, "10.0.0.0/16", new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.RouteTableForPrivateSubnets"));
@@ -61,7 +64,10 @@ namespace AWS.CloudFormation.Test
             Route routeFromPrimeToAlpha = new Route(vpcPeeringAlphaToPrime, "10.1.0.0/16", new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTableForAdSubnets"));
             masterTemplate.Resources.Add(routeFromPrimeToAlpha.LogicalId, routeFromPrimeToAlpha);
 
+            var directoryAlias = new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.primeyadayadasoftwarecomAlias");
+            var dnsServers = new FnGetAtt(directoryAlias, FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses);
 
+            DhcpOptions dhcpOptions = new DhcpOptions("yadayadasoftware.com",vpcAlpha,new FnJoin(FnJoinDelimiter.Comma, dnsServers), new FnJoin(FnJoinDelimiter.Comma, dnsServers));
 
             return TemplateEngine.UploadTemplate(masterTemplate, "gtbb/templates");
         }
@@ -109,9 +115,18 @@ namespace AWS.CloudFormation.Test
 
             SimpleAd simpleAd = new SimpleAd("prime.yadayadasoftware.com",activeDirectoryAdminPassword,vpc,subnetForActiveDirectory1,subnetForActiveDirectory2);
             primeTemplate.Resources.Add(simpleAd.LogicalId, simpleAd);
+
+            var micrsoftAdAlias = new Output("prime.yadayadasoftware.comAlias", new FnGetAtt(simpleAd, FnGetAttAttribute.AwsDirectoryServiceSimpleAdAlias ));
+            primeTemplate.Outputs.Add(micrsoftAdAlias);
+
+            Subnet x = new Subnet(vpc, "10.0.254.0/28", AvailabilityZone.UsEast1A, true);
+            primeTemplate.Resources.Add(x.LogicalId, x);
+
             return primeTemplate;
 
         }
+
+        
 
         [TestMethod]
         public void GetPrimeTemplateTest()

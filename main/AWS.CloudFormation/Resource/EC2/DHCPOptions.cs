@@ -17,14 +17,13 @@ namespace AWS.CloudFormation.Resource.EC2
         public DhcpOptions(object domainName, Vpc vpc, FnJoin dnsServers, FnJoin netBiosNameServers) 
             : base(ResourceType.DhcpOptions)
         {
-            throw new NotImplementedException();
-            //if (domainName != null)
-            //{
-            //    this.DomainName = domainName;
-            //}
-            //this.Vpc = vpc;
-            //this.AddDomainNameServer(dnsServers);
-            //this.AddNetBiosNameServers(netBiosNameServers);
+            if (domainName != null)
+            {
+                this.DomainName = domainName;
+            }
+            this.Vpc = vpc;
+            this.DomainNameServers = dnsServers;
+            this.NetbiosNameServers = netBiosNameServers;
         }
 
         public DhcpOptions(Vpc vpc, SimpleAd simpleAd) : base(ResourceType.DhcpOptions)
@@ -39,6 +38,17 @@ namespace AWS.CloudFormation.Resource.EC2
             this.DependsOn.Add(vpc.LogicalId);
             this.DomainNameServers = dnsServers;
             this.NetbiosNameServers = netBiosServers;
+        }
+
+        public DhcpOptions(string domainName, FnGetAtt vpc, FnJoin dnsServers, FnJoin netBiosNameServers) : base(BASE)
+        {
+            if (domainName != null)
+            {
+                this.DomainName = domainName;
+            }
+            this.Vpc = vpc;
+            this.DomainNameServers = dnsServers;
+            this.NetbiosNameServers = netBiosNameServers;
         }
 
         [JsonIgnore]
