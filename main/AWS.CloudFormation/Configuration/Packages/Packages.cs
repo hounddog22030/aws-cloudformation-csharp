@@ -306,9 +306,9 @@ namespace AWS.CloudFormation.Configuration.Packages
             //const string AddComputersLocalPath = "c:/cfn/scripts/add-network-to-sysadmin2.ps1";
             //const string EnableTcpLocalPath = "c:/cfn/scripts/SqlServer-EnableTcp.ps1";
             const string ConfigureSql4Tfs = "c:/cfn/scripts/configure-sql-4-tfs.ps1";
-
             base.AddToLaunchConfiguration(configuration);
 
+            MicrosoftAd.AddInstanceToDomain(configuration.RenameConfig);
             var sysadminFile = this.Config.Files.GetFile(ConfigureSql4Tfs);
             sysadminFile.Source = "https://s3.amazonaws.com/gtbb/configure-sql-4-tfs.ps1";
             var command = this.Config.Commands.AddCommand<Command>("SetUserToTfsService");
