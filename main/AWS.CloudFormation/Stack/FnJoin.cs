@@ -118,7 +118,6 @@ namespace AWS.CloudFormation.Stack
             elementsTemp.Add("-p");
             elementsTemp.Add(password);
             elementsTemp.Add(new FnJoinPowershellCommand(powerShellElements));
-            elementsTemp.AddRange(powerShellElements);
             this.SetDelimiterAndElements(FnJoinDelimiter.Space, elementsTemp.ToArray());
         }
 
