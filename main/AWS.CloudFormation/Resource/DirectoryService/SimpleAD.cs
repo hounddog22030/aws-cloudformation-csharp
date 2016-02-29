@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -134,6 +135,115 @@ namespace AWS.CloudFormation.Resource.DirectoryService
             joinCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
         }
 
+        public static string AddOu(Config config, string parentOu, string ouToAdd)
+        {
+
+            var command = config.Commands.AddCommand<Command>("InstallActiveDirectoryTools");
+            command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None, "Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter");
+            command.WaitAfterCompletion = 0.ToString();
+
+            var adminUserNameFqdn = new FnJoin(FnJoinDelimiter.None,
+                new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName),
+                "@",
+                new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
+                ".",
+                new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName));
+
+            
+
+            command = config.Commands.AddCommand<Command>(ResourceBase.NormalizeLogicalId($"AddOu{ouToAdd}"));
+            command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None,
+                                                            "New-ADOrganizationalUnit -Name '",
+                                                            ouToAdd,
+                                                            "' -Path '",
+                                                            parentOu,
+                                                            "' -Credential (New-Object System.Management.Automation.PSCredential('",
+                                                            adminUserNameFqdn,
+                                                            "',(ConvertTo-SecureString '",
+                                                            new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName),
+                                                            "' -AsPlainText -Force)))");
+
+            var finalOu = $"OU={ouToAdd},{parentOu}";
+
+            command.Test = new FnJoinPowershellCommand(     FnJoinDelimiter.None, "if([ADSI]::Exists('LDAP://",
+                                                            finalOu,
+                                                            "')) { EXIT 1 }");
+            command.WaitAfterCompletion = 0.ToString();
+
+            return finalOu;
+        }
+
+        public static string AddUser(Config config, string ou, string user, string password)
+        {
+            ConfigCommand command = null;
+            if (!config.Commands.ContainsKey("InstallActiveDirectoryTools"))
+            {
+                command = config.Commands.AddCommand<Command>("InstallActiveDirectoryTools");
+                command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None, "Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter");
+                command.WaitAfterCompletion = 0.ToString();
+            }
+
+            var adminUserNameFqdn = new FnJoin(FnJoinDelimiter.None,
+                new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName),
+                "@",
+                new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
+                ".",
+                new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName));
+
+
+
+            command = config.Commands.AddCommand<Command>(ResourceBase.NormalizeLogicalId($"AddUser{user}"));
+            command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None,
+                                                            "New-ADUser -Name ",
+                                                            user,
+                                                            " -Path '",
+                                                            ou,
+                                                            "' -Credential (New-Object System.Management.Automation.PSCredential('",
+                                                            adminUserNameFqdn,
+                                                            "',(ConvertTo-SecureString '",
+                                                            new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName),
+                                                            "' -AsPlainText -Force)))",
+                                                            " -SamAccountName ",
+                                                            user,
+                                                            " -AccountPassword (ConvertTo-SecureString -AsPlainText '",
+                                                            GetPassword(),
+                                                            "' -Force)");
+
+            //var finalOu = $"OU={ouToAdd},{parentOu}";
+
+            //command.Test = new FnJoinPowershellCommand(FnJoinDelimiter.None, "if([ADSI]::Exists('LDAP://",
+            //                                                finalOu,
+            //                                                "')) { EXIT 1 }");
+            //command.WaitAfterCompletion = 0.ToString();
+
+            //return finalOu;
+            return null;
+        }
+        internal static string GetPassword()
+        {
+            var random = new Random(((int)DateTime.Now.Ticks % int.MaxValue));
+
+            string password = string.Empty;
+
+            for (int i = 0; i < 4; i++)
+            {
+                char charToAdd = ((char)random.Next((int)'A', (int)'Z'));
+                password += charToAdd;
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                char charToAdd = ((char)random.Next((int)'0', (int)'9'));
+                password += charToAdd;
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                char charToAdd = ((char)random.Next((int)'a', (int)'z'));
+                password += charToAdd;
+            }
+            return password;
+        }
     }
 
     public class VpcSettings

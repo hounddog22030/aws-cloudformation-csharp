@@ -129,7 +129,7 @@ namespace AWS.CloudFormation.Resource
 
         public static string NormalizeLogicalId(string value)
         {
-            value = value.Replace(".", string.Empty).Replace("/", string.Empty);
+            value = value.Replace(".", string.Empty).Replace("/", string.Empty).Replace("=",string.Empty);
             return value;
         }
 
