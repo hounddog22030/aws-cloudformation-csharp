@@ -154,28 +154,40 @@ namespace AWS.CloudFormation.Test
             var command = createDevOuConfig.Commands.AddCommand<Command>("InstallActiveDirectoryTools");
             command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None, "Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter");
 
-            var adminUserNameFqdn = new FnJoin(FnJoinDelimiter.None, 
+            var adminUserNameFqdn = new FnJoin(FnJoinDelimiter.None,
+                new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName), 
+                "\\",
+                new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName));
+
+
+            command = createDevOuConfig.Commands.AddCommand<Command>("AddTest");
+            command.Command = new FnJoinPowershellCommand(  FnJoinDelimiter.None,
+                                                            "New-ADOrganizationalUnit -Name 'Hello1234' -Path 'OU=prime,DC=prime,DC=yadayadasoftware,DC=com' -Credential (New-Object System.Management.Automation.PSCredential('",
+                                                            adminUserNameFqdn,
+                                                            "',(ConvertTo-SecureString '",
+                                                            new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName),
+                                                            "' -AsPlainText -Force)))");
+
+            command.Test = new FnJoinPowershellCommand(FnJoinDelimiter.None, "if([ADSI]::Exists('LDAP://OU=Hello1234,OU=prime,DC=prime,DC=yadayadasoftware,DC=com')) { EXIT 1 }");
+            command.WaitAfterCompletion = 0.ToString();
+
+            var adminUserNameFqdn2 = new FnJoin(FnJoinDelimiter.None,
                 new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName),
                 "@",
                 new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
                 ".",
                 new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName));
 
-            command = createDevOuConfig.Commands.AddCommand<Command>("AddDev");
-            command.Command = new FnJoinPsExecPowershell(   adminUserNameFqdn,
+            command = createDevOuConfig.Commands.AddCommand<Command>("AddTest2");
+            command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None,
+                                                            "New-ADOrganizationalUnit -Name 'Blah' -Path 'OU=prime,DC=prime,DC=yadayadasoftware,DC=com' -Credential (New-Object System.Management.Automation.PSCredential('",
+                                                            adminUserNameFqdn2,
+                                                            "',(ConvertTo-SecureString '",
                                                             new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName),
-                                                            "New-ADOrganizationalUnit -Name 'Dev' -Path \"'OU=prime,DC=prime,DC=yadayadasoftware,DC=com'\"");
+                                                            "' -AsPlainText -Force)))");
 
-            command = createDevOuConfig.Commands.AddCommand<Command>("AddTest");
-            command.Command = new FnJoinPsExecPowershell(   adminUserNameFqdn,
-                                                            new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName),
-                                                            "New-ADOrganizationalUnit -Name 'Test' -Path \"'OU=prime,DC=prime,DC=yadayadasoftware,DC=com'\"");
-
-            command = createDevOuConfig.Commands.AddCommand<Command>("AddProd");
-            command.Command = new FnJoinPsExecPowershell(   adminUserNameFqdn,
-                                                            new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName),
-                                                            "New-ADOrganizationalUnit -Name 'Prod' -Path \"'OU=prime,DC=prime,DC=yadayadasoftware,DC=com'\"");
-
+            command.Test = new FnJoinPowershellCommand(FnJoinDelimiter.None, "if([ADSI]::Exists('LDAP://OU=Blah,OU=prime,DC=prime,DC=yadayadasoftware,DC=com')) { EXIT 1 }");
+            command.WaitAfterCompletion = 0.ToString();
 
             return primeTemplate;
 
