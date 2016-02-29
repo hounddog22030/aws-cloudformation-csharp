@@ -56,7 +56,7 @@ namespace AWS.CloudFormation.Test
             var gitSuffix = $"{GetGitBranch()}:{GetGitHash()}";
             var description = $"Master Stack:{gitSuffix}";
 
-            Template masterTemplate = new Template("MasterStackYadaYadaSoftwareCom", description);
+            Template masterTemplate = new Template($"MasterStackYadaYadaSoftwareCom{DateTime.Now.Ticks}", description);
             Template development = GetTemplateFullStack("YadaYadaSoftwareCom", $"dev{Greek.Alpha}", Greek.Alpha, Create.Sql4Tfs, gitSuffix, null);
             Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
             CloudFormation.Resource.CloudFormation.Stack devAlphaStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
@@ -210,9 +210,9 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateMasterTemplate()
         {
-            var activeDirectoryPassword = "KKSK4142uquc";
+            var activeDirectoryPassword = "BUWE5056dxyd";
             var templateUri = GetMasterTemplateUri(activeDirectoryPassword);
-            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom", templateUri);
+            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635923088451168887", templateUri);
 
         }
 
