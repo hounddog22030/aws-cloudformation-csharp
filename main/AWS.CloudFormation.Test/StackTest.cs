@@ -131,7 +131,11 @@ namespace AWS.CloudFormation.Test
             securityGroupAdEditor.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
 
             Instance instanceAdEditor = new Instance(subnetAdEditor, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, false);
-            primeTemplate.Resources.Add("InstanceAdEditor2", instanceAdEditor);
+            primeTemplate.Resources.Add("InstanceAdEditor", instanceAdEditor);
+            instanceAdEditor.DependsOn.Add(simpleAd.LogicalId);
+            instanceAdEditor.DependsOn.Add(securityGroupAdEditor.LogicalId);
+            instanceAdEditor.DependsOn.Add(routeTableForAdSubnets.LogicalId);
+
             instanceAdEditor.AddSecurityGroup(securityGroupAdEditor);
             instanceAdEditor.AddElasticIp();
 
@@ -150,18 +154,25 @@ namespace AWS.CloudFormation.Test
             var command = createDevOuConfig.Commands.AddCommand<Command>("InstallActiveDirectoryTools");
             command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None, "Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter");
 
+            var adminUserNameFqdn = new FnJoin(FnJoinDelimiter.None, 
+                new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName),
+                "@",
+                new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
+                ".",
+                new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName));
+
             command = createDevOuConfig.Commands.AddCommand<Command>("AddDev");
-            command.Command = new FnJoinPsExecPowershell(   new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName),
+            command.Command = new FnJoinPsExecPowershell(   adminUserNameFqdn,
                                                             new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName),
                                                             "New-ADOrganizationalUnit -Name 'Dev' -Path \"'OU=prime,DC=prime,DC=yadayadasoftware,DC=com'\"");
 
             command = createDevOuConfig.Commands.AddCommand<Command>("AddTest");
-            command.Command = new FnJoinPsExecPowershell(   new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName),
+            command.Command = new FnJoinPsExecPowershell(   adminUserNameFqdn,
                                                             new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName),
                                                             "New-ADOrganizationalUnit -Name 'Test' -Path \"'OU=prime,DC=prime,DC=yadayadasoftware,DC=com'\"");
 
             command = createDevOuConfig.Commands.AddCommand<Command>("AddProd");
-            command.Command = new FnJoinPsExecPowershell(   new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName),
+            command.Command = new FnJoinPsExecPowershell(   adminUserNameFqdn,
                                                             new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName),
                                                             "New-ADOrganizationalUnit -Name 'Prod' -Path \"'OU=prime,DC=prime,DC=yadayadasoftware,DC=com'\"");
 
@@ -218,7 +229,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateMasterTemplate()
         {
-            var activeDirectoryPassword = "CTFF8455ycxx";
+            var activeDirectoryPassword = "KKSK4142uquc";
             var templateUri = GetMasterTemplateUri(activeDirectoryPassword);
             Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom", templateUri);
 
