@@ -98,9 +98,13 @@ namespace AWS.CloudFormation.Stack
 
     public class FnJoinPsExecPowershell : FnJoin
     {
-        public FnJoinPsExecPowershell(ReferenceProperty userId, ReferenceProperty password, params object[] powerShellElements) : this((object)userId,password,powerShellElements)
+        public FnJoinPsExecPowershell(FnJoin userId, ReferenceProperty password, params object[] powerShellElements) : this((object)userId, password, powerShellElements)
         {
-            
+
+        }
+        public FnJoinPsExecPowershell(ReferenceProperty userId, ReferenceProperty password, params object[] powerShellElements) : this((object)userId, password, powerShellElements)
+        {
+
         }
         public FnJoinPsExecPowershell(string userId, string password, params object[] powerShellElements) : this((object)userId, password, powerShellElements)
         {
