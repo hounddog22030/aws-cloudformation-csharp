@@ -113,7 +113,7 @@ namespace AWS.CloudFormation.Test
             securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Icmp, Ports.All);
             primeTemplate.Resources.Add(securityGroupAccessToAdServices.LogicalId, securityGroupAccessToAdServices);
 
-            SimpleAd simpleAd = new SimpleAd("prime.yadayadasoftware.com",activeDirectoryAdminPassword,vpc,subnetForActiveDirectory1,subnetForActiveDirectory2);
+            MicrosoftAd simpleAd = new MicrosoftAd("prime.yadayadasoftware.com",activeDirectoryAdminPassword,vpc,subnetForActiveDirectory1,subnetForActiveDirectory2);
             primeTemplate.Resources.Add(simpleAd.LogicalId, simpleAd);
 
             DhcpOptions dhcpOptions = new DhcpOptions(vpc,simpleAd);
@@ -122,37 +122,26 @@ namespace AWS.CloudFormation.Test
             Output outputDhcpOptions = new Output("DhcpOptionsId",new ReferenceProperty(dhcpOptions.LogicalId));
             primeTemplate.Outputs.Add(outputDhcpOptions.LogicalId, outputDhcpOptions);
 
-            Subnet subnetAdEditor = new Subnet(vpc,"10.0.0.48/28",AvailabilityZone.UsEast1A, true);
-            primeTemplate.Resources.Add(subnetAdEditor.LogicalId, subnetAdEditor);
+            Subnet subnetDmz = new Subnet(vpc,"10.0.1.0/24",AvailabilityZone.UsEast1A, true);
+            primeTemplate.Resources.Add(subnetDmz.LogicalId, subnetDmz);
 
-            SecurityGroup securityGroupAdEditor = new SecurityGroup("Security Group For AD Editor", vpc);
-            primeTemplate.Resources.Add(securityGroupAdEditor.LogicalId, securityGroupAdEditor);
+            Instance instanceRdp = new Instance(subnetDmz, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose,40);
+            primeTemplate.Resources.Add("Rdp2", instanceRdp);
+            instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
 
-            securityGroupAdEditor.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            //string ou = MicrosoftAd.AddOu(instanceRdp, "OU=prime,DC=prime,DC=yadayadasoftware,DC=com", $"O{Guid.NewGuid().ToString().Replace("-", string.Empty)}");
+            string ou = "OU=prime,DC=prime,DC=yadayadasoftware,DC=com";
+            string user = MicrosoftAd.AddUser(instanceRdp, ou, $"tfssservice", StackTest.GetPassword());
 
-            Instance instanceAdEditor = new Instance(subnetAdEditor, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, false);
-            primeTemplate.Resources.Add("InstanceAdEditor", instanceAdEditor);
-            instanceAdEditor.DependsOn.Add(simpleAd.LogicalId);
-            instanceAdEditor.DependsOn.Add(securityGroupAdEditor.LogicalId);
-            instanceAdEditor.DependsOn.Add(routeTableForAdSubnets.LogicalId);
+            instanceRdp.DependsOn.Add(simpleAd.LogicalId);
+            instanceRdp.DependsOn.Add(routeTableForAdSubnets.LogicalId);
 
-            instanceAdEditor.AddSecurityGroup(securityGroupAdEditor);
-            instanceAdEditor.AddElasticIp();
-
-            primeTemplate.Parameters.Add(new ParameterBase(SimpleAd.DomainAdminPasswordParameterName, "String", activeDirectoryAdminPassword, "Admin password"));
-            primeTemplate.Parameters.Add(new ParameterBase(SimpleAd.DomainAdminUsernameParameterName, "String", "admin", "Admin username"));
-            primeTemplate.Parameters.Add(new ParameterBase(SimpleAd.DomainTopLevelNameParameterName, "String", "yadayadasoftware.com", "Top level domain name for the stack (e.g. example.com)"));
-            primeTemplate.Parameters.Add(new ParameterBase(SimpleAd.DomainVersionParameterName, "String", Greek.Alpha.ToString().ToLowerInvariant(), "Fully qualified domain name for the stack (e.g. example.com)"));
-            primeTemplate.Parameters.Add(new ParameterBase(SimpleAd.DomainNetBiosNameParameterName, "String", "prime", "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
-            primeTemplate.Parameters.Add(new ParameterBase(SimpleAd.DomainFqdnParameterName, "String", $"alpha.dev.yadayadasoftware.com", "Fully qualified domain name"));
-
-            SimpleAd.AddInstanceToDomain(instanceAdEditor.RenameConfig);
-            var createOuConfigSet = instanceAdEditor.Metadata.Init.ConfigSets.GetConfigSet("ActiveDirectoryConfigSet");
-
-            var createDevOuConfig = createOuConfigSet.GetConfig("ActiveDirectoryConfigSet");
-
-            string ou = SimpleAd.AddOu(createDevOuConfig, "OU=prime,DC=prime,DC=yadayadasoftware,DC=com", $"O{Guid.NewGuid().ToString().Replace("-",string.Empty)}");
-            string user = SimpleAd.AddUser(createDevOuConfig, ou, $"User{Guid.NewGuid().ToString().Replace("-", string.Empty)}", $"O{Guid.NewGuid().ToString().Replace("-", string.Empty)}");
+            primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminPasswordParameterName, "String", activeDirectoryAdminPassword, "Admin password"));
+            primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminUsernameParameterName, "String", "admin", "Admin username"));
+            primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainTopLevelNameParameterName, "String", "yadayadasoftware.com", "Top level domain name for the stack (e.g. example.com)"));
+            primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainVersionParameterName, "String", Greek.Alpha.ToString().ToLowerInvariant(), "Fully qualified domain name for the stack (e.g. example.com)"));
+            primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainNetBiosNameParameterName, "String", "prime", "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
+            primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainFqdnParameterName, "String", $"alpha.dev.yadayadasoftware.com", "Fully qualified domain name"));
 
             return primeTemplate;
 
@@ -227,17 +216,17 @@ namespace AWS.CloudFormation.Test
 
             var password = "dg68ug0K7U83MWQF";
 
-            var domainPassword = new ParameterBase(SimpleAd.DomainAdminPasswordParameterName, "String", password, "Password for domain administrator.")
+            var domainPassword = new ParameterBase(MicrosoftAd.DomainAdminPasswordParameterName, "String", password, "Password for domain administrator.")
             {
                 NoEcho = true
             };
 
             template.Parameters.Add(domainPassword);
-            template.Parameters.Add(new ParameterBase(SimpleAd.DomainAdminUsernameParameterName, "String", "admin", "Admin username"));
-            template.Parameters.Add(new ParameterBase(SimpleAd.DomainTopLevelNameParameterName, "String", topLevel, "Top level domain name for the stack (e.g. example.com)"));
-            template.Parameters.Add(new ParameterBase(SimpleAd.DomainVersionParameterName, "String", version.ToString().ToLowerInvariant(), "Fully qualified domain name for the stack (e.g. example.com)"));
-            template.Parameters.Add(new ParameterBase(SimpleAd.DomainNetBiosNameParameterName, "String", version.ToString() + appNameNetBiosName, "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
-            template.Parameters.Add(new ParameterBase(SimpleAd.DomainFqdnParameterName, "String", $"{version}.{appNameNetBiosName}.{topLevel}", "Fully qualified domain name"));
+            template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminUsernameParameterName, "String", "admin", "Admin username"));
+            template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainTopLevelNameParameterName, "String", topLevel, "Top level domain name for the stack (e.g. example.com)"));
+            template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainVersionParameterName, "String", version.ToString().ToLowerInvariant(), "Fully qualified domain name for the stack (e.g. example.com)"));
+            template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainNetBiosNameParameterName, "String", version.ToString() + appNameNetBiosName, "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
+            template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainFqdnParameterName, "String", $"{version}.{appNameNetBiosName}.{topLevel}", "Fully qualified domain name"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "tfsservice", "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, "String", "Hello12345.", "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
@@ -271,9 +260,9 @@ namespace AWS.CloudFormation.Test
             //template.Resources.Add($"routeFromDmz2ToPrimeSubnet2", routeFromDmz2ToPrimeSubnet2);
 
             var domainNameFnJoin = new FnJoin(FnJoinDelimiter.Period,
-                new ReferenceProperty(SimpleAd.DomainVersionParameterName),
+                new ReferenceProperty(MicrosoftAd.DomainVersionParameterName),
                 "dev",
-                new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName));
+                new ReferenceProperty(MicrosoftAd.DomainTopLevelNameParameterName));
 
 
             //SimpleAd simpleAd = new SimpleAd(domainNameFnJoin,
@@ -376,9 +365,9 @@ namespace AWS.CloudFormation.Test
                 //instanceRdp.SsmAssociations.Add(new SsmAssociation(new ReferenceProperty(activeDirectoryDocument.LogicalId)));
                 //instanceRdp.IamInstanceProfile = "DomainJoinerRole";
                 template.Resources.Add("Rdp", instanceRdp);
-                SimpleAd.AddInstanceToDomain(instanceRdp.RenameConfig);
-                var createUsersPackage = new CreateUsers();
-                instanceRdp.Packages.Add(createUsersPackage);
+                //MicrosoftAd.AddInstanceToDomain(instanceRdp.RenameConfig);
+                //var createUsersPackage = new CreateUsers();
+                //instanceRdp.Packages.Add(createUsersPackage);
 
                 instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
                 var x = instanceRdp.Packages.Last().WaitCondition;
@@ -392,7 +381,7 @@ namespace AWS.CloudFormation.Test
                 //instanceTfsSqlServer.DependsOn.Add(createUsersPackage.WaitCondition.LogicalId);
                 var x = instanceTfsSqlServer.Packages.Last().WaitCondition;
                 //instanceTfsSqlServer.DependsOn.Add(simpleAd.LogicalId);
-                SimpleAd.AddInstanceToDomain(instanceTfsSqlServer.RenameConfig);
+                MicrosoftAd.AddInstanceToDomain(instanceTfsSqlServer.RenameConfig);
             }
 
             LaunchConfiguration tfsServer = null;
@@ -402,7 +391,7 @@ namespace AWS.CloudFormation.Test
             {
                 tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, tfsServerSecurityGroup);
                 //tfsServer.DependsOn.Add(simpleAd.LogicalId);
-                SimpleAd.AddInstanceToDomain(tfsServer.RenameConfig);
+                MicrosoftAd.AddInstanceToDomain(tfsServer.RenameConfig);
 
                 var package =  tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().FirstOrDefault();
                 if (package != null)
@@ -463,7 +452,7 @@ namespace AWS.CloudFormation.Test
                 var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer,
                  tfsServer, tfsApplicationTierInstalled, securityGroupBuildServer, rdsSqlExpress4Build);
                 //buildServer.DependsOn.Add(simpleAd.LogicalId);
-                SimpleAd.AddInstanceToDomain(buildServer.RenameConfig);
+                MicrosoftAd.AddInstanceToDomain(buildServer.RenameConfig);
 
             }
 
@@ -472,7 +461,7 @@ namespace AWS.CloudFormation.Test
                 //uses 33gb
                 var workstation = AddWorkstation(template, subnetWorkstation, workstationSecurityGroup);
                 //workstation.DependsOn.Add(simpleAd.LogicalId);
-                SimpleAd.AddInstanceToDomain(workstation.RenameConfig);
+                MicrosoftAd.AddInstanceToDomain(workstation.RenameConfig);
             }
 
             if (instancesToCreate.HasFlag(Create.BackupServer))
@@ -489,7 +478,7 @@ namespace AWS.CloudFormation.Test
                 backupServerSecurityGroup.AddIngress(vpc, Protocol.Udp, Ports.Min, Ports.Max);
                 backupServer.AddSecurityGroup(backupServerSecurityGroup);
                 template.Resources.Add("BackupServer", backupServer);
-                SimpleAd.AddInstanceToDomain(backupServer.RenameConfig);
+                MicrosoftAd.AddInstanceToDomain(backupServer.RenameConfig);
 
                 backupServer.AddDisk(Ebs.VolumeTypes.Magnetic, 60, false);
                 backupServer.Packages.Add(new WindowsShare(
@@ -497,11 +486,11 @@ namespace AWS.CloudFormation.Test
                     "backups", 
                     new FnJoin(FnJoinDelimiter.None,
                     "'",
-                    new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
+                    new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
                     "\\tfsservice'"),
                     new FnJoin(FnJoinDelimiter.None,
                     "'",
-                    new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
+                    new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
                     "\\Domain Admins'")));
                 var x = backupServer.Packages.Last().WaitCondition;
             }
@@ -587,7 +576,7 @@ namespace AWS.CloudFormation.Test
         }
 
 
-        private static DhcpOptions AddDhcpOptions(SimpleAd simpleAd, Vpc vpc, Template template)
+        private static DhcpOptions AddDhcpOptions(MicrosoftAd simpleAd, Vpc vpc, Template template)
         {
             DhcpOptions dhcpOptions = new DhcpOptions(vpc, simpleAd);
             template.Resources.Add("DhcpOptions", dhcpOptions);

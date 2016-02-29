@@ -25,11 +25,11 @@ namespace AWS.CloudFormation.Configuration.Packages
             RecordSet routing = RecordSet.AddByHostedZoneName(
                 this.Instance.Template,
                 $"RecordSet4{this.Instance.LogicalId}",
-                new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName),"."),
+                new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(MicrosoftAd.DomainTopLevelNameParameterName),"."),
                 new FnJoin( FnJoinDelimiter.Period, 
                             this.Instance.LogicalId,
-                            new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
-                            new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName)),
+                            new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
+                            new ReferenceProperty(MicrosoftAd.DomainTopLevelNameParameterName)),
                 RecordSet.RecordSetTypeEnum.A);
 
             var eip = new ElasticIp(this.Instance);
@@ -43,6 +43,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         }
         private void InstallRemoteDesktopGateway()
         {
+            MicrosoftAd.AddInstanceToDomain(this.Instance.RenameConfig);
             var installRdsConfig =
                 this.Instance.Metadata.Init.ConfigSets.GetConfigSet("RemoteDesktop")
                     .GetConfig("Install");
@@ -60,11 +61,11 @@ namespace AWS.CloudFormation.Configuration.Packages
                                             " C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN ",
                                             this.Instance.LogicalId,
                                             ".",
-                                            new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
+                                            new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
                                             ".",
-                                            new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName),
+                                            new ReferenceProperty(MicrosoftAd.DomainTopLevelNameParameterName),
                                             " -DomainNetBiosName ",
-                                            new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
+                                            new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
                                             " -GroupName 'domain admins'");
             installRdsCommand.Test = "IF EXIST c:/rdp.cer EXIT 1";
         }
