@@ -31,9 +31,24 @@ namespace AWS.CloudFormation.Test
     {
 
         public const string CidrPrimeVpc = "10.0.0.0/16";
-        public const string CidrPrimeSubnet1 = "10.0.0.0/28";
-        public const string CidrPrimeSubnet2 = "10.0.0.240/28";
-        public const string DnsPrime = "10.0.0.10, 10.0.0.253";
+
+        public const string CidrPrimeSubnet1 = "10.0.0.16/28";
+        public const string CidrPrimeSubnet2 = "10.0.0.32/28";
+
+        public const string CidrDmz1 = "10.1.127.0/28";
+        private const string CidrDmz2 = "10.1.255.0/28";
+        private const string CidrDomainController1Subnet = "10.1.0.0/24";
+        private const string CidrDomainController2Subnet = "10.1.128.0/24";
+        private const string CidrSqlServer4TfsSubnet = "10.1.1.0/24";
+        private const string CidrTfsServerSubnet = "10.1.2.0/24";
+        private const string CidrBuildServerSubnet = "10.1.3.0/24";
+        public const string CidrWorkstationSubnet = "10.1.4.0/24";
+        private const string CidrDatabase4BuildSubnet2 = "10.1.5.0/24";
+        public const string KeyPairName = "corp.getthebuybox.com";
+        public const string CidrVpc = "10.1.0.0/16";
+        public const string UsEastWindows2012R2Ami = "ami-3586ac5f";
+        private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-c796bcad";
+        private const string BucketNameSoftware = "gtbb";
 
         public static Uri GetMasterTemplateUri(string activeDirectoryAdminPassword)
         {
@@ -42,7 +57,7 @@ namespace AWS.CloudFormation.Test
             var description = $"Master Stack:{gitSuffix}";
 
             Template masterTemplate = new Template("MasterStackYadaYadaSoftwareCom", description);
-            Template development = GetTemplateFullStack("YadaYadaSoftwareCom", $"dev{Greek.Alpha}", Greek.Alpha, Create.None, gitSuffix, null);
+            Template development = GetTemplateFullStack("YadaYadaSoftwareCom", $"dev{Greek.Alpha}", Greek.Alpha, Create.Sql4Tfs, gitSuffix, null);
             Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
             CloudFormation.Resource.CloudFormation.Stack devAlphaStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
             masterTemplate.Resources.Add("AlphaDevYadaYadaSoftwareCom", devAlphaStack);
@@ -86,10 +101,10 @@ namespace AWS.CloudFormation.Test
             RouteTable routeTableForAdSubnets = new RouteTable(vpc);
             primeTemplate.Resources.Add("RouteTableForAdSubnets", routeTableForAdSubnets);
 
-            Subnet subnetForActiveDirectory1 = new Subnet(vpc, "10.0.0.16/28", AvailabilityZone.UsEast1A, routeTableForAdSubnets, null);
+            Subnet subnetForActiveDirectory1 = new Subnet(vpc, CidrPrimeSubnet1, AvailabilityZone.UsEast1A, routeTableForAdSubnets, null);
             primeTemplate.Resources.Add("SubnetAd1", subnetForActiveDirectory1);
 
-            Subnet subnetForActiveDirectory2 = new Subnet(vpc, "10.0.0.32/28", AvailabilityZone.UsEast1E, routeTableForAdSubnets, null);
+            Subnet subnetForActiveDirectory2 = new Subnet(vpc, CidrPrimeSubnet2, AvailabilityZone.UsEast1E, routeTableForAdSubnets, null);
             primeTemplate.Resources.Add("SubnetAd2", subnetForActiveDirectory2);
 
             SecurityGroup securityGroupAccessToAdServices = new SecurityGroup("SecurityGroupForDomainServices",vpc);
@@ -126,11 +141,11 @@ namespace AWS.CloudFormation.Test
             primeTemplate.Resources.Add(subnetDmz.LogicalId, subnetDmz);
 
             Instance instanceRdp = new Instance(subnetDmz, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose,40);
-            primeTemplate.Resources.Add("Rdp2", instanceRdp);
+            primeTemplate.Resources.Add("Rdp", instanceRdp);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
 
             //string ou = MicrosoftAd.AddOu(instanceRdp, "OU=prime,DC=prime,DC=yadayadasoftware,DC=com", $"O{Guid.NewGuid().ToString().Replace("-", string.Empty)}");
-            string ou = "OU=prime,DC=prime,DC=yadayadasoftware,DC=com";
+            string ou = "CN=Users,DC=prime,DC=yadayadasoftware,DC=com";
             string user = MicrosoftAd.AddUser(instanceRdp, ou, $"tfssservice", StackTest.GetPassword());
 
             instanceRdp.DependsOn.Add(simpleAd.LogicalId);
@@ -381,7 +396,7 @@ namespace AWS.CloudFormation.Test
                 //instanceTfsSqlServer.DependsOn.Add(createUsersPackage.WaitCondition.LogicalId);
                 var x = instanceTfsSqlServer.Packages.Last().WaitCondition;
                 //instanceTfsSqlServer.DependsOn.Add(simpleAd.LogicalId);
-                MicrosoftAd.AddInstanceToDomain(instanceTfsSqlServer.RenameConfig);
+                
             }
 
             LaunchConfiguration tfsServer = null;
@@ -523,21 +538,6 @@ namespace AWS.CloudFormation.Test
             return template;
         }
 
-        //private const string DomainAdminPassword = "kasdfiajs!!9";
-        public const string CidrDmz1 = "10.1.127.0/28";
-        private const string CidrDmz2 = "10.1.255.0/28";
-        private const string CidrDomainController1Subnet = "10.1.0.0/24";
-        private const string CidrDomainController2Subnet = "10.1.128.0/24";
-        private const string CidrSqlServer4TfsSubnet = "10.1.1.0/24";
-        private const string CidrTfsServerSubnet = "10.1.2.0/24";
-        private const string CidrBuildServerSubnet = "10.1.3.0/24";
-        public const string CidrWorkstationSubnet = "10.1.4.0/24";
-        private const string CidrDatabase4BuildSubnet2 = "10.1.5.0/24";
-        public const string KeyPairName = "corp.getthebuybox.com";
-        public const string CidrVpc = "10.1.0.0/16";
-        public const string UsEastWindows2012R2Ami = "ami-3586ac5f";
-        private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-25f6d54f";
-        private const string BucketNameSoftware = "gtbb";
 
         public static Template GetTemplateWithParameters()
         {
@@ -797,7 +797,6 @@ namespace AWS.CloudFormation.Test
         {
             var sqlServer = new Instance(subnet, instanceSize, UsEastWindows2012R2SqlServerExpressAmi, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 70);
             template.Resources.Add(instanceName,sqlServer);
-
             var sqlServerPackage = new SqlServerExpressFromAmi(BucketNameSoftware);
             sqlServer.Packages.Add(sqlServerPackage);
             sqlServer.AddSecurityGroup(sqlServerSecurityGroup);

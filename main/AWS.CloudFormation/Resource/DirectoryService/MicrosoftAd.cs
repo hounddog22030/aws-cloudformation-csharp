@@ -224,10 +224,9 @@ namespace AWS.CloudFormation.Resource.DirectoryService
                                                             GetPassword(),
                                                             "' -Force)",
                                                             " -Enabled $true");
-            command.Test = new FnJoinPowershellCommand( FnJoinDelimiter.None,
-                                                        "if (Get-ADUser -LDAPFilter '(sAMAccountName = ",
-                                                        user,
-                                                        ")' -eq $Null) {EXIT 0} else {EXIT 1}");
+            command.Test = new FnJoinPowershellCommand( FnJoinDelimiter.Space,
+                                                        "Get-ADUser -Identity",
+                                                        user);
             command.WaitAfterCompletion = 0.ToString();
 
             //var finalOu = $"OU={ouToAdd},{parentOu}";
