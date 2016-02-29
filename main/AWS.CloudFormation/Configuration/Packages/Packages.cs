@@ -211,7 +211,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             var nodeJson = chefConfig.Files.GetFile("c:/chef/node.json");
             if (!nodeJson.ContainsKey("domain"))
             {
-                nodeJson.Add("domain", new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName));
+                nodeJson.Add("domain", new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName));
             }
             return nodeJson.Content;
         }
@@ -315,9 +315,9 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None, ConfigureSql4Tfs,
                 " ",
-                new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
+                new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
                 " ",
-                new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
+                new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
                 "\\",
                 new ReferenceProperty("TfsServiceAccountName"),
                 " ",
@@ -372,9 +372,9 @@ namespace AWS.CloudFormation.Configuration.Packages
             var command = this.Config.Commands.AddCommand<Command>("CreateBackupShare");
             command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None,
                 "New-Item \"d:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"d:\\Backups\" -FullAccess @('NT AUTHORITY\\NETWORK SERVICE','",
-                new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
+                new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
                 "\\",
-                new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName),
+                new ReferenceProperty(MicrosoftAd.DomainAdminUsernameParameterName),
                 "')");
             command.WaitAfterCompletion = 0.ToString();
             command.Test = "IF EXIST G:\\BACKUPS EXIT /B 1";
@@ -407,12 +407,12 @@ namespace AWS.CloudFormation.Configuration.Packages
             base.AddToLaunchConfiguration(configuration);
             var node = GetChefNodeJsonContent(configuration);
             var tfsNode = node.Add("tfs");
-            tfsNode.Add("application_server_sqlname", new FnJoin(FnJoinDelimiter.Period, "sql4tfs", new ReferenceProperty(SimpleAd.DomainFqdnParameterName)));
+            tfsNode.Add("application_server_sqlname", new FnJoin(FnJoinDelimiter.Period, "sql4tfs", new ReferenceProperty(MicrosoftAd.DomainFqdnParameterName)));
             tfsNode.Add(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName));
             tfsNode.Add(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName));
 
             var domainAdminUserInfoNode = node.AddNode("domainAdmin");
-            domainAdminUserInfoNode.Add("name", new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName)));
+            domainAdminUserInfoNode.Add("name", new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(MicrosoftAd.DomainAdminUsernameParameterName)));
             domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
         }
 
@@ -450,9 +450,9 @@ namespace AWS.CloudFormation.Configuration.Packages
             tfsNode.Add("application_server_netbios_name",
                 new FnJoin(FnJoinDelimiter.Period,
                     this.ApplicationServer.LogicalId,
-                    new ReferenceProperty(SimpleAd.DomainVersionParameterName),
+                    new ReferenceProperty(MicrosoftAd.DomainVersionParameterName),
                     "dev",
-                    new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName)));
+                    new ReferenceProperty(MicrosoftAd.DomainTopLevelNameParameterName)));
 
             if (this.SqlServer4Build != null)
             {

@@ -30,7 +30,7 @@ namespace AWS.CloudFormation.Resource.DirectoryService
     }
 
 
-    public class SimpleAd : ResourceBase
+    public class MicrosoftAd : ResourceBase
     {
         public const string DomainVersionParameterName = "DomainVersion";
         public const string DomainTopLevelNameParameterName = "DomainTopLevelName";
@@ -39,7 +39,7 @@ namespace AWS.CloudFormation.Resource.DirectoryService
         public const string DomainNetBiosNameParameterName = "DomainNetBiosName";
         public const string DomainFqdnParameterName = "DomainFqdn";
 
-        public SimpleAd(object name, object password, DirectorySize size, Vpc vpc, params Subnet[] subnets) : base(ResourceType.AwsDirectoryServiceMicrosoftAd)
+        public MicrosoftAd(object name, object password, DirectorySize size, Vpc vpc, params Subnet[] subnets) : base(ResourceType.AwsDirectoryServiceMicrosoftAd)
         {
             Name = name;
             Password = password;
@@ -49,7 +49,7 @@ namespace AWS.CloudFormation.Resource.DirectoryService
             }
             VpcSettings = new VpcSettings(vpc, subnets);
         }
-        public SimpleAd(string name, object password, Vpc vpc, params Subnet[] subnets) : this(name,password,DirectorySize.None,vpc,subnets)
+        public MicrosoftAd(string name, object password, Vpc vpc, params Subnet[] subnets) : this(name,password,DirectorySize.None,vpc,subnets)
         {
             this.LogicalId = $"SimpleAd{name}";
         }
@@ -119,39 +119,44 @@ namespace AWS.CloudFormation.Resource.DirectoryService
                 "-Command \"",
                 "Add-Computer -DomainName ",
                 new FnJoin(FnJoinDelimiter.Period,
-                            new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
-                            new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName)),
+                            new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
+                            new ReferenceProperty(MicrosoftAd.DomainTopLevelNameParameterName)),
                 " -Credential (New-Object System.Management.Automation.PSCredential('",
-                new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName),
+                new ReferenceProperty(MicrosoftAd.DomainAdminUsernameParameterName),
                 "@",
                 new FnJoin(FnJoinDelimiter.Period,
-                new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
-                new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName)),
+                new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
+                new ReferenceProperty(MicrosoftAd.DomainTopLevelNameParameterName)),
                 "',(ConvertTo-SecureString \"",
-                new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName),
+                new ReferenceProperty(MicrosoftAd.DomainAdminPasswordParameterName),
                 "\" -AsPlainText -Force))) ",
                 "-Restart\"");
             joinCommand.WaitAfterCompletion = "forever";
             joinCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
         }
 
-        public static string AddOu(Config config, string parentOu, string ouToAdd)
-        {
+        public const string ActiveDirectoryConfigSet = "ActiveDirectoryConfigSet";
+        public const string ActiveDirectoryConfig = "ActiveDirectoryConfig";
 
-            var command = config.Commands.AddCommand<Command>("InstallActiveDirectoryTools");
+        public static string AddOu(LaunchConfiguration instance, string parentOu, string ouToAdd)
+        {
+            var configSet = instance.Metadata.Init.ConfigSets.GetConfigSet(ActiveDirectoryConfigSet);
+            var createDevOuConfig = configSet.GetConfig(ActiveDirectoryConfig);
+
+            var command = createDevOuConfig.Commands.AddCommand();
             command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None, "Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter");
             command.WaitAfterCompletion = 0.ToString();
 
             var adminUserNameFqdn = new FnJoin(FnJoinDelimiter.None,
-                new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName),
+                new ReferenceProperty(MicrosoftAd.DomainAdminUsernameParameterName),
                 "@",
-                new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
+                new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
                 ".",
-                new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName));
+                new ReferenceProperty(MicrosoftAd.DomainTopLevelNameParameterName));
 
             
 
-            command = config.Commands.AddCommand<Command>(ResourceBase.NormalizeLogicalId($"AddOu{ouToAdd}"));
+            command = createDevOuConfig.Commands.AddCommand<Command>(ResourceBase.NormalizeLogicalId($"AddOu{ouToAdd}"));
             command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None,
                                                             "New-ADOrganizationalUnit -Name '",
                                                             ouToAdd,
@@ -160,7 +165,7 @@ namespace AWS.CloudFormation.Resource.DirectoryService
                                                             "' -Credential (New-Object System.Management.Automation.PSCredential('",
                                                             adminUserNameFqdn,
                                                             "',(ConvertTo-SecureString '",
-                                                            new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName),
+                                                            new ReferenceProperty(MicrosoftAd.DomainAdminPasswordParameterName),
                                                             "' -AsPlainText -Force)))");
 
             var finalOu = $"OU={ouToAdd},{parentOu}";
@@ -173,41 +178,57 @@ namespace AWS.CloudFormation.Resource.DirectoryService
             return finalOu;
         }
 
-        public static string AddUser(Config config, string ou, string user, string password)
+        public static string AddUser(LaunchConfiguration instance, string ou, string user, string password)
         {
+            bool managed = false;
+            var configSet = instance.Metadata.Init.ConfigSets.GetConfigSet(ActiveDirectoryConfigSet);
+            var createDevOuConfig = configSet.GetConfig(ActiveDirectoryConfig);
+
             ConfigCommand command = null;
-            if (!config.Commands.ContainsKey("InstallActiveDirectoryTools"))
+            if (!createDevOuConfig.Commands.ContainsKey("InstallActiveDirectoryTools"))
             {
-                command = config.Commands.AddCommand<Command>("InstallActiveDirectoryTools");
+                command = createDevOuConfig.Commands.AddCommand<Command>("InstallActiveDirectoryTools");
                 command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None, "Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter");
                 command.WaitAfterCompletion = 0.ToString();
             }
 
             var adminUserNameFqdn = new FnJoin(FnJoinDelimiter.None,
-                new ReferenceProperty(SimpleAd.DomainAdminUsernameParameterName),
+                new ReferenceProperty(MicrosoftAd.DomainAdminUsernameParameterName),
                 "@",
-                new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName),
+                new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
                 ".",
-                new ReferenceProperty(SimpleAd.DomainTopLevelNameParameterName));
+                new ReferenceProperty(MicrosoftAd.DomainTopLevelNameParameterName));
 
 
+            var addUserCommand = "New-ADUser";
+            if (managed)
+            {
+                addUserCommand = "New-ADServiceAccount";
+            }
 
-            command = config.Commands.AddCommand<Command>(ResourceBase.NormalizeLogicalId($"AddUser{user}"));
+            command = createDevOuConfig.Commands.AddCommand<Command>(ResourceBase.NormalizeLogicalId($"AddUser{user}"));
             command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None,
-                                                            "New-ADUser -Name ",
+                                                            addUserCommand,
+                                                            " -Name ",
                                                             user,
                                                             " -Path '",
                                                             ou,
                                                             "' -Credential (New-Object System.Management.Automation.PSCredential('",
                                                             adminUserNameFqdn,
                                                             "',(ConvertTo-SecureString '",
-                                                            new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName),
+                                                            new ReferenceProperty(MicrosoftAd.DomainAdminPasswordParameterName),
                                                             "' -AsPlainText -Force)))",
                                                             " -SamAccountName ",
                                                             user,
                                                             " -AccountPassword (ConvertTo-SecureString -AsPlainText '",
                                                             GetPassword(),
-                                                            "' -Force)");
+                                                            "' -Force)",
+                                                            " -Enabled $true");
+            command.Test = new FnJoinPowershellCommand( FnJoinDelimiter.None,
+                                                        "if (Get-ADUser -LDAPFilter '(sAMAccountName = ",
+                                                        user,
+                                                        ")' -eq $Null) {EXIT 0} else {EXIT 1}");
+            command.WaitAfterCompletion = 0.ToString();
 
             //var finalOu = $"OU={ouToAdd},{parentOu}";
 

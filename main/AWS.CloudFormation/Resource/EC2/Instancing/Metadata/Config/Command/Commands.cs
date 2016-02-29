@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using AWS.CloudFormation.Common;
@@ -86,7 +87,11 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
             return returnValue;
         }
 
-
-
+        internal ConfigCommand AddCommand()
+        {
+            StackTrace stackTrace = new StackTrace();
+            StackFrame[] stackFrames = stackTrace.GetFrames();
+            return this.AddCommand<Instancing.Metadata.Config.Command.Command>(stackFrames[1].GetMethod().Name);
+        }
     }
 }
