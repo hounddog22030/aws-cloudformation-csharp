@@ -178,7 +178,7 @@ namespace AWS.CloudFormation.Resource.DirectoryService
             return finalOu;
         }
 
-        public static string AddUser(LaunchConfiguration instance, string ou, string user, string password)
+        public static string AddUser(LaunchConfiguration instance, object ou, object user, string password)
         {
             bool managed = false;
             var configSet = instance.Metadata.Init.ConfigSets.GetConfigSet(ActiveDirectoryConfigSet);
@@ -224,10 +224,11 @@ namespace AWS.CloudFormation.Resource.DirectoryService
                                                             GetPassword(),
                                                             "' -Force)",
                                                             " -Enabled $true");
-            command.Test = new FnJoinPowershellCommand( FnJoinDelimiter.Space,
+            command.Test = new FnJoinPowershellCommand(FnJoinDelimiter.Space,
                                                         "try {Get-ADUser -Identity",
                                                         user,
-                                                        "tfsservice;exit 1} catch {exit 0}");
+                                                        new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName),
+                                                        ";exit 1} catch {exit 0}");
             command.WaitAfterCompletion = 0.ToString();
 
             //var finalOu = $"OU={ouToAdd},{parentOu}";
@@ -239,7 +240,19 @@ namespace AWS.CloudFormation.Resource.DirectoryService
 
             //return finalOu;
             return null;
+
         }
+
+        public static string AddUser(LaunchConfiguration instance, string ou, ReferenceProperty user, string password)
+        {
+            return AddUser(instance, (object)ou, (object)user, password);
+
+        }
+        public static string AddUser(LaunchConfiguration instance, string ou, string user, string password)
+        {
+            return AddUser(instance, (object)ou, (object)user, password);
+        }
+
         internal static string GetPassword()
         {
             var random = new Random(((int)DateTime.Now.Ticks % int.MaxValue));
