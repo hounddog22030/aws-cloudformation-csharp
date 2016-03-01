@@ -95,7 +95,6 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
                 this.Template.Resources.Add(routeTableAssociation.LogicalId, routeTableAssociation);
                 if (this.NatSecurityGroup != null)
                 {
-
                     this.NatSecurityGroup.AddIngress((ICidrBlock)this, Protocol.All, Ports.Min, Ports.Max);
                     this.NatSecurityGroup.AddIngress((ICidrBlock)this, Protocol.Icmp, Ports.All);
                 }
@@ -105,7 +104,8 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             if (_addInternetGatewayRoute)
             {
                 this.RouteTable = new RouteTable(this.Vpc);
-                template.Resources.Add($"RouteTable4{this.LogicalId}", this.RouteTable);
+                this.RouteTable.LogicalId = $"RouteTable4{this.LogicalId}";
+                template.Resources.Add(this.RouteTable.LogicalId, this.RouteTable);
                 Route route2 = new Route(this.Vpc.InternetGateway, "0.0.0.0/0", this.RouteTable);
                 template.Resources.Add($"Route4{this.LogicalId}", route2);
                 SubnetRouteTableAssociation routeTableAssociation2 = new SubnetRouteTableAssociation(this, this.RouteTable);
