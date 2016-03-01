@@ -225,8 +225,9 @@ namespace AWS.CloudFormation.Resource.DirectoryService
                                                             "' -Force)",
                                                             " -Enabled $true");
             command.Test = new FnJoinPowershellCommand( FnJoinDelimiter.Space,
-                                                        "Get-ADUser -Identity",
-                                                        user);
+                                                        "try {Get-ADUser -Identity",
+                                                        user,
+                                                        "tfsservice;exit 1} catch {exit 0}");
             command.WaitAfterCompletion = 0.ToString();
 
             //var finalOu = $"OU={ouToAdd},{parentOu}";
