@@ -61,6 +61,7 @@ namespace AWS.CloudFormation.Test
             Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
             CloudFormation.Resource.CloudFormation.Stack devAlphaStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
             masterTemplate.Resources.Add("AlphaDevYadaYadaSoftwareCom", devAlphaStack);
+            
 
             Template primeTemplate = GetPrimeTemplate(gitSuffix, activeDirectoryAdminPassword);
             Uri primeUri = TemplateEngine.UploadTemplate(primeTemplate, "gtbb/templates");
@@ -82,7 +83,7 @@ namespace AWS.CloudFormation.Test
             VpcDhcpOptionsAssociation association = new VpcDhcpOptionsAssociation(new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.DhcpOptionsId") , vpcAlpha);
             masterTemplate.Resources.Add($"VpcDhcpOptionsAssociation4Alpha", association);
 
-            
+            devAlphaStack.DependsOn.Add(prime.LogicalId);
 
             return TemplateEngine.UploadTemplate(masterTemplate, "gtbb/templates");
         }
@@ -145,7 +146,7 @@ namespace AWS.CloudFormation.Test
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
 
             //string ou = MicrosoftAd.AddOu(instanceRdp, "OU=prime,DC=prime,DC=yadayadasoftware,DC=com", $"O{Guid.NewGuid().ToString().Replace("-", string.Empty)}");
-            string ou = "CN=Users,DC=prime,DC=yadayadasoftware,DC=com";
+            string ou = "OU=Users,OU=prime,DC=prime,DC=yadayadasoftware,DC=com";
             string user = MicrosoftAd.AddUser(instanceRdp, ou, $"tfssservice", StackTest.GetPassword());
 
             instanceRdp.DependsOn.Add(simpleAd.LogicalId);
