@@ -31,65 +31,75 @@ namespace AWS.CloudFormation.Test
     {
 
         public const string CidrPrimeVpc = "10.0.0.0/16";
-        public const string CidrPrimeActiveDirectorySubnet1 = "10.0.0.0/28";
-        public const string CidrPrimeActiveDirectorySubnet2 = "10.0.0.16/28";
-        public const string CidrPrimeDmz1Subnet = "10.0.0.32/28";
+        public const string CidrPrimeActiveDirectorySubnet1 = "10.0.1.0/24";
+        public const string CidrPrimeActiveDirectorySubnet2 = "10.0.2.0/24";
+        public const string CidrPrimeDmz1Subnet = "10.0.3.0/24";
 
 
-        public const string CidrDevVpc = "10.0.1.0/24";
-        public const string CidrDevDmz1 = "10.0.1.0/28";
-        private const string CidrDevDmz2 = "10.0.1.16/28";
+        public const string CidrDevVpc = "10.1.0.0/16"; //10.1.0.0 - 10.1.0.255
+        public const string CidrDevDmz1 = "10.1.1.0/24";    // 0-15
+        private const string CidrDevDmz2 = "10.1.2.0/24";  // 16-31
         //10.0.0.64/26
 
-        private const string CidrSqlServer4TfsSubnet = "10.0.1.32/28";
-        private const string CidrTfsServerSubnet = "10.0.1.48/28";
-        private const string CidrBuildServerSubnet = "10.0.1.64/28";
-        public const string CidrWorkstationSubnet = "10.0.1.80/28";
-        private const string CidrDatabase4BuildSubnet2 = "10.0.1.96/28";
+        private const string CidrSqlServer4TfsSubnet = "10.1.3.0/24";  //32-47
+        private const string CidrTfsServerSubnet = "10.1.4.0/24";  //48..63
+        private const string CidrBuildServerSubnet = "10.1.5.0/24";    //64-79
+        private const string CidrDatabase4BuildSubnet2 = "10.1.6.0/24";    //80-95
+        public const string CidrWorkstationSubnet = "10.1.7.0/24"; //96-127
         public const string KeyPairName = "corp.getthebuybox.com";
         public const string UsEastWindows2012R2Ami = "ami-3586ac5f";
         private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-c796bcad";
         private const string BucketNameSoftware = "gtbb";
 
-        public static Uri GetMasterTemplateUri(string activeDirectoryAdminPassword,string tfsServicePassword)
+        public enum MasterTemplatePass
+        {
+            CreateMicrosoftActiveDirectory,
+            PeerVpcs
+            
+        }
+        public static Uri GetMasterTemplateUri(string activeDirectoryAdminPassword,string tfsServicePassword, MasterTemplatePass pass)
         {
             
             var gitSuffix = $"{GetGitBranch()}:{GetGitHash()}";
             var description = $"Master Stack:{gitSuffix}";
 
             Template masterTemplate = new Template($"MasterStackYadaYadaSoftwareCom{DateTime.Now.Ticks}", description);
-            Template development = GetTemplateFullStack("YadaYadaSoftwareCom", $"dev{Greek.Alpha}", Greek.Alpha, Create.None, gitSuffix, null);
-            development.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminPasswordParameterName, "String", activeDirectoryAdminPassword, "Admin password"));
-
-            Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
-            CloudFormation.Resource.CloudFormation.Stack devAlphaStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
-            masterTemplate.Resources.Add("AlphaDevYadaYadaSoftwareCom", devAlphaStack);
-            
 
             Template primeTemplate = GetPrimeTemplate(gitSuffix, activeDirectoryAdminPassword, tfsServicePassword);
             Uri primeUri = TemplateEngine.UploadTemplate(primeTemplate, "gtbb/templates");
             CloudFormation.Resource.CloudFormation.Stack prime = new CloudFormation.Resource.CloudFormation.Stack(primeUri);
             masterTemplate.Resources.Add("PrimeYadaYadaSoftwareCom", prime);
 
-            var vpcPrime = new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.VpcPrime");
-            var vpcAlpha = new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.VpcAlpha");
+            if (pass == MasterTemplatePass.PeerVpcs)
+            {
+                Template development = GetTemplateFullStack("YadaYadaSoftwareCom", $"dev{Greek.Alpha}", Greek.Alpha, Create.None, gitSuffix, null);
+                development.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminPasswordParameterName, "String", activeDirectoryAdminPassword, "Admin password"));
 
-            VpcDhcpOptionsAssociation association = new VpcDhcpOptionsAssociation(new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.DhcpOptionsId"), vpcAlpha);
-            masterTemplate.Resources.Add($"VpcDhcpOptionsAssociation4Alpha", association);
+                Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
+                CloudFormation.Resource.CloudFormation.Stack devAlphaStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
+                masterTemplate.Resources.Add("AlphaDevYadaYadaSoftwareCom", devAlphaStack);
 
-            var vpcPeeringAlphaToPrime = new VpcPeeringConnection(vpcAlpha, vpcPrime);
-            masterTemplate.Resources.Add("VpcAlphaToPrime", vpcPeeringAlphaToPrime);
+                var vpcPrime = new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.VpcPrime");
+                var vpcAlpha = new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.VpcAlpha");
 
-            Route routeFromAlphaToPrime = new Route(vpcPeeringAlphaToPrime, CidrPrimeVpc, new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.RouteTableForPrivateSubnets"));
-            masterTemplate.Resources.Add("RouteFromAlphaToPrime", routeFromAlphaToPrime);
+                VpcDhcpOptionsAssociation association = new VpcDhcpOptionsAssociation(new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.DhcpOptionsId"), vpcAlpha);
+                masterTemplate.Resources.Add($"VpcDhcpOptionsAssociation4Alpha", association);
 
-            Route routeFromPrimeAdSubnetsToAlpha = new Route(vpcPeeringAlphaToPrime, CidrDevVpc, new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTableForAdSubnets"));
-            masterTemplate.Resources.Add("RouteFromPrimeAdSubnetsToAlpha", routeFromPrimeAdSubnetsToAlpha);
+                var vpcPeeringAlphaToPrime = new VpcPeeringConnection(vpcAlpha, vpcPrime);
+                masterTemplate.Resources.Add("VpcAlphaToPrime", vpcPeeringAlphaToPrime);
 
-            Route routeFromPrimeSubnetDmz1ToAlpha = new Route(vpcPeeringAlphaToPrime, CidrDevVpc, new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTable4SubnetDmz1"));
-            masterTemplate.Resources.Add("RouteFromPrimeSubnetDmz1ToAlpha", routeFromPrimeSubnetDmz1ToAlpha);
+                Route routeFromAlphaToPrime = new Route(vpcPeeringAlphaToPrime, CidrPrimeVpc, new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.RouteTableForPrivateSubnets"));
+                masterTemplate.Resources.Add("RouteFromAlphaToPrime", routeFromAlphaToPrime);
 
-            devAlphaStack.DependsOn.Add(prime.LogicalId);
+                Route routeFromPrimeAdSubnetsToAlpha = new Route(vpcPeeringAlphaToPrime, CidrDevVpc, new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTableForAdSubnets"));
+                masterTemplate.Resources.Add("RouteFromPrimeAdSubnetsToAlpha", routeFromPrimeAdSubnetsToAlpha);
+
+                Route routeFromPrimeSubnetDmz1ToAlpha = new Route(vpcPeeringAlphaToPrime, CidrDevVpc, new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTable4SubnetDmz1"));
+                masterTemplate.Resources.Add("RouteFromPrimeSubnetDmz1ToAlpha", routeFromPrimeSubnetDmz1ToAlpha);
+
+                devAlphaStack.DependsOn.Add(prime.LogicalId);
+            }
+
 
             return TemplateEngine.UploadTemplate(masterTemplate, "gtbb/templates");
         }
@@ -188,10 +198,9 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void GetMasterTemplateTest()
         {
-            var templateUri = GetMasterTemplateUri(GetPassword(), GetPassword());
-            Assert.IsNotNull(templateUri);
-            Assert.IsFalse(string.IsNullOrEmpty(templateUri.AbsoluteUri));
-
+            var adminPassword = GetPassword();
+            var tfsService = GetPassword();
+            var templateUri = GetMasterTemplateUri(adminPassword, tfsService,MasterTemplatePass.CreateMicrosoftActiveDirectory);
         }
 
         [TestMethod]
@@ -211,18 +220,18 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateMasterTemplate()
         {
-            //string securityGroupId = MicrosoftAd.GetSecurityGroupId();
-            var templateUri = GetMasterTemplateUri(GetPassword(), GetPassword());
+            var adminPassword = GetPassword();
+            var tfsPassword = GetPassword();
+            var templateUri = GetMasterTemplateUri(adminPassword,tfsPassword,MasterTemplatePass.CreateMicrosoftActiveDirectory);
             Stack.Stack.CreateStack(templateUri);
-            //Assert.IsNotNull(securityGroupId);
 
         }
 
         [TestMethod]
         public void UpdateMasterTemplate()
         {
-            var templateUri = GetMasterTemplateUri("AHUI8112igqi", "RCVX7056rnbl");
-            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635923835444490704", templateUri);
+            var templateUri = GetMasterTemplateUri("CJLF0073fkti", "RCVX7056rnbl",MasterTemplatePass.PeerVpcs);
+            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635928254607860481", templateUri);
 
         }
 
