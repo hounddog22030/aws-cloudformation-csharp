@@ -231,15 +231,16 @@ namespace AWS.CloudFormation.Test
             var adminPassword = GetPassword();
             var tfsPassword = GetPassword();
             var templateUri = GetMasterTemplateUri(adminPassword,tfsPassword,MasterTemplatePass.CreateMicrosoftActiveDirectory, Create.None);
-            Stack.Stack.CreateStack(templateUri);
+            var response = Stack.Stack.CreateStack(templateUri);
+            
 
         }
 
         [TestMethod]
         public void UpdateMasterTemplate()
         {
-            var templateUri = GetMasterTemplateUri("CJLF0073fkti", "RCVX7056rnbl",MasterTemplatePass.PeerVpcs, Create.Sql4Tfs | Create.Tfs);
-            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635928254607860481", templateUri);
+            var templateUri = GetMasterTemplateUri("QOTY3475igam", "BRGW8750thgw", MasterTemplatePass.PeerVpcs, Create.Sql4Tfs | Create.Tfs);
+            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635928668117791766", templateUri);
 
         }
 
