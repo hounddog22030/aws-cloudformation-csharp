@@ -58,6 +58,7 @@ namespace AWS.CloudFormation.Test
 
             Template masterTemplate = new Template($"MasterStackYadaYadaSoftwareCom{DateTime.Now.Ticks}", description);
             Template development = GetTemplateFullStack("YadaYadaSoftwareCom", $"dev{Greek.Alpha}", Greek.Alpha, Create.None, gitSuffix, null);
+            development.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminPasswordParameterName, "String", activeDirectoryAdminPassword, "Admin password"));
 
             Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
             CloudFormation.Resource.CloudFormation.Stack devAlphaStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
@@ -106,13 +107,7 @@ namespace AWS.CloudFormation.Test
             RouteTable routeTableForAdSubnets = new RouteTable(vpc);
             primeTemplate.Resources.Add("RouteTableForAdSubnets", routeTableForAdSubnets);
 
-            Subnet subnetForActiveDirectory1 = new Subnet(vpc, CidrPrimeSubnet1, AvailabilityZone.UsEast1A, routeTableForAdSubnets, null);
-            primeTemplate.Resources.Add("SubnetAd1", subnetForActiveDirectory1);
-
-            Subnet subnetForActiveDirectory2 = new Subnet(vpc, CidrPrimeSubnet2, AvailabilityZone.UsEast1E, routeTableForAdSubnets, null);
-            primeTemplate.Resources.Add("SubnetAd2", subnetForActiveDirectory2);
-
-            SecurityGroup securityGroupAccessToAdServices = new SecurityGroup("SecurityGroupForDomainServices",vpc);
+            SecurityGroup securityGroupAccessToAdServices = new SecurityGroup("SecurityGroupForDomainServices", vpc);
             var netDns = IPNetwork.Parse("10.0.0.0", 8);
             securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.DnsQuery);
             securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.DnsQuery);
@@ -132,6 +127,13 @@ namespace AWS.CloudFormation.Test
             securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.NetBios);
             securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Icmp, Ports.All);
             primeTemplate.Resources.Add(securityGroupAccessToAdServices.LogicalId, securityGroupAccessToAdServices);
+
+            Subnet subnetForActiveDirectory1 = new Subnet(vpc, CidrPrimeSubnet1, AvailabilityZone.UsEast1A, routeTableForAdSubnets, null);
+            primeTemplate.Resources.Add("SubnetAd1", subnetForActiveDirectory1);
+
+            Subnet subnetForActiveDirectory2 = new Subnet(vpc, CidrPrimeSubnet2, AvailabilityZone.UsEast1E, routeTableForAdSubnets, null);
+            primeTemplate.Resources.Add("SubnetAd2", subnetForActiveDirectory2);
+
 
             MicrosoftAd simpleAd = new MicrosoftAd("prime.yadayadasoftware.com",activeDirectoryAdminPassword,vpc,subnetForActiveDirectory1,subnetForActiveDirectory2);
             primeTemplate.Resources.Add(simpleAd.LogicalId, simpleAd);
@@ -208,16 +210,18 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateMasterTemplate()
         {
+            string securityGroupId = MicrosoftAd.GetSecurityGroupId();
             var templateUri = GetMasterTemplateUri(GetPassword(), GetPassword());
             Stack.Stack.CreateStack(templateUri);
+            Assert.IsNotNull(securityGroupId);
 
         }
 
         [TestMethod]
         public void UpdateMasterTemplate()
         {
-            var templateUri = GetMasterTemplateUri("NBIL8532dlro", "Xyz123Abc!@#");
-            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635923823086980071", templateUri);
+            var templateUri = GetMasterTemplateUri("AHUI8112igqi", "RCVX7056rnbl");
+            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635923835444490704", templateUri);
 
         }
 
@@ -234,14 +238,6 @@ namespace AWS.CloudFormation.Test
             //awsDomainJoinProperties.Add("dnsIpAddresses", "10.1.0.2");
 
 
-            var password = "dg68ug0K7U83MWQF";
-
-            var domainPassword = new ParameterBase(MicrosoftAd.DomainAdminPasswordParameterName, "String", password, "Password for domain administrator.")
-            {
-                NoEcho = true
-            };
-
-            template.Parameters.Add(domainPassword);
             template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminUsernameParameterName, "String", "admin", "Admin username"));
             template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainTopLevelNameParameterName, "String", topLevel, "Top level domain name for the stack (e.g. example.com)"));
             template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainVersionParameterName, "String", version.ToString().ToLowerInvariant(), "Fully qualified domain name for the stack (e.g. example.com)"));
@@ -252,7 +248,6 @@ namespace AWS.CloudFormation.Test
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd871hdj11", "Password for Master User For RDS SqlServer") { NoEcho = true });
 
-            var domainAdminPasswordReference = new ReferenceProperty(Template.ParameterDomainAdminPassword);
 
             
 
@@ -718,8 +713,10 @@ namespace AWS.CloudFormation.Test
         {
             SecurityGroup sqlServer4TfsSecurityGroup = new SecurityGroup("Allows communication to SQLServer Service", vpc);
             template.Resources.Add("SecurityGroup4SqlServer4Tfs", sqlServer4TfsSecurityGroup);
-            sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock) subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock) subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            sqlServer4TfsSecurityGroup.AddIngress(IPNetwork.Parse("10.0.0.0", 16), Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            sqlServer4TfsSecurityGroup.AddIngress(IPNetwork.Parse("0.0.0.0", 0), Protocol.Tcp, Ports.Min, Ports.Max);
+            sqlServer4TfsSecurityGroup.AddIngress(IPNetwork.Parse("0.0.0.0", 0), Protocol.Udp, Ports.Min, Ports.Max);
+            sqlServer4TfsSecurityGroup.AddIngress(IPNetwork.Parse("0.0.0.0", 0), Protocol.Icmp, Ports.Ping);
             return sqlServer4TfsSecurityGroup;
         }
 

@@ -71,6 +71,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="CreateTestEnvironment.cs" />
+    <Compile Include="Lambda\FunctionTest.cs" />
     <Compile Include="Resource\DirectoryService\SimpleAdTest.cs" />
     <Compile Include="Resource\EC2\VpcEndpointTest.cs" />
     <Compile Include="Resource\RDS\DbInstanceTest.cs" />

@@ -5,6 +5,11 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using Amazon.DirectoryService;
+using Amazon.DirectoryService.Model;
+using Amazon.EC2;
+using Amazon.Runtime;
+using Amazon.Util;
 using AWS.CloudFormation.Configuration.Packages;
 using AWS.CloudFormation.Property;
 using AWS.CloudFormation.Resource.AutoScaling;
@@ -277,6 +282,27 @@ namespace AWS.CloudFormation.Resource.DirectoryService
                 password += charToAdd;
             }
             return password;
+        }
+
+        public static string GetSecurityGroupId()
+        {
+            AmazonEC2Client ec2Client = new AmazonEC2Client();
+
+            var securityGroupsResponse = ec2Client.DescribeSecurityGroups();
+            string groupIds = string.Empty;
+            foreach (var securityGroup in securityGroupsResponse.SecurityGroups)
+            {
+                groupIds += securityGroup.GroupId;
+            }
+
+            AmazonDirectoryServiceClient c = new AmazonDirectoryServiceClient();
+            DescribeDirectoriesRequest request = new DescribeDirectoriesRequest();
+            var response =  c.DescribeDirectories(request);
+            foreach (var dd in response.DirectoryDescriptions)
+            {
+                groupIds += dd.VpcSettings.SecurityGroupId;
+            }
+            return groupIds;
         }
     }
 

@@ -57,7 +57,11 @@ namespace AWS.CloudFormation.Resource
         [EnumMember(Value = "AWS::SSM::Document")] AwsSsmDocument,
         [EnumMember(Value = "AWS::EC2::VPCPeeringConnection")] AwsEc2VpcPeeringConnection,
         //http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-stack.html
-        [EnumMember(Value = "AWS::CloudFormation::Stack")] AwsCloudFormationStack
+        [EnumMember(Value = "AWS::CloudFormation::Stack")] AwsCloudFormationStack,
+        // http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-function.html
+        [EnumMember(Value = "AWS::Lambda::Function")] AwsLambdaFunction,
+        // http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html
+        [EnumMember(Value = "AWS::IAM::Role")] AwsIamRole
     }
 
     public abstract class ResourceBase : ILogicalId
