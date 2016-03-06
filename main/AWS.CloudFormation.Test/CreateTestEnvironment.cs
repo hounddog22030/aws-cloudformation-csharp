@@ -81,7 +81,7 @@ namespace AWS.CloudFormation.Test
         }
         private static Template GetTestEnvironmentTemplate(string domain)
         {
-            Template returnTemplate = new Template(domain, "TestApp1YadayadaSoftwareComVpc", "StackTestApp1YadayadaSoftwareCom", domain.Replace('.', '-'), StackTest.CidrVpc);
+            Template returnTemplate = new Template(domain, "TestApp1YadayadaSoftwareComVpc", "StackTestApp1YadayadaSoftwareCom", domain.Replace('.', '-'), StackTest.CidrDevVpc);
 
             Vpc vpc = returnTemplate.Vpcs.Last();
 

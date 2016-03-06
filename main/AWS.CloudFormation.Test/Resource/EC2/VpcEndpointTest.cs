@@ -84,54 +84,55 @@ namespace AWS.CloudFormation.Test.Resource.EC2
 
         private Template GetEndpointTemplate(string nameBase)
         {
-            var template = new Template(StackTest.KeyPairName,$"Vpc{nameBase}",StackTest.CidrVpc, "Vpc Description");
+            throw new NotImplementedException();
+            //var template = new Template(StackTest.KeyPairName,$"Vpc{nameBase}",StackTest.CidrVpc, "Vpc Description");
 
-            var password = "a1111sdjfkAAAA";
+            //var password = "a1111sdjfkAAAA";
 
-            var domainPassword = new ParameterBase(MicrosoftAd.DomainAdminPasswordParameterName, "String", password, "Password for domain administrator.")
-            {
-                NoEcho = true
-            };
+            //var domainPassword = new ParameterBase(MicrosoftAd.DomainAdminPasswordParameterName, "String", password, "Password for domain administrator.")
+            //{
+            //    NoEcho = true
+            //};
 
-            template.Parameters.Add(domainPassword);
-            template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainTopLevelNameParameterName, "String", "nothing.nothing", "Top level domain name for the stack (e.g. example.com)"));
-            template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainVersionParameterName, "String", StackTest.Greek.Alpha, "Fully qualified domain name for the stack (e.g. example.com)"));
-            template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainNetBiosNameParameterName, "String", StackTest.Greek.Alpha + "nothing", "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
-            template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminUsernameParameterName, "String", "johnny", "Domain Admin User"));
-            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "tfsservice", "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
-            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, "String", "Hello12345.", "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
-            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
-            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd871hdj11", "Password for Master User For RDS SqlServer") { NoEcho = true });
+            //template.Parameters.Add(domainPassword);
+            //template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainTopLevelNameParameterName, "String", "nothing.nothing", "Top level domain name for the stack (e.g. example.com)"));
+            //template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainVersionParameterName, "String", StackTest.Greek.Alpha, "Fully qualified domain name for the stack (e.g. example.com)"));
+            //template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainNetBiosNameParameterName, "String", StackTest.Greek.Alpha + "nothing", "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
+            //template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminUsernameParameterName, "String", "johnny", "Domain Admin User"));
+            //template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "tfsservice", "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
+            //template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, "String", "Hello12345.", "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
+            //template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
+            //template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd871hdj11", "Password for Master User For RDS SqlServer") { NoEcho = true });
 
-            var vpc = template.Vpcs.Last();
+            //var vpc = template.Vpcs.Last();
 
-            RouteTable routeTableForDomainControllerSubnet = new RouteTable(vpc);
-            template.Resources.Add($"RouteTable1", routeTableForDomainControllerSubnet);
+            //RouteTable routeTableForDomainControllerSubnet = new RouteTable(vpc);
+            //template.Resources.Add($"RouteTable1", routeTableForDomainControllerSubnet);
             
 
-            VpcEndpoint endpoint = new VpcEndpoint("s3",template.Vpcs.First(), routeTableForDomainControllerSubnet);
-            template.Resources.Add($"VpcEndpoint4{nameBase}",endpoint);
+            //VpcEndpoint endpoint = new VpcEndpoint("s3",template.Vpcs.First(), routeTableForDomainControllerSubnet);
+            //template.Resources.Add($"VpcEndpoint4{nameBase}",endpoint);
 
-            Subnet subnetDomainController1 = StackTest.AddSubnet4DomainController(vpc, routeTableForDomainControllerSubnet, null, template);
+            //Subnet subnetDomainController1 = StackTest.AddSubnet4DomainController(vpc, routeTableForDomainControllerSubnet, null, template);
 
-            Instance instanceDomainController = new Instance(subnetDomainController1, InstanceTypes.T2Nano, StackTest.UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
-            template.Resources.Add("DomainController", instanceDomainController);
-            var commandConfig = instanceDomainController.Metadata.Init.ConfigSets.GetConfigSet("testConfigSet")
-                .GetConfig("testConfig")
-                .Commands.AddCommand<Command>("command1");
-            commandConfig.Command = "dir";
+            //Instance instanceDomainController = new Instance(subnetDomainController1, InstanceTypes.T2Nano, StackTest.UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
+            //template.Resources.Add("DomainController", instanceDomainController);
+            //var commandConfig = instanceDomainController.Metadata.Init.ConfigSets.GetConfigSet("testConfigSet")
+            //    .GetConfig("testConfig")
+            //    .Commands.AddCommand<Command>("command1");
+            //commandConfig.Command = "dir";
 
-            var DMZSubnet = new Subnet(vpc, StackTest.CidrDmz1, AvailabilityZone.UsEast1A,true);
-            template.Resources.Add("DMZSubnet", DMZSubnet);
-            var rdp = StackTest.AddRdp2(DMZSubnet, template, vpc);
-            var rdpToDomainController = new SecurityGroup("RdpAccess", vpc);
-            template.Resources.Add("rdpToDomainController", rdpToDomainController);
-            rdpToDomainController.AddIngress(DMZSubnet, Protocol.Tcp, Ports.Min, Ports.Max);
-            instanceDomainController.AddSecurityGroup(rdpToDomainController);
+            //var DMZSubnet = new Subnet(vpc, StackTest.CidrDmz1, AvailabilityZone.UsEast1A,true);
+            //template.Resources.Add("DMZSubnet", DMZSubnet);
+            //var rdp = StackTest.AddRdp2(DMZSubnet, template, vpc);
+            //var rdpToDomainController = new SecurityGroup("RdpAccess", vpc);
+            //template.Resources.Add("rdpToDomainController", rdpToDomainController);
+            //rdpToDomainController.AddIngress(DMZSubnet, Protocol.Tcp, Ports.Min, Ports.Max);
+            //instanceDomainController.AddSecurityGroup(rdpToDomainController);
 
 
 
-            return template;
+            //return template;
         }
     }
 }
