@@ -108,6 +108,8 @@ namespace AWS.CloudFormation.Resource.DirectoryService
             set { this.Properties.SetValue(value); }
         }
 
+        public const string CidrPrimeDmz1SubnetParameterName = "CidrPrimeDmz1Subnet";
+
         public static void AddInstanceToDomain(Config config)
         {
 

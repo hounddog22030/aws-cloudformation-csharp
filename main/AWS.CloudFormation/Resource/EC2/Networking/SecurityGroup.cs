@@ -224,5 +224,10 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         {
             AddIngress(network.ToString(), protocol, beginPort,endPort);
         }
+
+        public void AddIngress(string cidr, Protocol protocol, Ports port)
+        {
+            AddIngress(cidr, protocol, port, port);
+        }
     }
 }

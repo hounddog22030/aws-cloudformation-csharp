@@ -16,7 +16,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             SecurityGroup = securityGroup;
         }
 
-        internal SecurityGroupIngress(int fromPort, int toPort, string protocol, string cidr) : base(fromPort, toPort, protocol, cidr)
+        internal SecurityGroupIngress(int fromPort, int toPort, string protocol, object cidr) : base(fromPort, toPort, protocol, cidr)
         {
         }
 
