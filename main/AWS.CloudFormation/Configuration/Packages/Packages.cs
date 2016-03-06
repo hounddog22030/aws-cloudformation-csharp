@@ -450,9 +450,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             tfsNode.Add("application_server_netbios_name",
                 new FnJoin(FnJoinDelimiter.Period,
                     this.ApplicationServer.LogicalId,
-                    new ReferenceProperty(MicrosoftAd.DomainVersionParameterName),
-                    "dev",
-                    new ReferenceProperty(MicrosoftAd.DomainTopLevelNameParameterName)));
+                    new ReferenceProperty(MicrosoftAd.DomainFqdnParameterName)));
 
             if (this.SqlServer4Build != null)
             {

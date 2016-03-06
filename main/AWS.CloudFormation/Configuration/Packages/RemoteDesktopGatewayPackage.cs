@@ -25,11 +25,10 @@ namespace AWS.CloudFormation.Configuration.Packages
             RecordSet routing = RecordSet.AddByHostedZoneName(
                 this.Instance.Template,
                 $"RecordSet4{this.Instance.LogicalId}",
-                new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(MicrosoftAd.DomainTopLevelNameParameterName),"."),
+                new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(MicrosoftAd.DomainTopLevelParameterName),"."),
                 new FnJoin( FnJoinDelimiter.Period, 
                             this.Instance.LogicalId,
-                            new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
-                            new ReferenceProperty(MicrosoftAd.DomainTopLevelNameParameterName)),
+                            new ReferenceProperty(MicrosoftAd.DomainFqdnParameterName)),
                 RecordSet.RecordSetTypeEnum.A);
 
             var eip = new ElasticIp(this.Instance);
@@ -61,9 +60,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                                             " C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN ",
                                             this.Instance.LogicalId,
                                             ".",
-                                            new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
-                                            ".",
-                                            new ReferenceProperty(MicrosoftAd.DomainTopLevelNameParameterName),
+                                            new ReferenceProperty(MicrosoftAd.DomainFqdnParameterName),
                                             " -DomainNetBiosName ",
                                             new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
                                             " -GroupName 'domain admins'");
