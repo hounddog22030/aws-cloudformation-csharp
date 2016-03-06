@@ -68,7 +68,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
         }
 
 
-        public SecurityGroupIngressEgressBase(int fromPort, int toPort, string protocol, string cidr) : this(fromPort,toPort,protocol)
+        public SecurityGroupIngressEgressBase(int fromPort, int toPort, string protocol, object cidr) : this(fromPort,toPort,protocol)
         {
             CidrIp = cidr;
         }

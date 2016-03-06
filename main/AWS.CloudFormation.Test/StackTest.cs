@@ -78,6 +78,8 @@ namespace AWS.CloudFormation.Test
             {
                 Template development = GetTemplateFullStack(StackTest.TopLevelDomainName, "prime", Greek.Alpha, developmentCreate, gitSuffix);
                 development.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminPasswordParameterName, "String", activeDirectoryAdminPassword, "Admin password"));
+                development.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, "String", tfsServicePassword, "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
+
 
                 Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
                 CloudFormation.Resource.CloudFormation.Stack devAlphaStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
@@ -122,26 +124,26 @@ namespace AWS.CloudFormation.Test
             RouteTable routeTableForAdSubnets = new RouteTable(vpc);
             primeTemplate.Resources.Add("RouteTableForAdSubnets", routeTableForAdSubnets);
 
-            SecurityGroup securityGroupAccessToAdServices = new SecurityGroup("SecurityGroupForDomainServices", vpc);
-            var netDns = IPNetwork.Parse("10.0.0.0", 8);
-            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.DnsQuery);
-            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.DnsQuery);
-            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.KerberosKeyDistribution);
-            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.KerberosKeyDistribution);
-            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.WinsManager);
-            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.Ldap);
-            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.Ldap);
-            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.Smb);
-            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.Smb);
-            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.ActiveDirectoryManagement2);
-            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.ActiveDirectoryManagement2);
-            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.Ldaps);
-            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.EphemeralRpcBegin, Ports.EphemeralRpcEnd);
-            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.Ldap2Begin, Ports.Ldap2End);
-            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.Ntp);
-            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.NetBios);
-            securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Icmp, Ports.All);
-            primeTemplate.Resources.Add(securityGroupAccessToAdServices.LogicalId, securityGroupAccessToAdServices);
+            //SecurityGroup securityGroupAccessToAdServices = new SecurityGroup("SecurityGroupForDomainServices", vpc);
+            //var netDns = IPNetwork.Parse("10.0.0.0", 8);
+            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.DnsQuery);
+            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.DnsQuery);
+            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.KerberosKeyDistribution);
+            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.KerberosKeyDistribution);
+            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.WinsManager);
+            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.Ldap);
+            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.Ldap);
+            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.Smb);
+            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.Smb);
+            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.ActiveDirectoryManagement2);
+            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.ActiveDirectoryManagement2);
+            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.Ldaps);
+            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.EphemeralRpcBegin, Ports.EphemeralRpcEnd);
+            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.Ldap2Begin, Ports.Ldap2End);
+            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.Ntp);
+            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.NetBios);
+            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Icmp, Ports.All);
+            //primeTemplate.Resources.Add(securityGroupAccessToAdServices.LogicalId, securityGroupAccessToAdServices);
 
             Subnet subnetForActiveDirectory1 = new Subnet(vpc, CidrPrimeActiveDirectorySubnet1, AvailabilityZone.UsEast1A, routeTableForAdSubnets, null);
             primeTemplate.Resources.Add("SubnetAd1", subnetForActiveDirectory1);
@@ -162,6 +164,7 @@ namespace AWS.CloudFormation.Test
             Subnet subnetDmz = new Subnet(vpc, CidrPrimeDmz1Subnet, AvailabilityZone.UsEast1A, true);
             primeTemplate.Resources.Add("SubnetDmz1", subnetDmz);
 
+            
             Instance instanceRdp = new Instance(subnetDmz, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose,40);
             primeTemplate.Resources.Add("Rdp", instanceRdp);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
@@ -245,31 +248,20 @@ namespace AWS.CloudFormation.Test
 
             var template = new Template($"{version}.{appNameNetBiosName}.{topLevel}", KeyPairName, $"Vpc{version}", CidrDevVpc, $"{GetGitBranch()}:{GetGitHash()}" );
 
-            //var runtimeConfig = activeDirectory.Content.Add("runtimeConfig", new CloudFormationDictionary());
-            //var awsDomainJoin = runtimeConfig.Add("aws:domainJoin");
-            //var awsDomainJoinProperties = awsDomainJoin.Add("properties");
-            //awsDomainJoinProperties.Add("directoryId", "mydirectoryid");
-            //awsDomainJoinProperties.Add("directoryName", "somewhere.com");
-            //awsDomainJoinProperties.Add("dnsIpAddresses", "10.1.0.2");
-
-
             template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminUsernameParameterName, "String", "admin", "Admin username"));
             template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainVersionParameterName, "String", version.ToString().ToLowerInvariant(), "Fully qualified domain name for the stack (e.g. example.com)"));
             template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainNetBiosNameParameterName, "String", appNameNetBiosName, "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
             template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainFqdnParameterName, "String", $"{appNameNetBiosName}.{topLevel}", "Fully qualified domain name"));
             template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainTopLevelParameterName, "String", topLevel, "Fully qualified domain name"));
+            template.Parameters.Add(new ParameterBase(MicrosoftAd.CidrPrimeDmz1SubnetParameterName, "String", CidrPrimeDmz1Subnet, "Cidr for PrimeDmz1 (Rdp)") { NoEcho = true });
+
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "tfsservice", "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
-            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, "String", "Hello12345.", "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd871hdj11", "Password for Master User For RDS SqlServer") { NoEcho = true });
-
-
-            
 
             Vpc vpc = template.Vpcs.First();
             vpc.EnableDnsHostnames = true;
             vpc.EnableDnsSupport = true;
-
 
             SecurityGroup natSecurityGroup = AddNatSecurityGroup(vpc, template);
 
@@ -332,24 +324,6 @@ namespace AWS.CloudFormation.Test
             mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetBuildServer);
             mySqlSubnetGroupForDatabaseForBuild.AddSubnet(subnetDatabase4BuildServer2);
 
-            LaunchConfiguration instanceRdp = null;
-            if (instancesToCreate.HasFlag(Create.RdpGateway))
-            {
-                instanceRdp = new Instance(subnetDmz1, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 50);
-                //instanceRdp.DependsOn.Add(simpleAd.LogicalId);
-                instanceRdp.DependsOn.Add(nat1.LogicalId);
-                instanceRdp.DependsOn.Add(routeFromAz1ToNat.LogicalId);
-                //instanceRdp.SsmAssociations.Add(new SsmAssociation(new ReferenceProperty(activeDirectoryDocument.LogicalId)));
-                //instanceRdp.IamInstanceProfile = "DomainJoinerRole";
-                template.Resources.Add("Rdp", instanceRdp);
-                //MicrosoftAd.AddInstanceToDomain(instanceRdp.RenameConfig);
-                //var createUsersPackage = new CreateUsers();
-                //instanceRdp.Packages.Add(createUsersPackage);
-
-                instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
-                var x = instanceRdp.Packages.Last().WaitCondition;
-            }
-
             LaunchConfiguration instanceTfsSqlServer = null;
 
             if (instancesToCreate.HasFlag(Create.Sql4Tfs))
@@ -366,7 +340,7 @@ namespace AWS.CloudFormation.Test
 
             if (instancesToCreate.HasFlag(Create.Tfs))
             {
-                tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, tfsServerSecurityGroup);
+                tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, tfsServerSecurityGroup,version);
                 //tfsServer.DependsOn.Add(simpleAd.LogicalId);
                 MicrosoftAd.AddInstanceToDomain(tfsServer.RenameConfig);
 
@@ -619,7 +593,7 @@ namespace AWS.CloudFormation.Test
         {
             SecurityGroup tfsServerSecurityGroup = new SecurityGroup("Allows various TFS communication", vpc);
             template.Resources.Add("SecurityGroup4TfsServer", tfsServerSecurityGroup);
-            tfsServerSecurityGroup.AddIngress((ICidrBlock) subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            tfsServerSecurityGroup.AddIngress(CidrPrimeDmz1Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             tfsServerSecurityGroup.AddIngress((ICidrBlock) subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             return tfsServerSecurityGroup;
         }
@@ -1407,12 +1381,13 @@ namespace AWS.CloudFormation.Test
             InstanceTypes instanceSize, 
             Subnet privateSubnet1, 
             LaunchConfiguration sqlServer4Tfs, 
-            SecurityGroup tfsServerSecurityGroup)
+            SecurityGroup tfsServerSecurityGroup,
+            Greek version)
         {
             var tfsServer = new Instance(privateSubnet1,instanceSize,UsEastWindows2012R2Ami, OperatingSystem.Windows,Ebs.VolumeTypes.GeneralPurpose,
                                                     214);
 
-            template.Resources.Add("Tfs",tfsServer);
+            template.Resources.Add($"{version}Tfs", tfsServer);
 
 
             //dc1.Participate(tfsServer);
