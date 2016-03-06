@@ -50,7 +50,9 @@ namespace AWS.CloudFormation.Test
         public const string UsEastWindows2012R2Ami = "ami-3586ac5f";
         private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-c796bcad";
         private const string BucketNameSoftware = "gtbb";
-        private const string FullyQualifiedDomainName = "prime.yadayadasoftware.com";
+        private const string TopLevelDomainName = "yadayadasoftware.com";
+        private const string FullyQualifiedDomainName = "prime." + TopLevelDomainName;
+
 
         public enum MasterTemplatePass
         {
@@ -71,9 +73,10 @@ namespace AWS.CloudFormation.Test
             CloudFormation.Resource.CloudFormation.Stack prime = new CloudFormation.Resource.CloudFormation.Stack(primeUri);
             masterTemplate.Resources.Add("PrimeYadaYadaSoftwareCom", prime);
 
+
             if (pass == MasterTemplatePass.PeerVpcs)
             {
-                Template development = GetTemplateFullStack( "YadaYadaSoftwareCom", $"dev{Greek.Alpha}", Greek.Alpha, developmentCreate, gitSuffix, null);
+                Template development = GetTemplateFullStack(StackTest.TopLevelDomainName, "prime", Greek.Alpha, developmentCreate, gitSuffix);
                 development.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminPasswordParameterName, "String", activeDirectoryAdminPassword, "Admin password"));
 
                 Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
@@ -173,11 +176,12 @@ namespace AWS.CloudFormation.Test
 
             primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminPasswordParameterName, "String", activeDirectoryAdminPassword, "Admin password"));
             primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminUsernameParameterName, "String", "admin", "Admin username"));
-            primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainTopLevelNameParameterName, "String", "yadayadasoftware.com", "Top level domain name for the stack (e.g. example.com)"));
             primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainVersionParameterName, "String", Greek.Alpha.ToString().ToLowerInvariant(), "Fully qualified domain name for the stack (e.g. example.com)"));
             primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainNetBiosNameParameterName, "String", "prime", "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
             primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainFqdnParameterName, "String", FullyQualifiedDomainName, "Fully qualified domain name"));
             primeTemplate.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "tfsservice", "Fully qualified domain name"));
+            primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainTopLevelParameterName, "String", TopLevelDomainName, "Fully qualified domain name"));
+
 
 
             return primeTemplate;
@@ -231,12 +235,12 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateMasterTemplate()
         {
-            var templateUri = GetMasterTemplateUri("CJLF0073fkti", "RCVX7056rnbl",MasterTemplatePass.PeerVpcs, Create.Sql4Tfs);
+            var templateUri = GetMasterTemplateUri("CJLF0073fkti", "RCVX7056rnbl",MasterTemplatePass.PeerVpcs, Create.Sql4Tfs | Create.Tfs);
             Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635928254607860481", templateUri);
 
         }
 
-        public static Template GetTemplateFullStack(string topLevel, string appNameNetBiosName, Greek version, Create instancesToCreate, string gitSuffix, string primeName)
+        public static Template GetTemplateFullStack(string topLevel, string appNameNetBiosName, Greek version, Create instancesToCreate, string gitSuffix)
         {
 
             var template = new Template($"{version}.{appNameNetBiosName}.{topLevel}", KeyPairName, $"Vpc{version}", CidrDevVpc, $"{GetGitBranch()}:{GetGitHash()}" );
@@ -250,10 +254,10 @@ namespace AWS.CloudFormation.Test
 
 
             template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminUsernameParameterName, "String", "admin", "Admin username"));
-            template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainTopLevelNameParameterName, "String", topLevel, "Top level domain name for the stack (e.g. example.com)"));
             template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainVersionParameterName, "String", version.ToString().ToLowerInvariant(), "Fully qualified domain name for the stack (e.g. example.com)"));
-            template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainNetBiosNameParameterName, "String", "prime", "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
-            template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainFqdnParameterName, "String", $"{version}.{appNameNetBiosName}.{topLevel}", "Fully qualified domain name"));
+            template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainNetBiosNameParameterName, "String", appNameNetBiosName, "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
+            template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainFqdnParameterName, "String", $"{appNameNetBiosName}.{topLevel}", "Fully qualified domain name"));
+            template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainTopLevelParameterName, "String", topLevel, "Fully qualified domain name"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "tfsservice", "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, "String", "Hello12345.", "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
@@ -270,56 +274,8 @@ namespace AWS.CloudFormation.Test
             SecurityGroup natSecurityGroup = AddNatSecurityGroup(vpc, template);
 
             Subnet subnetDmz1 = AddDmz1(vpc, template);
-
-            //Route routeFromDmz1ToPrimeSubnet1 = new Route(vpcPeering, CidrPrimeSubnet1, subnetDmz1.RouteTable);
-            //template.Resources.Add($"routeFromDmz1ToPrime", routeFromDmz1ToPrimeSubnet1);
-
-            //Route routeFromDmz1ToPrimeSubnet2 = new Route(vpcPeering, CidrPrimeSubnet2, subnetDmz1.RouteTable);
-            //template.Resources.Add($"routeFromDmz1ToPrimeSubnet2", routeFromDmz1ToPrimeSubnet2);
-
             Subnet subnetDmz2 = AddDmz2(vpc, template);
 
-            //Route routeFromDmz2ToPrimeSubnet1 = new Route(vpcPeering, CidrPrimeSubnet1, subnetDmz2.RouteTable);
-            //template.Resources.Add($"routeFromDmz2ToPrimeSubnet1", routeFromDmz2ToPrimeSubnet1);
-
-            //Route routeFromDmz2ToPrimeSubnet2 = new Route(vpcPeering, CidrPrimeSubnet2, subnetDmz2.RouteTable);
-            //template.Resources.Add($"routeFromDmz2ToPrimeSubnet2", routeFromDmz2ToPrimeSubnet2);
-
-            var domainNameFnJoin = new FnJoin(FnJoinDelimiter.Period,
-                new ReferenceProperty(MicrosoftAd.DomainVersionParameterName),
-                "dev",
-                new ReferenceProperty(MicrosoftAd.DomainTopLevelNameParameterName));
-
-
-            //SimpleAd simpleAd = new SimpleAd(domainNameFnJoin,
-            //                                    new ReferenceProperty(SimpleAd.DomainAdminPasswordParameterName), DirectorySize.Small, template.Vpcs.First(),
-            //                                    subnetDmz1,
-            //                                    subnetDmz2);
-            //simpleAd.ShortName = new ReferenceProperty(SimpleAd.DomainNetBiosNameParameterName);
-            //template.Resources.Add("SimpleAd", simpleAd);
-
-            //FnGetAtt directoryServicesDnsAddresses = new FnGetAtt(simpleAd, FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses);
-            //object[] elements = null;
-            //object[] netBiosServersElements = null;
-
-            //elements = new object[] { directoryServicesDnsAddresses };
-            //netBiosServersElements = new object[] { directoryServicesDnsAddresses };
-
-            //var dhcpOptions = AddDhcpOptions(simpleAd, vpc, template);
-            //DhcpOptions dhcpOptions = new DhcpOptions(vpc,  DnsPrime.Split(','), DnsPrime.Split(','));
-            //template.Resources.Add("DhcpOptions", dhcpOptions);
-            //dhcpOptions.NetbiosNodeType = "2";
-
-
-            //var activeDirectoryDocument = new Document<SsmRuntimeConfigDomainJoin>();
-            ////activeDirectoryDocument.DependsOn.Add(simpleAd.LogicalId);
-            //template.Resources.Add("ActiveDirectorySsm", activeDirectoryDocument);
-            //activeDirectoryDocument.Content.Properties.DirectoryName = domainNameFnJoin;
-            //activeDirectoryDocument.Content.Properties.DnsIpAddresses = directoryServicesDnsAddresses;
-            //activeDirectoryDocument.Content.Properties.DirectoryId = new FnGetAtt(simpleAd,FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses);
-
-
-            
             Instance nat1 = AddNat(template, subnetDmz1, natSecurityGroup);
             Instance nat2 = null;
             nat1.DependsOn.Add(vpc.VpcGatewayAttachment.LogicalId);
@@ -332,11 +288,6 @@ namespace AWS.CloudFormation.Test
             routeFromAz1ToNat.DestinationCidrBlock = "0.0.0.0/0";
             routeFromAz1ToNat.Instance = nat1;
             routeFromAz1ToNat.RouteTable = routeTableForSubnetsToNat1;
-
-            //Route routeFromAz1ToPrimeSubnet1 = new Route(vpcPeering, CidrPrimeSubnet1, routeTableForSubnetsToNat1);
-            //template.Resources.Add($"RouteFromAz1ToPrimeSubnet1", routeFromAz1ToPrimeSubnet1);
-            //Route routeFromAz1ToPrimeSubnet2 = new Route(vpcPeering, CidrPrimeSubnet2, routeTableForSubnetsToNat1);
-            //template.Resources.Add($"routeFromAz1ToPrimeSubnet2", routeFromAz1ToPrimeSubnet2);
 
             SecurityGroup sqlServer4TfsSecurityGroup = AddSqlServer4TfsSecurityGroup(vpc, template, subnetDmz1, subnetDmz2);
             Subnet subnetSqlServer4Tfs = AddSubnetSqlServer4Tfs(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template);
@@ -403,7 +354,7 @@ namespace AWS.CloudFormation.Test
 
             if (instancesToCreate.HasFlag(Create.Sql4Tfs))
             {
-                instanceTfsSqlServer = AddSql(template, "Sql4Tfs", InstanceTypes.T2Small, subnetSqlServer4Tfs, sqlServer4TfsSecurityGroup);
+                instanceTfsSqlServer = AddSql(template, $"{version}Sql4Tfs", InstanceTypes.T2Small, subnetSqlServer4Tfs, sqlServer4TfsSecurityGroup);
                 //instanceTfsSqlServer.DependsOn.Add(createUsersPackage.WaitCondition.LogicalId);
                 var x = instanceTfsSqlServer.Packages.Last().WaitCondition;
                 //instanceTfsSqlServer.DependsOn.Add(simpleAd.LogicalId);
@@ -1574,7 +1525,7 @@ namespace AWS.CloudFormation.Test
             //Create instances = Create.FullStack;
             Create instances = (Create)0;
             //var templateToCreateStack = GetTemplateFullStack(topLevel, appName, version, $"{version}-{appName}-{topLevel}".Replace('.', '-'), instances);
-            var templateToCreateStack = GetTemplateFullStack(topLevel, appName, version, instances, GetGitSuffix(),null);
+            var templateToCreateStack = GetTemplateFullStack(topLevel, appName, version, instances, GetGitSuffix());
 
             CreateTestStack(templateToCreateStack, this.TestContext);
         }
@@ -1583,7 +1534,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateDevelopmentTemplateFileTest()
         {
-            var templateToCreateStack = GetTemplateFullStack("yadayadasoftware.com", "dev", Greek.Alpha, Create.FullStack, GetGitSuffix(), null);
+            var templateToCreateStack = GetTemplateFullStack("yadayadasoftware.com", "dev", Greek.Alpha, Create.FullStack, GetGitSuffix());
             TemplateEngine.CreateTemplateFile(templateToCreateStack);
         }
 
@@ -1595,7 +1546,7 @@ namespace AWS.CloudFormation.Test
 
             var fullyQualifiedDomainName = $"{version}.dev.yadayadasoftware.com";
             Create instances = Create.RdpGateway;
-            var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances, GetGitSuffix(), null);
+            var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances, GetGitSuffix());
             ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "dg68ug0K7U83MWQF";
 
             Assert.IsFalse(HasGitDifferences());
@@ -1616,7 +1567,7 @@ namespace AWS.CloudFormation.Test
 
             Create instances = Create.FullStack;
 
-            var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version,  instances, GetGitSuffix(), null);
+            var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version,  instances, GetGitSuffix());
             ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "IDJP5673lwip";
             Stack.Stack.UpdateStack(fullyQualifiedDomainName.Replace('.', '-'), template);
         }

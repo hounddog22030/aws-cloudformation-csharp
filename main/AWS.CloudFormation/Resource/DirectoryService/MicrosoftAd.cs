@@ -38,11 +38,11 @@ namespace AWS.CloudFormation.Resource.DirectoryService
     public class MicrosoftAd : ResourceBase
     {
         public const string DomainVersionParameterName = "DomainVersion";
-        public const string DomainTopLevelNameParameterName = "DomainTopLevelName";
         public const string DomainAdminUsernameParameterName = "DomainAdminUsername";
         public const string DomainAdminPasswordParameterName = "DomainAdminPassword";
         public const string DomainNetBiosNameParameterName = "DomainNetBiosName";
         public const string DomainFqdnParameterName = "DomainFqdn";
+        public const string DomainTopLevelParameterName = "DomainTopLevel";
 
         public MicrosoftAd(object name, object password, DirectorySize size, Vpc vpc, params Subnet[] subnets) : base(ResourceType.AwsDirectoryServiceMicrosoftAd)
         {
@@ -123,15 +123,11 @@ namespace AWS.CloudFormation.Resource.DirectoryService
             joinCommand.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None,
                 "-Command \"",
                 "Add-Computer -DomainName ",
-                new FnJoin(FnJoinDelimiter.Period,
-                            new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
-                            new ReferenceProperty(MicrosoftAd.DomainTopLevelNameParameterName)),
+                new ReferenceProperty(MicrosoftAd.DomainFqdnParameterName),
                 " -Credential (New-Object System.Management.Automation.PSCredential('",
                 new ReferenceProperty(MicrosoftAd.DomainAdminUsernameParameterName),
                 "@",
-                new FnJoin(FnJoinDelimiter.Period,
-                new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
-                new ReferenceProperty(MicrosoftAd.DomainTopLevelNameParameterName)),
+                new ReferenceProperty(MicrosoftAd.DomainFqdnParameterName),
                 "',(ConvertTo-SecureString \"",
                 new ReferenceProperty(MicrosoftAd.DomainAdminPasswordParameterName),
                 "\" -AsPlainText -Force))) ",
@@ -155,9 +151,7 @@ namespace AWS.CloudFormation.Resource.DirectoryService
             var adminUserNameFqdn = new FnJoin(FnJoinDelimiter.None,
                 new ReferenceProperty(MicrosoftAd.DomainAdminUsernameParameterName),
                 "@",
-                new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
-                ".",
-                new ReferenceProperty(MicrosoftAd.DomainTopLevelNameParameterName));
+                new ReferenceProperty(MicrosoftAd.DomainFqdnParameterName));
 
             
 
@@ -200,9 +194,7 @@ namespace AWS.CloudFormation.Resource.DirectoryService
             var adminUserNameFqdn = new FnJoin(FnJoinDelimiter.None,
                 new ReferenceProperty(MicrosoftAd.DomainAdminUsernameParameterName),
                 "@",
-                new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
-                ".",
-                new ReferenceProperty(MicrosoftAd.DomainTopLevelNameParameterName));
+                new ReferenceProperty(MicrosoftAd.DomainFqdnParameterName));
 
 
             var addUserCommand = "New-ADUser";
