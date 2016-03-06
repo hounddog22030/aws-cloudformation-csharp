@@ -68,7 +68,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config
 
         public Package AddPackage(string type, string name, string source)
         {
-            Package newPackage = new Package(this.Resource) {name, source};
+            Package newPackage = new Package(this.ResourceRef) {name, source};
             this.Add(type, newPackage);
             return newPackage;
         }
