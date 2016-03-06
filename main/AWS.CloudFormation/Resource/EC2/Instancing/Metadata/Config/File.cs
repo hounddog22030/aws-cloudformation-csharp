@@ -68,7 +68,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config
 
         public CloudFormationDictionary AddNode(string name)
         {
-            var returnValue = new CloudFormationDictionary(this.Resource);
+            var returnValue = new CloudFormationDictionary(this.ResourceRef);
             this.Add(name, returnValue);
             return returnValue;
 

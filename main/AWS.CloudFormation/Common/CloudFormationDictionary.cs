@@ -20,7 +20,7 @@ namespace AWS.CloudFormation.Common
         }
         public CloudFormationDictionary(ResourceBase resource)
         {
-            this.Resource = resource;
+            this.ResourceRef = resource;
         }
 
         public ILogicalId Add(ILogicalId objectToAdd)
@@ -29,7 +29,7 @@ namespace AWS.CloudFormation.Common
             return objectToAdd;
         }
 
-        public virtual ResourceBase Resource { get; set; }
+        public virtual ResourceBase ResourceRef { get; set; }
 
 
         public string Type
@@ -57,7 +57,7 @@ namespace AWS.CloudFormation.Common
 
         public CloudFormationDictionary Add(string key)
         {
-            return Add(key, new CloudFormationDictionary(this.Resource));
+            return Add(key, new CloudFormationDictionary(this.ResourceRef));
         }
 
 

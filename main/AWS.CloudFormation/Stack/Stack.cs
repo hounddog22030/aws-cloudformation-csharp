@@ -108,6 +108,7 @@ namespace AWS.CloudFormation.Stack
                 StackName = templateUri.Segments[templateUri.Segments.Length-1].Replace(".template",string.Empty).Replace('.','-'),
                 TemplateURL = templateUri.AbsoluteUri
             };
+            request.Capabilities.Add("CAPABILITY_IAM");
 
             try
             {

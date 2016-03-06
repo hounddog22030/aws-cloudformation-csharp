@@ -26,7 +26,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command
             {
                 if (value is IResource)
                 {
-                    ((IResource) value).Resource = this.Resource;
+                    ((IResource) value).ResourceRef = this.ResourceRef;
                 }
                 this["command"]=value;
             }

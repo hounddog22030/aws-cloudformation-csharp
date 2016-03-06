@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using AWS.CloudFormation.Common;
 using AWS.CloudFormation.Resource.IAM;
@@ -29,46 +30,36 @@ namespace AWS.CloudFormation.Test.Lambda
             //policyBuilder.Append("}");
             //policyBuilder.Append("]");
             //policyBuilder.Append("}");
-            CloudFormationDictionary policy = new CloudFormationDictionary();
-            policy.Add("Version", "2012-10-17");
-            CloudFormationDictionary effect = new CloudFormationDictionary();
-            effect.Add("Effect", "Allow");
+            Role executionRole = new Role()
+            {
+                Path = "/"
+            };
+            
+            var statement = new Statement();
+            statement.Effect = "Allow";
+            var actions = new List<string>();
+            actions.Add("sts:AssumeRole");
+            statement.Action = actions;
+            statement.Principal = new Principal();
+            statement.Principal.Service.Add("lambda.amazonaws.com");
 
-            string[] logs = new string[] {"logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"};
-            CloudFormationDictionary action = new CloudFormationDictionary();
-            action.Add("Action", logs);
-
-            CloudFormationDictionary resource = new CloudFormationDictionary();
-            resource.Add("Resource", "arn:aws:logs:*:*:*");
-
-            object[] statementObjects = new[] {effect,action, resource };
-            policy.Add("Statement",statementObjects);
-
-            string path = "/";
-
-
-            CloudFormationDictionary policyDocument = new CloudFormationDictionary();
-            policyDocument.Add("Version", "2012-10-17");
-
-            CloudFormationDictionary innerStatement = new CloudFormationDictionary();
-            innerStatement.Add("Effect", "Allow");
-            innerStatement.Add("Action", "*");
-            innerStatement.Add("Resource", "*");
-
-            object[] innerStatementArray = new object[] {innerStatement};
-            policyDocument.Add("Statement", innerStatementArray);
+            var trust = new PolicyDocument();
+            trust.Statement.Add(statement);
 
 
-            CloudFormationDictionary policyName = new CloudFormationDictionary();
-            policyName.Add("PolicyName", "root");
+            executionRole.AssumeRolePolicyDocument = trust;
 
+            var rootPolicy = new Policy();
+            rootPolicy.PolicyName = "root";
+            var rootPolicyDocument = new PolicyDocument();
+            rootPolicy.PolicyDocument = rootPolicyDocument;
+            var allowStatement = new Statement();
+            allowStatement.Effect = "Allow";
+            allowStatement.Action = "*";
+            allowStatement.Resource = "*";
+            rootPolicyDocument.Statement.Add(allowStatement);
+            executionRole.Policies.Add(rootPolicy);
 
-
-
-            object[]  policies = new object[] { policyName, policyDocument };
-
-
-            Role executionRole = new Role(policy, policies,path);
             template.Resources.Add("roleforexecution",executionRole);
             Stack.Stack.CreateStack(template);
 

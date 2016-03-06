@@ -93,7 +93,7 @@ namespace AWS.CloudFormation.Stack
 
     public interface IResource
     {
-        ResourceBase Resource { get; set; }
+        ResourceBase ResourceRef { get; set; }
     }
 
     public class FnJoinPsExecPowershell : FnJoin
@@ -121,12 +121,12 @@ namespace AWS.CloudFormation.Stack
             this.SetDelimiterAndElements(FnJoinDelimiter.Space, elementsTemp.ToArray());
         }
 
-        public override ResourceBase Resource
+        public override ResourceBase ResourceRef
         {
-            get { return base.Resource; }
+            get { return base.ResourceRef; }
             set
             {
-                base.Resource = value;
+                base.ResourceRef = value;
                 LaunchConfiguration resourceAsLaunchConfiguration = value as LaunchConfiguration;
                 if (resourceAsLaunchConfiguration != null && resourceAsLaunchConfiguration.Metadata.Init.ConfigSets.Any())
                 {
