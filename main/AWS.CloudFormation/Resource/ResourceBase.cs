@@ -70,7 +70,7 @@ namespace AWS.CloudFormation.Resource
         protected ResourceBase(ResourceType type)
         {
             Type = type;
-            DependsOn = new List<string>();
+            DependsOn = new List<object>();
             Metadata = new Metadata(this);
         }
 
@@ -142,7 +142,7 @@ namespace AWS.CloudFormation.Resource
             return this.DependsOn.Any();
         }
 
-        public List<string> DependsOn { get; private set; }
+        public List<object> DependsOn { get; private set; }
 
         //public string[] DependsOn => this.DependsOn2.ToArray();
 
