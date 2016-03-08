@@ -332,6 +332,11 @@ namespace AWS.CloudFormation.Test
 
             LaunchConfiguration instanceTfsSqlServer = null;
 
+            // new route
+            Route routeFromAlphaToPrime = new Route(vpcPeeringAlphaToPrime, CidrPrimeVpc, routeTableForSubnetsToNat1);
+            template.Resources.Add("RouteFromAlphaToPrime", routeFromAlphaToPrime);
+            // new route
+
             if (instancesToCreate.HasFlag(Create.Sql4Tfs))
             {
                 instanceTfsSqlServer = AddSql(template, $"{version}Sql4Tfs", InstanceTypes.T2Small, subnetSqlServer4Tfs, sqlServer4TfsSecurityGroup);
