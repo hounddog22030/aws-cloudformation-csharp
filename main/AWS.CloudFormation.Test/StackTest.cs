@@ -68,7 +68,6 @@ namespace AWS.CloudFormation.Test
 
             Template masterTemplate = new Template($"MasterStackYadaYadaSoftwareCom{DateTime.Now.Ticks}", description);
             Template primeTemplate = GetPrimeTemplate(gitSuffix, activeDirectoryAdminPassword, tfsServicePassword);
-            Template peeringTemplate = new Template("MasterToAlphaPeering", "Peers the VPCs between Prime and Alpha");
             Template development = GetTemplateFullStack(StackTest.TopLevelDomainName, "prime", Greek.Alpha, developmentCreate, gitSuffix);
 
 
@@ -92,24 +91,10 @@ namespace AWS.CloudFormation.Test
                 VpcDhcpOptionsAssociation association = new VpcDhcpOptionsAssociation(new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.DhcpOptionsId"), vpcAlpha);
                 masterTemplate.Resources.Add($"VpcDhcpOptionsAssociation4Alpha", association);
 
-                //peeringTemplate.Parameters.Add(new ParameterBase("VpcAlpha", "String", "invalid", "Id of Vpc in Dev Alpha"));
 
 
-                var vpcPeeringAlphaToPrime = new VpcPeeringConnection(new ReferenceProperty("VpcAlpha"), new ReferenceProperty("VpcPrime"));
-                peeringTemplate.Resources.Add("VpcAlphaToPrime", vpcPeeringAlphaToPrime);
-                peeringTemplate.Parameters.Add(new ParameterBase("VpcAlpha", "String", "default", "Id of Vpc in Dev Alpha"));
-                peeringTemplate.Parameters.Add(new ParameterBase("VpcPrime", "String", "default", "Id of Vpc in Dev Alpha"));
-
-                Uri peeringUri = TemplateEngine.UploadTemplate(peeringTemplate, "gtbb/templates");
-                CloudFormation.Resource.CloudFormation.Stack peeringStack = new CloudFormation.Resource.CloudFormation.Stack(peeringUri);
-                peeringStack.Parameters.Add("VpcAlpha", new ParameterBase("VpcAlpha", "String", "vpc-ccb085a8", "Id of Vpc in Dev Alpha"));
-                peeringStack.Parameters.Add("VpcPrime", new ParameterBase("VpcPrime", "String", "vpc-316f4555", "Id of Prime Vpc in Dev Alpha"));
-                masterTemplate.Resources.Add("PeeringPrimeToAlpha", peeringStack);
-                
-
-
-
-
+                var vpcPeeringAlphaToPrime = new VpcPeeringConnection("vpc-ccb085a8", "vpc-316f4555");
+                masterTemplate.Resources.Add("VpcAlphaToPrime", vpcPeeringAlphaToPrime);
 
                 //Route routeFromAlphaToPrime = new Route(vpcPeeringAlphaToPrime, CidrPrimeVpc, new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.RouteTableForPrivateSubnets"));
                 //masterTemplate.Resources.Add("RouteFromAlphaToPrime", routeFromAlphaToPrime);
