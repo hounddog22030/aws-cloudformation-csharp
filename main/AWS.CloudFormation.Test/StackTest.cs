@@ -67,8 +67,11 @@ namespace AWS.CloudFormation.Test
             var description = $"Master Stack:{gitSuffix}";
 
             Template masterTemplate = new Template($"MasterStackYadaYadaSoftwareCom{DateTime.Now.Ticks}", description);
-
             Template primeTemplate = GetPrimeTemplate(gitSuffix, activeDirectoryAdminPassword, tfsServicePassword);
+            Template peeringTemplate = new Template("MasterToAlphaPeering", "Peers the VPCs between Prime and Alpha");
+            Template development = GetTemplateFullStack(StackTest.TopLevelDomainName, "prime", Greek.Alpha, developmentCreate, gitSuffix);
+
+
             Uri primeUri = TemplateEngine.UploadTemplate(primeTemplate, "gtbb/templates");
             CloudFormation.Resource.CloudFormation.Stack prime = new CloudFormation.Resource.CloudFormation.Stack(primeUri);
             masterTemplate.Resources.Add("PrimeYadaYadaSoftwareCom", prime);
@@ -76,10 +79,8 @@ namespace AWS.CloudFormation.Test
 
             if (pass == MasterTemplatePass.PeerVpcs)
             {
-                Template development = GetTemplateFullStack(StackTest.TopLevelDomainName, "prime", Greek.Alpha, developmentCreate, gitSuffix);
                 development.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminPasswordParameterName, "String", activeDirectoryAdminPassword, "Admin password"));
                 development.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, "String", tfsServicePassword, "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
-
 
                 Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
                 CloudFormation.Resource.CloudFormation.Stack devAlphaStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
@@ -91,19 +92,36 @@ namespace AWS.CloudFormation.Test
                 VpcDhcpOptionsAssociation association = new VpcDhcpOptionsAssociation(new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.DhcpOptionsId"), vpcAlpha);
                 masterTemplate.Resources.Add($"VpcDhcpOptionsAssociation4Alpha", association);
 
-                var vpcPeeringAlphaToPrime = new VpcPeeringConnection(vpcAlpha, vpcPrime);
-                masterTemplate.Resources.Add("VpcAlphaToPrime", vpcPeeringAlphaToPrime);
+                //peeringTemplate.Parameters.Add(new ParameterBase("VpcAlpha", "String", "invalid", "Id of Vpc in Dev Alpha"));
 
-                Route routeFromAlphaToPrime = new Route(vpcPeeringAlphaToPrime, CidrPrimeVpc, new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.RouteTableForPrivateSubnets"));
-                masterTemplate.Resources.Add("RouteFromAlphaToPrime", routeFromAlphaToPrime);
 
-                Route routeFromPrimeAdSubnetsToAlpha = new Route(vpcPeeringAlphaToPrime, CidrDevVpc, new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTableForAdSubnets"));
-                masterTemplate.Resources.Add("RouteFromPrimeAdSubnetsToAlpha", routeFromPrimeAdSubnetsToAlpha);
+                var vpcPeeringAlphaToPrime = new VpcPeeringConnection(new ReferenceProperty("VpcAlpha"), new ReferenceProperty("VpcPrime"));
+                peeringTemplate.Resources.Add("VpcAlphaToPrime", vpcPeeringAlphaToPrime);
+                peeringTemplate.Parameters.Add(new ParameterBase("VpcAlpha", "String", "default", "Id of Vpc in Dev Alpha"));
+                peeringTemplate.Parameters.Add(new ParameterBase("VpcPrime", "String", "default", "Id of Vpc in Dev Alpha"));
 
-                Route routeFromPrimeSubnetDmz1ToAlpha = new Route(vpcPeeringAlphaToPrime, CidrDevVpc, new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTable4SubnetDmz1"));
-                masterTemplate.Resources.Add("RouteFromPrimeSubnetDmz1ToAlpha", routeFromPrimeSubnetDmz1ToAlpha);
+                Uri peeringUri = TemplateEngine.UploadTemplate(peeringTemplate, "gtbb/templates");
+                CloudFormation.Resource.CloudFormation.Stack peeringStack = new CloudFormation.Resource.CloudFormation.Stack(peeringUri);
+                peeringStack.Parameters.Add("VpcAlpha", new ParameterBase("VpcAlpha", "String", "vpc-ccb085a8", "Id of Vpc in Dev Alpha"));
+                peeringStack.Parameters.Add("VpcPrime", new ParameterBase("VpcPrime", "String", "vpc-316f4555", "Id of Prime Vpc in Dev Alpha"));
+                masterTemplate.Resources.Add("PeeringPrimeToAlpha", peeringStack);
+                
 
-                devAlphaStack.DependsOn.Add(prime.LogicalId);
+
+
+
+
+                //Route routeFromAlphaToPrime = new Route(vpcPeeringAlphaToPrime, CidrPrimeVpc, new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.RouteTableForPrivateSubnets"));
+                //masterTemplate.Resources.Add("RouteFromAlphaToPrime", routeFromAlphaToPrime);
+
+                //Route routeFromPrimeAdSubnetsToAlpha = new Route(vpcPeeringAlphaToPrime, CidrDevVpc, new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTableForAdSubnets"));
+                //masterTemplate.Resources.Add("RouteFromPrimeAdSubnetsToAlpha", routeFromPrimeAdSubnetsToAlpha);
+
+                //Route routeFromPrimeSubnetDmz1ToAlpha = new Route(vpcPeeringAlphaToPrime, CidrDevVpc, new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTable4SubnetDmz1"));
+                //masterTemplate.Resources.Add("RouteFromPrimeSubnetDmz1ToAlpha", routeFromPrimeSubnetDmz1ToAlpha);
+
+                //devAlphaStack.DependsOn.Add(routeFromPrimeAdSubnetsToAlpha.LogicalId);
+                //devAlphaStack.DependsOn.Add(routeFromPrimeSubnetDmz1ToAlpha.LogicalId);
             }
 
 
@@ -239,7 +257,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateMasterTemplate()
         {
-            var templateUri = GetMasterTemplateUri("QOTY3475igam", "BRGW8750thgw", MasterTemplatePass.PeerVpcs, Create.Sql4Tfs | Create.Tfs);
+            var templateUri = GetMasterTemplateUri("QOTY3475igam", "BRGW8750thgw", MasterTemplatePass.PeerVpcs, Create.None);
             Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635928668117791766", templateUri);
 
         }
