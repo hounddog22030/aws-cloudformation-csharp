@@ -93,7 +93,7 @@ namespace AWS.CloudFormation.Test
 
 
 
-                var vpcPeeringAlphaToPrime = new VpcPeeringConnection("vpc-ccb085a8", "vpc-316f4555");
+                var vpcPeeringAlphaToPrime = new VpcPeeringConnection(new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.VpcAlpha"), new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.VpcPrime"));
                 masterTemplate.Resources.Add("VpcAlphaToPrime", vpcPeeringAlphaToPrime);
 
                 //Route routeFromAlphaToPrime = new Route(vpcPeeringAlphaToPrime, CidrPrimeVpc, new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.RouteTableForPrivateSubnets"));
