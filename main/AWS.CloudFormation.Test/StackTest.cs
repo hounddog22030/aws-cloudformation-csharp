@@ -78,23 +78,19 @@ namespace AWS.CloudFormation.Test
 
             if (pass == MasterTemplatePass.PeerVpcs)
             {
+                var vpcPrime = new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.VpcPrime");
+                var vpcAlpha = new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.VpcAlpha");
+
                 development.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminPasswordParameterName, "String", activeDirectoryAdminPassword, "Admin password"));
                 development.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, "String", tfsServicePassword, "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
 
                 Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
                 CloudFormation.Resource.CloudFormation.Stack devAlphaStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
+                devAlphaStack.Parameters.Add("PrimeVpcId", vpcPrime);
                 masterTemplate.Resources.Add("AlphaDevYadaYadaSoftwareCom", devAlphaStack);
-
-                var vpcPrime = new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.VpcPrime");
-                var vpcAlpha = new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.VpcAlpha");
 
                 VpcDhcpOptionsAssociation association = new VpcDhcpOptionsAssociation(new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.DhcpOptionsId"), vpcAlpha);
                 masterTemplate.Resources.Add($"VpcDhcpOptionsAssociation4Alpha", association);
-
-
-
-                var vpcPeeringAlphaToPrime = new VpcPeeringConnection(new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.VpcAlpha"), new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.VpcPrime"));
-                masterTemplate.Resources.Add("VpcAlphaToPrime", vpcPeeringAlphaToPrime);
 
                 //Route routeFromAlphaToPrime = new Route(vpcPeeringAlphaToPrime, CidrPrimeVpc, new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.RouteTableForPrivateSubnets"));
                 //masterTemplate.Resources.Add("RouteFromAlphaToPrime", routeFromAlphaToPrime);
@@ -263,9 +259,15 @@ namespace AWS.CloudFormation.Test
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd871hdj11", "Password for Master User For RDS SqlServer") { NoEcho = true });
 
+            template.Parameters.Add(new ParameterBase("PrimeVpcId", "String","Invalid","VPC Prime Id"));
+
+
             Vpc vpc = template.Vpcs.First();
             vpc.EnableDnsHostnames = true;
             vpc.EnableDnsSupport = true;
+
+            var vpcPeeringAlphaToPrime = new VpcPeeringConnection(vpc, new ReferenceProperty("PrimeVpcId"));
+            template.Resources.Add("VpcAlphaToPrime", vpcPeeringAlphaToPrime);
 
             SecurityGroup natSecurityGroup = AddNatSecurityGroup(vpc, template);
 

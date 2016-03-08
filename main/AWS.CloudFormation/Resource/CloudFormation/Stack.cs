@@ -13,7 +13,7 @@ namespace AWS.CloudFormation.Resource.CloudFormation
         public Stack(Uri templateUrl) : base(ResourceType.AwsCloudFormationStack)
         {
             this.TemplateURL = templateUrl;
-            this.Parameters = new Dictionary<string, ParameterBase>();
+            this.Parameters = new Dictionary<string, object>();
         }
 
         protected override bool SupportsTags => false;
@@ -32,11 +32,11 @@ namespace AWS.CloudFormation.Resource.CloudFormation
         }
 
         [JsonIgnore]
-        public Dictionary<string,ParameterBase> Parameters
+        public Dictionary<string,object> Parameters
         {
             get
             {
-                return this.Properties.GetValue<Dictionary<string, ParameterBase>>();
+                return this.Properties.GetValue<Dictionary<string, object>>();
             }
             private set
             {
