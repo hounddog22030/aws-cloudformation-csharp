@@ -76,8 +76,8 @@ namespace AWS.CloudFormation.Test
             masterTemplate.Resources.Add("PrimeYadaYadaSoftwareCom", prime);
 
 
-            if (pass == MasterTemplatePass.PeerVpcs)
-            {
+            //if (pass == MasterTemplatePass.PeerVpcs)
+            //{
                 var vpcPrime = new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.VpcPrime");
                 var vpcAlpha = new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.VpcAlpha");
 
@@ -87,6 +87,10 @@ namespace AWS.CloudFormation.Test
                 Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
                 CloudFormation.Resource.CloudFormation.Stack devAlphaStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
                 devAlphaStack.Parameters.Add("PrimeVpcId", vpcPrime);
+                devAlphaStack.Parameters.Add("PrimeRouteTableForAdSubnets", new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTableForAdSubnets"));
+                devAlphaStack.Parameters.Add("PrimeRouteTable4SubnetDmz1", new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTable4SubnetDmz1"));
+
+
                 masterTemplate.Resources.Add("AlphaDevYadaYadaSoftwareCom", devAlphaStack);
 
                 VpcDhcpOptionsAssociation association = new VpcDhcpOptionsAssociation(new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.DhcpOptionsId"), vpcAlpha);
@@ -103,7 +107,7 @@ namespace AWS.CloudFormation.Test
 
                 //devAlphaStack.DependsOn.Add(routeFromPrimeAdSubnetsToAlpha.LogicalId);
                 //devAlphaStack.DependsOn.Add(routeFromPrimeSubnetDmz1ToAlpha.LogicalId);
-            }
+            //}
 
 
             return TemplateEngine.UploadTemplate(masterTemplate, "gtbb/templates");
@@ -238,8 +242,8 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateMasterTemplate()
         {
-            var templateUri = GetMasterTemplateUri("QOTY3475igam", "BRGW8750thgw", MasterTemplatePass.PeerVpcs, Create.None);
-            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635928668117791766", templateUri);
+            var templateUri = GetMasterTemplateUri("EFVF2083swcd", "PBVL8776jepl", MasterTemplatePass.PeerVpcs, Create.Sql4Tfs | Create.Tfs);
+            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635929955122147759", templateUri);
 
         }
 
@@ -259,8 +263,9 @@ namespace AWS.CloudFormation.Test
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd871hdj11", "Password for Master User For RDS SqlServer") { NoEcho = true });
 
-            template.Parameters.Add(new ParameterBase("PrimeVpcId", "String","Invalid","VPC Prime Id"));
-
+            template.Parameters.Add(new ParameterBase("PrimeVpcId", "String","Invalid", "Prime VpcId"));
+            template.Parameters.Add(new ParameterBase("PrimeRouteTableForAdSubnets", "String", "Invalid", "Prime RouteTable For Active Directory Subnets"));
+            template.Parameters.Add(new ParameterBase("PrimeRouteTable4SubnetDmz1", "String", "Invalid", "Prime RouteTable For Dmz1 Subnet"));
 
             Vpc vpc = template.Vpcs.First();
             vpc.EnableDnsHostnames = true;
@@ -335,6 +340,12 @@ namespace AWS.CloudFormation.Test
             // new route
             Route routeFromAlphaToPrime = new Route(vpcPeeringAlphaToPrime, CidrPrimeVpc, routeTableForSubnetsToNat1);
             template.Resources.Add("RouteFromAlphaToPrime", routeFromAlphaToPrime);
+
+            Route routeFromPrimeAdSubnetsToAlpha = new Route(vpcPeeringAlphaToPrime, CidrDevVpc, new ReferenceProperty("PrimeRouteTableForAdSubnets"));
+            template.Resources.Add("RouteFromPrimeAdSubnetsToAlpha", routeFromPrimeAdSubnetsToAlpha);
+
+            Route routeFromPrimeSubnetDmz1ToAlpha = new Route(vpcPeeringAlphaToPrime, CidrDevVpc, new ReferenceProperty("PrimeRouteTable4SubnetDmz1"));
+            template.Resources.Add("RouteFromPrimeSubnetDmz1ToAlpha", routeFromPrimeSubnetDmz1ToAlpha);
             // new route
 
             if (instancesToCreate.HasFlag(Create.Sql4Tfs))

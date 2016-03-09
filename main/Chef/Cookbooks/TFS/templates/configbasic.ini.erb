@@ -35,7 +35,7 @@ AuthenticationMethod=NTLM
 WebSitePort=8080
 
 ; The host name portion of the web site URL.  This is typically the machine name but can be customized for more advanced scenarios such as HTTPS or NLB
-UrlHostNameAlias=tfs
+UrlHostNameAlias=<%= @TfsFqdn %>
 
 ; The web site virtual directory name can be either empty or up to 8 alphanumeric characters.
 WebSiteVDirName=tfs
@@ -54,5 +54,3 @@ CollectionName=YadaYada
 
 ; The description for the collection
 CollectionDescription=
-
-
