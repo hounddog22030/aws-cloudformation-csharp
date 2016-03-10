@@ -242,7 +242,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateMasterTemplate()
         {
-            var templateUri = GetMasterTemplateUri("EFVF2083swcd", "PBVL8776jepl", MasterTemplatePass.PeerVpcs, Create.Sql4Tfs | Create.Tfs);
+            var templateUri = GetMasterTemplateUri("EFVF2083swcd", "PBVL8776jepl", MasterTemplatePass.PeerVpcs, Create.Sql4Tfs | Create.Tfs | Create.Workstation);
             Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635929955122147759", templateUri);
 
         }
