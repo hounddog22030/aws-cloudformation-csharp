@@ -432,7 +432,7 @@ namespace AWS.CloudFormation.Test
             if (instancesToCreate.HasFlag(Create.Workstation))
             {
                 //uses 33gb
-                var workstation = AddWorkstation(template, subnetWorkstation, workstationSecurityGroup);
+                var workstation = AddWorkstation(template, subnetWorkstation, workstationSecurityGroup, version);
                 //workstation.DependsOn.Add(simpleAd.LogicalId);
                 MicrosoftAd.AddInstanceToDomain(workstation.RenameConfig);
             }
@@ -571,7 +571,7 @@ namespace AWS.CloudFormation.Test
         {
             SecurityGroup workstationSecurityGroup = new SecurityGroup("Security Group To Contain Workstations", vpc);
             template.Resources.Add("SecurityGroup4Workstation", workstationSecurityGroup);
-            workstationSecurityGroup.AddIngress((ICidrBlock) subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            workstationSecurityGroup.AddIngress(CidrPrimeDmz1Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             return workstationSecurityGroup;
         }
 
@@ -1055,7 +1055,7 @@ namespace AWS.CloudFormation.Test
             var DMZSubnet = new Subnet(vpc, CidrDevDmz1, AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
-            Instance w = AddWorkstation(template, DMZSubnet, rdp);
+            Instance w = AddWorkstation(template, DMZSubnet, rdp, Greek.Alpha);
             w.AddElasticIp();
             CreateTestStack(template, this.TestContext);
 
@@ -1369,14 +1369,12 @@ namespace AWS.CloudFormation.Test
             return buildServer;
         }
 
-        private static Instance AddWorkstation(  Template template, 
-                                                        Subnet subnet, 
-                                                        SecurityGroup workstationSecurityGroup)
+        private static Instance AddWorkstation(Template template, Subnet subnet, SecurityGroup workstationSecurityGroup, Greek version)
         {
             if (subnet == null) throw new ArgumentNullException(nameof(subnet));
 
             Instance workstation = new Instance(subnet, InstanceTypes.T2Large, UsEastWindows2012R2SqlServerExpressAmi, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 214);
-            template.Resources.Add("Workstation",workstation);
+            template.Resources.Add($"{version}Work",workstation);
 
             if (workstationSecurityGroup != null)
             {

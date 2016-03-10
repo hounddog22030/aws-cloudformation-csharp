@@ -16,7 +16,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             base.AddToLaunchConfiguration(configuration);
             const string powerShellToolsVsixLocalPath = "c:/cfn/scripts/PowerShellTools.14.0.vsix";
             var powerShellToolsVsix = this.Config.Files.GetFile(powerShellToolsVsixLocalPath);
-            powerShellToolsVsix.Source = "https://s3.amazonaws.com/gtbb/software/PowerShellTools.14.0.vsix";
+            powerShellToolsVsix.Source = "https://visualstudiogallery.msdn.microsoft.com/c9eb3ba8-0c59-4944-9a62-6eee37294597/file/199313/2/PowerShellTools.14.0.vsix";
             var installPowerSehllToolsVsix = this.Config.Commands.AddCommand<Command>("PowerShellTools140vsix");
             installPowerSehllToolsVsix.Command = $"\"C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\Common7\\IDE\\VSIXInstaller.exe\" /q {powerShellToolsVsixLocalPath}";
             installPowerSehllToolsVsix.WaitAfterCompletion = 0.ToString();
