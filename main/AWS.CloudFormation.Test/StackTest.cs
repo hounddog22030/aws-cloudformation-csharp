@@ -242,7 +242,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateMasterTemplate()
         {
-            var templateUri = GetMasterTemplateUri("EFVF2083swcd", "PBVL8776jepl", MasterTemplatePass.PeerVpcs, Create.Sql4Tfs | Create.Tfs | Create.Workstation);
+            var templateUri = GetMasterTemplateUri("EFVF2083swcd", "PBVL8776jepl", MasterTemplatePass.PeerVpcs, Create.Sql4Tfs | Create.Tfs | Create.Workstation | Create.Build);
             Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635929955122147759", templateUri);
 
         }
@@ -315,8 +315,7 @@ namespace AWS.CloudFormation.Test
             Subnet subnetDatabase4BuildServer2 = AddSubnetDatabase4BuildServer2(vpc, template);
 
             SecurityGroup securityGroupBuildServer = AddSecurityGroupBuildServer(vpc, template);
-            securityGroupBuildServer.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            securityGroupBuildServer.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            securityGroupBuildServer.AddIngress(CidrPrimeDmz1Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             securityGroupBuildServer.AddIngress((ICidrBlock)subnetTfsServer, Protocol.Tcp, Ports.TeamFoundationServerBuild);
 
             SecurityGroup workstationSecurityGroup = AddWorkstationSecurityGroup(vpc, template, subnetDmz1);
@@ -1119,18 +1118,21 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
 
-            Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows);
+            Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows,false);
             template.Resources.Add("w", w);
 
-            
+            var configSet = w.Metadata.Init.ConfigSets.GetConfigSet("TestVsix").GetConfig("TestVsix");
+            configSet.Files.GetFile("c:/cfn/files/PowerShellTools.14.0.vsix").Source =
+                "https://visualstudiogallery.msdn.microsoft.com/c9eb3ba8-0c59-4944-9a62-6eee37294597/file/199313/2/PowerShellTools.14.0.vsix";
+
 
             w.AddSecurityGroup(rdp);
             w.AddElasticIp();
 
             //SecurityGroup blah = new SecurityGroup("blah",template.Vpcs.Last());
             //template.Resources.Add("blah",blah);
-            //CreateTestStack(template, this.TestContext);
-            Stack.Stack.UpdateStack("CreateMinimalInstanceTest-active-directory-backup-2016-02-07-15-04-25", template);
+            CreateTestStack(template, this.TestContext);
+            //Stack.Stack.UpdateStack("CreateMinimalInstanceTest-active-directory-backup-2016-02-07-15-04-25", template);
 
         }
 
@@ -1343,6 +1345,7 @@ namespace AWS.CloudFormation.Test
             launchGroup.MaxSize = 2.ToString();
             launchGroup.AddAvailabilityZone(AvailabilityZone.UsEast1A);
             launchGroup.AddSubnetToVpcZoneIdentifier(subnet);
+            launchGroup.SecurityGroups.Add(new ReferenceProperty>(buildServerSecurityGroup));
 
 
             var buildServer = new LaunchConfiguration(null,instanceSize, UsEastWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration,false);
@@ -1388,7 +1391,7 @@ namespace AWS.CloudFormation.Test
             workstation.Packages.Add(new Chrome());
             workstation.Packages.Add(new MSysGit(BucketNameSoftware));
             workstation.Packages.Add(new TfsCrossPlatformCommandLineInterface());
-            workstation.Packages.Add(new VisualStudioPowershellTools());
+            //workstation.Packages.Add(new VisualStudioPowershellTools());
 
 
             //var waitConditionWorkstationAvailable = workstation.AddFinalizer("waitConditionWorkstationAvailable",TimeoutMax);

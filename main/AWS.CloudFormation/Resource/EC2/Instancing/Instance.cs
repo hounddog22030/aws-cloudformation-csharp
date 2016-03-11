@@ -197,6 +197,21 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
                 this.Properties.SetValue(value);
             }
         }
+
+        public virtual void AddSecurityGroup(SecurityGroup securityGroup)
+        {
+            string propertyName = "SecurityGroups";
+
+            List<ReferenceProperty> temp = new List<ReferenceProperty>();
+
+            var ids = this.Properties.GetValue<ReferenceProperty[]>(propertyName);
+            if (ids != null && ids.Any())
+            {
+                temp.AddRange(ids);
+            }
+            temp.Add(new ReferenceProperty(securityGroup));
+            this.Properties.SetValue(propertyName, temp.ToArray());
+        }
     }
 
     public class SsmAssociation

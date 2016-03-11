@@ -26,6 +26,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             d.Add("Metrics", sizes);
             this.MetricsCollection = new object[] {d};
             DesiredCapacity = 1.ToString();
+            SecurityGroups = new List<ReferenceProperty>();
         }
 
         [JsonIgnore]
@@ -138,6 +139,18 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             {
                 value.AutoScalingGroup = this;
                 this.Properties.SetValue("LaunchConfigurationName",new ReferenceProperty(value));
+            }
+        }
+
+        public List<ReferenceProperty> SecurityGroups
+        {
+            get
+            {
+                return this.Properties.GetValue<List<ReferenceProperty>>();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
             }
         }
 
