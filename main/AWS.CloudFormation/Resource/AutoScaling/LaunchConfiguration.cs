@@ -210,24 +210,6 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         }
 
 
-        public virtual void AddSecurityGroup(SecurityGroup securityGroup)
-        {
-            string propertyName = "SecurityGroups";
-            if (this.Type==ResourceType.AwsEc2Instance)
-            {
-                propertyName = "SecurityGroupIds";
-            }
-
-            List<ReferenceProperty> temp = new List<ReferenceProperty>();
-
-            var ids = this.Properties.GetValue<ReferenceProperty[]>(propertyName);
-            if (ids != null && ids.Any())
-            {
-                temp.AddRange(ids);
-            }
-            temp.Add(new ReferenceProperty(securityGroup));
-            this.Properties.SetValue(propertyName, temp.ToArray());
-        }
 
 
         [JsonIgnore]

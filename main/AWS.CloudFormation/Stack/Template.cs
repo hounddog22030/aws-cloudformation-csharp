@@ -28,7 +28,7 @@ namespace AWS.CloudFormation.Stack
         public const string ParameterKeyPairName = "KeyPairName";
         public const string ParameterDomainAdminPassword = "DomainAdminPassword";
 
-        public Template(string stackName, string defaultKeyName, string vpcName, string vpcCidrBlock) : this(defaultKeyName,vpcName,vpcCidrBlock, stackName,null)
+        public Template(string stackName, string defaultKeyName, string vpcName, string vpcCidrBlock) : this(stackName,defaultKeyName, vpcName,vpcCidrBlock,null)
         {
             
         }
