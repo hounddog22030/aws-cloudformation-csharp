@@ -54,62 +54,50 @@ namespace AWS.CloudFormation.Test
         private const string FullyQualifiedDomainName = "prime." + TopLevelDomainName;
 
 
-        public enum MasterTemplatePass
+        public static Uri GetMasterTemplateUri(string activeDirectoryAdminPassword, string tfsServicePassword,
+            Create developmentCreate)
         {
-            CreateMicrosoftActiveDirectory,
-            PeerVpcs
-            
-        }
-        public static Uri GetMasterTemplateUri(string activeDirectoryAdminPassword,string tfsServicePassword, MasterTemplatePass pass, Create developmentCreate)
-        {
-            
+
             var gitSuffix = $"{GetGitBranch()}:{GetGitHash()}";
             var description = $"Master Stack:{gitSuffix}";
 
             Template masterTemplate = new Template($"MasterStackYadaYadaSoftwareCom{DateTime.Now.Ticks}", description);
             Template primeTemplate = GetPrimeTemplate(gitSuffix, activeDirectoryAdminPassword, tfsServicePassword);
-            Template development = GetTemplateFullStack(StackTest.TopLevelDomainName, "prime", Greek.Alpha, developmentCreate, gitSuffix);
+            Template development = GetTemplateFullStack(StackTest.TopLevelDomainName, "prime", Greek.Alpha,
+                developmentCreate, gitSuffix);
 
 
             Uri primeUri = TemplateEngine.UploadTemplate(primeTemplate, "gtbb/templates");
-            CloudFormation.Resource.CloudFormation.Stack prime = new CloudFormation.Resource.CloudFormation.Stack(primeUri);
+            CloudFormation.Resource.CloudFormation.Stack prime =
+                new CloudFormation.Resource.CloudFormation.Stack(primeUri);
             masterTemplate.Resources.Add("PrimeYadaYadaSoftwareCom", prime);
 
 
-            //if (pass == MasterTemplatePass.PeerVpcs)
-            //{
-                var vpcPrime = new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.VpcPrime");
-                var vpcAlpha = new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.VpcAlpha");
+            var vpcPrime = new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.VpcPrime");
+            var vpcAlpha = new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.VpcAlpha");
 
-                development.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminPasswordParameterName, "String", activeDirectoryAdminPassword, "Admin password"));
-                development.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, "String", tfsServicePassword, "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
+            development.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminPasswordParameterName, "String",
+                activeDirectoryAdminPassword, "Admin password"));
+            development.Parameters.Add(
+                new ParameterBase(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, "String",
+                    tfsServicePassword, "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
 
-                Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
-                CloudFormation.Resource.CloudFormation.Stack devAlphaStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
-                devAlphaStack.Parameters.Add("PrimeVpcId", vpcPrime);
-                devAlphaStack.Parameters.Add("PrimeRouteTableForAdSubnets", new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTableForAdSubnets"));
-                devAlphaStack.Parameters.Add("PrimeRouteTable4SubnetDmz1", new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTable4SubnetDmz1"));
-
-
-                masterTemplate.Resources.Add("AlphaDevYadaYadaSoftwareCom", devAlphaStack);
-
-                VpcDhcpOptionsAssociation association = new VpcDhcpOptionsAssociation(new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.DhcpOptionsId"), vpcAlpha);
-                masterTemplate.Resources.Add($"VpcDhcpOptionsAssociation4Alpha", association);
-
-                //Route routeFromAlphaToPrime = new Route(vpcPeeringAlphaToPrime, CidrPrimeVpc, new FnGetAtt("AlphaDevYadaYadaSoftwareCom", "Outputs.RouteTableForPrivateSubnets"));
-                //masterTemplate.Resources.Add("RouteFromAlphaToPrime", routeFromAlphaToPrime);
-
-                //Route routeFromPrimeAdSubnetsToAlpha = new Route(vpcPeeringAlphaToPrime, CidrDevVpc, new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTableForAdSubnets"));
-                //masterTemplate.Resources.Add("RouteFromPrimeAdSubnetsToAlpha", routeFromPrimeAdSubnetsToAlpha);
-
-                //Route routeFromPrimeSubnetDmz1ToAlpha = new Route(vpcPeeringAlphaToPrime, CidrDevVpc, new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTable4SubnetDmz1"));
-                //masterTemplate.Resources.Add("RouteFromPrimeSubnetDmz1ToAlpha", routeFromPrimeSubnetDmz1ToAlpha);
-
-                //devAlphaStack.DependsOn.Add(routeFromPrimeAdSubnetsToAlpha.LogicalId);
-                //devAlphaStack.DependsOn.Add(routeFromPrimeSubnetDmz1ToAlpha.LogicalId);
-            //}
+            Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
+            CloudFormation.Resource.CloudFormation.Stack devAlphaStack =
+                new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
+            devAlphaStack.Parameters.Add("PrimeVpcId", vpcPrime);
+            devAlphaStack.Parameters.Add("PrimeRouteTableForAdSubnets",
+                new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTableForAdSubnets"));
+            devAlphaStack.Parameters.Add("PrimeRouteTable4SubnetDmz1",
+                new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTable4SubnetDmz1"));
 
 
+            masterTemplate.Resources.Add("AlphaDevYadaYadaSoftwareCom", devAlphaStack);
+
+            VpcDhcpOptionsAssociation association =
+                new VpcDhcpOptionsAssociation(new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.DhcpOptionsId"),
+                    vpcAlpha);
+            masterTemplate.Resources.Add($"VpcDhcpOptionsAssociation4Alpha", association);
             return TemplateEngine.UploadTemplate(masterTemplate, "gtbb/templates");
         }
 
@@ -149,6 +137,7 @@ namespace AWS.CloudFormation.Test
             
             Instance instanceRdp = new Instance(subnetDmz, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose,40);
             primeTemplate.Resources.Add("Rdp", instanceRdp);
+            instanceRdp.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 50, false);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
             instanceRdp.Packages.Add(new WindowsShare("d:/backups","backups",new FnJoin(FnJoinDelimiter.None,"'",new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),"\\tfsservice'"),new FnJoin(FnJoinDelimiter.None,"'",new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),"\\Domain Admins'")));
 
@@ -192,7 +181,7 @@ namespace AWS.CloudFormation.Test
         {
             var adminPassword = GetPassword();
             var tfsService = GetPassword();
-            var templateUri = GetMasterTemplateUri(adminPassword, tfsService,MasterTemplatePass.CreateMicrosoftActiveDirectory, Create.None);
+            var templateUri = GetMasterTemplateUri(adminPassword, tfsService,Create.None);
         }
 
         [TestMethod]
@@ -214,7 +203,7 @@ namespace AWS.CloudFormation.Test
         {
             var adminPassword = GetPassword();
             var tfsPassword = GetPassword();
-            var templateUri = GetMasterTemplateUri(adminPassword,tfsPassword,MasterTemplatePass.CreateMicrosoftActiveDirectory, Create.None);
+            var templateUri = GetMasterTemplateUri(adminPassword,tfsPassword,Create.None);
             var response = Stack.Stack.CreateStack(templateUri);
             
 
@@ -223,7 +212,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateMasterTemplate()
         {
-            var templateUri = GetMasterTemplateUri("EFVF2083swcd", "PBVL8776jepl", MasterTemplatePass.PeerVpcs, Create.Sql4Tfs|Create.Tfs);
+            var templateUri = GetMasterTemplateUri("EFVF2083swcd", "PBVL8776jepl", Create.Sql4Tfs|Create.Tfs|Create.Workstation);
             Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635929955122147759", templateUri);
 
         }
