@@ -48,6 +48,7 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             NetworkInterfaces = new List<NetworkInterface>();
             this.Tags.Add(new Tag("Name", this.LogicalId));
             this.VolumesToAttach = new List<Volume>();
+            this.SecurityGroupIds = new List<ReferenceProperty>();
         }
 
 
@@ -198,20 +199,19 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing
             }
         }
 
-        public virtual void AddSecurityGroup(SecurityGroup securityGroup)
+        [JsonIgnore]
+        public List<ReferenceProperty> SecurityGroupIds
         {
-            string propertyName = "SecurityGroups";
-
-            List<ReferenceProperty> temp = new List<ReferenceProperty>();
-
-            var ids = this.Properties.GetValue<ReferenceProperty[]>(propertyName);
-            if (ids != null && ids.Any())
+            get
             {
-                temp.AddRange(ids);
+                return this.Properties.GetValue<List<ReferenceProperty>>();
             }
-            temp.Add(new ReferenceProperty(securityGroup));
-            this.Properties.SetValue(propertyName, temp.ToArray());
+            set
+            {
+                this.Properties.SetValue(value);
+            }
         }
+
     }
 
     public class SsmAssociation

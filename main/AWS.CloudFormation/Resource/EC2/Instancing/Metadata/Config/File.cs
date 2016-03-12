@@ -8,10 +8,20 @@ namespace AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config
     {
         public ConfigFile(LaunchConfiguration resource) : base(resource)
         {
-            Content = (ConfigFileContent)this.Add("content", new ConfigFileContent(resource));
+            
         }
 
-        public ConfigFileContent Content { get; }
+        private ConfigFileContent _content = null;
+        public ConfigFileContent Content {
+            get
+            {
+                if (_content == null)
+                {
+                    _content = (ConfigFileContent)this.Add("content", new ConfigFileContent(this.ResourceRef));
+                }
+                return _content;
+            }
+        }
 
         public string Source
         {

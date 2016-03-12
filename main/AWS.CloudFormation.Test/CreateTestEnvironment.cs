@@ -123,13 +123,13 @@ namespace AWS.CloudFormation.Test
             SecurityGroup securityGroupElbToWebServer = new SecurityGroup("Allows Elb To Web Server",vpc);
             returnTemplate.Resources.Add(securityGroupElbToWebServer.LogicalId, securityGroupElbToWebServer);
             securityGroupElbToWebServer.AddIngress(securityGroupLoadBalancer, Protocol.Tcp, Ports.Http);
-            instanceWebServer.AddSecurityGroup(securityGroupElbToWebServer);
+            instanceWebServer.SecurityGroupIds.Add(new  ReferenceProperty(securityGroupElbToWebServer));
 
             instanceWebServer.AddElasticIp();
             SecurityGroup securityGroupRdpFromFairfaxToWebServer = new SecurityGroup("Allows RDP access from Fairfax",vpc);
             returnTemplate.Resources.Add(securityGroupRdpFromFairfaxToWebServer.LogicalId, securityGroupRdpFromFairfaxToWebServer);
             securityGroupRdpFromFairfaxToWebServer.AddIngress(new Fairfax(), Protocol.All, Ports.RemoteDesktopProtocol);
-            instanceWebServer.AddSecurityGroup(securityGroupRdpFromFairfaxToWebServer);
+            instanceWebServer.SecurityGroupIds.Add(new ReferenceProperty(securityGroupRdpFromFairfaxToWebServer));
 
             RecordSet recordSetElasticLoadBalancer = RecordSet.AddByHostedZoneName(returnTemplate,
                 $"www.{domain}.".Replace(".", string.Empty),

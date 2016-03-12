@@ -127,27 +127,6 @@ namespace AWS.CloudFormation.Test
             RouteTable routeTableForAdSubnets = new RouteTable(vpc);
             primeTemplate.Resources.Add("RouteTableForAdSubnets", routeTableForAdSubnets);
 
-            //SecurityGroup securityGroupAccessToAdServices = new SecurityGroup("SecurityGroupForDomainServices", vpc);
-            //var netDns = IPNetwork.Parse("10.0.0.0", 8);
-            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.DnsQuery);
-            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.DnsQuery);
-            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.KerberosKeyDistribution);
-            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.KerberosKeyDistribution);
-            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.WinsManager);
-            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.Ldap);
-            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.Ldap);
-            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.Smb);
-            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.Smb);
-            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.ActiveDirectoryManagement2);
-            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.ActiveDirectoryManagement2);
-            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.Ldaps);
-            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.EphemeralRpcBegin, Ports.EphemeralRpcEnd);
-            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Tcp, Ports.Ldap2Begin, Ports.Ldap2End);
-            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.Ntp);
-            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Udp, Ports.NetBios);
-            //securityGroupAccessToAdServices.AddIngress(netDns, Protocol.Icmp, Ports.All);
-            //primeTemplate.Resources.Add(securityGroupAccessToAdServices.LogicalId, securityGroupAccessToAdServices);
-
             Subnet subnetForActiveDirectory1 = new Subnet(vpc, CidrPrimeActiveDirectorySubnet1, AvailabilityZone.UsEast1A, routeTableForAdSubnets, null);
             primeTemplate.Resources.Add("SubnetAd1", subnetForActiveDirectory1);
 
@@ -171,6 +150,8 @@ namespace AWS.CloudFormation.Test
             Instance instanceRdp = new Instance(subnetDmz, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose,40);
             primeTemplate.Resources.Add("Rdp", instanceRdp);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
+            instanceRdp.Packages.Add(new WindowsShare("d:/backups","backups",new FnJoin(FnJoinDelimiter.None,"'",new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),"\\tfsservice'"),new FnJoin(FnJoinDelimiter.None,"'",new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),"\\Domain Admins'")));
+
 
             //string ou = MicrosoftAd.AddOu(instanceRdp, "OU=prime,DC=prime,DC=yadayadasoftware,DC=com", $"O{Guid.NewGuid().ToString().Replace("-", string.Empty)}");
             string ou = "OU=Users,OU=prime,DC=prime,DC=yadayadasoftware,DC=com";
@@ -242,7 +223,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateMasterTemplate()
         {
-            var templateUri = GetMasterTemplateUri("EFVF2083swcd", "PBVL8776jepl", MasterTemplatePass.PeerVpcs, Create.Sql4Tfs | Create.Tfs | Create.Workstation | Create.Build);
+            var templateUri = GetMasterTemplateUri("EFVF2083swcd", "PBVL8776jepl", MasterTemplatePass.PeerVpcs, Create.Sql4Tfs|Create.Tfs);
             Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635929955122147759", templateUri);
 
         }
@@ -440,7 +421,7 @@ namespace AWS.CloudFormation.Test
             {
                 Subnet backupServerSubnet = new Subnet(vpc,"10.1.254.0/24",AvailabilityZone.UsEast1A, routeTableForSubnetsToNat1,natSecurityGroup);
                 template.Resources.Add(backupServerSubnet.LogicalId, backupServerSubnet);
-                LaunchConfiguration backupServer = new LaunchConfiguration(backupServerSubnet, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsEc2Instance,true);
+                Instance backupServer = new Instance(backupServerSubnet, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows,true);
                 //backupServer.DependsOn.Add(simpleAd.LogicalId);
                 SecurityGroup backupServerSecurityGroup = new SecurityGroup("SecurityGroup4BackupServer", vpc);
                 template.Resources.Add("SecurityGroup4BackupServer", backupServerSecurityGroup);
@@ -448,7 +429,7 @@ namespace AWS.CloudFormation.Test
                 backupServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
                 backupServerSecurityGroup.AddIngress(vpc, Protocol.Tcp, Ports.Min, Ports.Max);
                 backupServerSecurityGroup.AddIngress(vpc, Protocol.Udp, Ports.Min, Ports.Max);
-                backupServer.AddSecurityGroup(backupServerSecurityGroup);
+                backupServer.SecurityGroupIds.Add(new ReferenceProperty(backupServerSecurityGroup));
                 template.Resources.Add("BackupServer", backupServer);
                 MicrosoftAd.AddInstanceToDomain(backupServer.RenameConfig);
 
@@ -729,7 +710,7 @@ namespace AWS.CloudFormation.Test
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
 
-            instanceRdp2.AddSecurityGroup(rdp);
+            instanceRdp2.SecurityGroupIds.Add(new ReferenceProperty(rdp));
             instanceRdp2.AddElasticIp();
 
             return instanceRdp2;
@@ -742,7 +723,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add(instanceName,sqlServer);
             var sqlServerPackage = new SqlServerExpressFromAmi(BucketNameSoftware);
             sqlServer.Packages.Add(sqlServerPackage);
-            sqlServer.AddSecurityGroup(sqlServerSecurityGroup);
+            sqlServer.SecurityGroupIds.Add(new ReferenceProperty(sqlServerSecurityGroup));
             return sqlServer;
         }
 
@@ -782,7 +763,7 @@ namespace AWS.CloudFormation.Test
             var launchConfig = new LaunchConfiguration(null, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration,false);
             template.Resources.Add("Xyz", launchConfig );
             launchConfig.AssociatePublicIpAddress = true;
-            launchConfig.AddSecurityGroup(rdp);
+            launchConfig.SecurityGroups.Add(new ReferenceProperty(rdp));
 
 
 
@@ -879,7 +860,7 @@ namespace AWS.CloudFormation.Test
             Instance w = new Instance(DMZSubnet,InstanceTypes.T2Large, UsEastWindows2012R2Ami,OperatingSystem.Windows,Ebs.VolumeTypes.GeneralPurpose, 50);
 
             template.Resources.Add("workstation",w);
-            w.AddSecurityGroup(rdp);
+            w.SecurityGroupIds.Add(new ReferenceProperty(rdp));
             w.AddElasticIp();
             Volume v = new Volume(1);
             template.Resources.Add("Volume1",v);
@@ -913,7 +894,7 @@ namespace AWS.CloudFormation.Test
             blockDeviceMapping = new BlockDeviceMapping(w, "/dev/xvdh");
             blockDeviceMapping.Ebs.SnapshotId = "snap-b3fe64a9";
             w.BlockDeviceMappings.Add(blockDeviceMapping);
-            w.AddSecurityGroup(rdp);
+            w.SecurityGroupIds.Add(new ReferenceProperty(rdp));
 
             w.AddElasticIp();
             Stack.Stack.CreateStack(template);
@@ -972,7 +953,7 @@ namespace AWS.CloudFormation.Test
             w.Packages.Add(new VisualStudio(BucketNameSoftware));
             w.Packages.Add(new SqlServerExpress(BucketNameSoftware));
 
-            w.AddSecurityGroup(rdp);
+            w.SecurityGroupIds.Add(new ReferenceProperty(rdp));
             w.AddElasticIp();
             var name = "CreateStackWithVisualStudio-2016-01-30T1711018619021-0500";
             Stack.Stack.UpdateStack(name, template);
@@ -1013,7 +994,7 @@ namespace AWS.CloudFormation.Test
             Dir2 d2 = new Dir2();
             w.Packages.Add(d2);
             WaitCondition wc2 = d2.WaitCondition;
-            w.AddSecurityGroup(rdp);
+            w.SecurityGroupIds.Add(new ReferenceProperty(rdp));
             w.AddElasticIp();
             return template;
         }
@@ -1036,7 +1017,7 @@ namespace AWS.CloudFormation.Test
 
 
             w.Packages.Add(new VisualStudio(BucketNameSoftware));
-            w.AddSecurityGroup(rdp);
+            w.SecurityGroupIds.Add(new ReferenceProperty(rdp));
             w.AddElasticIp();
             var name = this.TestContext.TestName + "-" + DateTime.Now.ToString("O").Replace(":", string.Empty).Replace(".", string.Empty);
             Stack.Stack.CreateStack(template, name);
@@ -1074,7 +1055,7 @@ namespace AWS.CloudFormation.Test
 
             Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add(w.LogicalId,w);
-            w.AddSecurityGroup(rdp);
+            w.SecurityGroupIds.Add(new ReferenceProperty(rdp));
             w.AddElasticIp();
 
             CreateTestStack(template, this.TestContext);
@@ -1095,7 +1076,7 @@ namespace AWS.CloudFormation.Test
 
             var dc1 = AddDomainController(template, DMZSubnet);
             dc1.AddElasticIp();
-            dc1.AddSecurityGroup(rdp);
+            dc1.SecurityGroupIds.Add(new ReferenceProperty(rdp));
             var w = AddBuildServer(template, InstanceTypes.T2Nano,  DMZSubnet, null, null, rdp,null);
             throw new NotImplementedException();
             //w.AddElasticIp();
@@ -1126,7 +1107,7 @@ namespace AWS.CloudFormation.Test
                 "https://visualstudiogallery.msdn.microsoft.com/c9eb3ba8-0c59-4944-9a62-6eee37294597/file/199313/2/PowerShellTools.14.0.vsix";
 
 
-            w.AddSecurityGroup(rdp);
+            w.SecurityGroupIds.Add(new ReferenceProperty(rdp));
             w.AddElasticIp();
 
             //SecurityGroup blah = new SecurityGroup("blah",template.Vpcs.Last());
@@ -1162,7 +1143,7 @@ namespace AWS.CloudFormation.Test
             workstation.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 6);
 
 
-            workstation.AddSecurityGroup(rdp);
+            workstation.SecurityGroupIds.Add(new ReferenceProperty(rdp));
 
 
 
@@ -1213,7 +1194,7 @@ namespace AWS.CloudFormation.Test
             Instance workstation = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add(workstation.LogicalId, workstation);
 
-            workstation.AddSecurityGroup(rdp);
+            workstation.SecurityGroupIds.Add(new ReferenceProperty(rdp));
             workstation.AddElasticIp();
 
 
@@ -1254,7 +1235,7 @@ namespace AWS.CloudFormation.Test
             Instance workstation = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows);
             template.Resources.Add(workstation.LogicalId, workstation);
 
-            workstation.AddSecurityGroup(rdp);
+            workstation.SecurityGroupIds.Add(new ReferenceProperty(rdp));
             BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping(workstation, "/dev/sda1");
             blockDeviceMapping.Ebs.VolumeType = Ebs.VolumeTypes.GeneralPurpose;
             blockDeviceMapping.Ebs.VolumeSize = 30;
@@ -1345,13 +1326,13 @@ namespace AWS.CloudFormation.Test
             launchGroup.MaxSize = 2.ToString();
             launchGroup.AddAvailabilityZone(AvailabilityZone.UsEast1A);
             launchGroup.AddSubnetToVpcZoneIdentifier(subnet);
-            launchGroup.SecurityGroups.Add(new ReferenceProperty>(buildServerSecurityGroup));
 
 
             var buildServer = new LaunchConfiguration(null,instanceSize, UsEastWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration,false);
             template.Resources.Add("LaunchConfigurationBuildServer",buildServer);
 
             launchGroup.LaunchConfiguration = buildServer;
+            buildServer.SecurityGroups.Add(new ReferenceProperty(buildServerSecurityGroup));
 
             buildServer.AddBlockDeviceMapping("/dev/sda1", 100, Ebs.VolumeTypes.GeneralPurpose);
 
@@ -1364,8 +1345,6 @@ namespace AWS.CloudFormation.Test
             {
                 buildServer.AddDependsOn(tfsServerComplete);
             }
-
-            buildServer.AddSecurityGroup(buildServerSecurityGroup);
 
             var x = buildServer.Packages.Last().WaitCondition;
 
@@ -1381,7 +1360,7 @@ namespace AWS.CloudFormation.Test
 
             if (workstationSecurityGroup != null)
             {
-                workstation.AddSecurityGroup(workstationSecurityGroup);
+                workstation.SecurityGroupIds.Add(new ReferenceProperty(workstationSecurityGroup));
             }
 
             //workstation.Packages.Add(new SqlServerExpress(BucketNameSoftware));
@@ -1391,7 +1370,7 @@ namespace AWS.CloudFormation.Test
             workstation.Packages.Add(new Chrome());
             workstation.Packages.Add(new MSysGit(BucketNameSoftware));
             workstation.Packages.Add(new TfsCrossPlatformCommandLineInterface());
-            //workstation.Packages.Add(new VisualStudioPowershellTools());
+            workstation.Packages.Add(new VisualStudioPowershellTools());
 
 
             //var waitConditionWorkstationAvailable = workstation.AddFinalizer("waitConditionWorkstationAvailable",TimeoutMax);
@@ -1420,7 +1399,7 @@ namespace AWS.CloudFormation.Test
                 var packageTfsApplicationTier = new TeamFoundationServerApplicationTier(BucketNameSoftware, sqlServer4Tfs);
                 tfsServer.Packages.Add(packageTfsApplicationTier);
             }
-            tfsServer.AddSecurityGroup(tfsServerSecurityGroup);
+            tfsServer.SecurityGroupIds.Add(new ReferenceProperty(tfsServerSecurityGroup));
 
             return tfsServer;
         }
