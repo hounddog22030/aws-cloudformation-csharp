@@ -65,6 +65,7 @@ namespace AWS.CloudFormation.Resource.AutoScaling
             this.PopulateAvailableDevices();
 
             KeyName = new ReferenceProperty(Template.ParameterKeyPairName);
+            SecurityGroups = new List<ReferenceProperty>();
             
         }
 
@@ -421,5 +422,18 @@ namespace AWS.CloudFormation.Resource.AutoScaling
         }
 
         protected override bool SupportsTags => this.Type == ResourceType.AwsEc2Instance;
+
+        [JsonIgnore]
+        public List<ReferenceProperty> SecurityGroups
+        {
+            get
+            {
+                return this.Properties.GetValue<List<ReferenceProperty>>();
+            }
+            set
+            {
+                this.Properties.SetValue(value);
+            }
+        }
     }
 }

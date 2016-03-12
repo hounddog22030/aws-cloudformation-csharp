@@ -78,7 +78,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Udp, Ports.RdpAdmin);
             rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
 
-            this.Instance.AddSecurityGroup(rdgwSecurityGroup);
+            launchConfigurationAsInstance.SecurityGroupIds.Add(new ReferenceProperty(rdgwSecurityGroup));
         }
     }
 }

@@ -117,7 +117,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         }
 
         protected string ConfigSetName => $"{this.GetType().Name.Replace(".", string.Empty)}";
-        protected internal string ConfigName => $"{this.GetType().Name.Replace(".", string.Empty)}";
+        protected internal virtual string ConfigName => $"{this.GetType().Name.Replace(".", string.Empty)}";
 
         protected Config Config
         {
@@ -201,6 +201,8 @@ namespace AWS.CloudFormation.Configuration.Packages
         {
         }
 
+        protected internal override string ConfigName => "Chef";
+
         public string CookbookName { get; }
         public string RecipeList { get; private set; }
 
@@ -246,6 +248,15 @@ namespace AWS.CloudFormation.Configuration.Packages
             if (this.WaitAfterCompletion != TimeSpan.MinValue)
             {
                 chefCommandConfig.WaitAfterCompletion = this.WaitAfterCompletion.TotalSeconds.ToString(CultureInfo.InvariantCulture);
+            }
+
+            var node = GetChefNodeJsonContent(configuration);
+            if (!node.ContainsKey("domainAdmin"))
+            {
+                var domainAdminUserInfoNode = node.AddNode("domainAdmin");
+                domainAdminUserInfoNode.Add("name", new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(MicrosoftAd.DomainAdminUsernameParameterName)));
+                domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
+
             }
         }
 
@@ -410,10 +421,6 @@ namespace AWS.CloudFormation.Configuration.Packages
             tfsNode.Add("application_server_sqlname", new FnJoin(FnJoinDelimiter.Period, new FnJoin(FnJoinDelimiter.None,new ReferenceProperty(MicrosoftAd.DomainVersionParameterName), "sql4tfs"), new ReferenceProperty(MicrosoftAd.DomainFqdnParameterName)));
             tfsNode.Add(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName));
             tfsNode.Add(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName));
-
-            var domainAdminUserInfoNode = node.AddNode("domainAdmin");
-            domainAdminUserInfoNode.Add("name", new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(MicrosoftAd.DomainAdminUsernameParameterName)));
-            domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
         }
 
     }
