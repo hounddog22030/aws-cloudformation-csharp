@@ -139,7 +139,7 @@ namespace AWS.CloudFormation.Test
             primeTemplate.Resources.Add("Rdp", instanceRdp);
             instanceRdp.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 50, false);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
-            instanceRdp.Packages.Add(new WindowsShare("d:/backups","backups",new FnJoin(FnJoinDelimiter.None,"'",new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),"\\tfsservice'"),new FnJoin(FnJoinDelimiter.None,"'",new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),"\\Domain Admins'")));
+            instanceRdp.Packages.Add(new WindowsShare("d:/backups","backups", CidrPrimeVpc, new FnJoin(FnJoinDelimiter.None,"'",new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),"\\tfsservice'"),new FnJoin(FnJoinDelimiter.None,"'",new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),"\\Domain Admins'")));
 
 
             //string ou = MicrosoftAd.AddOu(instanceRdp, "OU=prime,DC=prime,DC=yadayadasoftware,DC=com", $"O{Guid.NewGuid().ToString().Replace("-", string.Empty)}");
@@ -425,7 +425,8 @@ namespace AWS.CloudFormation.Test
                 backupServer.AddDisk(Ebs.VolumeTypes.Magnetic, 60, false);
                 backupServer.Packages.Add(new WindowsShare(
                     "d:/backups",
-                    "backups", 
+                    "backups",
+                    CidrPrimeVpc,
                     new FnJoin(FnJoinDelimiter.None,
                     "'",
                     new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
@@ -586,6 +587,9 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("SecurityGroup4TfsServer", tfsServerSecurityGroup);
             tfsServerSecurityGroup.AddIngress(CidrPrimeDmz1Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             tfsServerSecurityGroup.AddIngress((ICidrBlock) subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            string theWorld = "0.0.0.0/0";
+            tfsServerSecurityGroup.AddIngress(theWorld, Protocol.Tcp, Ports.Min, Ports.Max);
+            tfsServerSecurityGroup.AddIngress(theWorld, Protocol.Udp, Ports.Min, Ports.Max);
             return tfsServerSecurityGroup;
         }
 

@@ -98,7 +98,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
             return newIngressEgress;
         }
 
-        private List<SecurityGroupIngress> AddIngress(string cidrBlock, Protocol protocol, Ports portBegin, Ports portEnd)
+        public List<SecurityGroupIngress> AddIngress(string cidrBlock, Protocol protocol, Ports portBegin, Ports portEnd)
         {
             List<SecurityGroupIngress> returnValue = new List<SecurityGroupIngress>();
 
