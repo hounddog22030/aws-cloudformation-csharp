@@ -116,7 +116,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             }
         }
 
-        protected string ConfigSetName => $"{this.GetType().Name.Replace(".", string.Empty)}";
+        protected virtual string ConfigSetName => $"{this.GetType().Name.Replace(".", string.Empty)}";
         protected internal virtual string ConfigName => $"{this.GetType().Name.Replace(".", string.Empty)}";
 
         protected Config Config
@@ -201,7 +201,8 @@ namespace AWS.CloudFormation.Configuration.Packages
         {
         }
 
-        protected internal override string ConfigName => "Chef";
+        protected internal override string ConfigName => "ConfigChef";
+        protected override string ConfigSetName => "ConfigSetChef";
 
         public string CookbookName { get; }
         public string RecipeList { get; private set; }
