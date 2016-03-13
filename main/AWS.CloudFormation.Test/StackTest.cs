@@ -36,15 +36,11 @@ namespace AWS.CloudFormation.Test
         public const string CidrPrimeDmz1Subnet = "10.0.3.0/24";
 
 
-        public const string CidrDevDmz1 = "10.1.1.0/24";    // 0-15
-        private const string CidrDevDmz2 = "10.1.2.0/24";  // 16-31
-        //10.0.0.64/26
-
-        private const string CidrSqlServer4TfsSubnet = "10.1.3.0/24";  //32-47
-        private const string CidrTfsServerSubnet = "10.1.4.0/24";  //48..63
-        private const string CidrBuildServerSubnet = "10.1.5.0/24";    //64-79
-        private const string CidrDatabase4BuildSubnet2 = "10.1.6.0/24";    //80-95
-        public const string CidrWorkstationSubnet = "10.1.7.0/24"; //96-127
+        //private const string CidrSqlServer4TfsSubnet = "10.1.3.0/24";  //32-47
+        //private const string CidrTfsServerSubnet = "10.1.4.0/24";  //48..63
+        //private const string CidrBuildServerSubnet = "10.1.5.0/24";    //64-79
+        //private const string CidrDatabase4BuildSubnet2 = "10.1.6.0/24";    //80-95
+        //public const string CidrWorkstationSubnet = "10.1.7.0/24"; //96-127
         public const string KeyPairName = "corp.getthebuybox.com";
         public const string UsEastWindows2012R2Ami = "ami-3586ac5f";
         private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-c796bcad";
@@ -83,20 +79,12 @@ namespace AWS.CloudFormation.Test
                         tfsServicePassword, "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
 
                 Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
-                CloudFormation.Resource.CloudFormation.Stack devStack =
-                    new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
+                CloudFormation.Resource.CloudFormation.Stack devStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
                 devStack.Parameters.Add("PrimeVpcId", vpcPrime);
-                devStack.Parameters.Add("PrimeRouteTableForAdSubnets",
-                    new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTableForAdSubnets"));
-                devStack.Parameters.Add("PrimeRouteTable4SubnetDmz1",
-                    new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTable4SubnetDmz1"));
-
-
+                devStack.Parameters.Add("PrimeRouteTableForAdSubnets", new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTableForAdSubnets"));
+                devStack.Parameters.Add("PrimeRouteTable4SubnetDmz1", new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTable4SubnetDmz1"));
+                devStack.Parameters.Add("DhcpOptionsId", new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.DhcpOptionsId"));
                 masterTemplate.Resources.Add($"{i}DevYadaYadaSoftwareCom", devStack);
-                VpcDhcpOptionsAssociation association =
-                    new VpcDhcpOptionsAssociation(new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.DhcpOptionsId"),
-                        vpcDevelopment);
-                masterTemplate.Resources.Add($"VpcDhcpOptionsAssociation4{i}", association);
             }
 
 
@@ -219,7 +207,7 @@ namespace AWS.CloudFormation.Test
 
         public static Template GetTemplateFullStack(string topLevel, string appNameNetBiosName, Greek version, Create instancesToCreate, string gitSuffix)
         {
-            var developmentVpcCidr = $"10.{(int) version}.0.0/16";
+            var developmentVpcCidr = $"10.{(int)version}.0.0/16";
             var template = new Template($"{version}.{appNameNetBiosName}.{topLevel}", KeyPairName, $"Vpc{version}", developmentVpcCidr, $"{GetGitBranch()}:{GetGitHash()}" );
 
             template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminUsernameParameterName, "String", "admin", "Admin username"));
@@ -236,18 +224,23 @@ namespace AWS.CloudFormation.Test
             template.Parameters.Add(new ParameterBase("PrimeVpcId", "String","Invalid", "Prime VpcId"));
             template.Parameters.Add(new ParameterBase("PrimeRouteTableForAdSubnets", "String", "Invalid", "Prime RouteTable For Active Directory Subnets"));
             template.Parameters.Add(new ParameterBase("PrimeRouteTable4SubnetDmz1", "String", "Invalid", "Prime RouteTable For Dmz1 Subnet"));
+            template.Parameters.Add(new ParameterBase("DhcpOptionsId", "String", "Invalid", "Id of DhcpOptions from Prime"));
 
             Vpc vpc = template.Vpcs.First();
             vpc.EnableDnsHostnames = true;
             vpc.EnableDnsSupport = true;
+
+            VpcDhcpOptionsAssociation association = new VpcDhcpOptionsAssociation(new ReferenceProperty("DhcpOptionsId"), vpc);
+            template.Resources.Add($"VpcDhcpOptionsAssociation", association);
+
 
             var vpcPeeringAlphaToPrime = new VpcPeeringConnection(vpc, new ReferenceProperty("PrimeVpcId"));
             template.Resources.Add("VpcAlphaToPrime", vpcPeeringAlphaToPrime);
 
             SecurityGroup natSecurityGroup = AddNatSecurityGroup(vpc, template);
 
-            Subnet subnetDmz1 = AddDmz1(vpc, template);
-            Subnet subnetDmz2 = AddDmz2(vpc, template);
+            Subnet subnetDmz1 = AddDmz1(vpc, template, version);
+            Subnet subnetDmz2 = AddDmz2(vpc, template, version);
 
             Instance nat1 = AddNat(template, subnetDmz1, natSecurityGroup);
             Instance nat2 = null;
@@ -263,15 +256,15 @@ namespace AWS.CloudFormation.Test
             routeFromAz1ToNat.RouteTable = routeTableForSubnetsToNat1;
 
             SecurityGroup sqlServer4TfsSecurityGroup = AddSqlServer4TfsSecurityGroup(vpc, template, subnetDmz1, subnetDmz2);
-            Subnet subnetSqlServer4Tfs = AddSubnetSqlServer4Tfs(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template);
+            Subnet subnetSqlServer4Tfs = AddSubnetSqlServer4Tfs(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template,version);
 
-            Subnet subnetTfsServer = AddSubnetTfsServer(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template);
+            Subnet subnetTfsServer = AddSubnetTfsServer(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template,version);
             sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock)subnetTfsServer, Protocol.Tcp, Ports.MsSqlServer);
             sqlServer4TfsSecurityGroup.AddIngress((ICidrBlock)subnetTfsServer, Protocol.Tcp, Ports.Smb);
 
             SecurityGroup tfsServerSecurityGroup = AddTfsServerSecurityGroup(vpc, template, subnetDmz1, subnetDmz2);
 
-            Subnet subnetBuildServer = AddSubnet4BuildServer(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template);
+            Subnet subnetBuildServer = AddSubnet4BuildServer(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template,version);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.TeamFoundationServerBuild);
 
@@ -282,7 +275,7 @@ namespace AWS.CloudFormation.Test
             SecurityGroup securityGroupSqlSever4Build = AddSecurityGroupSqlSever4Build(vpc, template);
             securityGroupSqlSever4Build.AddIngress((ICidrBlock)subnetBuildServer, Protocol.Tcp, Ports.MsSqlServer);
 
-            Subnet subnetDatabase4BuildServer2 = AddSubnetDatabase4BuildServer2(vpc, template);
+            Subnet subnetDatabase4BuildServer2 = AddSubnetDatabase4BuildServer2(vpc, template,version);
 
             SecurityGroup securityGroupBuildServer = AddSecurityGroupBuildServer(vpc, template);
             securityGroupBuildServer.AddIngress(CidrPrimeDmz1Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
@@ -291,7 +284,7 @@ namespace AWS.CloudFormation.Test
             SecurityGroup workstationSecurityGroup = AddWorkstationSecurityGroup(vpc, template, subnetDmz1);
             tfsServerSecurityGroup.AddIngress(workstationSecurityGroup, Protocol.Tcp, Ports.TeamFoundationServerHttp);
 
-            Subnet subnetWorkstation = AddSubnetWorkstation(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template);
+            Subnet subnetWorkstation = AddSubnetWorkstation(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template,version);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.TeamFoundationServerHttp);
             tfsServerSecurityGroup.AddIngress((ICidrBlock)subnetWorkstation, Protocol.Tcp, Ports.TeamFoundationServerBuild);
             // give db access to the workstations
@@ -530,9 +523,9 @@ namespace AWS.CloudFormation.Test
         //    return dcPackage;
         //}
 
-        public static Subnet AddSubnetWorkstation(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup, Template template)
+        public static Subnet AddSubnetWorkstation(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup, Template template,Greek version)
         {
-            var subnetWorkstation = new Subnet(vpc, CidrWorkstationSubnet, AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
+            var subnetWorkstation = new Subnet(vpc, $"10.{((int)version)}.7.0/24", AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
             template.Resources.Add("Subnet4Workstation", subnetWorkstation);
             return subnetWorkstation;
         }
@@ -553,9 +546,9 @@ namespace AWS.CloudFormation.Test
             return securityGroupBuildServer;
         }
 
-        private static Subnet AddSubnetDatabase4BuildServer2(Vpc vpc, Template template)
+        private static Subnet AddSubnetDatabase4BuildServer2(Vpc vpc, Template template,Greek version)
         {
-            var subnetDatabase4BuildServer2 = new Subnet(vpc, CidrDatabase4BuildSubnet2, AvailabilityZone.UsEast1E, false);
+            var subnetDatabase4BuildServer2 = new Subnet(vpc, $"10.{((int)version)}.6.0/24", AvailabilityZone.UsEast1E, false);
             template.Resources.Add("Subnet4Build2Database", subnetDatabase4BuildServer2);
             return subnetDatabase4BuildServer2;
         }
@@ -574,9 +567,9 @@ namespace AWS.CloudFormation.Test
             return securityGroupDb4Build;
         }
 
-        private static Subnet AddSubnet4BuildServer(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup, Template template)
+        private static Subnet AddSubnet4BuildServer(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup, Template template,Greek version)
         {
-            var subnetBuildServer = new Subnet(vpc, CidrBuildServerSubnet, AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
+            var subnetBuildServer = new Subnet(vpc, $"10.{((int)version)}.5.0/24", AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
             template.Resources.Add("Subnet4BuildServer", subnetBuildServer);
             return subnetBuildServer;
         }
@@ -590,32 +583,32 @@ namespace AWS.CloudFormation.Test
             return tfsServerSecurityGroup;
         }
 
-        private static Subnet AddSubnetTfsServer(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup, Template template)
+        private static Subnet AddSubnetTfsServer(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup, Template template, Greek version)
         {
-            var subnetTfsServer = new Subnet(vpc, CidrTfsServerSubnet, AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
+            var subnetTfsServer = new Subnet(vpc, $"10.{((int)version)}.4.0/24", AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
             template.Resources.Add("Subnet4TfsServer", subnetTfsServer);
             return subnetTfsServer;
         }
 
-        private static Subnet AddDmz1(Vpc vpc, Template template)
+        private static Subnet AddDmz1(Vpc vpc, Template template, Greek version)
         {
-            Subnet subnetDmz1 = new Subnet(vpc, CidrDevDmz1, AvailabilityZone.UsEast1A, true);
+            Subnet subnetDmz1 = new Subnet(vpc, $"10.{((int)version)}.1.0/24", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("SubnetDmz1", subnetDmz1);
             return subnetDmz1;
         }
 
-        private static Subnet AddDmz2(Vpc vpc, Template template)
+        private static Subnet AddDmz2(Vpc vpc, Template template, Greek version)
         {
-            Subnet subnetDmz2 = new Subnet(vpc, CidrDevDmz2, AvailabilityZone.UsEast1E, true);
+            Subnet subnetDmz2 = new Subnet(vpc, $"10.{((int)version)}.2.0/24", AvailabilityZone.UsEast1E, true);
             template.Resources.Add("SubnetDmz2", subnetDmz2);
             return subnetDmz2;
         }
 
 
 
-        private static Subnet AddSubnetSqlServer4Tfs(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup, Template template)
+        private static Subnet AddSubnetSqlServer4Tfs(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup, Template template, Greek version)
         {
-            var subnetSqlServer4Tfs = new Subnet(vpc, CidrSqlServer4TfsSubnet, AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
+            var subnetSqlServer4Tfs = new Subnet(vpc, $"10.{((int)version)}.3.0/24", AvailabilityZone.UsEast1A, nat1, natSecurityGroup);
             template.Resources.Add("Subnet4SqlServer4Tfs", subnetSqlServer4Tfs);
             return subnetSqlServer4Tfs;
         }
@@ -746,7 +739,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDevDmz1, AvailabilityZone.UsEast1A, true);
+            var DMZSubnet = new Subnet(vpc, "10.1.1.0/24", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
 
@@ -844,7 +837,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDevDmz1, AvailabilityZone.UsEast1A, true);
+            var DMZSubnet = new Subnet(vpc, "10.1.1.0/24", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             Instance w = new Instance(DMZSubnet,InstanceTypes.T2Large, UsEastWindows2012R2Ami,OperatingSystem.Windows,Ebs.VolumeTypes.GeneralPurpose, 50);
@@ -868,7 +861,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDevDmz1, AvailabilityZone.UsEast1A, true);
+            var DMZSubnet = new Subnet(vpc, "10.1.1.0/24", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows);
@@ -899,7 +892,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet( vpc, CidrDevDmz1, AvailabilityZone.UsEast1A, true);
+            var DMZSubnet = new Subnet( vpc, "10.1.1.0/24", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows);
@@ -933,7 +926,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDevDmz1, AvailabilityZone.UsEast1A, true);
+            var DMZSubnet = new Subnet(vpc, "10.1.1.0/24", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows );
@@ -972,7 +965,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDevDmz1, AvailabilityZone.UsEast1A, true);
+            var DMZSubnet = new Subnet(vpc, "10.1.1.0/24", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             Instance w = new Instance(DMZSubnet,InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows);
@@ -999,7 +992,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDevDmz1, AvailabilityZone.UsEast1A, true);
+            var DMZSubnet = new Subnet(vpc, "10.1.1.0/24", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows );
@@ -1022,7 +1015,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDevDmz1, AvailabilityZone.UsEast1A, true);
+            var DMZSubnet = new Subnet(vpc, "10.1.1.0/24", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             Instance w = AddWorkstation(template, DMZSubnet, rdp, Greek.Alpha);
@@ -1040,7 +1033,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDevDmz1, AvailabilityZone.UsEast1A, true);
+            var DMZSubnet = new Subnet(vpc, "10.1.1.0/24", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows);
@@ -1061,7 +1054,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDevDmz1, AvailabilityZone.UsEast1A, true);
+            var DMZSubnet = new Subnet(vpc, "10.1.1.0/24", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             var dc1 = AddDomainController(template, DMZSubnet);
@@ -1085,7 +1078,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDevDmz1, AvailabilityZone.UsEast1A, true);
+            var DMZSubnet = new Subnet(vpc, "10.1.1.0/24", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
 
@@ -1119,7 +1112,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDevDmz1, AvailabilityZone.UsEast1A, true);
+            var DMZSubnet = new Subnet(vpc, "10.1.1.0/24", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
 
@@ -1177,7 +1170,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDevDmz1, AvailabilityZone.UsEast1A, true);
+            var DMZSubnet = new Subnet(vpc, "10.1.1.0/24", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
 
@@ -1211,7 +1204,7 @@ namespace AWS.CloudFormation.Test
             System.Diagnostics.Debug.WriteLine(rdp.Vpc);
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             
-            Subnet DMZSubnet = new Subnet(vpc, CidrDevDmz1, AvailabilityZone.UsEast1A, true);
+            Subnet DMZSubnet = new Subnet(vpc, "10.1.1.0/24", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             RouteTable dmzRouteTable = new RouteTable(vpc);
@@ -1272,7 +1265,7 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("rdp", rdp);
 
             rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            var DMZSubnet = new Subnet(vpc, CidrDevDmz1, AvailabilityZone.UsEast1A, true);
+            var DMZSubnet = new Subnet(vpc, "10.1.1.0/24", AvailabilityZone.UsEast1A, true);
             template.Resources.Add("DMZSubnet", DMZSubnet);
 
             Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows);

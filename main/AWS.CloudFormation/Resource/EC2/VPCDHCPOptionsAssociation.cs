@@ -35,6 +35,10 @@ namespace AWS.CloudFormation.Resource.EC2
 
         }
 
+        public VpcDhcpOptionsAssociation(ReferenceProperty dhcpOptions, Vpc vpc): this((object) dhcpOptions, (object) vpc)
+        {
+        }
+
         protected override bool SupportsTags => false;
 
         [JsonIgnore]
