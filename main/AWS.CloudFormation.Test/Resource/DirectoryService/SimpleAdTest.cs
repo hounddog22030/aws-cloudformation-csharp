@@ -17,7 +17,7 @@ namespace AWS.CloudFormation.Test.Resource.DirectoryService
         [TestMethod]
         public void SimplestTest()
         {
-            Template t = new Template("corp.getthebuybox.com", "SimplestTestVpc", $"SimplestTest{DateTime.Now.Ticks}", StackTest.CidrDevVpc);
+            Template t = new Template("corp.getthebuybox.com", "SimplestTestVpc", $"SimplestTest{DateTime.Now.Ticks}", "10.1.0.0/16");
             Vpc vpc = t.Vpcs.First();
             Subnet subnet1 = new Subnet(vpc, "10.0.0.0/24", AvailabilityZone.UsEast1A, true);
             t.Resources.Add(subnet1.LogicalId, subnet1);
