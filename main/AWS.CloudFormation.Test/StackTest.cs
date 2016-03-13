@@ -134,21 +134,17 @@ namespace AWS.CloudFormation.Test
             Subnet subnetDmz = new Subnet(vpc, CidrPrimeDmz1Subnet, AvailabilityZone.UsEast1A, true);
             primeTemplate.Resources.Add("SubnetDmz1", subnetDmz);
 
-            
-            Instance instanceRdp = new Instance(subnetDmz, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose,40);
+
+            Instance instanceRdp = new Instance(subnetDmz, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 40);
             primeTemplate.Resources.Add("Rdp", instanceRdp);
             instanceRdp.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 50, false);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
-            instanceRdp.Packages.Add(new WindowsShare("d:/backups","backups", CidrPrimeVpc, new FnJoin(FnJoinDelimiter.None,"'",new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),"\\tfsservice'"),new FnJoin(FnJoinDelimiter.None,"'",new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),"\\Domain Admins'")));
-
-
-            //string ou = MicrosoftAd.AddOu(instanceRdp, "OU=prime,DC=prime,DC=yadayadasoftware,DC=com", $"O{Guid.NewGuid().ToString().Replace("-", string.Empty)}");
-            string ou = "OU=Users,OU=prime,DC=prime,DC=yadayadasoftware,DC=com";
-            
-            string user = MicrosoftAd.AddUser(instanceRdp, ou, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName), tfsServicePassword);
-
+            instanceRdp.Packages.Add(new WindowsShare("d:/backups", "backups", CidrPrimeVpc, new FnJoin(FnJoinDelimiter.None, "'", new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName), "\\tfsservice'"), new FnJoin(FnJoinDelimiter.None, "'", new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName), "\\Admins'")));
             instanceRdp.DependsOn.Add(simpleAd.LogicalId);
             instanceRdp.DependsOn.Add(routeTableForAdSubnets.LogicalId);
+            string ou = "OU=Users,OU=prime,DC=prime,DC=yadayadasoftware,DC=com";
+            string user = MicrosoftAd.AddUser(instanceRdp, ou, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName), tfsServicePassword);
+
 
             primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminPasswordParameterName, "String", activeDirectoryAdminPassword, "Admin password"));
             primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminUsernameParameterName, "String", "admin", "Admin username"));
@@ -212,7 +208,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateMasterTemplate()
         {
-            var templateUri = GetMasterTemplateUri("EFVF2083swcd", "PBVL8776jepl", Create.Sql4Tfs|Create.Tfs|Create.Workstation);
+            var templateUri = GetMasterTemplateUri("EFVF2083swcd", "PBVL8776jepl", Create.Sql4Tfs|Create.Tfs|Create.Workstation) ;
             Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635929955122147759", templateUri);
 
         }
@@ -587,9 +583,6 @@ namespace AWS.CloudFormation.Test
             template.Resources.Add("SecurityGroup4TfsServer", tfsServerSecurityGroup);
             tfsServerSecurityGroup.AddIngress(CidrPrimeDmz1Subnet, Protocol.Tcp, Ports.RemoteDesktopProtocol);
             tfsServerSecurityGroup.AddIngress((ICidrBlock) subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-            string theWorld = "0.0.0.0/0";
-            tfsServerSecurityGroup.AddIngress(theWorld, Protocol.Tcp, Ports.Min, Ports.Max);
-            tfsServerSecurityGroup.AddIngress(theWorld, Protocol.Udp, Ports.Min, Ports.Max);
             return tfsServerSecurityGroup;
         }
 
