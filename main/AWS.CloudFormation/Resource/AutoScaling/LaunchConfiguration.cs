@@ -347,13 +347,17 @@ namespace AWS.CloudFormation.Resource.AutoScaling
                     this.UserData.Clear();
                     this.UserData.Add("Fn::Base64").SetFnJoin(
                         "<script>",
-                        "cfn-init.exe -v -c ",
+                        "ping 10.0.1.188 -n 120 > c:\\ping.txt & cfn-init.exe -v -c ",
                         string.Join(",", this.Metadata.Init.ConfigSets.Keys),
                         " -s ",
                         new ReferenceProperty("AWS::StackId"),
                         " -r " + this.LogicalId + " --region ",
                         new ReferenceProperty("AWS::Region"),
                         "</script>");
+                    //this.UserData.Add("Fn::Base64").SetFnJoin(
+                    //    "<script>",
+                    //    "ipconfig /all > c:\\ipconfig.txt",
+                    //    "</script>");
                     break;
                 case OperatingSystem.Linux:
                     break;
