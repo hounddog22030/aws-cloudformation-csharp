@@ -233,9 +233,8 @@ namespace AWS.CloudFormation.Test
             VpcDhcpOptionsAssociation association = new VpcDhcpOptionsAssociation(new ReferenceProperty("DhcpOptionsId"), vpc);
             template.Resources.Add($"VpcDhcpOptionsAssociation", association);
 
-
             var vpcPeeringAlphaToPrime = new VpcPeeringConnection(vpc, new ReferenceProperty("PrimeVpcId"));
-            template.Resources.Add("VpcAlphaToPrime", vpcPeeringAlphaToPrime);
+            template.Resources.Add($"Vpc{version}ToPrime", vpcPeeringAlphaToPrime);
 
             SecurityGroup natSecurityGroup = AddNatSecurityGroup(vpc, template);
 
@@ -302,17 +301,30 @@ namespace AWS.CloudFormation.Test
             // new route
             Route routeFromAlphaToPrime = new Route(vpcPeeringAlphaToPrime, CidrPrimeVpc, routeTableForSubnetsToNat1);
             template.Resources.Add("RouteFromAlphaToPrime", routeFromAlphaToPrime);
+            routeFromAlphaToPrime.DependsOn.Add(routeTableForSubnetsToNat1.LogicalId);
+            routeFromAlphaToPrime.DependsOn.Add(vpcPeeringAlphaToPrime.LogicalId);
 
             Route routeFromPrimeAdSubnetsToAlpha = new Route(vpcPeeringAlphaToPrime, developmentVpcCidr, new ReferenceProperty("PrimeRouteTableForAdSubnets"));
             template.Resources.Add("RouteFromPrimeAdSubnetsToAlpha", routeFromPrimeAdSubnetsToAlpha);
+            routeFromPrimeAdSubnetsToAlpha.DependsOn.Add(routeTableForSubnetsToNat1.LogicalId);
+            routeFromPrimeAdSubnetsToAlpha.DependsOn.Add(vpcPeeringAlphaToPrime.LogicalId);
 
             Route routeFromPrimeSubnetDmz1ToAlpha = new Route(vpcPeeringAlphaToPrime, developmentVpcCidr, new ReferenceProperty("PrimeRouteTable4SubnetDmz1"));
             template.Resources.Add("RouteFromPrimeSubnetDmz1ToAlpha", routeFromPrimeSubnetDmz1ToAlpha);
+            routeFromPrimeSubnetDmz1ToAlpha.DependsOn.Add(routeTableForSubnetsToNat1.LogicalId);
+            routeFromPrimeSubnetDmz1ToAlpha.DependsOn.Add(vpcPeeringAlphaToPrime.LogicalId);
             // new route
 
             if (instancesToCreate.HasFlag(Create.Sql4Tfs))
             {
                 instanceTfsSqlServer = AddSql(template, $"{version}Sql4Tfs", InstanceTypes.T2Small, subnetSqlServer4Tfs, sqlServer4TfsSecurityGroup);
+                instanceTfsSqlServer.DependsOn.Add(routeFromPrimeAdSubnetsToAlpha.LogicalId);
+                instanceTfsSqlServer.DependsOn.Add(routeFromAz1ToNat.LogicalId);
+                instanceTfsSqlServer.DependsOn.Add(routeFromAlphaToPrime.LogicalId);
+                instanceTfsSqlServer.DependsOn.Add(vpcPeeringAlphaToPrime.LogicalId);
+
+                
+
                 //instanceTfsSqlServer.DependsOn.Add(createUsersPackage.WaitCondition.LogicalId);
                 var x = instanceTfsSqlServer.Packages.Last().WaitCondition;
                 //instanceTfsSqlServer.DependsOn.Add(simpleAd.LogicalId);
@@ -325,6 +337,10 @@ namespace AWS.CloudFormation.Test
             if (instancesToCreate.HasFlag(Create.Tfs))
             {
                 tfsServer = AddTfsServer(template, InstanceTypes.T2Small, subnetTfsServer, instanceTfsSqlServer, tfsServerSecurityGroup,version);
+                tfsServer.DependsOn.Add(routeFromPrimeAdSubnetsToAlpha.LogicalId);
+                tfsServer.DependsOn.Add(routeFromAz1ToNat.LogicalId);
+                tfsServer.DependsOn.Add(routeFromAlphaToPrime.LogicalId);
+
                 //tfsServer.DependsOn.Add(simpleAd.LogicalId);
                 MicrosoftAd.AddInstanceToDomain(tfsServer.RenameConfig);
 
@@ -384,8 +400,14 @@ namespace AWS.CloudFormation.Test
 
             if (instancesToCreate.HasFlag(Create.Tfs) && instancesToCreate.HasFlag(Create.Build))
             {
-                var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer,
-                 tfsServer, tfsApplicationTierInstalled, securityGroupBuildServer, rdsSqlExpress4Build);
+                var buildServer = AddBuildServer(template, InstanceTypes.T2Small, subnetBuildServer, tfsServer, tfsApplicationTierInstalled, securityGroupBuildServer, rdsSqlExpress4Build);
+                buildServer.DependsOn.Add(routeFromPrimeAdSubnetsToAlpha.LogicalId);
+                buildServer.DependsOn.Add(routeFromAz1ToNat.LogicalId);
+                buildServer.DependsOn.Add(routeFromAlphaToPrime.LogicalId);
+
+
+
+
                 //buildServer.DependsOn.Add(simpleAd.LogicalId);
                 MicrosoftAd.AddInstanceToDomain(buildServer.RenameConfig);
 
@@ -395,49 +417,13 @@ namespace AWS.CloudFormation.Test
             {
                 //uses 33gb
                 var workstation = AddWorkstation(template, subnetWorkstation, workstationSecurityGroup, version);
+                workstation.DependsOn.Add(routeFromPrimeAdSubnetsToAlpha.LogicalId);
+                workstation.DependsOn.Add(routeFromAz1ToNat.LogicalId);
+                workstation.DependsOn.Add(routeFromAlphaToPrime.LogicalId);
+
                 //workstation.DependsOn.Add(simpleAd.LogicalId);
                 MicrosoftAd.AddInstanceToDomain(workstation.RenameConfig);
             }
-
-            if (instancesToCreate.HasFlag(Create.BackupServer))
-            {
-                Subnet backupServerSubnet = new Subnet(vpc,"10.1.254.0/24",AvailabilityZone.UsEast1A, routeTableForSubnetsToNat1,natSecurityGroup);
-                template.Resources.Add(backupServerSubnet.LogicalId, backupServerSubnet);
-                Instance backupServer = new Instance(backupServerSubnet, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows,true);
-                //backupServer.DependsOn.Add(simpleAd.LogicalId);
-                SecurityGroup backupServerSecurityGroup = new SecurityGroup("SecurityGroup4BackupServer", vpc);
-                template.Resources.Add("SecurityGroup4BackupServer", backupServerSecurityGroup);
-                backupServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz1, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-                backupServerSecurityGroup.AddIngress((ICidrBlock)subnetDmz2, Protocol.Tcp, Ports.RemoteDesktopProtocol);
-                backupServerSecurityGroup.AddIngress(vpc, Protocol.Tcp, Ports.Min, Ports.Max);
-                backupServerSecurityGroup.AddIngress(vpc, Protocol.Udp, Ports.Min, Ports.Max);
-                backupServer.SecurityGroupIds.Add(new ReferenceProperty(backupServerSecurityGroup));
-                template.Resources.Add("BackupServer", backupServer);
-                MicrosoftAd.AddInstanceToDomain(backupServer.RenameConfig);
-
-                backupServer.AddDisk(Ebs.VolumeTypes.Magnetic, 60, false);
-                backupServer.Packages.Add(new WindowsShare(
-                    "d:/backups",
-                    "backups",
-                    CidrPrimeVpc,
-                    new FnJoin(FnJoinDelimiter.None,
-                    "'",
-                    new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
-                    "\\tfsservice'"),
-                    new FnJoin(FnJoinDelimiter.None,
-                    "'",
-                    new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
-                    "\\Domain Admins'")));
-                var x = backupServer.Packages.Last().WaitCondition;
-            }
-
-
-
-
-
-
-
-
 
             //////SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);
             //////elbSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.TeamFoundationServerHttp);
@@ -491,8 +477,7 @@ namespace AWS.CloudFormation.Test
             Build = Tfs * 2,
             SqlServer4Build = Build *2,
             MySql4Build = SqlServer4Build * 2,
-            BackupServer = MySql4Build * 2,
-            Workstation = BackupServer * 2,
+            Workstation = MySql4Build * 2,
             FullStack = int.MaxValue
         }
 
