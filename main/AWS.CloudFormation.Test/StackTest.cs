@@ -191,7 +191,7 @@ namespace AWS.CloudFormation.Test
         {
             var adminPassword = GetPassword();
             var tfsPassword = GetPassword();
-            var templateUri = GetMasterTemplateUri(adminPassword,tfsPassword,Create.None, Greek.Alpha, Greek.Beta);
+            var templateUri = GetMasterTemplateUri(adminPassword,tfsPassword,Create.None, Greek.Alpha, Greek.Alpha);
             var response = Stack.Stack.CreateStack(templateUri);
             
 
@@ -200,8 +200,8 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateMasterTemplate()
         {
-            var templateUri = GetMasterTemplateUri("EFVF2083swcd", "PBVL8776jepl", Create.Sql4Tfs|Create.Tfs|Create.Workstation, Greek.Alpha, Greek.Beta) ;
-            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635929955122147759", templateUri);
+            var templateUri = GetMasterTemplateUri("UHQH4187ksfg", "JTED8168ghav", Create.Tfs|Create.Workstation, Greek.Alpha, Greek.Alpha) ;
+            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635937110287152747", templateUri);
 
         }
 
@@ -474,7 +474,7 @@ namespace AWS.CloudFormation.Test
             Dc2 = 1,
             RdpGateway = Dc2 * 2,
             Sql4Tfs = RdpGateway * 2,
-            Tfs = Sql4Tfs * 2,
+            Tfs = Sql4Tfs + Sql4Tfs * 2,
             Build = Tfs * 2,
             SqlServer4Build = Build *2,
             MySql4Build = SqlServer4Build * 2,
