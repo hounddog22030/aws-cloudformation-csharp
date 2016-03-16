@@ -1,0 +1,933 @@
+{
+  "Description": "Stack for prime Vpc (AD):microsoftad:44cc6c47bfb11e171c6ea65ae95aca172fde9302",
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "VpcPrime": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "10.0.0.0/16",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "VpcPrime"
+          }
+        ]
+      }
+    },
+    "VpcPrimeInternetGateway": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "VpcPrimeInternetGateway"
+          }
+        ]
+      }
+    },
+    "VpcPrimeInternetGatewayAttachment": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "InternetGatewayId": {
+          "Ref": "VpcPrimeInternetGateway"
+        },
+        "VpcId": {
+          "Ref": "VpcPrime"
+        }
+      }
+    },
+    "RouteTableForAdSubnets": {
+      "Type": "AWS::EC2::RouteTable",
+      "DependsOn": [
+        "VpcPrimeInternetGateway"
+      ],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcPrime"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "RouteTableForVpcPrime"
+          },
+          {
+            "Key": "Name",
+            "Value": "RouteTableForAdSubnets"
+          }
+        ]
+      }
+    },
+    "SubnetAd1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcPrime"
+        },
+        "CidrBlock": "10.0.1.0/24",
+        "AvailabilityZone": "us-east-1a",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "SubnetAd1"
+          }
+        ]
+      }
+    },
+    "SubnetRouteTableAssociation4SubnetAd1RouteTableForAdSubnets": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RouteTableForAdSubnets"
+        },
+        "SubnetId": {
+          "Ref": "SubnetAd1"
+        }
+      }
+    },
+    "SubnetAd2": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcPrime"
+        },
+        "CidrBlock": "10.0.2.0/24",
+        "AvailabilityZone": "us-east-1e",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "SubnetAd2"
+          }
+        ]
+      }
+    },
+    "SubnetRouteTableAssociation4SubnetAd2RouteTableForAdSubnets": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RouteTableForAdSubnets"
+        },
+        "SubnetId": {
+          "Ref": "SubnetAd2"
+        }
+      }
+    },
+    "SimpleAdprimeyadayadasoftwarecom": {
+      "Type": "AWS::DirectoryService::MicrosoftAD",
+      "Properties": {
+        "Name": "prime.yadayadasoftware.com",
+        "Password": "EFVF2083swcd",
+        "VpcSettings": {
+          "VpcId": {
+            "Ref": "VpcPrime"
+          },
+          "SubnetIds": [
+            {
+              "Ref": "SubnetAd1"
+            },
+            {
+              "Ref": "SubnetAd2"
+            }
+          ]
+        }
+      }
+    },
+    "DhcpAWSCloudFormationResourceEC2NetworkingVpcprimeyadayadasoftwarecom": {
+      "Type": "AWS::EC2::DHCPOptions",
+      "Properties": {
+        "DomainNameServers": {
+          "Fn::GetAtt": [
+            "SimpleAdprimeyadayadasoftwarecom",
+            "DnsIpAddresses"
+          ]
+        },
+        "NetbiosNameServers": {
+          "Fn::GetAtt": [
+            "SimpleAdprimeyadayadasoftwarecom",
+            "DnsIpAddresses"
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "DhcpAWSCloudFormationResourceEC2NetworkingVpcprimeyadayadasoftwarecom"
+          }
+        ]
+      }
+    },
+    "VpcDhcpOptionsAssociation4DhcpAWSCloudFormationResourceEC2NetworkingVpcprimeyadayadasoftwarecom": {
+      "Type": "AWS::EC2::VPCDHCPOptionsAssociation",
+      "Properties": {
+        "DhcpOptionsId": {
+          "Ref": "DhcpAWSCloudFormationResourceEC2NetworkingVpcprimeyadayadasoftwarecom"
+        },
+        "VpcId": {
+          "Ref": "VpcPrime"
+        }
+      }
+    },
+    "SubnetDmz1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcPrime"
+        },
+        "CidrBlock": "10.0.3.0/24",
+        "AvailabilityZone": "us-east-1a",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "SubnetDmz1"
+          }
+        ]
+      }
+    },
+    "RouteTable4SubnetDmz1": {
+      "Type": "AWS::EC2::RouteTable",
+      "DependsOn": [
+        "VpcPrimeInternetGateway"
+      ],
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcPrime"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "RouteTableForVpcPrime"
+          },
+          {
+            "Key": "Name",
+            "Value": "RouteTable4SubnetDmz1"
+          }
+        ]
+      }
+    },
+    "Route4SubnetDmz1": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": [
+        "VpcPrimeInternetGateway"
+      ],
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "RouteTable4SubnetDmz1"
+        },
+        "GatewayId": {
+          "Ref": "VpcPrimeInternetGateway"
+        }
+      }
+    },
+    "SubnetRouteTableAssociation4SubnetDmz1RouteTable4SubnetDmz1": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RouteTable4SubnetDmz1"
+        },
+        "SubnetId": {
+          "Ref": "SubnetDmz1"
+        }
+      }
+    },
+    "Rdp": {
+      "Type": "AWS::EC2::Instance",
+      "Metadata": {
+        "AWS::CloudFormation::Init": {
+          "configSets": {
+            "LaunchConfigurationConfigSet": [
+              "LaunchConfigurationConfig",
+              "Rename"
+            ],
+            "RemoteDesktop": [
+              "Install"
+            ],
+            "WindowsShare": [
+              "WindowsShare"
+            ],
+            "ActiveDirectoryConfigSet": [
+              "ActiveDirectoryConfig"
+            ]
+          },
+          "LaunchConfigurationConfig": {
+            "commands": {
+              "000DisableWindowsFirewall": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Get-NetFirewallProfile | Set-NetFirewallProfile -Enabled False\""
+                    ]
+                  ]
+                }
+              },
+              "001SetTimeZone": {
+                "waitAfterCompletion": "0",
+                "command": "tzutil /s \"Eastern Standard Time\""
+              }
+            },
+            "files": {
+              "c:\\cfn\\cfn-hup.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[main]\nstack=",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      "\nregion=",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\ninterval=1\nverbose=true"
+                    ]
+                  ]
+                }
+              },
+              "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[cfn-auto-reloader-hook]\n",
+                      "triggers=post.update\n",
+                      "path=Resources.Rdp.Metadata.AWS::CloudFormation::Init\n",
+                      "action=",
+                      "cfn-init.exe -v -c ",
+                      "LaunchConfigurationConfigSet,RemoteDesktop,WindowsShare,ActiveDirectoryConfigSet",
+                      " -s ",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      " -r ",
+                      "Rdp",
+                      " --region ",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\n"
+                    ]
+                  ]
+                }
+              }
+            },
+            "services": {
+              "windows": {
+                "cfn-hup": {
+                  "enabled": true,
+                  "ensureRunning": true,
+                  "files": [
+                    "c:\\cfn\\cfn-hup.conf",
+                    "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf"
+                  ]
+                }
+              }
+            },
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          },
+          "Rename": {
+            "commands": {
+              "000RenameComputer": {
+                "waitAfterCompletion": "forever",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "\"Rename-Computer -NewName Rdp -Force -Restart\""
+                    ]
+                  ]
+                },
+                "test": "IF \"%COMPUTERNAME%\"==\"RDP\" EXIT /B 1 ELSE EXIT /B 0"
+              },
+              "001JoinDomain": {
+                "waitAfterCompletion": "forever",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "-Command \"",
+                      "Add-Computer -DomainName ",
+                      {
+                        "Ref": "DomainFqdn"
+                      },
+                      " -Credential (New-Object System.Management.Automation.PSCredential('",
+                      {
+                        "Ref": "DomainAdminUsername"
+                      },
+                      "@",
+                      {
+                        "Ref": "DomainFqdn"
+                      },
+                      "',(ConvertTo-SecureString \"",
+                      {
+                        "Ref": "DomainAdminPassword"
+                      },
+                      "\" -AsPlainText -Force))) ",
+                      "-Restart\""
+                    ]
+                  ]
+                },
+                "test": "powershell.exe -ExecutionPolicy RemoteSigned c:/cfn/scripts/check-for-domain.ps1"
+              }
+            },
+            "files": {
+              "c:/cfn/scripts/check-for-domain.ps1": {
+                "source": "https://s3.amazonaws.com/gtbb/check-for-domain.ps1"
+              }
+            },
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          },
+          "Install": {
+            "commands": {
+              "000a-install-rds": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "-Command \"Install-WindowsFeature RDS-Gateway,RSAT-RDS-Gateway\""
+                    ]
+                  ]
+                }
+              },
+              "001b-configure-rdgw": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe -ExecutionPolicy RemoteSigned ",
+                      " -ExecutionPolicy RemoteSigned ",
+                      " C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN ",
+                      "Rdp",
+                      ".",
+                      {
+                        "Ref": "DomainFqdn"
+                      },
+                      " -DomainNetBiosName ",
+                      {
+                        "Ref": "DomainNetBiosName"
+                      },
+                      " -GroupName 'Domain Users'"
+                    ]
+                  ]
+                },
+                "test": "IF EXIST c:/rdp.cer EXIT 1"
+              }
+            },
+            "files": {
+              "c:\\cfn\\scripts\\Configure-RDGW.ps1": {
+                "source": "https://s3.amazonaws.com/gtbb/Configure-RDGW.ps1"
+              }
+            },
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          },
+          "WindowsShare": {
+            "commands": {
+              "000CreateWindowsShare": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe -ExecutionPolicy RemoteSigned ",
+                      "c:/cfn/scripts/CreateWindowsShare.ps1",
+                      "d:/backups",
+                      "backups",
+                      "@(",
+                      {
+                        "Fn::Join": [
+                          ",",
+                          [
+                            {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  "'",
+                                  {
+                                    "Ref": "DomainNetBiosName"
+                                  },
+                                  "\\tfsservice'"
+                                ]
+                              ]
+                            },
+                            {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  "'",
+                                  {
+                                    "Ref": "DomainNetBiosName"
+                                  },
+                                  "\\Admins'"
+                                ]
+                              ]
+                            }
+                          ]
+                        ]
+                      },
+                      ")"
+                    ]
+                  ]
+                }
+              }
+            },
+            "files": {
+              "c:/cfn/scripts/CreateWindowsShare.ps1": {
+                "source": "https://s3.amazonaws.com/gtbb/CreateWindowsShare.ps1"
+              }
+            },
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          },
+          "ActiveDirectoryConfig": {
+            "commands": {
+              "000InstallActiveDirectoryTools": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter"
+                    ]
+                  ]
+                }
+              },
+              "001AddUserAWSCloudFormationPropertyReferenceProperty": {
+                "waitAfterCompletion": "0",
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe ",
+                      "New-ADUser",
+                      " -Name ",
+                      {
+                        "Ref": "TfsServiceAccountName"
+                      },
+                      " -Path '",
+                      "OU=Users,OU=prime,DC=prime,DC=yadayadasoftware,DC=com",
+                      "' -Credential (New-Object System.Management.Automation.PSCredential('",
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            {
+                              "Ref": "DomainAdminUsername"
+                            },
+                            "@",
+                            {
+                              "Ref": "DomainFqdn"
+                            }
+                          ]
+                        ]
+                      },
+                      "',(ConvertTo-SecureString '",
+                      {
+                        "Ref": "DomainAdminPassword"
+                      },
+                      "' -AsPlainText -Force)))",
+                      " -SamAccountName ",
+                      {
+                        "Ref": "TfsServiceAccountName"
+                      },
+                      " -AccountPassword (ConvertTo-SecureString -AsPlainText '",
+                      "RNNV8436yrbf",
+                      "' -Force)",
+                      " -Enabled $true"
+                    ]
+                  ]
+                },
+                "test": {
+                  "Fn::Join": [
+                    " ",
+                    [
+                      "powershell.exe ",
+                      "try {Get-ADUser -Identity",
+                      {
+                        "Ref": "TfsServiceAccountName"
+                      },
+                      {
+                        "Ref": "TfsServiceAccountName"
+                      },
+                      ";exit 1} catch {exit 0}"
+                    ]
+                  ]
+                }
+              }
+            },
+            "files": {},
+            "services": {},
+            "sources": {},
+            "packages": {},
+            "ignoreErrors": "False"
+          }
+        },
+        "AWS::CloudFormation::Authentication": {
+          "S3AccessCreds": {
+            "accessKeyId": "AKIAJMUQ7GPWQNKSODIA",
+            "secretKey": "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",
+            "buckets": [
+              "gtbb"
+            ],
+            "type": "S3"
+          }
+        }
+      },
+      "DependsOn": [
+        "SimpleAdprimeyadayadasoftwarecom",
+        "RouteTableForAdSubnets"
+      ],
+      "Properties": {
+        "SubnetId": {
+          "Ref": "SubnetDmz1"
+        },
+        "InstanceType": "t2.micro",
+        "ImageId": "ami-3586ac5f",
+        "KeyName": {
+          "Ref": "KeyPairName"
+        },
+        "SourceDestCheck": true,
+        "Tags": [
+          {
+            "Key": "Name"
+          },
+          {
+            "Key": "Name",
+            "Value": "Rdp"
+          }
+        ],
+        "SecurityGroupIds": [
+          {
+            "Ref": "SecurityGroup4Rdp"
+          },
+          {
+            "Ref": "SecurityGroupSecurityGroupForSMBAccess"
+          }
+        ],
+        "BlockDeviceMappings": [
+          {
+            "Ebs": {
+              "VolumeSize": 40,
+              "VolumeType": "gp2",
+              "DeleteOnTermination": true
+            },
+            "DeviceName": "/dev/sda1"
+          },
+          {
+            "Ebs": {
+              "VolumeSize": 50,
+              "VolumeType": "gp2",
+              "DeleteOnTermination": false
+            },
+            "DeviceName": "xvdf"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "<script>",
+                "cfn-init.exe -v -c ",
+                "LaunchConfigurationConfigSet,RemoteDesktop,WindowsShare,ActiveDirectoryConfigSet",
+                " -s ",
+                {
+                  "Ref": "AWS::StackId"
+                },
+                " -r Rdp --region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "</script>"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "RecordSet4Rdp": {
+      "Type": "AWS::Route53::RecordSet",
+      "Properties": {
+        "TTL": "60",
+        "Type": "A",
+        "HostedZoneName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "DomainTopLevel"
+              },
+              "."
+            ]
+          ]
+        },
+        "Name": {
+          "Fn::Join": [
+            ".",
+            [
+              "Rdp",
+              {
+                "Ref": "DomainFqdn"
+              }
+            ]
+          ]
+        },
+        "ResourceRecords": [
+          {
+            "Ref": "Eip4Rdp"
+          }
+        ]
+      }
+    },
+    "Eip4Rdp": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "InstanceId": {
+          "Ref": "Rdp"
+        },
+        "Domain": "vpc"
+      }
+    },
+    "SecurityGroup4Rdp": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcPrime"
+        },
+        "GroupDescription": "Remote Desktop Security Group",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 3389,
+            "IpProtocol": "tcp",
+            "ToPort": 3389
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 443,
+            "IpProtocol": "tcp",
+            "ToPort": 443
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 80,
+            "IpProtocol": "tcp",
+            "ToPort": 80
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 3391,
+            "IpProtocol": "udp",
+            "ToPort": 3391
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": -1,
+            "IpProtocol": "icmp",
+            "ToPort": -1
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "SecurityGroup4Rdp"
+          }
+        ]
+      }
+    },
+    "SecurityGroupSecurityGroupForSMBAccess": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcPrime"
+        },
+        "GroupDescription": "Security Group For SMB Access",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 445,
+            "IpProtocol": "tcp",
+            "ToPort": 445
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 137,
+            "IpProtocol": "tcp",
+            "ToPort": 139
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "SecurityGroupSecurityGroupForSMBAccess"
+          }
+        ]
+      }
+    }
+  },
+  "Parameters": {
+    "KeyPairName": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Default": "corp.getthebuybox.com",
+      "Description": "Key Pair to decrypt instance password."
+    },
+    "DomainAdminPassword": {
+      "Type": "String",
+      "Default": "EFVF2083swcd",
+      "Description": "Admin password"
+    },
+    "DomainAdminUsername": {
+      "Type": "String",
+      "Default": "admin",
+      "Description": "Admin username"
+    },
+    "DomainVersion": {
+      "Type": "String",
+      "Default": "alpha",
+      "Description": "Fully qualified domain name for the stack (e.g. example.com)"
+    },
+    "DomainNetBiosName": {
+      "Type": "String",
+      "Default": "prime",
+      "Description": "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"
+    },
+    "DomainFqdn": {
+      "Type": "String",
+      "Default": "prime.yadayadasoftware.com",
+      "Description": "Fully qualified domain name"
+    },
+    "TfsServiceAccountName": {
+      "Type": "String",
+      "Default": "tfsservice",
+      "Description": "Fully qualified domain name"
+    },
+    "DomainTopLevel": {
+      "Type": "String",
+      "Default": "yadayadasoftware.com",
+      "Description": "Fully qualified domain name"
+    }
+  },
+  "Outputs": {
+    "DhcpOptionsId": {
+      "Value": {
+        "Ref": "DhcpAWSCloudFormationResourceEC2NetworkingVpcprimeyadayadasoftwarecom"
+      }
+    },
+    "VpcPrime": {
+      "Value": {
+        "Ref": "VpcPrime"
+      }
+    },
+    "VpcPrimeInternetGateway": {
+      "Value": {
+        "Ref": "VpcPrimeInternetGateway"
+      }
+    },
+    "VpcPrimeInternetGatewayAttachment": {
+      "Value": {
+        "Ref": "VpcPrimeInternetGatewayAttachment"
+      }
+    },
+    "RouteTableForAdSubnets": {
+      "Value": {
+        "Ref": "RouteTableForAdSubnets"
+      }
+    },
+    "SubnetAd1": {
+      "Value": {
+        "Ref": "SubnetAd1"
+      }
+    },
+    "SubnetRouteTableAssociation4SubnetAd1RouteTableForAdSubnets": {
+      "Value": {
+        "Ref": "SubnetRouteTableAssociation4SubnetAd1RouteTableForAdSubnets"
+      }
+    },
+    "SubnetAd2": {
+      "Value": {
+        "Ref": "SubnetAd2"
+      }
+    },
+    "SubnetRouteTableAssociation4SubnetAd2RouteTableForAdSubnets": {
+      "Value": {
+        "Ref": "SubnetRouteTableAssociation4SubnetAd2RouteTableForAdSubnets"
+      }
+    },
+    "SimpleAdprimeyadayadasoftwarecom": {
+      "Value": {
+        "Ref": "SimpleAdprimeyadayadasoftwarecom"
+      }
+    },
+    "DhcpAWSCloudFormationResourceEC2NetworkingVpcprimeyadayadasoftwarecom": {
+      "Value": {
+        "Ref": "DhcpAWSCloudFormationResourceEC2NetworkingVpcprimeyadayadasoftwarecom"
+      }
+    },
+    "VpcDhcpOptionsAssociation4DhcpAWSCloudFormationResourceEC2NetworkingVpcprimeyadayadasoftwarecom": {
+      "Value": {
+        "Ref": "VpcDhcpOptionsAssociation4DhcpAWSCloudFormationResourceEC2NetworkingVpcprimeyadayadasoftwarecom"
+      }
+    },
+    "SubnetDmz1": {
+      "Value": {
+        "Ref": "SubnetDmz1"
+      }
+    },
+    "RouteTable4SubnetDmz1": {
+      "Value": {
+        "Ref": "RouteTable4SubnetDmz1"
+      }
+    },
+    "Route4SubnetDmz1": {
+      "Value": {
+        "Ref": "Route4SubnetDmz1"
+      }
+    },
+    "SubnetRouteTableAssociation4SubnetDmz1RouteTable4SubnetDmz1": {
+      "Value": {
+        "Ref": "SubnetRouteTableAssociation4SubnetDmz1RouteTable4SubnetDmz1"
+      }
+    },
+    "Rdp": {
+      "Value": {
+        "Ref": "Rdp"
+      }
+    },
+    "RecordSet4Rdp": {
+      "Value": {
+        "Ref": "RecordSet4Rdp"
+      }
+    },
+    "Eip4Rdp": {
+      "Value": {
+        "Ref": "Eip4Rdp"
+      }
+    },
+    "SecurityGroup4Rdp": {
+      "Value": {
+        "Ref": "SecurityGroup4Rdp"
+      }
+    },
+    "SecurityGroupSecurityGroupForSMBAccess": {
+      "Value": {
+        "Ref": "SecurityGroupSecurityGroupForSMBAccess"
+      }
+    }
+  }
+}
