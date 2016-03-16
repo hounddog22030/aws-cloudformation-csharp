@@ -220,7 +220,7 @@ namespace AWS.CloudFormation.Resource.DirectoryService
                                                             " -SamAccountName ",
                                                             user,
                                                             " -AccountPassword (ConvertTo-SecureString -AsPlainText '",
-                                                            GetPassword(),
+                                                            password,
                                                             "' -Force)",
                                                             " -Enabled $true");
             command.Test = new FnJoinPowershellCommand(FnJoinDelimiter.Space,

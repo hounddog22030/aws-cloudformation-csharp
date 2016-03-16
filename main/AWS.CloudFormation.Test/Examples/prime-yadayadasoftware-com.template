@@ -1,5 +1,5 @@
 {
-  "Description": "Stack for prime Vpc (AD):microsoftad:44cc6c47bfb11e171c6ea65ae95aca172fde9302",
+  "Description": "Stack for prime Vpc (AD):microsoftad:e3e4ecbb89b7c3cc216cd916f3413443c4386a40",
   "AWSTemplateFormatVersion": "2010-09-09",
   "Resources": {
     "VpcPrime": {
@@ -547,7 +547,7 @@
                         "Ref": "TfsServiceAccountName"
                       },
                       " -AccountPassword (ConvertTo-SecureString -AsPlainText '",
-                      "RNNV8436yrbf",
+                      "WYAC2364iuqw",
                       "' -Force)",
                       " -Enabled $true"
                     ]
