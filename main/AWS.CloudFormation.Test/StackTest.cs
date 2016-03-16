@@ -322,8 +322,9 @@ namespace AWS.CloudFormation.Test
                 instanceTfsSqlServer.DependsOn.Add(routeFromAz1ToNat.LogicalId);
                 instanceTfsSqlServer.DependsOn.Add(routeFromAlphaToPrime.LogicalId);
                 instanceTfsSqlServer.DependsOn.Add(vpcPeeringAlphaToPrime.LogicalId);
+                instanceTfsSqlServer.DependsOn.Add(vpc.VpcGatewayAttachment.LogicalId);
 
-                
+
 
                 //instanceTfsSqlServer.DependsOn.Add(createUsersPackage.WaitCondition.LogicalId);
                 var x = instanceTfsSqlServer.Packages.Last().WaitCondition;
@@ -1381,14 +1382,16 @@ namespace AWS.CloudFormation.Test
 
         public static Instance AddNat(Template template, Subnet subnet, SecurityGroup natSecurityGroup)
         {
-            var nat = new Instance(null,InstanceTypes.T2Micro,"ami-4c9e4b24",OperatingSystem.Linux)
+            var nat = new Instance(null,InstanceTypes.T2Micro, "ami-e284b888", OperatingSystem.Linux)
             {
                 SourceDestCheck = false
             };
 
             var natCount = template.Resources.Count(r => r.Key.StartsWith("Nat"));
 
-            template.Resources.Add($"Nat{natCount+1}", nat);
+            var natName = $"Nat{natCount + 1}";
+
+            template.Resources.Add(natName, nat);
 
 
             var natNetworkInterface = new NetworkInterface(subnet)
@@ -1401,6 +1404,35 @@ namespace AWS.CloudFormation.Test
             natNetworkInterface.GroupSet.Add(natSecurityGroup);
 
             nat.NetworkInterfaces.Add(natNetworkInterface);
+
+            //var waitConditionName = $"NatReady{natCount}";
+            //WaitCondition natReady = new WaitCondition(TimeSpan.FromMinutes(240));
+            //template.Resources.Add(waitConditionName, natReady);
+
+            ////var natUserDataWaitFnJoin = new FnJoin(FnJoinDelimiter.None,
+            ////    "#!/bin/bash\n",
+            ////    "/opt/aws/bin/cfn-init -s ",
+            ////    new ReferenceProperty("AWS::StackId"),
+            ////    "         -r ",
+            ////    natName,
+            ////    " --region ",
+            ////    new ReferenceProperty("AWS::Region"),
+            ////    "\n",
+            ////    "/opt/aws/bin/cfn-signal -e 0 --stack ",
+            ////    new ReferenceProperty("AWS::StackName"),
+            ////    " --resource ",
+            ////    new ReferenceProperty(natReady.Handle),
+            ////    " \n");
+            //var natUserDataWaitFnJoin = new FnJoin(FnJoinDelimiter.None,
+            //    "#!/bin/bash\n",
+            //    "/opt/aws/bin/cfn-signal -e 0 ",
+            //    new ReferenceProperty(natReady.Handle),
+            //    " \n");
+
+            //nat.UserData = new CloudFormationDictionary(nat);
+            //nat.UserData.Add("Fn::Base64", natUserDataWaitFnJoin);
+
+
 
             return nat;
         }
