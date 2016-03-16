@@ -317,7 +317,7 @@ namespace AWS.CloudFormation.Test
 
             if (instancesToCreate.HasFlag(Create.Sql4Tfs))
             {
-                instanceTfsSqlServer = AddSql(template, $"{version}Sql4Tfs", InstanceTypes.T2Small, subnetSqlServer4Tfs, sqlServer4TfsSecurityGroup);
+                instanceTfsSqlServer = AddSql(template, $"Sql4Tfs{version}", InstanceTypes.T2Small, subnetSqlServer4Tfs, sqlServer4TfsSecurityGroup);
                 instanceTfsSqlServer.DependsOn.Add(routeFromPrimeAdSubnetsToAlpha.LogicalId);
                 instanceTfsSqlServer.DependsOn.Add(routeFromAz1ToNat.LogicalId);
                 instanceTfsSqlServer.DependsOn.Add(routeFromAlphaToPrime.LogicalId);
@@ -1325,7 +1325,7 @@ namespace AWS.CloudFormation.Test
             if (subnet == null) throw new ArgumentNullException(nameof(subnet));
 
             Instance workstation = new Instance(subnet, InstanceTypes.T2Large, UsEastWindows2012R2SqlServerExpressAmi, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 214);
-            template.Resources.Add($"{version}Work",workstation);
+            template.Resources.Add($"Work{version}",workstation);
 
             if (workstationSecurityGroup != null)
             {
@@ -1358,7 +1358,7 @@ namespace AWS.CloudFormation.Test
             var tfsServer = new Instance(privateSubnet1,instanceSize,UsEastWindows2012R2Ami, OperatingSystem.Windows,Ebs.VolumeTypes.GeneralPurpose,
                                                     214);
 
-            template.Resources.Add($"{version}Tfs", tfsServer);
+            template.Resources.Add($"Tfs{version}", tfsServer);
 
 
             //dc1.Participate(tfsServer);
