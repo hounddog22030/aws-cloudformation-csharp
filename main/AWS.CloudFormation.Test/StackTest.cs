@@ -128,14 +128,15 @@ namespace AWS.CloudFormation.Test
 
 
             Instance instanceRdp = new Instance(subnetDmz, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 40);
-            primeTemplate.Resources.Add("Rdp", instanceRdp);
+            primeTemplate.Resources.Add("Rdp2", instanceRdp);
             instanceRdp.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 50, false);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
-            instanceRdp.Packages.Add(new WindowsShare("d:/backups", "backups", CidrPrimeVpc, new FnJoin(FnJoinDelimiter.None, "'", new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName), "\\tfsservice'"), new FnJoin(FnJoinDelimiter.None, "'", new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName), "\\Admins'")));
             instanceRdp.DependsOn.Add(simpleAd.LogicalId);
             instanceRdp.DependsOn.Add(routeTableForAdSubnets.LogicalId);
             string ou = "OU=Users,OU=prime,DC=prime,DC=yadayadasoftware,DC=com";
-            string user = MicrosoftAd.AddUser(instanceRdp, ou, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName), tfsServicePassword);
+            //string user = MicrosoftAd.AddUser(instanceRdp, ou, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName), tfsServicePassword);
+
+            instanceRdp.Packages.Add(new WindowsShare("d:/backups", "backups", CidrPrimeVpc, new FnJoin(FnJoinDelimiter.None, "'", new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName), "'"), new FnJoin(FnJoinDelimiter.None, "'", new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName), "\\Admins'")));
 
 
             primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminPasswordParameterName, "String", activeDirectoryAdminPassword, "Admin password"));
@@ -200,7 +201,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void UpdateMasterTemplate()
         {
-            var templateUri = GetMasterTemplateUri("UHQH4187ksfg", "JTED8168ghav", Create.Tfs|Create.Workstation, Greek.Alpha, Greek.Alpha) ;
+            var templateUri = GetMasterTemplateUri("UHQH4187ksfg", "JTED8168ghav", Create.Tfs|Create.Workstation, Greek.Alpha, Greek.Beta) ;
             Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635937110287152747", templateUri);
 
         }
