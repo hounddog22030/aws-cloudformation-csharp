@@ -190,18 +190,18 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateMasterTemplate()
         {
-            var adminPassword = GetPassword();
-            var tfsPassword = GetPassword();
+            var adminPassword = SettingsHelper.GetSetting("admin@prime.yadayadasoftware.com");
+            var tfsPassword = SettingsHelper.GetSetting("tfsservice@prime.yadayadasoftware.com");
             var templateUri = GetMasterTemplateUri(adminPassword,tfsPassword,Create.None, Greek.Alpha, Greek.Alpha);
             var response = Stack.Stack.CreateStack(templateUri);
-            
-
         }
 
         [TestMethod]
         public void UpdateMasterTemplate()
         {
-            var templateUri = GetMasterTemplateUri("UHQH4187ksfg", "JTED8168ghav", Create.Tfs|Create.Workstation, Greek.Alpha, Greek.Beta) ;
+            var adminPassword = SettingsHelper.GetSetting("admin@prime.yadayadasoftware.com");
+            var tfsPassword = SettingsHelper.GetSetting("tfsservice@prime.yadayadasoftware.com");
+            var templateUri = GetMasterTemplateUri(adminPassword, tfsPassword, Create.Tfs|Create.Workstation, Greek.Alpha, Greek.Beta) ;
             Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635937110287152747", templateUri);
 
         }
