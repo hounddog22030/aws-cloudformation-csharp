@@ -128,13 +128,13 @@ namespace AWS.CloudFormation.Test
 
 
             Instance instanceRdp = new Instance(subnetDmz, InstanceTypes.T2Micro, UsEastWindows2012R2Ami, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 40);
-            primeTemplate.Resources.Add("Rdp2", instanceRdp);
+            primeTemplate.Resources.Add("Rdp", instanceRdp);
             instanceRdp.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 50, false);
             instanceRdp.Packages.Add(new RemoteDesktopGatewayPackage());
             instanceRdp.DependsOn.Add(simpleAd.LogicalId);
             instanceRdp.DependsOn.Add(routeTableForAdSubnets.LogicalId);
             string ou = "OU=Users,OU=prime,DC=prime,DC=yadayadasoftware,DC=com";
-            //string user = MicrosoftAd.AddUser(instanceRdp, ou, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName), tfsServicePassword);
+            string user = MicrosoftAd.AddUser(instanceRdp, ou, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName), tfsServicePassword);
 
             instanceRdp.Packages.Add(new WindowsShare("d:/backups", "backups", CidrPrimeVpc, new FnJoin(FnJoinDelimiter.None, "'", new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName), "'"), new FnJoin(FnJoinDelimiter.None, "'", new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName), "\\Admins'")));
 
@@ -201,8 +201,8 @@ namespace AWS.CloudFormation.Test
         {
             var adminPassword = SettingsHelper.GetSetting("admin@prime.yadayadasoftware.com");
             var tfsPassword = SettingsHelper.GetSetting("tfsservice@prime.yadayadasoftware.com");
-            var templateUri = GetMasterTemplateUri(adminPassword, tfsPassword, Create.FullStack, Greek.Alpha, Greek.Alpha) ;
-            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635937736686268481", templateUri);
+            var templateUri = GetMasterTemplateUri(adminPassword, tfsPassword, Create.None, Greek.Alpha, Greek.Alpha) ;
+            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635939233363088104", templateUri);
 
         }
 
@@ -616,8 +616,8 @@ namespace AWS.CloudFormation.Test
                 new SecurityGroup(
                     "Enables Ssh access to NAT1 in AZ1 via port 22 and outbound internet access via private subnets", vpc);
             template.Resources.Add("SecurityGroup4Nat", natSecurityGroup);
-            natSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Ssh);
-            natSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
+            natSecurityGroup.AddIngress(PredefinedCidr.LocalGateway, Protocol.Tcp, Ports.Ssh);
+            natSecurityGroup.AddIngress(PredefinedCidr.LocalGateway, Protocol.Icmp, Ports.All);
             return natSecurityGroup;
         }
 
@@ -1401,38 +1401,7 @@ namespace AWS.CloudFormation.Test
             };
 
             natNetworkInterface.GroupSet.Add(natSecurityGroup);
-
             nat.NetworkInterfaces.Add(natNetworkInterface);
-
-            //var waitConditionName = $"NatReady{natCount}";
-            //WaitCondition natReady = new WaitCondition(TimeSpan.FromMinutes(240));
-            //template.Resources.Add(waitConditionName, natReady);
-
-            ////var natUserDataWaitFnJoin = new FnJoin(FnJoinDelimiter.None,
-            ////    "#!/bin/bash\n",
-            ////    "/opt/aws/bin/cfn-init -s ",
-            ////    new ReferenceProperty("AWS::StackId"),
-            ////    "         -r ",
-            ////    natName,
-            ////    " --region ",
-            ////    new ReferenceProperty("AWS::Region"),
-            ////    "\n",
-            ////    "/opt/aws/bin/cfn-signal -e 0 --stack ",
-            ////    new ReferenceProperty("AWS::StackName"),
-            ////    " --resource ",
-            ////    new ReferenceProperty(natReady.Handle),
-            ////    " \n");
-            //var natUserDataWaitFnJoin = new FnJoin(FnJoinDelimiter.None,
-            //    "#!/bin/bash\n",
-            //    "/opt/aws/bin/cfn-signal -e 0 ",
-            //    new ReferenceProperty(natReady.Handle),
-            //    " \n");
-
-            //nat.UserData = new CloudFormationDictionary(nat);
-            //nat.UserData.Add("Fn::Base64", natUserDataWaitFnJoin);
-
-
-
             return nat;
         }
 
