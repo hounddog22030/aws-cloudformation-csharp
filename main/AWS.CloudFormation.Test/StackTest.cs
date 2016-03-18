@@ -201,8 +201,8 @@ namespace AWS.CloudFormation.Test
         {
             var adminPassword = SettingsHelper.GetSetting("admin@prime.yadayadasoftware.com");
             var tfsPassword = SettingsHelper.GetSetting("tfsservice@prime.yadayadasoftware.com");
-            var templateUri = GetMasterTemplateUri(adminPassword, tfsPassword, Create.Tfs|Create.Workstation, Greek.Alpha, Greek.Beta) ;
-            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635937110287152747", templateUri);
+            var templateUri = GetMasterTemplateUri(adminPassword, tfsPassword, Create.FullStack, Greek.Alpha, Greek.Alpha) ;
+            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635937736686268481", templateUri);
 
         }
 
@@ -472,12 +472,10 @@ namespace AWS.CloudFormation.Test
         public enum Create
         {
             None = 0,
-            Dc2 = 1,
-            RdpGateway = Dc2 * 2,
-            Sql4Tfs = RdpGateway * 2,
+            Sql4Tfs = 1,
             Tfs = Sql4Tfs + Sql4Tfs * 2,
-            Build = Tfs * 2,
-            SqlServer4Build = Build *2,
+            Build = Tfs + Tfs * 2,
+            SqlServer4Build = Build + Build * 2,
             MySql4Build = SqlServer4Build * 2,
             Workstation = MySql4Build * 2,
             FullStack = int.MaxValue
@@ -1523,7 +1521,7 @@ namespace AWS.CloudFormation.Test
             Greek version = Greek.Xi;
 
             var fullyQualifiedDomainName = $"{version}.dev.yadayadasoftware.com";
-            Create instances = Create.RdpGateway;
+            Create instances = Create.FullStack;
             var template = GetTemplateFullStack("yadayadasoftware.com", "dev", version, instances, GetGitSuffix());
             ((ParameterBase)template.Parameters[Template.ParameterDomainAdminPassword]).Default = "dg68ug0K7U83MWQF";
 

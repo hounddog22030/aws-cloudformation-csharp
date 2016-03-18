@@ -57,7 +57,9 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 
     public enum PredefinedCidr
     {
-        TheWorld = 1
+        TheWorld = 1,
+        LocalGateway = 2,
+        AllVpcs = 3
     }
 
     public abstract class SecurityGroupIngressEgressBase
