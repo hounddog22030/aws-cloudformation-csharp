@@ -48,10 +48,8 @@ namespace AWS.CloudFormation.Configuration.Packages
                 ")");
 
             SecurityGroup securityGroupSmbAccess = new SecurityGroup("Security Group For SMB Access", configuration.Subnet.Vpc);
-            string theWorld = "0.0.0.0/0";
-            securityGroupSmbAccess.AddIngress(theWorld, Protocol.Tcp, Ports.Smb);
-            securityGroupSmbAccess.AddIngress(theWorld, Protocol.Tcp, Ports.NetBt, Ports.NetBiosNameServices );
-            //securityGroupSmbAccess.AddIngress(theWorld, Protocol.Udp, Ports.Min, Ports.Max);
+            securityGroupSmbAccess.AddIngress(PredefinedCidr.AllVpcs, Protocol.Tcp, Ports.Smb);
+            securityGroupSmbAccess.AddIngress(PredefinedCidr.AllVpcs, Protocol.Tcp, Ports.NetBt, Ports.NetBiosNameServices );
             configuration.Template.Resources.Add(securityGroupSmbAccess.LogicalId, securityGroupSmbAccess);
             Instance launchConfigurationAsInstance = configuration as Instance;
             launchConfigurationAsInstance.SecurityGroupIds.Add(new ReferenceProperty(securityGroupSmbAccess));

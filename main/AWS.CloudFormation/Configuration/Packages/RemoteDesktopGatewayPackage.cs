@@ -72,11 +72,9 @@ namespace AWS.CloudFormation.Configuration.Packages
             var rdgwSecurityGroup = new SecurityGroup("Remote Desktop Security Group", launchConfigurationAsInstance.Subnet.Vpc);
             this.Instance.Template.Resources.Add($"SecurityGroup4{this.Instance.LogicalId}", rdgwSecurityGroup);
 
-
-            rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol, Ports.Ssl);
-            rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.Http);
-            rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Udp, Ports.RdpAdmin);
-            rdgwSecurityGroup.AddIngress(PredefinedCidr.TheWorld, Protocol.Icmp, Ports.All);
+            rdgwSecurityGroup.AddIngress(PredefinedCidr.LocalGateway, Protocol.Tcp, Ports.RemoteDesktopProtocol, Ports.Ssl, Ports.Http);
+            rdgwSecurityGroup.AddIngress(PredefinedCidr.LocalGateway, Protocol.Udp, Ports.RdpAdmin);
+            rdgwSecurityGroup.AddIngress(PredefinedCidr.LocalGateway, Protocol.Icmp, Ports.All);
 
             launchConfigurationAsInstance.SecurityGroupIds.Add(new ReferenceProperty(rdgwSecurityGroup));
         }

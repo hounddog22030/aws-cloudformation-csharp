@@ -155,8 +155,14 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
 
             switch (cidr)
             {
-                    case PredefinedCidr.TheWorld:
+                case PredefinedCidr.TheWorld:
                     cidrAsString = Template.CidrIpTheWorld;
+                    break;
+                case PredefinedCidr.LocalGateway:
+                    cidrAsString = $"{SettingsHelper.GetLocalGateway()}/32";
+                    break;
+                case PredefinedCidr.AllVpcs:
+                    cidrAsString = $"10.0.0.0/8";
                     break;
                 default:
                     throw new InvalidEnumArgumentException();
@@ -167,7 +173,6 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
                 foreach (var thisProtocol in protocols)
                 {
                     returnValue.AddRange(this.AddIngress( cidrAsString, (Protocol) Enum.Parse(typeof(Protocol),thisProtocol), port, port));
-                    
                 }
 
             }
