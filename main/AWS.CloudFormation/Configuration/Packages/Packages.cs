@@ -446,6 +446,8 @@ namespace AWS.CloudFormation.Configuration.Packages
 
         public LaunchConfiguration ApplicationServer { get; }
         public const string TfsServiceAccountNameParameterName = "TfsServiceAccountName";
+        public const string TfsBuildAccountNameParameterName = "TfsBuildAccountName";
+        public const string TfsBuildAccountPasswordParameterName = "TfsBuildAccountPassword";
 
         public const string TfsServicePasswordParameterName = "TfsServicePassword";
 

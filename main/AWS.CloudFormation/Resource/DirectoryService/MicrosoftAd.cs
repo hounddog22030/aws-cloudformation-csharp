@@ -179,9 +179,8 @@ namespace AWS.CloudFormation.Resource.DirectoryService
             return finalOu;
         }
 
-        public static string AddUser(LaunchConfiguration instance, object ou, object user, string password)
+        public static string AddUser(LaunchConfiguration instance, object ou, object user, object password)
         {
-            bool managed = false;
             var configSet = instance.Metadata.Init.ConfigSets.GetConfigSet(ActiveDirectoryConfigSet);
             var createDevOuConfig = configSet.GetConfig(ActiveDirectoryConfig);
 
@@ -200,10 +199,6 @@ namespace AWS.CloudFormation.Resource.DirectoryService
 
 
             var addUserCommand = "New-ADUser";
-            if (managed)
-            {
-                addUserCommand = "New-ADServiceAccount";
-            }
 
             command = createDevOuConfig.Commands.AddCommand<Command>(ResourceBase.NormalizeLogicalId($"AddUser{user}"));
             command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None,
@@ -226,7 +221,6 @@ namespace AWS.CloudFormation.Resource.DirectoryService
             command.Test = new FnJoinPowershellCommand(FnJoinDelimiter.Space,
                                                         "try {Get-ADUser -Identity",
                                                         user,
-                                                        new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName),
                                                         ";exit 1} catch {exit 0}");
             command.WaitAfterCompletion = 0.ToString();
 
@@ -246,10 +240,6 @@ namespace AWS.CloudFormation.Resource.DirectoryService
         {
             return AddUser(instance, (object)ou, (object)user, password);
 
-        }
-        public static string AddUser(LaunchConfiguration instance, string ou, string user, string password)
-        {
-            return AddUser(instance, (object)ou, (object)user, password);
         }
 
         internal static string GetPassword()
@@ -297,6 +287,11 @@ namespace AWS.CloudFormation.Resource.DirectoryService
                 groupIds += dd.VpcSettings.SecurityGroupId;
             }
             return groupIds;
+        }
+
+        public static string AddUser(Instance instanceRdp, string ou, ReferenceProperty user, ReferenceProperty password)
+        {
+            return AddUser(instanceRdp, ou, (object) user, (object) password);
         }
     }
 
