@@ -86,6 +86,7 @@ namespace AWS.CloudFormation.Test
                 devStack.Parameters.Add("PrimeRouteTable4SubnetDmz1", new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTable4SubnetDmz1"));
                 devStack.Parameters.Add("DhcpOptionsId", new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.DhcpOptionsId"));
                 devStack.Parameters.Add(ActiveDirectoryBase.DomainAdminUsernameParameterName, new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.DomainAdminUsername"));
+                devStack.Parameters.Add(ActiveDirectoryBase.DomainFqdnParameterName, new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.DomainFqdn"));
                 masterTemplate.Resources.Add($"{i}DevYadaYadaSoftwareCom", devStack);
             }
 
@@ -153,6 +154,9 @@ namespace AWS.CloudFormation.Test
 
             Output outputDomainAdminUserName = new Output(ActiveDirectoryBase.DomainAdminUsernameParameterName, new ReferenceProperty(ActiveDirectoryBase.DomainAdminUsernameParameterName));
             primeTemplate.Outputs.Add(outputDomainAdminUserName.LogicalId, outputDomainAdminUserName);
+
+            Output outputFqdn = new Output(ActiveDirectoryBase.DomainFqdnParameterName, new ReferenceProperty(ActiveDirectoryBase.DomainFqdnParameterName));
+            primeTemplate.Outputs.Add(outputFqdn.LogicalId, outputFqdn);
 
 
             return primeTemplate;
