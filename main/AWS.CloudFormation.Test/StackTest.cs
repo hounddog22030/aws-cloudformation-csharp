@@ -134,7 +134,8 @@ namespace AWS.CloudFormation.Test
             instanceRdp.DependsOn.Add(simpleAd.LogicalId);
             instanceRdp.DependsOn.Add(routeTableForAdSubnets.LogicalId);
             string ou = "OU=Users,OU=prime,DC=prime,DC=yadayadasoftware,DC=com";
-            string user = MicrosoftAd.AddUser(instanceRdp, ou, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName), tfsServicePassword);
+            string tfsService = MicrosoftAd.AddUser(instanceRdp, ou, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName), tfsServicePassword);
+            string tfsBuild = MicrosoftAd.AddUser(instanceRdp, ou, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsBuildAccountNameParameterName), new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsBuildAccountPasswordParameterName));
 
             instanceRdp.Packages.Add(new WindowsShare("d:/backups", "backups", CidrPrimeVpc, new FnJoin(FnJoinDelimiter.None, "'", new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName), "'"), new FnJoin(FnJoinDelimiter.None, "'", new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName), "\\Admins'")));
 
@@ -146,6 +147,9 @@ namespace AWS.CloudFormation.Test
             primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainFqdnParameterName, "String", FullyQualifiedDomainName, "Fully qualified domain name"));
             primeTemplate.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "tfsservice", "Fully qualified domain name"));
             primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainTopLevelParameterName, "String", TopLevelDomainName, "Fully qualified domain name"));
+            var tfsBuildPassword = SettingsHelper.GetSetting("tfsbuild@prime.yadayadasoftware.com");
+            primeTemplate.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsBuildAccountPasswordParameterName, "String", tfsBuildPassword, "Password for tfsbuild account"));
+            primeTemplate.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsBuildAccountNameParameterName, "String", "tfsbuild", "Name for tfsbuild account"));
 
 
 
@@ -201,7 +205,7 @@ namespace AWS.CloudFormation.Test
         {
             var adminPassword = SettingsHelper.GetSetting("admin@prime.yadayadasoftware.com");
             var tfsPassword = SettingsHelper.GetSetting("tfsservice@prime.yadayadasoftware.com");
-            var templateUri = GetMasterTemplateUri(adminPassword, tfsPassword, Create.None, Greek.Alpha, Greek.Alpha) ;
+            var templateUri = GetMasterTemplateUri(adminPassword, tfsPassword, Create.FullStack, Greek.Alpha, Greek.Alpha) ;
             Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635939233363088104", templateUri);
 
         }
