@@ -26,7 +26,7 @@ namespace AWS.CloudFormation.Resource.EC2
             this.NetbiosNameServers = netBiosNameServers;
         }
 
-        public DhcpOptions(Vpc vpc, MicrosoftAd simpleAd) : base(ResourceType.DhcpOptions)
+        public DhcpOptions(Vpc vpc, ActiveDirectoryBase simpleAd) : base(ResourceType.DhcpOptions)
         {
             this.Vpc = vpc;
             this.DomainNameServers = new FnGetAtt(simpleAd, FnGetAttAttribute.AwsDirectoryServiceSimpleAdDnsIpAddresses);

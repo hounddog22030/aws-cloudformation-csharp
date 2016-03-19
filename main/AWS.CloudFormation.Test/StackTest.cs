@@ -114,7 +114,7 @@ namespace AWS.CloudFormation.Test
             primeTemplate.Resources.Add("SubnetAd2", subnetForActiveDirectory2);
 
 
-            MicrosoftAd simpleAd = new MicrosoftAd(FullyQualifiedDomainName,activeDirectoryAdminPassword,vpc,subnetForActiveDirectory1,subnetForActiveDirectory2);
+            var simpleAd = new SimpleActiveDirectory(FullyQualifiedDomainName,activeDirectoryAdminPassword,DirectorySize.Small, vpc,subnetForActiveDirectory1,subnetForActiveDirectory2);
             primeTemplate.Resources.Add(simpleAd.LogicalId, simpleAd);
 
             DhcpOptions dhcpOptions = new DhcpOptions(vpc,simpleAd);

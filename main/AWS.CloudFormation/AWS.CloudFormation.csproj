@@ -101,7 +101,9 @@
     <Compile Include="Resource\AutoScaling\AutoScalingGroup.cs" />
     <Compile Include="Resource\AutoScaling\LaunchConfiguration.cs" />
     <Compile Include="Resource\CloudFormation\Stack.cs" />
+    <Compile Include="Resource\DirectoryService\ActiveDirectoryBase.cs" />
     <Compile Include="Resource\DirectoryService\MicrosoftAd.cs" />
+    <Compile Include="Resource\DirectoryService\SimpleActiveDirectory.cs" />
     <Compile Include="Resource\EC2\DHCPOptions.cs" />
     <Compile Include="Resource\EC2\Instancing\BlockDeviceMapping.cs" />
     <Compile Include="Resource\EC2\Networking\VpcEndpoint.cs" />
