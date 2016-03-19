@@ -28,10 +28,10 @@ namespace AWS.CloudFormation.Configuration.Packages
             this.Config.Sources.Add("c:/cfn/tools/pstools", "https://s3.amazonaws.com/gtbb/software/pstools.zip");
             addUserCommand.Command = new FnJoin(FnJoinDelimiter.None,
                     "c:\\cfn\\tools\\pstools\\psexec.exe -accepteula -h -u ",
-                    new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
+                    new ReferenceProperty(ActiveDirectoryBase.DomainNetBiosNameParameterName),
                     "\\administrator",
                     " -p ",
-                    new ReferenceProperty(MicrosoftAd.DomainAdminPasswordParameterName),
+                    new ReferenceProperty(ActiveDirectoryBase.DomainAdminPasswordParameterName),
                     " powershell.exe -ExecutionPolicy RemoteSigned c:\\cfn\\scripts\\New-LabADUser.ps1");
 
         }

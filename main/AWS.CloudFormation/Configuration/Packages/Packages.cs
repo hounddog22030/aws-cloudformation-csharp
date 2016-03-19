@@ -214,7 +214,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             var nodeJson = chefConfig.Files.GetFile("c:/chef/node.json");
             if (!nodeJson.ContainsKey("domain"))
             {
-                nodeJson.Add("domain", new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName));
+                nodeJson.Add("domain", new ReferenceProperty(ActiveDirectoryBase.DomainNetBiosNameParameterName));
             }
             return nodeJson.Content;
         }
@@ -255,7 +255,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             if (!node.ContainsKey("domainAdmin"))
             {
                 var domainAdminUserInfoNode = node.AddNode("domainAdmin");
-                domainAdminUserInfoNode.Add("name", new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(MicrosoftAd.DomainAdminUsernameParameterName)));
+                domainAdminUserInfoNode.Add("name", new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(ActiveDirectoryBase.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(ActiveDirectoryBase.DomainAdminUsernameParameterName)));
                 domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
 
             }
@@ -320,16 +320,16 @@ namespace AWS.CloudFormation.Configuration.Packages
             const string ConfigureSql4Tfs = "c:/cfn/scripts/configure-sql-4-tfs.ps1";
             base.AddToLaunchConfiguration(configuration);
 
-            MicrosoftAd.AddInstanceToDomain(configuration.RenameConfig);
+            ActiveDirectoryBase.AddInstanceToDomain(configuration.RenameConfig);
             var sysadminFile = this.Config.Files.GetFile(ConfigureSql4Tfs);
             sysadminFile.Source = "https://s3.amazonaws.com/gtbb/configure-sql-4-tfs.ps1";
             var command = this.Config.Commands.AddCommand<Command>("SetUserToTfsService");
 
             command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None, ConfigureSql4Tfs,
                 " ",
-                new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
+                new ReferenceProperty(ActiveDirectoryBase.DomainNetBiosNameParameterName),
                 " ",
-                new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
+                new ReferenceProperty(ActiveDirectoryBase.DomainNetBiosNameParameterName),
                 "\\",
                 new ReferenceProperty("TfsServiceAccountName"),
                 " ",
@@ -384,9 +384,9 @@ namespace AWS.CloudFormation.Configuration.Packages
             var command = this.Config.Commands.AddCommand<Command>("CreateBackupShare");
             command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None,
                 "New-Item \"d:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"d:\\Backups\" -FullAccess @('NT AUTHORITY\\NETWORK SERVICE','",
-                new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
+                new ReferenceProperty(ActiveDirectoryBase.DomainNetBiosNameParameterName),
                 "\\",
-                new ReferenceProperty(MicrosoftAd.DomainAdminUsernameParameterName),
+                new ReferenceProperty(ActiveDirectoryBase.DomainAdminUsernameParameterName),
                 "')");
             command.WaitAfterCompletion = 0.ToString();
             command.Test = "IF EXIST G:\\BACKUPS EXIT /B 1";
@@ -460,7 +460,7 @@ namespace AWS.CloudFormation.Configuration.Packages
             tfsNode.Add("application_server_netbios_name",
                 new FnJoin(FnJoinDelimiter.Period,
                     this.ApplicationServer.LogicalId,
-                    new ReferenceProperty(MicrosoftAd.DomainFqdnParameterName)));
+                    new ReferenceProperty(ActiveDirectoryBase.DomainFqdnParameterName)));
 
             if (this.SqlServer4Build != null)
             {

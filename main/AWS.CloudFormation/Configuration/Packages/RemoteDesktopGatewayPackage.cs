@@ -25,10 +25,10 @@ namespace AWS.CloudFormation.Configuration.Packages
             RecordSet routing = RecordSet.AddByHostedZoneName(
                 this.Instance.Template,
                 $"RecordSet4{this.Instance.LogicalId}",
-                new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(MicrosoftAd.DomainTopLevelParameterName),"."),
+                new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(ActiveDirectoryBase.DomainTopLevelParameterName),"."),
                 new FnJoin( FnJoinDelimiter.Period, 
                             this.Instance.LogicalId + DateTime.Now.Second,
-                            new ReferenceProperty(MicrosoftAd.DomainFqdnParameterName)),
+                            new ReferenceProperty(ActiveDirectoryBase.DomainFqdnParameterName)),
                 RecordSet.RecordSetTypeEnum.A);
 
             var eip = new ElasticIp(this.Instance);
@@ -42,7 +42,7 @@ namespace AWS.CloudFormation.Configuration.Packages
         }
         private void InstallRemoteDesktopGateway()
         {
-            MicrosoftAd.AddInstanceToDomain(this.Instance.RenameConfig);
+            ActiveDirectoryBase.AddInstanceToDomain(this.Instance.RenameConfig);
             var installRdsConfig =
                 this.Instance.Metadata.Init.ConfigSets.GetConfigSet("RemoteDesktop")
                     .GetConfig("Install");
@@ -60,9 +60,9 @@ namespace AWS.CloudFormation.Configuration.Packages
                                             " C:\\cfn\\scripts\\Configure-RDGW.ps1 -ServerFQDN ",
                                             this.Instance.LogicalId,
                                             ".",
-                                            new ReferenceProperty(MicrosoftAd.DomainFqdnParameterName),
+                                            new ReferenceProperty(ActiveDirectoryBase.DomainFqdnParameterName),
                                             " -DomainNetBiosName ",
-                                            new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName),
+                                            new ReferenceProperty(ActiveDirectoryBase.DomainNetBiosNameParameterName),
                                             " -GroupName 'Domain Users'");
             installRdsCommand.Test = "IF EXIST c:/rdp.cer EXIT 1";
         }

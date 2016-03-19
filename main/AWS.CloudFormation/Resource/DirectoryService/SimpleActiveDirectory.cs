@@ -70,9 +70,9 @@ namespace AWS.CloudFormation.Resource.DirectoryService
             }
 
             var adminUserNameFqdn = new FnJoin(FnJoinDelimiter.None,
-                new ReferenceProperty(MicrosoftAd.DomainAdminUsernameParameterName),
+                new ReferenceProperty(ActiveDirectoryBase.DomainAdminUsernameParameterName),
                 "@",
-                new ReferenceProperty(MicrosoftAd.DomainFqdnParameterName));
+                new ReferenceProperty(ActiveDirectoryBase.DomainFqdnParameterName));
 
             command = createDevOuConfig.Commands.AddCommand<Command>(ResourceBase.NormalizeLogicalId($"AddUser{user}"));
 

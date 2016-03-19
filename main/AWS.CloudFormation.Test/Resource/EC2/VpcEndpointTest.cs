@@ -89,16 +89,16 @@ namespace AWS.CloudFormation.Test.Resource.EC2
 
             //var password = "a1111sdjfkAAAA";
 
-            //var domainPassword = new ParameterBase(MicrosoftAd.DomainAdminPasswordParameterName, "String", password, "Password for domain administrator.")
+            //var domainPassword = new ParameterBase(ActiveDirectoryBase.DomainAdminPasswordParameterName, "String", password, "Password for domain administrator.")
             //{
             //    NoEcho = true
             //};
 
             //template.Parameters.Add(domainPassword);
-            //template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainTopLevelNameParameterName, "String", "nothing.nothing", "Top level domain name for the stack (e.g. example.com)"));
-            //template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainVersionParameterName, "String", StackTest.Greek.Alpha, "Fully qualified domain name for the stack (e.g. example.com)"));
-            //template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainNetBiosNameParameterName, "String", StackTest.Greek.Alpha + "nothing", "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
-            //template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminUsernameParameterName, "String", "johnny", "Domain Admin User"));
+            //template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainTopLevelNameParameterName, "String", "nothing.nothing", "Top level domain name for the stack (e.g. example.com)"));
+            //template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainVersionParameterName, "String", StackTest.Greek.Alpha, "Fully qualified domain name for the stack (e.g. example.com)"));
+            //template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainNetBiosNameParameterName, "String", StackTest.Greek.Alpha + "nothing", "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
+            //template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainAdminUsernameParameterName, "String", "johnny", "Domain Admin User"));
             //template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "tfsservice", "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
             //template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, "String", "Hello12345.", "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
             //template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));

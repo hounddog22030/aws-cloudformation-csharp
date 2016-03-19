@@ -72,7 +72,7 @@ namespace AWS.CloudFormation.Test
                 Template development = GetTemplateFullStack(StackTest.TopLevelDomainName, "prime", i, developmentCreate, gitSuffix);
                 var vpcDevelopment = new FnGetAtt($"{i}DevYadaYadaSoftwareCom", $"Outputs.Vpc{i}");
 
-                development.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminPasswordParameterName, "String",
+                development.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainAdminPasswordParameterName, "String",
                     activeDirectoryAdminPassword, "Admin password"));
                 development.Parameters.Add(
                     new ParameterBase(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, "String",
@@ -138,20 +138,21 @@ namespace AWS.CloudFormation.Test
             simpleAd.AddUser(instanceRdp, ou, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName), tfsServicePassword);
             simpleAd.AddUser(instanceRdp, ou, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsBuildAccountNameParameterName), new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsBuildAccountPasswordParameterName));
 
-            instanceRdp.Packages.Add(new WindowsShare("d:/backups", "backups", CidrPrimeVpc, new FnJoin(FnJoinDelimiter.None, "'", new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName), "'"), new FnJoin(FnJoinDelimiter.None, "'", new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName), "\\Admins'")));
+            instanceRdp.Packages.Add(new WindowsShare("d:/backups", "backups", CidrPrimeVpc, new FnJoin(FnJoinDelimiter.None, "'", new ReferenceProperty(ActiveDirectoryBase.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName), "'"), new FnJoin(FnJoinDelimiter.None, "'", new ReferenceProperty(ActiveDirectoryBase.DomainNetBiosNameParameterName), "\\Admins'")));
 
 
-            primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminPasswordParameterName, "String", activeDirectoryAdminPassword, "Admin password"));
-            primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminUsernameParameterName, "String", simpleAd.AdministratorAccountName, "Admin username"));
-            primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainVersionParameterName, "String", Greek.Alpha.ToString().ToLowerInvariant(), "Fully qualified domain name for the stack (e.g. example.com)"));
-            primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainNetBiosNameParameterName, "String", "prime", "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
-            primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainFqdnParameterName, "String", FullyQualifiedDomainName, "Fully qualified domain name"));
+            primeTemplate.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainAdminUsernameParameterName, "String", simpleAd.AdministratorAccountName, "Admin username"));
+            primeTemplate.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainAdminPasswordParameterName, "String", activeDirectoryAdminPassword, "Admin password"));
+            primeTemplate.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainNetBiosNameParameterName, "String", "prime", "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
+            primeTemplate.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainFqdnParameterName, "String", FullyQualifiedDomainName, "Fully qualified domain name"));
             primeTemplate.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "tfsservice", "Fully qualified domain name"));
-            primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainTopLevelParameterName, "String", TopLevelDomainName, "Fully qualified domain name"));
+            primeTemplate.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainTopLevelParameterName, "String", TopLevelDomainName, "Fully qualified domain name"));
             var tfsBuildPassword = SettingsHelper.GetSetting("tfsbuild@prime.yadayadasoftware.com");
             primeTemplate.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsBuildAccountPasswordParameterName, "String", tfsBuildPassword, "Password for tfsbuild account"));
             primeTemplate.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsBuildAccountNameParameterName, "String", "tfsbuild", "Name for tfsbuild account"));
 
+            Output outputDomainAdminUserName = new Output(ActiveDirectoryBase.DomainAdminUsernameParameterName, new ReferenceProperty(ActiveDirectoryBase.DomainAdminUsernameParameterName));
+            primeTemplate.Outputs.Add(outputDomainAdminUserName.LogicalId, outputDomainAdminUserName);
 
 
             return primeTemplate;
@@ -216,12 +217,12 @@ namespace AWS.CloudFormation.Test
             var developmentVpcCidr = $"10.{(int)version}.0.0/16";
             var template = new Template($"{version}.{appNameNetBiosName}.{topLevel}", KeyPairName, $"Vpc{version}", developmentVpcCidr, $"{GetGitBranch()}:{GetGitHash()}" );
 
-            template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminUsernameParameterName, "String", "admin", "Admin username"));
-            template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainVersionParameterName, "String", version.ToString().ToLowerInvariant(), "Fully qualified domain name for the stack (e.g. example.com)"));
-            template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainNetBiosNameParameterName, "String", appNameNetBiosName, "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
-            template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainFqdnParameterName, "String", $"{appNameNetBiosName}.{topLevel}", "Fully qualified domain name"));
-            template.Parameters.Add(new ParameterBase(MicrosoftAd.DomainTopLevelParameterName, "String", topLevel, "Fully qualified domain name"));
-            template.Parameters.Add(new ParameterBase(MicrosoftAd.CidrPrimeDmz1SubnetParameterName, "String", CidrPrimeDmz1Subnet, "Cidr for PrimeDmz1 (Rdp)") { NoEcho = true });
+            template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainAdminUsernameParameterName, "String", "admin", "Admin username"));
+            template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainVersionParameterName, "String", version.ToString().ToLowerInvariant(), "Fully qualified domain name for the stack (e.g. example.com)"));
+            template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainNetBiosNameParameterName, "String", appNameNetBiosName, "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
+            template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainFqdnParameterName, "String", $"{appNameNetBiosName}.{topLevel}", "Fully qualified domain name"));
+            template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainTopLevelParameterName, "String", topLevel, "Fully qualified domain name"));
+            template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.CidrPrimeDmz1SubnetParameterName, "String", CidrPrimeDmz1Subnet, "Cidr for PrimeDmz1 (Rdp)") { NoEcho = true });
 
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "tfsservice", "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
@@ -349,7 +350,7 @@ namespace AWS.CloudFormation.Test
                 tfsServer.DependsOn.Add(routeFromAlphaToPrime.LogicalId);
 
                 //tfsServer.DependsOn.Add(simpleAd.LogicalId);
-                MicrosoftAd.AddInstanceToDomain(tfsServer.RenameConfig);
+                ActiveDirectoryBase.AddInstanceToDomain(tfsServer.RenameConfig);
 
                 var package =  tfsServer.Packages.OfType<TeamFoundationServerApplicationTier>().FirstOrDefault();
                 if (package != null)
@@ -416,7 +417,7 @@ namespace AWS.CloudFormation.Test
 
 
                 //buildServer.DependsOn.Add(simpleAd.LogicalId);
-                MicrosoftAd.AddInstanceToDomain(buildServer.RenameConfig);
+                ActiveDirectoryBase.AddInstanceToDomain(buildServer.RenameConfig);
 
             }
 
@@ -429,7 +430,7 @@ namespace AWS.CloudFormation.Test
                 workstation.DependsOn.Add(routeFromAlphaToPrime.LogicalId);
 
                 //workstation.DependsOn.Add(simpleAd.LogicalId);
-                MicrosoftAd.AddInstanceToDomain(workstation.RenameConfig);
+                ActiveDirectoryBase.AddInstanceToDomain(workstation.RenameConfig);
             }
 
             //////SecurityGroup elbSecurityGroup = new SecurityGroup(template, "ElbSecurityGroup", "Enables access to the ELB", vpc);

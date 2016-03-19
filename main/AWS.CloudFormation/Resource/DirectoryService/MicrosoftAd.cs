@@ -36,67 +36,20 @@ namespace AWS.CloudFormation.Resource.DirectoryService
 
     public class MicrosoftAd : ActiveDirectoryBase
     {
-        //public const string DomainVersionParameterName = "DomainVersion";
-        //public const string DomainAdminUsernameParameterName = "DomainAdminUsername";
-        //public const string DomainAdminPasswordParameterName = "DomainAdminPassword";
-        //public const string DomainNetBiosNameParameterName = "DomainNetBiosName";
-        //public const string DomainFqdnParameterName = "DomainFqdn";
-        //public const string DomainTopLevelParameterName = "DomainTopLevel";
-
         public MicrosoftAd(object name, object password, Vpc vpc, params Subnet[] subnets) : base(ResourceType.AwsDirectoryServiceMicrosoftAd, name, password, vpc, subnets)
         {
         }
 
-        //protected override bool SupportsTags => false;
+        public override string AdministratorAccountName => "admin";
+        public override void AddUser(LaunchConfiguration instance, string ou, ReferenceProperty user, string password)
+        {
+            throw new NotImplementedException();
+        }
 
-        //[JsonIgnore]
-        //public VpcSettings VpcSettings
-        //{
-        //    get
-        //    {
-        //        return this.Properties.GetValue<VpcSettings>();
-        //    }
-        //    private set { this.Properties.SetValue(value); }
-        //}
-        //[JsonIgnore]
-        //public DirectorySize Size
-        //{
-        //    get
-        //    {
-        //        return this.Properties.GetValue<DirectorySize>();
-        //    }
-        //    private set { this.Properties.SetValue(value); }
-        //}
-        //[JsonIgnore]
-        //public object Name
-        //{
-        //    get
-        //    {
-        //        return this.Properties.GetValue<object>();
-        //    }
-        //    private set { this.Properties.SetValue(value); }
-        //}
-        //[JsonIgnore]
-        //public object Password
-        //{
-        //    get
-        //    {
-        //        return this.Properties.GetValue<string>();
-        //    }
-        //    private set { this.Properties.SetValue(value); }
-        //}
-
-        //[JsonIgnore]
-        //public object ShortName
-        //{
-        //    get
-        //    {
-        //        return this.Properties.GetValue<object>();
-        //    }
-        //    set { this.Properties.SetValue(value); }
-        //}
-
-        //public const string CidrPrimeDmz1SubnetParameterName = "CidrPrimeDmz1Subnet";
+        public override void AddUser(LaunchConfiguration instanceRdp, string ou, ReferenceProperty user, ReferenceProperty password)
+        {
+            throw new NotImplementedException();
+        }
 
         //public static void AddInstanceToDomain(Config config)
         //{
@@ -113,21 +66,18 @@ namespace AWS.CloudFormation.Resource.DirectoryService
         //    joinCommand.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None,
         //        "-Command \"",
         //        "Add-Computer -DomainName ",
-        //        new ReferenceProperty(MicrosoftAd.DomainFqdnParameterName),
+        //        new ReferenceProperty(ActiveDirectoryBase.DomainFqdnParameterName),
         //        " -Credential (New-Object System.Management.Automation.PSCredential('",
-        //        new ReferenceProperty(MicrosoftAd.DomainAdminUsernameParameterName),
+        //        new ReferenceProperty(ActiveDirectoryBase.DomainAdminUsernameParameterName),
         //        "@",
-        //        new ReferenceProperty(MicrosoftAd.DomainFqdnParameterName),
+        //        new ReferenceProperty(ActiveDirectoryBase.DomainFqdnParameterName),
         //        "',(ConvertTo-SecureString \"",
-        //        new ReferenceProperty(MicrosoftAd.DomainAdminPasswordParameterName),
+        //        new ReferenceProperty(ActiveDirectoryBase.DomainAdminPasswordParameterName),
         //        "\" -AsPlainText -Force))) ",
         //        "-Restart\"");
         //    joinCommand.WaitAfterCompletion = "forever";
         //    joinCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
         //}
-
-        //public const string ActiveDirectoryConfigSet = "ActiveDirectoryConfigSet";
-        //public const string ActiveDirectoryConfig = "ActiveDirectoryConfig";
 
         //public static string AddOu(LaunchConfiguration instance, string parentOu, string ouToAdd)
         //{
@@ -139,9 +89,9 @@ namespace AWS.CloudFormation.Resource.DirectoryService
         //    command.WaitAfterCompletion = 0.ToString();
 
         //    var adminUserNameFqdn = new FnJoin(FnJoinDelimiter.None,
-        //        new ReferenceProperty(MicrosoftAd.DomainAdminUsernameParameterName),
+        //        new ReferenceProperty(ActiveDirectoryBase.DomainAdminUsernameParameterName),
         //        "@",
-        //        new ReferenceProperty(MicrosoftAd.DomainFqdnParameterName));
+        //        new ReferenceProperty(ActiveDirectoryBase.DomainFqdnParameterName));
 
 
 
@@ -154,7 +104,7 @@ namespace AWS.CloudFormation.Resource.DirectoryService
         //                                                    "' -Credential (New-Object System.Management.Automation.PSCredential('",
         //                                                    adminUserNameFqdn,
         //                                                    "',(ConvertTo-SecureString '",
-        //                                                    new ReferenceProperty(MicrosoftAd.DomainAdminPasswordParameterName),
+        //                                                    new ReferenceProperty(ActiveDirectoryBase.DomainAdminPasswordParameterName),
         //                                                    "' -AsPlainText -Force)))");
 
         //    var finalOu = $"OU={ouToAdd},{parentOu}";
@@ -181,9 +131,9 @@ namespace AWS.CloudFormation.Resource.DirectoryService
         //    }
 
         //    var adminUserNameFqdn = new FnJoin(FnJoinDelimiter.None,
-        //        new ReferenceProperty(MicrosoftAd.DomainAdminUsernameParameterName),
+        //        new ReferenceProperty(ActiveDirectoryBase.DomainAdminUsernameParameterName),
         //        "@",
-        //        new ReferenceProperty(MicrosoftAd.DomainFqdnParameterName));
+        //        new ReferenceProperty(ActiveDirectoryBase.DomainFqdnParameterName));
 
 
         //    var addUserCommand = "New-ADUser";
@@ -198,7 +148,7 @@ namespace AWS.CloudFormation.Resource.DirectoryService
         //                                                    "' -Credential (New-Object System.Management.Automation.PSCredential('",
         //                                                    adminUserNameFqdn,
         //                                                    "',(ConvertTo-SecureString '",
-        //                                                    new ReferenceProperty(MicrosoftAd.DomainAdminPasswordParameterName),
+        //                                                    new ReferenceProperty(ActiveDirectoryBase.DomainAdminPasswordParameterName),
         //                                                    "' -AsPlainText -Force)))",
         //                                                    " -SamAccountName ",
         //                                                    user,
@@ -230,31 +180,6 @@ namespace AWS.CloudFormation.Resource.DirectoryService
 
         //}
 
-        //internal static string GetPassword()
-        //{
-        //    var random = new Random(((int)DateTime.Now.Ticks % int.MaxValue));
-
-        //    string password = string.Empty;
-
-        //    for (int i = 0; i < 4; i++)
-        //    {
-        //        char charToAdd = ((char)random.Next((int)'A', (int)'Z'));
-        //        password += charToAdd;
-        //    }
-
-        //    for (int i = 0; i < 4; i++)
-        //    {
-        //        char charToAdd = ((char)random.Next((int)'0', (int)'9'));
-        //        password += charToAdd;
-        //    }
-
-        //    for (int i = 0; i < 4; i++)
-        //    {
-        //        char charToAdd = ((char)random.Next((int)'a', (int)'z'));
-        //        password += charToAdd;
-        //    }
-        //    return password;
-        //}
 
         //public static string GetSecurityGroupId()
         //{
@@ -277,20 +202,6 @@ namespace AWS.CloudFormation.Resource.DirectoryService
         //    return groupIds;
         //}
 
-        //public static string AddUser(Instance instanceRdp, string ou, ReferenceProperty user, ReferenceProperty password)
-        //{
-        //    return AddUser(instanceRdp, ou, (object) user, (object) password);
-        //}
-        public override string AdministratorAccountName => "admin";
-        public override void AddUser(LaunchConfiguration instance, string ou, ReferenceProperty user, string password)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void AddUser(LaunchConfiguration instanceRdp, string ou, ReferenceProperty user, ReferenceProperty password)
-        {
-            throw new NotImplementedException();
-        }
     }
 
     public class VpcSettings
