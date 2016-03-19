@@ -25,6 +25,6 @@ execute 'Configure Team Foundation Server STD' do
 	not_if {::Win32::Service.exists?("TFSJobAgent")}
 end
 
-execute 'Configure Team Foundation Server STD' do
+execute 'Configure TfsBuild Account' do
 	command "\"#{node[:tfs][:security_exe_path]}\" /g+ \"Project Collection Build Service Accounts\" n:tfsbuild@#{node[:domain]} /collection:http://#{node[:fqdn]}:8080/tfs/YadaYada"
 end

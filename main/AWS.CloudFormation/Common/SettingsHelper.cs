@@ -16,17 +16,18 @@ namespace AWS.CloudFormation.Common
             return (string)appSettingsReader.GetValue(key, typeof(string));
         }
 
-        public static string GetLocalGateway()
+        public static string GetAccessCidr()
         {
-            string url = "http://checkip.dyndns.org";
-            System.Net.WebRequest req = System.Net.WebRequest.Create(url);
-            System.Net.WebResponse resp = req.GetResponse();
-            System.IO.StreamReader sr = new System.IO.StreamReader(resp.GetResponseStream());
-            string response = sr.ReadToEnd().Trim();
-            string[] a = response.Split(':');
-            string a2 = a[1].Substring(1);
-            string[] a3 = a2.Split('<');
-            return a3[0];
+            return GetSetting("AccessCidr");
+            //string url = "http://checkip.dyndns.org";
+            //System.Net.WebRequest req = System.Net.WebRequest.Create(url);
+            //System.Net.WebResponse resp = req.GetResponse();
+            //System.IO.StreamReader sr = new System.IO.StreamReader(resp.GetResponseStream());
+            //string response = sr.ReadToEnd().Trim();
+            //string[] a = response.Split(':');
+            //string a2 = a[1].Substring(1);
+            //string[] a3 = a2.Split('<');
+            //return a3[0];
         }
     }
 }

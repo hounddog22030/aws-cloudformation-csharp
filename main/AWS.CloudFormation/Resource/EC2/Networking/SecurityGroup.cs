@@ -159,7 +159,7 @@ namespace AWS.CloudFormation.Resource.EC2.Networking
                     cidrAsString = Template.CidrIpTheWorld;
                     break;
                 case PredefinedCidr.LocalGateway:
-                    cidrAsString = $"{SettingsHelper.GetLocalGateway()}/32";
+                    cidrAsString = $"{SettingsHelper.GetAccessCidr()}";
                     break;
                 case PredefinedCidr.AllVpcs:
                     cidrAsString = $"10.0.0.0/8";
