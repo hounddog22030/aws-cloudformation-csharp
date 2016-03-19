@@ -78,12 +78,14 @@ namespace AWS.CloudFormation.Test
                     new ParameterBase(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, "String",
                         tfsServicePassword, "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
 
+
                 Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
                 CloudFormation.Resource.CloudFormation.Stack devStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
                 devStack.Parameters.Add("PrimeVpcId", vpcPrime);
                 devStack.Parameters.Add("PrimeRouteTableForAdSubnets", new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTableForAdSubnets"));
                 devStack.Parameters.Add("PrimeRouteTable4SubnetDmz1", new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTable4SubnetDmz1"));
                 devStack.Parameters.Add("DhcpOptionsId", new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.DhcpOptionsId"));
+                devStack.Parameters.Add(ActiveDirectoryBase.DomainAdminUsernameParameterName, new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.DomainAdminUsername"));
                 masterTemplate.Resources.Add($"{i}DevYadaYadaSoftwareCom", devStack);
             }
 
@@ -113,7 +115,6 @@ namespace AWS.CloudFormation.Test
             Subnet subnetForActiveDirectory2 = new Subnet(vpc, CidrPrimeActiveDirectorySubnet2, AvailabilityZone.UsEast1E, routeTableForAdSubnets, null);
             primeTemplate.Resources.Add("SubnetAd2", subnetForActiveDirectory2);
 
-
             var simpleAd = new SimpleActiveDirectory(FullyQualifiedDomainName,activeDirectoryAdminPassword,DirectorySize.Small, vpc,subnetForActiveDirectory1,subnetForActiveDirectory2);
             primeTemplate.Resources.Add(simpleAd.LogicalId, simpleAd);
 
@@ -134,14 +135,14 @@ namespace AWS.CloudFormation.Test
             instanceRdp.DependsOn.Add(simpleAd.LogicalId);
             instanceRdp.DependsOn.Add(routeTableForAdSubnets.LogicalId);
             string ou = "OU=Users,OU=prime,DC=prime,DC=yadayadasoftware,DC=com";
-            string tfsService = MicrosoftAd.AddUser(instanceRdp, ou, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName), tfsServicePassword);
-            string tfsBuild = MicrosoftAd.AddUser(instanceRdp, ou, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsBuildAccountNameParameterName), new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsBuildAccountPasswordParameterName));
+            simpleAd.AddUser(instanceRdp, ou, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName), tfsServicePassword);
+            simpleAd.AddUser(instanceRdp, ou, new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsBuildAccountNameParameterName), new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsBuildAccountPasswordParameterName));
 
             instanceRdp.Packages.Add(new WindowsShare("d:/backups", "backups", CidrPrimeVpc, new FnJoin(FnJoinDelimiter.None, "'", new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName), "'"), new FnJoin(FnJoinDelimiter.None, "'", new ReferenceProperty(MicrosoftAd.DomainNetBiosNameParameterName), "\\Admins'")));
 
 
             primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminPasswordParameterName, "String", activeDirectoryAdminPassword, "Admin password"));
-            primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminUsernameParameterName, "String", "admin", "Admin username"));
+            primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainAdminUsernameParameterName, "String", simpleAd.AdministratorAccountName, "Admin username"));
             primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainVersionParameterName, "String", Greek.Alpha.ToString().ToLowerInvariant(), "Fully qualified domain name for the stack (e.g. example.com)"));
             primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainNetBiosNameParameterName, "String", "prime", "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
             primeTemplate.Parameters.Add(new ParameterBase(MicrosoftAd.DomainFqdnParameterName, "String", FullyQualifiedDomainName, "Fully qualified domain name"));
@@ -206,7 +207,7 @@ namespace AWS.CloudFormation.Test
             var adminPassword = SettingsHelper.GetSetting("admin@prime.yadayadasoftware.com");
             var tfsPassword = SettingsHelper.GetSetting("tfsservice@prime.yadayadasoftware.com");
             var templateUri = GetMasterTemplateUri(adminPassword, tfsPassword, Create.FullStack, Greek.Alpha, Greek.Alpha) ;
-            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635939233363088104", templateUri);
+            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635939567782730963", templateUri);
 
         }
 

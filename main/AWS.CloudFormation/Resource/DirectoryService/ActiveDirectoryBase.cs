@@ -35,6 +35,8 @@ namespace AWS.CloudFormation.Resource.DirectoryService
 
         protected override bool SupportsTags => false;
 
+        public abstract string AdministratorAccountName { get; }
+
         [JsonIgnore]
         public VpcSettings VpcSettings
         {
@@ -144,68 +146,72 @@ namespace AWS.CloudFormation.Resource.DirectoryService
             return finalOu;
         }
 
-        public static string AddUser(LaunchConfiguration instance, object ou, object user, object password)
-        {
-            var configSet = instance.Metadata.Init.ConfigSets.GetConfigSet(ActiveDirectoryConfigSet);
-            var createDevOuConfig = configSet.GetConfig(ActiveDirectoryConfig);
-
-            ConfigCommand command = null;
-            if (!createDevOuConfig.Commands.ContainsKey("InstallActiveDirectoryTools"))
-            {
-                command = createDevOuConfig.Commands.AddCommand<Command>("InstallActiveDirectoryTools");
-                command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None, "Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter");
-                command.WaitAfterCompletion = 0.ToString();
-            }
-
-            var adminUserNameFqdn = new FnJoin(FnJoinDelimiter.None,
-                new ReferenceProperty(MicrosoftAd.DomainAdminUsernameParameterName),
-                "@",
-                new ReferenceProperty(MicrosoftAd.DomainFqdnParameterName));
+        //public abstract void AddUser(LaunchConfiguration instance, object ou, object user, object password);
+        public abstract void AddUser(LaunchConfiguration instance, string ou, ReferenceProperty user, string password);
+        public abstract void AddUser(LaunchConfiguration instanceRdp, string ou, ReferenceProperty user, ReferenceProperty password);
 
 
-            var addUserCommand = "New-ADUser";
+        //public static string AddUser(LaunchConfiguration instance, object ou, object user, object password)
+        //{
+        //    var configSet = instance.Metadata.Init.ConfigSets.GetConfigSet(ActiveDirectoryConfigSet);
+        //    var createDevOuConfig = configSet.GetConfig(ActiveDirectoryConfig);
 
-            command = createDevOuConfig.Commands.AddCommand<Command>(ResourceBase.NormalizeLogicalId($"AddUser{user}"));
-            command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None,
-                                                            addUserCommand,
-                                                            " -Name ",
-                                                            user,
-                                                            " -Path '",
-                                                            ou,
-                                                            "' -Credential (New-Object System.Management.Automation.PSCredential('",
-                                                            adminUserNameFqdn,
-                                                            "',(ConvertTo-SecureString '",
-                                                            new ReferenceProperty(MicrosoftAd.DomainAdminPasswordParameterName),
-                                                            "' -AsPlainText -Force)))",
-                                                            " -SamAccountName ",
-                                                            user,
-                                                            " -AccountPassword (ConvertTo-SecureString -AsPlainText '",
-                                                            password,
-                                                            "' -Force)",
-                                                            " -Enabled $true");
-            command.Test = new FnJoinPowershellCommand(FnJoinDelimiter.Space,
-                                                        "try {Get-ADUser -Identity",
-                                                        user,
-                                                        ";exit 1} catch {exit 0}");
-            command.WaitAfterCompletion = 0.ToString();
+        //    ConfigCommand command = null;
+        //    if (!createDevOuConfig.Commands.ContainsKey("InstallActiveDirectoryTools"))
+        //    {
+        //        command = createDevOuConfig.Commands.AddCommand<Command>("InstallActiveDirectoryTools");
+        //        command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None, "Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter");
+        //        command.WaitAfterCompletion = 0.ToString();
+        //    }
 
-            //var finalOu = $"OU={ouToAdd},{parentOu}";
+        //    var adminUserNameFqdn = new FnJoin(FnJoinDelimiter.None,
+        //        new ReferenceProperty(MicrosoftAd.DomainAdminUsernameParameterName),
+        //        "@",
+        //        new ReferenceProperty(MicrosoftAd.DomainFqdnParameterName));
 
-            //command.Test = new FnJoinPowershellCommand(FnJoinDelimiter.None, "if([ADSI]::Exists('LDAP://",
-            //                                                finalOu,
-            //                                                "')) { EXIT 1 }");
-            //command.WaitAfterCompletion = 0.ToString();
 
-            //return finalOu;
-            return null;
+        //    var addUserCommand = "New-ADUser";
 
-        }
+        //    command = createDevOuConfig.Commands.AddCommand<Command>(ResourceBase.NormalizeLogicalId($"AddUser{user}"));
+        //    command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None,
+        //                                                    addUserCommand,
+        //                                                    " -Name ",
+        //                                                    user,
+        //                                                    " -Path '",
+        //                                                    ou,
+        //                                                    "' -Credential (New-Object System.Management.Automation.PSCredential('",
+        //                                                    adminUserNameFqdn,
+        //                                                    "',(ConvertTo-SecureString '",
+        //                                                    new ReferenceProperty(MicrosoftAd.DomainAdminPasswordParameterName),
+        //                                                    "' -AsPlainText -Force)))",
+        //                                                    " -SamAccountName ",
+        //                                                    user,
+        //                                                    " -AccountPassword (ConvertTo-SecureString -AsPlainText '",
+        //                                                    password,
+        //                                                    "' -Force)",
+        //                                                    " -Enabled $true");
+        //    command.Test = new FnJoinPowershellCommand(FnJoinDelimiter.Space,
+        //                                                "try {Get-ADUser -Identity",
+        //                                                user,
+        //                                                ";exit 1} catch {exit 0}");
+        //    command.WaitAfterCompletion = 0.ToString();
 
-        public static string AddUser(LaunchConfiguration instance, string ou, ReferenceProperty user, string password)
-        {
-            return AddUser(instance, (object)ou, (object)user, password);
+        //    //var finalOu = $"OU={ouToAdd},{parentOu}";
 
-        }
+        //    //command.Test = new FnJoinPowershellCommand(FnJoinDelimiter.None, "if([ADSI]::Exists('LDAP://",
+        //    //                                                finalOu,
+        //    //                                                "')) { EXIT 1 }");
+        //    //command.WaitAfterCompletion = 0.ToString();
+
+        //    //return finalOu;
+        //    return null;
+
+        //}
+
+        //public static string AddUser(LaunchConfiguration instance, string ou, ReferenceProperty user, string password)
+        //{
+        //    return AddUser(instance, (object)ou, (object)user, password);
+        //}
 
         internal static string GetPassword()
         {
@@ -254,10 +260,10 @@ namespace AWS.CloudFormation.Resource.DirectoryService
             return groupIds;
         }
 
-        public static string AddUser(Instance instanceRdp, string ou, ReferenceProperty user, ReferenceProperty password)
-        {
-            return AddUser(instanceRdp, ou, (object)user, (object)password);
-        }
+        //public static string AddUser(Instance instanceRdp, string ou, ReferenceProperty user, ReferenceProperty password)
+        //{
+        //    return AddUser(instanceRdp, ou, (object)user, (object)password);
+        //}
 
         public override string LogicalId {
             get

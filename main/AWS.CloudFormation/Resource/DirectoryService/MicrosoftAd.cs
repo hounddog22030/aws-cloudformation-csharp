@@ -281,6 +281,16 @@ namespace AWS.CloudFormation.Resource.DirectoryService
         //{
         //    return AddUser(instanceRdp, ou, (object) user, (object) password);
         //}
+        public override string AdministratorAccountName => "admin";
+        public override void AddUser(LaunchConfiguration instance, string ou, ReferenceProperty user, string password)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void AddUser(LaunchConfiguration instanceRdp, string ou, ReferenceProperty user, ReferenceProperty password)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class VpcSettings
