@@ -103,6 +103,11 @@ namespace AWS.CloudFormation.Resource.DirectoryService
                 "-Restart\"");
             joinCommand.WaitAfterCompletion = "forever";
             joinCommand.Test = $"powershell.exe -ExecutionPolicy RemoteSigned {CheckForDomainPsPath}";
+
+            var register = config.Commands.AddCommand<Command>("RegisterDns");
+            register.Command = new FnJoinPowershellCommand("Register-DnsClient");
+            register.WaitAfterCompletion = 0.ToString();
+
         }
 
         public const string ActiveDirectoryConfigSet = "ActiveDirectoryConfigSet";

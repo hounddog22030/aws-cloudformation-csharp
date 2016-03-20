@@ -85,8 +85,8 @@ namespace AWS.CloudFormation.Test
                 devStack.Parameters.Add("PrimeRouteTableForAdSubnets", new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTableForAdSubnets"));
                 devStack.Parameters.Add("PrimeRouteTable4SubnetDmz1", new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTable4SubnetDmz1"));
                 devStack.Parameters.Add("DhcpOptionsId", new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.DhcpOptionsId"));
-                devStack.Parameters.Add(ActiveDirectoryBase.DomainAdminUsernameParameterName, new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.DomainAdminUsername"));
-                devStack.Parameters.Add(ActiveDirectoryBase.DomainFqdnParameterName, new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.DomainFqdn"));
+                devStack.Parameters.Add(ActiveDirectoryBase.DomainAdminUsernameParameterName, new FnGetAtt("PrimeYadaYadaSoftwareCom", $"Outputs.{ActiveDirectoryBase.DomainAdminUsernameParameterName}"));
+                devStack.Parameters.Add(ActiveDirectoryBase.DomainFqdnParameterName, new FnGetAtt("PrimeYadaYadaSoftwareCom", $"Outputs.{ActiveDirectoryBase.DomainFqdnParameterName}"));
                 masterTemplate.Resources.Add($"{i}DevYadaYadaSoftwareCom", devStack);
             }
 
@@ -116,7 +116,7 @@ namespace AWS.CloudFormation.Test
             Subnet subnetForActiveDirectory2 = new Subnet(vpc, CidrPrimeActiveDirectorySubnet2, AvailabilityZone.UsEast1E, routeTableForAdSubnets, null);
             primeTemplate.Resources.Add("SubnetAd2", subnetForActiveDirectory2);
 
-            var simpleAd = new SimpleActiveDirectory(FullyQualifiedDomainName,activeDirectoryAdminPassword,DirectorySize.Small, vpc,subnetForActiveDirectory1,subnetForActiveDirectory2);
+            var simpleAd = new SimpleActiveDirectory(FullyQualifiedDomainName,activeDirectoryAdminPassword,DirectorySize.Large, vpc,subnetForActiveDirectory1,subnetForActiveDirectory2);
             primeTemplate.Resources.Add(simpleAd.LogicalId, simpleAd);
 
             DhcpOptions dhcpOptions = new DhcpOptions(vpc,simpleAd);
@@ -212,7 +212,7 @@ namespace AWS.CloudFormation.Test
             var adminPassword = SettingsHelper.GetSetting("admin@prime.yadayadasoftware.com");
             var tfsPassword = SettingsHelper.GetSetting("tfsservice@prime.yadayadasoftware.com");
             var templateUri = GetMasterTemplateUri(adminPassword, tfsPassword, Create.FullStack, Greek.Alpha, Greek.Alpha) ;
-            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635939567782730963", templateUri);
+            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635939856120476638", templateUri);
 
         }
 

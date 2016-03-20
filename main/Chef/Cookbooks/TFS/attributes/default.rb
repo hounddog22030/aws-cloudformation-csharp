@@ -26,5 +26,5 @@ default['tfs']['sqlexpress4build_private_dns_name'] = "invalid"
 default['tfs']['sqlexpress4build_username'] = "invalid"
 default['tfs']['sqlexpress4build_password'] = "invalid"
 
-default['tfs']['build_agent_account_name'] = "tfsbuild@prime.yadayadasoftware.com"
-default['tfs']['build_agent_password'] = "U8i(.-ae32..KK"
+default['tfs']['build_agent_account_name'] = "tfsservice@prime.yadayadasoftware.com"
+default['tfs']['build_agent_password'] = "T5.3a!%35Jjj"

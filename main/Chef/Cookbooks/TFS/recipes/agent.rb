@@ -22,7 +22,7 @@ end
 
 LogFileInstallAgent = "#{Chef::Config['file_cache_path']}/InstallAgent.log"
 
-cmd = "#{node[:tfs][:build_agent_command_file_path]} /ServerUrl:http://#{node[:tfs][:application_server_netbios_name]}:8080/tfs /Configure /Name:#{ENV['COMPUTERNAME']} /force /RunningAsService /PoolName:default  /WindowsServiceLogonAccount:\"#{node[:tfs][:build_agent_account_name]}\" /WindowsServiceLogonPassword:\"#{node[:tfs][:build_agent_password]}\" /NoPrompt"
+cmd = "#{node[:PsTools][:exe_path]} -accepteula -h -u #{node[:domainAdmin][:name]} -p #{node[:domainAdmin][:password]} #{node[:tfs][:build_agent_command_file_path]} /ServerUrl:http://#{node[:tfs][:application_server_netbios_name]}:8080/tfs /Configure /Name:#{ENV['COMPUTERNAME']} /force /RunningAsService /PoolName:default  /WindowsServiceLogonAccount:\"#{node[:tfs][:build_agent_account_name]}\" /WindowsServiceLogonPassword:\"#{node[:tfs][:build_agent_password]}\" /NoPrompt"
 
 puts "#{cmd}"
 
