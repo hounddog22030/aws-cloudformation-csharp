@@ -116,7 +116,7 @@ namespace AWS.CloudFormation.Test
             Subnet subnetForActiveDirectory2 = new Subnet(vpc, CidrPrimeActiveDirectorySubnet2, AvailabilityZone.UsEast1E, routeTableForAdSubnets, null);
             primeTemplate.Resources.Add("SubnetAd2", subnetForActiveDirectory2);
 
-            var simpleAd = new SimpleActiveDirectory(FullyQualifiedDomainName,activeDirectoryAdminPassword,DirectorySize.Large, vpc,subnetForActiveDirectory1,subnetForActiveDirectory2);
+            var simpleAd = new SimpleActiveDirectory(FullyQualifiedDomainName,activeDirectoryAdminPassword,DirectorySize.Small, vpc,subnetForActiveDirectory1,subnetForActiveDirectory2);
             primeTemplate.Resources.Add(simpleAd.LogicalId, simpleAd);
 
             DhcpOptions dhcpOptions = new DhcpOptions(vpc,simpleAd);
@@ -211,7 +211,7 @@ namespace AWS.CloudFormation.Test
         {
             var adminPassword = SettingsHelper.GetSetting("admin@prime.yadayadasoftware.com");
             var tfsPassword = SettingsHelper.GetSetting("tfsservice@prime.yadayadasoftware.com");
-            var templateUri = GetMasterTemplateUri(adminPassword, tfsPassword, Create.FullStack, Greek.Alpha, Greek.Alpha) ;
+            var templateUri = GetMasterTemplateUri(adminPassword, tfsPassword, Create.Build | Create.Workstation, Greek.Alpha, Greek.Alpha) ;
             Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635939856120476638", templateUri);
 
         }
@@ -482,12 +482,12 @@ namespace AWS.CloudFormation.Test
         public enum Create
         {
             None = 0,
-            Sql4Tfs = 1,
-            Tfs = Sql4Tfs + Sql4Tfs * 2,
-            Build = Tfs + Tfs * 2,
-            SqlServer4Build = Build + Build * 2,
-            MySql4Build = SqlServer4Build * 2,
-            Workstation = MySql4Build * 2,
+            Sql4Tfs = 1, //1
+            Tfs = Sql4Tfs + 2, //2
+            Build = Tfs + 4,
+            SqlServer4Build = Build + 8,
+            MySql4Build = 16,
+            Workstation = 32,
             FullStack = int.MaxValue
         }
 
