@@ -42,8 +42,8 @@ namespace AWS.CloudFormation.Test
         //private const string CidrDatabase4BuildSubnet2 = "10.1.6.0/24";    //80-95
         //public const string CidrWorkstationSubnet = "10.1.7.0/24"; //96-127
         public const string KeyPairName = "corp.getthebuybox.com";
-        public const string UsEastWindows2012R2Ami = "ami-3586ac5f";
-        private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-c796bcad";
+        public const string UsEastWindows2012R2Ami = "ami-3d787d57";
+        private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-ff0f0a95";
         private const string BucketNameSoftware = "gtbb";
         private const string TopLevelDomainName = "yadayadasoftware.com";
         private const string FullyQualifiedDomainName = "prime." + TopLevelDomainName;
@@ -116,7 +116,7 @@ namespace AWS.CloudFormation.Test
             Subnet subnetForActiveDirectory2 = new Subnet(vpc, CidrPrimeActiveDirectorySubnet2, AvailabilityZone.UsEast1E, routeTableForAdSubnets, null);
             primeTemplate.Resources.Add("SubnetAd2", subnetForActiveDirectory2);
 
-            var simpleAd = new SimpleActiveDirectory(FullyQualifiedDomainName,activeDirectoryAdminPassword,DirectorySize.Small, vpc,subnetForActiveDirectory1,subnetForActiveDirectory2);
+            var simpleAd = new SimpleActiveDirectory(FullyQualifiedDomainName,activeDirectoryAdminPassword,DirectorySize.Large, vpc,subnetForActiveDirectory1,subnetForActiveDirectory2);
             primeTemplate.Resources.Add(simpleAd.LogicalId, simpleAd);
 
             DhcpOptions dhcpOptions = new DhcpOptions(vpc,simpleAd);
@@ -212,7 +212,7 @@ namespace AWS.CloudFormation.Test
             var adminPassword = SettingsHelper.GetSetting("admin@prime.yadayadasoftware.com");
             var tfsPassword = SettingsHelper.GetSetting("tfsservice@prime.yadayadasoftware.com");
             var templateUri = GetMasterTemplateUri(adminPassword, tfsPassword, Create.Build | Create.Workstation, Greek.Alpha, Greek.Alpha) ;
-            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635939856120476638", templateUri);
+            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635941056405236811", templateUri);
 
         }
 
@@ -265,7 +265,7 @@ namespace AWS.CloudFormation.Test
             routeFromAz1ToNat.Instance = nat1;
             routeFromAz1ToNat.RouteTable = routeTableForSubnetsToNat1;
 
-            SecurityGroup sqlServer4TfsSecurityGroup = AddSqlServer4TfsSecurityGroup(vpc, template, subnetDmz1, subnetDmz2);
+            SecurityGroup sqlServer4TfsSecurityGroup = AddSqlServer4TfsSecurityGroup(vpc, template);
             Subnet subnetSqlServer4Tfs = AddSubnetSqlServer4Tfs(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template,version);
 
             Subnet subnetTfsServer = AddSubnetTfsServer(vpc, routeTableForSubnetsToNat1, natSecurityGroup, template,version);
@@ -608,8 +608,7 @@ namespace AWS.CloudFormation.Test
             return subnetSqlServer4Tfs;
         }
 
-        private static SecurityGroup AddSqlServer4TfsSecurityGroup(Vpc vpc, Template template, Subnet subnetDmz1,
-            Subnet subnetDmz2)
+        private static SecurityGroup AddSqlServer4TfsSecurityGroup(Vpc vpc, Template template)
         {
             SecurityGroup sqlServer4TfsSecurityGroup = new SecurityGroup("Allows communication to SQLServer Service", vpc);
             template.Resources.Add("SecurityGroup4SqlServer4Tfs", sqlServer4TfsSecurityGroup);
