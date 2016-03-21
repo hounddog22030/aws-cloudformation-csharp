@@ -34,6 +34,7 @@ namespace AWS.CloudFormation.Test
         public const string CidrPrimeActiveDirectorySubnet1 = "10.0.1.0/24";
         public const string CidrPrimeActiveDirectorySubnet2 = "10.0.2.0/24";
         public const string CidrPrimeDmz1Subnet = "10.0.3.0/24";
+        public const string CidrPrimeNatGatewaySubnet = "10.0.5.0/24";
 
 
         //private const string CidrSqlServer4TfsSubnet = "10.1.3.0/24";  //32-47
@@ -115,6 +116,15 @@ namespace AWS.CloudFormation.Test
 
             Subnet subnetForActiveDirectory2 = new Subnet(vpc, CidrPrimeActiveDirectorySubnet2, AvailabilityZone.UsEast1E, routeTableForAdSubnets, null);
             primeTemplate.Resources.Add("SubnetAd2", subnetForActiveDirectory2);
+
+            Subnet subnetForNatGateway = new Subnet(vpc, CidrPrimeNatGatewaySubnet, AvailabilityZone.UsEast1E,false);
+            primeTemplate.Resources.Add("SubnetNatGateway", subnetForNatGateway);
+
+            ElasticIp elasticIp4NatGateway = new ElasticIp();
+            primeTemplate.Resources.Add(elasticIp4NatGateway.LogicalId, elasticIp4NatGateway);
+
+            NatGateway natGateway = new NatGateway(elasticIp4NatGateway,subnetForNatGateway);
+            primeTemplate.Resources.Add(natGateway.LogicalId, natGateway);
 
             var simpleAd = new SimpleActiveDirectory(FullyQualifiedDomainName,activeDirectoryAdminPassword,DirectorySize.Large, vpc,subnetForActiveDirectory1,subnetForActiveDirectory2);
             primeTemplate.Resources.Add(simpleAd.LogicalId, simpleAd);
@@ -212,7 +222,7 @@ namespace AWS.CloudFormation.Test
             var adminPassword = SettingsHelper.GetSetting("admin@prime.yadayadasoftware.com");
             var tfsPassword = SettingsHelper.GetSetting("tfsservice@prime.yadayadasoftware.com");
             var templateUri = GetMasterTemplateUri(adminPassword, tfsPassword, Create.Build | Create.Workstation, Greek.Alpha, Greek.Alpha) ;
-            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635941056405236811", templateUri);
+            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635941369210308822", templateUri);
 
         }
 

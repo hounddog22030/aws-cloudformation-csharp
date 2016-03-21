@@ -61,7 +61,8 @@ namespace AWS.CloudFormation.Resource
         // http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-function.html
         [EnumMember(Value = "AWS::Lambda::Function")] AwsLambdaFunction,
         // http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html
-        [EnumMember(Value = "AWS::IAM::Role")] AwsIamRole
+        [EnumMember(Value = "AWS::IAM::Role")] AwsIamRole,
+        [EnumMember(Value = "AWS::EC2::NatGateway")] AwsEc2NatGateway
     }
 
     public abstract class ResourceBase : ILogicalId

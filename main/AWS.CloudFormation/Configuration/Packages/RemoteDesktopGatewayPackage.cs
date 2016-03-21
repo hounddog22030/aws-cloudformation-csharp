@@ -27,7 +27,7 @@ namespace AWS.CloudFormation.Configuration.Packages
                 $"RecordSet4{this.Instance.LogicalId}",
                 new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(ActiveDirectoryBase.DomainTopLevelParameterName),"."),
                 new FnJoin( FnJoinDelimiter.Period, 
-                            this.Instance.LogicalId,
+                            this.Instance.LogicalId + DateTime.Now.Second,
                             new ReferenceProperty(ActiveDirectoryBase.DomainFqdnParameterName)),
                 RecordSet.RecordSetTypeEnum.A);
 

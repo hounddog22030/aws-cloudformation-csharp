@@ -2,17 +2,40 @@
 using AWS.CloudFormation.Resource.EC2.Instancing;
 
 using Newtonsoft.Json;
+using System;
 
 namespace AWS.CloudFormation.Resource.EC2.Networking
 {
     public class ElasticIp : ResourceBase
     {
-        //$"Eip4{instance.LogicalId}"
-        public ElasticIp(LaunchConfiguration instance) : base(ResourceType.AwsEc2Eip)
+        public ElasticIp(LaunchConfiguration instance) : this()
         {
             Instance = instance;
+        }
+        public ElasticIp() : base(ResourceType.AwsEc2Eip)
+        {
             this.Domain = "vpc";
-            this.LogicalId = $"Eip4{this.Instance.LogicalId}";
+        }
+
+        public override string LogicalId {
+            get
+            {
+                if (base.LogicalId == null)
+                {
+                    var logicalId = "Eip";
+                    if (this.Instance != null)
+                    {
+                        logicalId += $"4{this.Instance.LogicalId}";
+                    }
+                    else
+                    {
+                        logicalId += DateTime.Now.Ticks;
+                    }
+                    this.LogicalId = logicalId;
+                }
+                return base.LogicalId;
+            }
+            internal set { base.LogicalId = value; }
         }
 
         [JsonIgnore]
