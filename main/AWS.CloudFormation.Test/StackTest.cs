@@ -1328,7 +1328,7 @@ namespace AWS.CloudFormation.Test
             buildServer.AddBlockDeviceMapping("/dev/sda1", 100, Ebs.VolumeTypes.GeneralPurpose);
 
             buildServer.Packages.Add(new VisualStudio(BucketNameSoftware));
-            buildServer.Packages.Add(new TeamFoundationServerBuildServerAgentOnly(tfsServer, BucketNameSoftware, sqlExpress4Build));
+            buildServer.Packages.Add(new TeamFoundationServerBuildServerAgentOnly(TeamFoundationServerEdition.Standard2015Update1, tfsServer, BucketNameSoftware, sqlExpress4Build));
             buildServer.Packages.Add(new AmazonAwsCli());
             buildServer.Packages.Add(new TfsCrossPlatformCommandLineInterface());
 
@@ -1387,7 +1387,7 @@ namespace AWS.CloudFormation.Test
             if (sqlServer4Tfs != null)
             {
                 tfsServer.AddDependsOn(sqlServer4Tfs.Packages.Last().WaitCondition);
-                var packageTfsApplicationTier = new TeamFoundationServerApplicationTier(BucketNameSoftware, sqlServer4Tfs);
+                var packageTfsApplicationTier = new TeamFoundationServerApplicationTier(TeamFoundationServerEdition.Standard2015Update1, BucketNameSoftware, sqlServer4Tfs);
                 tfsServer.Packages.Add(packageTfsApplicationTier);
             }
             tfsServer.SecurityGroupIds.Add(new ReferenceProperty(tfsServerSecurityGroup));

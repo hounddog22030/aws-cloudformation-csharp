@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using AWS.CloudFormation.Common;
@@ -397,17 +399,23 @@ namespace AWS.CloudFormation.Configuration.Packages
 
     }
 
+    public enum TeamFoundationServerEdition
+    {
+        [EnumMember(Value = "snap-4e69d94b")] Express2015,
+        [EnumMember(Value = "snap-3a929d2e")] Standard2015Update1
+    }
+
     public abstract class TeamFoundationServer : PackageChef
     {
-        public TeamFoundationServer(string bucketName, string recipeName)
-            : base("snap-4e69d94b", bucketName, "tfs", recipeName)
+        public TeamFoundationServer(TeamFoundationServerEdition edition, string bucketName, string recipeName)
+            : base(edition.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static).Single(r => r.Name.ToString() == edition.ToString()).GetCustomAttributes<EnumMemberAttribute>().First().Value, bucketName, "tfs", recipeName)
         {
         }
     }
 
     public class TeamFoundationServerApplicationTier : TeamFoundationServer
     {
-        public TeamFoundationServerApplicationTier(string bucketName, LaunchConfiguration sqlServer) : base(bucketName, "iisconfig")
+        public TeamFoundationServerApplicationTier(TeamFoundationServerEdition edition, string bucketName, LaunchConfiguration sqlServer) : base(edition, bucketName, "iisconfig")
         {
             SqlServer = sqlServer;
         }
@@ -434,10 +442,11 @@ namespace AWS.CloudFormation.Configuration.Packages
         public const string sqlexpress4build_username_parameter_name = "SqlExpress4BuildUsername";
         public const string sqlexpress4build_password_parameter_name = "SqlExpress4BuildPassword";
 
-        public TeamFoundationServerBuildServerBase(LaunchConfiguration applicationServer,
+        public TeamFoundationServerBuildServerBase( TeamFoundationServerEdition edition,
+                                                    LaunchConfiguration applicationServer,
                                                     string bucketName,
                                                     string recipeName,
-                                                    DbInstance sqlServer4Build) : base(bucketName, recipeName)
+                                                    DbInstance sqlServer4Build) : base(edition,bucketName, recipeName)
         {
             this.ApplicationServer = applicationServer;
             this.SqlServer4Build = sqlServer4Build;
@@ -478,16 +487,16 @@ namespace AWS.CloudFormation.Configuration.Packages
 
     public class TeamFoundationServerBuildServer : TeamFoundationServerBuildServerBase
     {
-        public TeamFoundationServerBuildServer(LaunchConfiguration applicationServer, string bucketName, DbInstance sqlExpress4Build)
-            : base(applicationServer, bucketName, "build", sqlExpress4Build)
+        public TeamFoundationServerBuildServer(TeamFoundationServerEdition edition, LaunchConfiguration applicationServer, string bucketName, DbInstance sqlExpress4Build)
+            : base(edition,applicationServer, bucketName, "build", sqlExpress4Build)
         {
         }
     }
 
     public class TeamFoundationServerBuildServerAgentOnly : TeamFoundationServerBuildServerBase
     {
-        public TeamFoundationServerBuildServerAgentOnly(LaunchConfiguration applicationServer, string bucketName, DbInstance sqlExpress4Build)
-            : base(applicationServer, bucketName, "agent", sqlExpress4Build)
+        public TeamFoundationServerBuildServerAgentOnly(TeamFoundationServerEdition edition,LaunchConfiguration applicationServer, string bucketName, DbInstance sqlExpress4Build)
+            : base(edition,applicationServer, bucketName, "agent", sqlExpress4Build)
         {
             this.SnapshotId = string.Empty;
         }

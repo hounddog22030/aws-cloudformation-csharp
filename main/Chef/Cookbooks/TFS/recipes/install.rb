@@ -5,10 +5,10 @@
 # Copyright (c) 2014 Ryan Irujo, All Rights Reserved.
 
 # Declaring Variables
-volume_name = "TFS2015.1_EXPRESS_ENU"
+volume_name = "TFS2015.1_SERVER_MSDN_ENU"
 
 ec2helper_mount 'MountEc2Drives' do
-	volume_name "TFS2015.1_EXPRESS_ENU"
+	volume_name "TFS2015.1_SERVER_MSDN_ENU"
 	drive_letter "#{node[:tfs][:setup_drive_letter]}"
 	not_if { File.exist?("#{node[:tfs][:setup_exe_path]}") }
 	notifies :run, 'execute[Install TFS]', :immediately
