@@ -44,7 +44,8 @@ namespace AWS.CloudFormation.Test
         //public const string CidrWorkstationSubnet = "10.1.7.0/24"; //96-127
         public const string KeyPairName = "corp.getthebuybox.com";
         public const string UsEastWindows2012R2Ami = "ami-3d787d57";
-        private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-861316ec";
+        private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-ff0f0a95";
+        private const string UsEastWindows2012R2SqlServerStandardAmi = "ami-861316ec";
         private const string BucketNameSoftware = "gtbb";
         private const string TopLevelDomainName = "yadayadasoftware.com";
         private const string FullyQualifiedDomainName = "prime." + TopLevelDomainName;
@@ -709,7 +710,7 @@ namespace AWS.CloudFormation.Test
         private static LaunchConfiguration AddSql(Template template, string instanceName, InstanceTypes instanceSize, 
             Subnet subnet, SecurityGroup sqlServerSecurityGroup)
         {
-            var sqlServer = new Instance(subnet, instanceSize, UsEastWindows2012R2SqlServerExpressAmi, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 70);
+            var sqlServer = new Instance(subnet, instanceSize, UsEastWindows2012R2SqlServerStandardAmi, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 70);
             template.Resources.Add(instanceName,sqlServer);
             var sqlServerPackage = new SqlServerExpressFromAmi(BucketNameSoftware);
             sqlServer.Packages.Add(sqlServerPackage);
