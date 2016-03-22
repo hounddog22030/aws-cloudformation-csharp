@@ -328,11 +328,11 @@ namespace AWS.CloudFormation.Configuration.Packages
             command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None, ConfigureSql4Tfs,
                 " ",
                 new ReferenceProperty(ActiveDirectoryBase.DomainNetBiosNameParameterName),
-                " ",
+                " '",
                 new ReferenceProperty(ActiveDirectoryBase.DomainNetBiosNameParameterName),
                 "\\",
                 new ReferenceProperty("TfsServiceAccountName"),
-                " ",
+                "' ",
                 new ReferenceProperty("TfsServicePassword"));
             command.WaitAfterCompletion = 0.ToString();
 

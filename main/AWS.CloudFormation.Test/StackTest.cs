@@ -44,7 +44,7 @@ namespace AWS.CloudFormation.Test
         //public const string CidrWorkstationSubnet = "10.1.7.0/24"; //96-127
         public const string KeyPairName = "corp.getthebuybox.com";
         public const string UsEastWindows2012R2Ami = "ami-3d787d57";
-        private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-ff0f0a95";
+        private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-861316ec";
         private const string BucketNameSoftware = "gtbb";
         private const string TopLevelDomainName = "yadayadasoftware.com";
         private const string FullyQualifiedDomainName = "prime." + TopLevelDomainName;
@@ -117,14 +117,17 @@ namespace AWS.CloudFormation.Test
             Subnet subnetForActiveDirectory2 = new Subnet(vpc, CidrPrimeActiveDirectorySubnet2, AvailabilityZone.UsEast1E, routeTableForAdSubnets, null);
             primeTemplate.Resources.Add("SubnetAd2", subnetForActiveDirectory2);
 
-            Subnet subnetForNatGateway = new Subnet(vpc, CidrPrimeNatGatewaySubnet, AvailabilityZone.UsEast1E,false);
-            primeTemplate.Resources.Add("SubnetNatGateway", subnetForNatGateway);
+            //Subnet subnetForNatGateway = new Subnet(vpc, CidrPrimeNatGatewaySubnet, AvailabilityZone.UsEast1E,false);
+            //primeTemplate.Resources.Add("SubnetNatGateway", subnetForNatGateway);
 
-            ElasticIp elasticIp4NatGateway = new ElasticIp();
-            primeTemplate.Resources.Add(elasticIp4NatGateway.LogicalId, elasticIp4NatGateway);
+            //ElasticIp elasticIp4NatGateway = new ElasticIp();
+            //primeTemplate.Resources.Add(elasticIp4NatGateway.LogicalId, elasticIp4NatGateway);
 
-            NatGateway natGateway = new NatGateway(elasticIp4NatGateway,subnetForNatGateway);
-            primeTemplate.Resources.Add(natGateway.LogicalId, natGateway);
+            //NatGateway natGateway = new NatGateway(elasticIp4NatGateway, subnetForNatGateway);
+            //primeTemplate.Resources.Add(natGateway.LogicalId, natGateway);
+
+            //SecurityGroup natSecurityGroup = AddNatSecurityGroup(vpc, primeTemplate);
+            //Instance nat1 = AddNat(primeTemplate, subnetForNatGateway, natSecurityGroup);
 
             var simpleAd = new SimpleActiveDirectory(FullyQualifiedDomainName,activeDirectoryAdminPassword,DirectorySize.Large, vpc,subnetForActiveDirectory1,subnetForActiveDirectory2);
             primeTemplate.Resources.Add(simpleAd.LogicalId, simpleAd);
@@ -156,7 +159,7 @@ namespace AWS.CloudFormation.Test
             primeTemplate.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainAdminPasswordParameterName, "String", activeDirectoryAdminPassword, "Admin password"));
             primeTemplate.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainNetBiosNameParameterName, "String", "prime", "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
             primeTemplate.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainFqdnParameterName, "String", FullyQualifiedDomainName, "Fully qualified domain name"));
-            primeTemplate.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "tfsservice", "Fully qualified domain name"));
+            primeTemplate.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "NETWORK SERVICE", "Fully qualified domain name"));
             primeTemplate.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainTopLevelParameterName, "String", TopLevelDomainName, "Fully qualified domain name"));
             var tfsBuildPassword = SettingsHelper.GetSetting("tfsbuild@prime.yadayadasoftware.com");
             primeTemplate.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsBuildAccountPasswordParameterName, "String", tfsBuildPassword, "Password for tfsbuild account"));
@@ -222,7 +225,7 @@ namespace AWS.CloudFormation.Test
             var adminPassword = SettingsHelper.GetSetting("admin@prime.yadayadasoftware.com");
             var tfsPassword = SettingsHelper.GetSetting("tfsservice@prime.yadayadasoftware.com");
             var templateUri = GetMasterTemplateUri(adminPassword, tfsPassword, Create.Build | Create.Workstation, Greek.Alpha, Greek.Alpha) ;
-            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635941369210308822", templateUri);
+            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635941515011675121", templateUri);
 
         }
 
@@ -238,7 +241,7 @@ namespace AWS.CloudFormation.Test
             template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainTopLevelParameterName, "String", topLevel, "Fully qualified domain name"));
             template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.CidrPrimeDmz1SubnetParameterName, "String", CidrPrimeDmz1Subnet, "Cidr for PrimeDmz1 (Rdp)") { NoEcho = true });
 
-            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "tfsservice", "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
+            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "NETWORK SERVICE", "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd871hdj11", "Password for Master User For RDS SqlServer") { NoEcho = true });
 
@@ -338,7 +341,7 @@ namespace AWS.CloudFormation.Test
 
             if (instancesToCreate.HasFlag(Create.Sql4Tfs))
             {
-                instanceTfsSqlServer = AddSql(template, $"Sql4Tfs{version}", InstanceTypes.T2Small, subnetSqlServer4Tfs, sqlServer4TfsSecurityGroup);
+                instanceTfsSqlServer = AddSql(template, $"Sql4Tfs{version}", InstanceTypes.M4Large, subnetSqlServer4Tfs, sqlServer4TfsSecurityGroup);
                 instanceTfsSqlServer.DependsOn.Add(routeFromPrimeAdSubnetsToAlpha.LogicalId);
                 instanceTfsSqlServer.DependsOn.Add(routeFromAz1ToNat.LogicalId);
                 instanceTfsSqlServer.DependsOn.Add(routeFromAlphaToPrime.LogicalId);
