@@ -35,7 +35,8 @@ namespace AWS.CloudFormation.Resource.DirectoryService
 
         protected override bool SupportsTags => false;
 
-        public abstract string AdministratorAccountName { get; }
+        [JsonIgnore]
+        public string AdministratorAccountName { get; protected set; }
 
         [JsonIgnore]
         public VpcSettings VpcSettings

@@ -130,7 +130,7 @@ namespace AWS.CloudFormation.Test
             //SecurityGroup natSecurityGroup = AddNatSecurityGroup(vpc, primeTemplate);
             //Instance nat1 = AddNat(primeTemplate, subnetForNatGateway, natSecurityGroup);
 
-            var simpleAd = new SimpleActiveDirectory(FullyQualifiedDomainName,activeDirectoryAdminPassword,DirectorySize.Large, vpc,subnetForActiveDirectory1,subnetForActiveDirectory2);
+            var simpleAd = new SimpleActiveDirectory(FullyQualifiedDomainName,activeDirectoryAdminPassword,DirectorySize.MicrosoftAd, vpc,subnetForActiveDirectory1,subnetForActiveDirectory2);
             primeTemplate.Resources.Add(simpleAd.LogicalId, simpleAd);
 
             DhcpOptions dhcpOptions = new DhcpOptions(vpc,simpleAd);
@@ -225,8 +225,8 @@ namespace AWS.CloudFormation.Test
         {
             var adminPassword = SettingsHelper.GetSetting("admin@prime.yadayadasoftware.com");
             var tfsPassword = SettingsHelper.GetSetting("tfsservice@prime.yadayadasoftware.com");
-            var templateUri = GetMasterTemplateUri(adminPassword, tfsPassword, Create.Build | Create.Workstation, Greek.Alpha, Greek.Alpha) ;
-            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635941515011675121", templateUri);
+            var templateUri = GetMasterTemplateUri(adminPassword, tfsPassword, Create.Tfs, Greek.Alpha, Greek.Alpha) ;
+            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635942759307587571", templateUri);
 
         }
 
@@ -506,13 +506,6 @@ namespace AWS.CloudFormation.Test
         }
 
 
-        private static DhcpOptions AddDhcpOptions(MicrosoftAd simpleAd, Vpc vpc, Template template)
-        {
-            DhcpOptions dhcpOptions = new DhcpOptions(vpc, simpleAd);
-            template.Resources.Add("DhcpOptions", dhcpOptions);
-            dhcpOptions.NetbiosNodeType = "2";
-            return dhcpOptions;
-        }
 
         //private static DomainControllerPackage AddDomainControllerPackage(Subnet subnetDomainController1,
         //    Instance instanceDomainController, Subnet subnetDmz1, Subnet subnetDmz2, Subnet subnetSqlServer4Tfs,

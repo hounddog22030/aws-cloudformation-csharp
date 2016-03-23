@@ -15,9 +15,18 @@ namespace AWS.CloudFormation.Resource.DirectoryService
 {
     public class SimpleActiveDirectory : ActiveDirectoryBase
     {
-        public SimpleActiveDirectory(object name, object password, DirectorySize size, Vpc vpc, params Subnet[] subnets) : base(ResourceType.AwsDirectoryServiceSimpleAd, name, password, vpc, subnets)
+        public SimpleActiveDirectory(object name, object password, DirectorySize size, Vpc vpc, params Subnet[] subnets) 
+            : base(size==DirectorySize.MicrosoftAd ? ResourceType.AwsDirectoryServiceMicrosoftAd : ResourceType.AwsDirectoryServiceSimpleAd, name, password, vpc, subnets)
         {
-            Size = size;
+            if (size.HasFlag(DirectorySize.Simple))
+            {
+                Size = size;
+                this.AdministratorAccountName = "administrator";
+            }
+            else
+            {
+                this.AdministratorAccountName = "admin";
+            }
         }
 
         [JsonIgnore]
@@ -29,9 +38,6 @@ namespace AWS.CloudFormation.Resource.DirectoryService
             }
             private set { this.Properties.SetValue(value); }
         }
-
-        [JsonIgnore]
-        public override string AdministratorAccountName => "administrator";
 
         public override void AddUser(LaunchConfiguration instance, string ou, ReferenceProperty user, string password)
         {
