@@ -227,7 +227,6 @@ namespace AWS.CloudFormation.Test
             var tfsPassword = SettingsHelper.GetSetting("tfsservice@prime.yadayadasoftware.com");
             var templateUri = GetMasterTemplateUri(adminPassword, tfsPassword, Create.FullStack, Greek.Alpha, Greek.Alpha) ;
             Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635943341754485059", templateUri);
-
         }
 
         public static Template GetTemplateFullStack(string topLevel, string appNameNetBiosName, Greek version, Create instancesToCreate, string gitSuffix)
@@ -1101,7 +1100,35 @@ namespace AWS.CloudFormation.Test
 
         }
 
-        
+
+        [TestMethod]
+        public void MakeSqlServerAmiTest()
+        {
+            var template = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
+            var vpc = template.Vpcs.First();
+            SecurityGroup rdp = new SecurityGroup("rdp", vpc);
+            template.Resources.Add("rdp", rdp);
+
+            rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            var DMZSubnet = new Subnet(vpc, "10.1.1.0/24", AvailabilityZone.UsEast1A, true);
+            template.Resources.Add("DMZSubnet", DMZSubnet);
+
+
+            Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, false);
+            template.Resources.Add("w", w);
+
+            var configSet = w.Metadata.Init.ConfigSets.GetConfigSet("TestVsix").GetConfig("TestVsix");
+            configSet.Files.GetFile("c:/cfn/files/en_sql_server_2014_standard_edition_with_service_pack_1_x64_dvd_6669998.iso").Source =
+                "https://s3.amazonaws.com/gtbb/software/en_sql_server_2014_standard_edition_with_service_pack_1_x64_dvd_6669998.iso";
+
+
+            w.SecurityGroupIds.Add(new ReferenceProperty(rdp));
+            w.AddElasticIp();
+
+            CreateTestStack(template, this.TestContext);
+
+        }
+
 
 
         [TestMethod]

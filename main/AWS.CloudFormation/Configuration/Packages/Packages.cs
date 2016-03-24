@@ -363,9 +363,9 @@ namespace AWS.CloudFormation.Configuration.Packages
 
 
     }
-    public class SqlServerExpress : PackageChef
+    public abstract class SqlServerBase : PackageChef
     {
-        public SqlServerExpress(string bucketName) : base("snap-2cf80f29", bucketName, "sqlserver")
+        protected SqlServerBase(string snapshotId, string bucketName) : base(snapshotId, bucketName, "sqlserver")
         {
         }
 
@@ -396,6 +396,14 @@ namespace AWS.CloudFormation.Configuration.Packages
             // volume for backups
         }
 
+
+    }
+
+    public class SqlServerExpress : SqlServerBase
+    {
+        public SqlServerExpress(string bucketName) : base("snap-2cf80f29", bucketName)
+        {
+        }
 
     }
 
