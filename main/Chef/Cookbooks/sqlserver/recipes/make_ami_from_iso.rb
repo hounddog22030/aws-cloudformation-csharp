@@ -24,7 +24,7 @@ ec2helper_mountiso 'MountEc2Drives' do
 	iso_path "#{Chef::Config['file_cache_path']}"
 	notifies :run, 'execute[Install SQL]', :immediately
 	not_if { File.exist?("#{exe_path}") }
-	action :mount
+	action :download
 end
 
 execute 'Install SQL' do

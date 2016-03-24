@@ -1116,15 +1116,15 @@ namespace AWS.CloudFormation.Test
 
             Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, false);
             template.Resources.Add("w", w);
-
-            var configSet = w.Metadata.Init.ConfigSets.GetConfigSet("TestVsix").GetConfig("TestVsix");
-            configSet.Files.GetFile("c:/cfn/files/en_sql_server_2014_standard_edition_with_service_pack_1_x64_dvd_6669998.iso").Source =
-                "https://s3.amazonaws.com/gtbb/software/en_sql_server_2014_standard_edition_with_service_pack_1_x64_dvd_6669998.iso";
-
+            w.Packages.Add(new SqlServerStandard(BucketNameSoftware));
 
             w.SecurityGroupIds.Add(new ReferenceProperty(rdp));
             w.AddElasticIp();
 
+            template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainAdminPasswordParameterName, "String", "invalid", "for testing"));
+            template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainAdminUsernameParameterName, "String", "invalid", "for testing"));
+            template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainNetBiosNameParameterName, "String", "invalid", "for testing"));
+            
             CreateTestStack(template, this.TestContext);
 
         }

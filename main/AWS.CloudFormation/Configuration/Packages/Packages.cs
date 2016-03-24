@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -365,7 +366,7 @@ namespace AWS.CloudFormation.Configuration.Packages
     }
     public abstract class SqlServerBase : PackageChef
     {
-        protected SqlServerBase(string snapshotId, string bucketName) : base(snapshotId, bucketName, "sqlserver")
+        protected SqlServerBase(string snapshotId, string bucketName, string recipeName) : base(snapshotId, bucketName, recipeName)
         {
         }
 
@@ -383,15 +384,15 @@ namespace AWS.CloudFormation.Configuration.Packages
             sqlServerNode.Add("INSTALLSQLDATADIR", "f:\\SqlData");
             var backup = configuration.AddDisk(Ebs.VolumeTypes.Magnetic, 20);
             backup.Ebs.DeleteOnTermination = false;
-            var command = this.Config.Commands.AddCommand<Command>("CreateBackupShare");
-            command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None,
-                "New-Item \"d:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"d:\\Backups\" -FullAccess @('NT AUTHORITY\\NETWORK SERVICE','",
-                new ReferenceProperty(ActiveDirectoryBase.DomainNetBiosNameParameterName),
-                "\\",
-                new ReferenceProperty(ActiveDirectoryBase.DomainAdminUsernameParameterName),
-                "')");
-            command.WaitAfterCompletion = 0.ToString();
-            command.Test = "IF EXIST G:\\BACKUPS EXIT /B 1";
+            //var command = this.Config.Commands.AddCommand<Command>("CreateBackupShare");
+            //command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None,
+            //    "New-Item \"d:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"d:\\Backups\" -FullAccess @('NT AUTHORITY\\NETWORK SERVICE','",
+            //    new ReferenceProperty(ActiveDirectoryBase.DomainNetBiosNameParameterName),
+            //    "\\",
+            //    new ReferenceProperty(ActiveDirectoryBase.DomainAdminUsernameParameterName),
+            //    "')");
+            //command.WaitAfterCompletion = 0.ToString();
+            //command.Test = "IF EXIST G:\\BACKUPS EXIT /B 1";
 
             // volume for backups
         }
@@ -401,10 +402,24 @@ namespace AWS.CloudFormation.Configuration.Packages
 
     public class SqlServerExpress : SqlServerBase
     {
-        public SqlServerExpress(string bucketName) : base("snap-2cf80f29", bucketName)
+        public SqlServerExpress(string bucketName) : base("snap-2cf80f29", bucketName, "sqlserver")
         {
         }
 
+    }
+    public class SqlServerStandard : SqlServerBase
+    {
+        public SqlServerStandard(string bucketName) : base("snap-2cf80f29", bucketName, "make_ami_from_iso")
+        {
+        }
+
+        public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
+        {
+            base.AddToLaunchConfiguration(configuration);
+            FileInfo iso = new FileInfo("c:/cfn/files/en_sql_server_2014_standard_edition_with_service_pack_1_x64_dvd_6669998.iso");
+            this.Config.Files.GetFile(iso.FullName).Source = $"https://s3.amazonaws.com/{this.BucketName}/software/{iso.Name}";
+
+        }
     }
 
     public enum TeamFoundationServerEdition
