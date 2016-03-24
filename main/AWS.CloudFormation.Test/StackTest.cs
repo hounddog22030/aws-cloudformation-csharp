@@ -1105,6 +1105,7 @@ namespace AWS.CloudFormation.Test
         public void MakeSqlServerAmiTest()
         {
             var template = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
+            template.StackName = $"{this.TestContext.TestName}{DateTime.Now.Ticks}";
             var vpc = template.Vpcs.First();
             SecurityGroup rdp = new SecurityGroup("rdp", vpc);
             template.Resources.Add("rdp", rdp);
@@ -1265,7 +1266,7 @@ namespace AWS.CloudFormation.Test
             var name = template.StackName;
             if (string.IsNullOrEmpty(name))
             {
-                name = $"{context.TestName}";
+                name = $"{context.TestName}{DateTime.Now.Ticks}";
                 using ( var r = new StreamReader(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", ".git", "HEAD")))
                 {
                     var line = r.ReadLine();

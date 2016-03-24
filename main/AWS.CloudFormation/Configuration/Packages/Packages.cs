@@ -366,7 +366,10 @@ namespace AWS.CloudFormation.Configuration.Packages
     }
     public abstract class SqlServerBase : PackageChef
     {
-        protected SqlServerBase(string snapshotId, string bucketName, string recipeName) : base(snapshotId, bucketName, recipeName)
+        protected SqlServerBase(string snapshotId, string bucketName, string recipeName) : base(snapshotId, bucketName, "sqlserver", recipeName)
+        {
+        }
+        protected SqlServerBase(string snapshotId, string bucketName) : this(snapshotId, bucketName, null)
         {
         }
 
@@ -402,7 +405,7 @@ namespace AWS.CloudFormation.Configuration.Packages
 
     public class SqlServerExpress : SqlServerBase
     {
-        public SqlServerExpress(string bucketName) : base("snap-2cf80f29", bucketName, "sqlserver")
+        public SqlServerExpress(string bucketName) : base("snap-2cf80f29", bucketName, "default")
         {
         }
 

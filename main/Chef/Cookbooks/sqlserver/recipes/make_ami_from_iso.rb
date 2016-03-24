@@ -16,7 +16,7 @@ sentinel_file = "C:/Program Files/Microsoft SQL Server/MSSQL12.#{node[:sqlserver
 drive_letter = "S:"
 exe_path = "#{drive_letter}/setup.exe"
 
-ec2helper_mountiso 'MountEc2Drives' do
+ec2helper_iso 'MountEc2Drives' do
 	volume_name "SQLEXPRADV_x64_ENU"
 	drive_letter "#{drive_letter}"
 	iso_url "https://s3.amazonaws.com/gtbb/software/"
@@ -24,7 +24,7 @@ ec2helper_mountiso 'MountEc2Drives' do
 	iso_path "#{Chef::Config['file_cache_path']}"
 	notifies :run, 'execute[Install SQL]', :immediately
 	not_if { File.exist?("#{exe_path}") }
-	action :download
+	action [:download,:mount]
 end
 
 execute 'Install SQL' do

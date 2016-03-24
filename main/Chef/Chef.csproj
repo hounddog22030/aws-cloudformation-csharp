@@ -78,7 +78,7 @@
     <None Include="cookbooks\ec2helper\metadata.rb" />
     <None Include="cookbooks\ec2helper\README.md" />
     <None Include="cookbooks\ec2helper\recipes\default.rb" />
-    <None Include="cookbooks\ec2helper\resources\mountiso.rb" />
+    <None Include="cookbooks\ec2helper\resources\iso.rb" />
     <None Include="cookbooks\ec2helper\resources\mount.rb" />
     <None Include="cookbooks\ec2helper\Thorfile" />
     <None Include="cookbooks\ec2helper\Vagrantfile" />

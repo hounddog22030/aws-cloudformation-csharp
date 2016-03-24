@@ -80,7 +80,7 @@ namespace AWS.CloudFormation.Stack
         [JsonIgnore]
         public string StackName {
             get { return _stackName; }
-            private set
+            set
             {
                 Regex r = new Regex("[a-zA-Z][-a-zA-Z0-9]*");
                 if (r.Match(value).Length!=value.Length)
