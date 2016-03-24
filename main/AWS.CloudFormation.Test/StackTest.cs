@@ -160,7 +160,7 @@ namespace AWS.CloudFormation.Test
             primeTemplate.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainAdminPasswordParameterName, "String", activeDirectoryAdminPassword, "Admin password"));
             primeTemplate.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainNetBiosNameParameterName, "String", "prime", "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
             primeTemplate.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainFqdnParameterName, "String", FullyQualifiedDomainName, "Fully qualified domain name"));
-            primeTemplate.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "NETWORK SERVICE", "Fully qualified domain name"));
+            primeTemplate.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "tfsservice", "Fully qualified domain name"));
             primeTemplate.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainTopLevelParameterName, "String", TopLevelDomainName, "Fully qualified domain name"));
             var tfsBuildPassword = SettingsHelper.GetSetting("tfsbuild@prime.yadayadasoftware.com");
             primeTemplate.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsBuildAccountPasswordParameterName, "String", tfsBuildPassword, "Password for tfsbuild account"));
@@ -225,8 +225,8 @@ namespace AWS.CloudFormation.Test
         {
             var adminPassword = SettingsHelper.GetSetting("admin@prime.yadayadasoftware.com");
             var tfsPassword = SettingsHelper.GetSetting("tfsservice@prime.yadayadasoftware.com");
-            var templateUri = GetMasterTemplateUri(adminPassword, tfsPassword, Create.Tfs, Greek.Alpha, Greek.Alpha) ;
-            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635942759307587571", templateUri);
+            var templateUri = GetMasterTemplateUri(adminPassword, tfsPassword, Create.FullStack, Greek.Alpha, Greek.Alpha) ;
+            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635943341754485059", templateUri);
 
         }
 
@@ -242,7 +242,7 @@ namespace AWS.CloudFormation.Test
             template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainTopLevelParameterName, "String", topLevel, "Fully qualified domain name"));
             template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.CidrPrimeDmz1SubnetParameterName, "String", CidrPrimeDmz1Subnet, "Cidr for PrimeDmz1 (Rdp)") { NoEcho = true });
 
-            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "NETWORK SERVICE", "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
+            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "tfsservice", "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd871hdj11", "Password for Master User For RDS SqlServer") { NoEcho = true });
 

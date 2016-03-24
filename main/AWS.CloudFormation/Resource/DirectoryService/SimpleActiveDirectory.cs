@@ -41,15 +41,31 @@ namespace AWS.CloudFormation.Resource.DirectoryService
 
         public override void AddUser(LaunchConfiguration instance, string ou, ReferenceProperty user, string password)
         {
-            AddUser(instance, ou, (object)user, (object)password);
+            if (this.Type == ResourceType.AwsDirectoryServiceMicrosoftAd)
+            {
+                AddUserMicrosoftAd(instance, ou, (object)user, (object)password);
+
+            }
+            else
+            {
+                AddUserSimpleAd(instance, ou, (object)user, (object)password);
+            }
         }
 
         public override void AddUser(LaunchConfiguration instance, string ou, ReferenceProperty user, ReferenceProperty password)
         {
-            AddUser(instance,ou,(object)user,(object)password);
+            if (this.Type == ResourceType.AwsDirectoryServiceMicrosoftAd)
+            {
+                AddUserMicrosoftAd(instance, ou, (object)user, (object)password);
+
+            }
+            else
+            {
+                AddUserSimpleAd(instance, ou, (object)user, (object)password);
+            }
         }
 
-        private void AddUser(LaunchConfiguration instance, string ou, object user, object password)
+        private void AddUserSimpleAd(LaunchConfiguration instance, string ou, object user, object password)
         {
             var configSet = instance.Metadata.Init.ConfigSets.GetConfigSet(ActiveDirectoryConfigSet);
 
@@ -96,5 +112,52 @@ namespace AWS.CloudFormation.Resource.DirectoryService
             command.WaitAfterCompletion = 0.ToString();
 
         }
+
+        private void AddUserMicrosoftAd(LaunchConfiguration instance, object ou, object user, object password)
+        {
+            var configSet = instance.Metadata.Init.ConfigSets.GetConfigSet(ActiveDirectoryConfigSet);
+            var createDevOuConfig = configSet.GetConfig(ActiveDirectoryConfig);
+
+            ConfigCommand command = null;
+            if (!createDevOuConfig.Commands.ContainsKey("InstallActiveDirectoryTools"))
+            {
+                command = createDevOuConfig.Commands.AddCommand<Command>("InstallActiveDirectoryTools");
+                command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None, "Add-WindowsFeature RSAT-AD-PowerShell,RSAT-AD-AdminCenter");
+                command.WaitAfterCompletion = 0.ToString();
+            }
+
+            var adminUserNameFqdn = new FnJoin(FnJoinDelimiter.None,
+                new ReferenceProperty(ActiveDirectoryBase.DomainAdminUsernameParameterName),
+                "@",
+                new ReferenceProperty(ActiveDirectoryBase.DomainFqdnParameterName));
+
+
+            var addUserCommand = "New-ADUser";
+
+            command = createDevOuConfig.Commands.AddCommand<Command>(ResourceBase.NormalizeLogicalId($"AddUser{user}"));
+            command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None,
+                                                            addUserCommand,
+                                                            " -Name ",
+                                                            user,
+                                                            " -Path '",
+                                                            ou,
+                                                            "' -Credential (New-Object System.Management.Automation.PSCredential('",
+                                                            adminUserNameFqdn,
+                                                            "',(ConvertTo-SecureString '",
+                                                            new ReferenceProperty(ActiveDirectoryBase.DomainAdminPasswordParameterName),
+                                                            "' -AsPlainText -Force)))",
+                                                            " -SamAccountName ",
+                                                            user,
+                                                            " -AccountPassword (ConvertTo-SecureString -AsPlainText '",
+                                                            password,
+                                                            "' -Force)",
+                                                            " -Enabled $true");
+            command.Test = new FnJoinPowershellCommand(FnJoinDelimiter.Space,
+                                                        "try {Get-ADUser -Identity",
+                                                        user,
+                                                        ";exit 1} catch {exit 0}");
+            command.WaitAfterCompletion = 0.ToString();
+        }
+
     }
 }
