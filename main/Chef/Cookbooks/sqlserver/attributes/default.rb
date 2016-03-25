@@ -1,4 +1,8 @@
-﻿default['sqlserver']['FEATURES'] = 'SQLEngine,SSMS'
+﻿default['sqlserver']['iso_volume_name'] = "SQLEXPRADV_x64_ENU"
+default['sqlserver']['setup_drive_letter'] = "invalid"
+default['sqlserver']['setup_drive_letter_filename'] = "c:/cfn/files/#{node[:sqlserver][:iso_volume_name]}.driveletter"
+
+default['sqlserver']['FEATURES'] = 'SQLEngine,SSMS'
 default['sqlserver']['INSTANCENAME'] = 'MSSQLSERVER'
 default['sqlserver']['IAcceptSQLServerLicenseTerms'] = 'true'
 default['sqlserver']['SQLSVCACCOUNT'] = 'NT AUTHORITY\\NETWORK SERVICE'
