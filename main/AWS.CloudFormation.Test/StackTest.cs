@@ -45,7 +45,7 @@ namespace AWS.CloudFormation.Test
         public const string KeyPairName = "corp.getthebuybox.com";
         public const string UsEastWindows2012R2Ami = "ami-3d787d57";
         private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-ff0f0a95";
-        private const string UsEastWindows2012R2SqlServerStandardAmi = "ami-861316ec";
+        private const string UsEastWindows2012R2SqlServerStandardAmi = "ami-bc9b95d6";
         private const string BucketNameSoftware = "gtbb";
         private const string TopLevelDomainName = "yadayadasoftware.com";
         private const string FullyQualifiedDomainName = "prime." + TopLevelDomainName;
@@ -226,7 +226,7 @@ namespace AWS.CloudFormation.Test
             var adminPassword = SettingsHelper.GetSetting("admin@prime.yadayadasoftware.com");
             var tfsPassword = SettingsHelper.GetSetting("tfsservice@prime.yadayadasoftware.com");
             var templateUri = GetMasterTemplateUri(adminPassword, tfsPassword, Create.FullStack, Greek.Alpha, Greek.Alpha) ;
-            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635943341754485059", templateUri);
+            Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635945715836092476", templateUri);
         }
 
         public static Template GetTemplateFullStack(string topLevel, string appNameNetBiosName, Greek version, Create instancesToCreate, string gitSuffix)
@@ -1130,6 +1130,32 @@ namespace AWS.CloudFormation.Test
 
         }
 
+
+        [TestMethod]
+        public void MakeVisualStudioAmiTest()
+        {
+            var template = GetNewBlankTemplateWithVpc($"Vpc{this.TestContext.TestName}");
+            template.StackName = $"{this.TestContext.TestName}{DateTime.Now.Ticks}";
+            var vpc = template.Vpcs.First();
+            SecurityGroup rdp = new SecurityGroup("rdp", vpc);
+            template.Resources.Add("rdp", rdp);
+
+            rdp.AddIngress(PredefinedCidr.TheWorld, Protocol.Tcp, Ports.RemoteDesktopProtocol);
+            var DMZSubnet = new Subnet(vpc, "10.1.1.0/24", AvailabilityZone.UsEast1A, true);
+            template.Resources.Add("DMZSubnet", DMZSubnet);
+
+
+            Instance w = new Instance(DMZSubnet, InstanceTypes.T2Nano, UsEastWindows2012R2Ami, OperatingSystem.Windows, false);
+            template.Resources.Add("w", w);
+            w.Packages.Add(new VisualStudio(BucketNameSoftware));
+
+            w.SecurityGroupIds.Add(new ReferenceProperty(rdp));
+            w.AddElasticIp();
+
+
+            CreateTestStack(template, this.TestContext);
+
+        }
 
 
         [TestMethod]
