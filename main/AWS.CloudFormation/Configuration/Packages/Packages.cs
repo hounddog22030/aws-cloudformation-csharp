@@ -372,35 +372,6 @@ namespace AWS.CloudFormation.Configuration.Packages
         protected SqlServerBase(string snapshotId, string bucketName) : this(snapshotId, bucketName, null)
         {
         }
-
-
-        public override void AddToLaunchConfiguration(LaunchConfiguration configuration)
-        {
-            base.AddToLaunchConfiguration(configuration);
-            configuration.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 20);
-            configuration.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 10);
-            configuration.AddDisk(Ebs.VolumeTypes.GeneralPurpose, 10);
-            var node = GetChefNodeJsonContent(configuration);
-            var sqlServerNode = node.Add("sqlserver");
-            sqlServerNode.Add("SQLUSERDBDIR", "d:\\SqlUserDb");
-            sqlServerNode.Add("SQLUSERDBLOGDIR", "e:\\SqlUserDbLog");
-            sqlServerNode.Add("INSTALLSQLDATADIR", "f:\\SqlData");
-            var backup = configuration.AddDisk(Ebs.VolumeTypes.Magnetic, 20);
-            backup.Ebs.DeleteOnTermination = false;
-            //var command = this.Config.Commands.AddCommand<Command>("CreateBackupShare");
-            //command.Command = new FnJoinPowershellCommand(FnJoinDelimiter.None,
-            //    "New-Item \"d:\\Backups\" -type directory;New-SMBShare -Name \"Backups\" -Path \"d:\\Backups\" -FullAccess @('NT AUTHORITY\\NETWORK SERVICE','",
-            //    new ReferenceProperty(ActiveDirectoryBase.DomainNetBiosNameParameterName),
-            //    "\\",
-            //    new ReferenceProperty(ActiveDirectoryBase.DomainAdminUsernameParameterName),
-            //    "')");
-            //command.WaitAfterCompletion = 0.ToString();
-            //command.Test = "IF EXIST G:\\BACKUPS EXIT /B 1";
-
-            // volume for backups
-        }
-
-
     }
 
     public class SqlServerExpress : SqlServerBase

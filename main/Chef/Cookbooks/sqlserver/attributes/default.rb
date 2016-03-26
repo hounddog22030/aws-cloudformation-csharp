@@ -11,9 +11,9 @@ default['sqlserver']['SECURITYMODE'] = 'SQL'
 default['sqlserver']['SAPWD'] = 'JUhsd82.!#'
 default['sqlserver']['TCPENABLED'] = '1'
 default['sqlserver']['ADDCURRENTUSERASSQLADMIN'] = 'false'
-default['sqlserver']['SQLUSERDBDIR'] = 'd:\\sqldata'
+default['sqlserver']['SQLUSERDBDIR'] = 'c:\\sqldata'
 default['sqlserver']['SQLUSERDBLOGDIR'] = 'c:\\sqllog'
-default['sqlserver']['INSTALLSQLDATADIR'] = 'd:\\sqldata'
+default['sqlserver']['INSTALLSQLDATADIR'] = 'c:\\sqldata'
 
 if "#{ENV['USERDOMAIN']}" == "#{ENV['COMPUTERNAME']}"
 	default['sqlserver']['SQLSYSADMINACCOUNTS'] = "\"#{ENV['COMPUTERNAME']}\\Users\""
