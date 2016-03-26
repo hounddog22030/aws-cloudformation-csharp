@@ -215,9 +215,11 @@ namespace AWS.CloudFormation.Configuration.Packages
 
             Config chefConfig = ((ConfigSet) configuration.Metadata.Init.ConfigSets.First().Value).First().Value as Config;
             var nodeJson = chefConfig.Files.GetFile("c:/chef/node.json");
-            if (!nodeJson.ContainsKey("domain"))
+
+            if (!nodeJson.ContainsKey("domain") && configuration.Template.Parameters.ContainsKey(ActiveDirectoryBase.DomainNetBiosNameParameterName))
             {
-                nodeJson.Add("domain", new ReferenceProperty(ActiveDirectoryBase.DomainNetBiosNameParameterName));
+                ParameterBase domainParameter = configuration.Template.Parameters[ActiveDirectoryBase.DomainNetBiosNameParameterName] as ParameterBase;
+                nodeJson.Add("domain", new ReferenceProperty(domainParameter));
             }
             return nodeJson.Content;
         }
@@ -255,11 +257,12 @@ namespace AWS.CloudFormation.Configuration.Packages
             }
 
             var node = GetChefNodeJsonContent(configuration);
+
             if (!node.ContainsKey("domainAdmin"))
             {
                 var domainAdminUserInfoNode = node.AddNode("domainAdmin");
                 domainAdminUserInfoNode.Add("name", new FnJoin(FnJoinDelimiter.None, new ReferenceProperty(ActiveDirectoryBase.DomainNetBiosNameParameterName), "\\", new ReferenceProperty(ActiveDirectoryBase.DomainAdminUsernameParameterName)));
-                domainAdminUserInfoNode.Add("password", new ReferenceProperty(Template.ParameterDomainAdminPassword));
+                domainAdminUserInfoNode.Add("password", new ReferenceProperty(ActiveDirectoryBase.DomainAdminPasswordParameterName));
 
             }
         }

@@ -45,20 +45,20 @@ namespace AWS.CloudFormation.Test
         public const string KeyPairName = "corp.getthebuybox.com";
         public const string UsEastWindows2012R2Ami = "ami-3d787d57";
         private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-ff0f0a95";
-        private const string UsEastWindows2012R2SqlServerStandardAmi = "ami-bc9b95d6";
+        private const string UsEastWindows2012R2SqlServerStandardAmi = "ami-3d939d57";
         private const string BucketNameSoftware = "gtbb";
         private const string TopLevelDomainName = "yadayadasoftware.com";
         private const string FullyQualifiedDomainName = "prime." + TopLevelDomainName;
 
 
-        public static Uri GetMasterTemplateUri(string activeDirectoryAdminPassword, string tfsServicePassword, Create developmentCreate, Greek minDevelopment, Greek maxDevelopment)
+        public static Uri GetMasterTemplateUri(Create developmentCreate, Greek minDevelopment, Greek maxDevelopment)
         {
 
             var gitSuffix = $"{GetGitBranch()}:{GetGitHash()}";
             var description = $"Master Stack:{gitSuffix}";
 
             Template masterTemplate = new Template($"MasterStackYadaYadaSoftwareCom{DateTime.Now.Ticks}", description);
-            Template primeTemplate = GetPrimeTemplate(gitSuffix, activeDirectoryAdminPassword, tfsServicePassword);
+            Template primeTemplate = GetPrimeTemplate(gitSuffix);
 
 
             Uri primeUri = TemplateEngine.UploadTemplate(primeTemplate, "gtbb/templates");
@@ -72,15 +72,6 @@ namespace AWS.CloudFormation.Test
             for (Greek i = minDevelopment; i <= maxDevelopment; i++)
             {
                 Template development = GetTemplateFullStack(StackTest.TopLevelDomainName, "prime", i, developmentCreate, gitSuffix);
-                var vpcDevelopment = new FnGetAtt($"{i}DevYadaYadaSoftwareCom", $"Outputs.Vpc{i}");
-
-                development.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainAdminPasswordParameterName, "String",
-                    activeDirectoryAdminPassword, "Admin password"));
-                development.Parameters.Add(
-                    new ParameterBase(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, "String",
-                        tfsServicePassword, "Password for Tfs Application Server Service and Tfs SqlServer Service Account "));
-
-
                 Uri developmentUri = TemplateEngine.UploadTemplate(development, "gtbb/templates");
                 CloudFormation.Resource.CloudFormation.Stack devStack = new CloudFormation.Resource.CloudFormation.Stack(developmentUri);
                 devStack.Parameters.Add("PrimeVpcId", vpcPrime);
@@ -92,18 +83,15 @@ namespace AWS.CloudFormation.Test
                 masterTemplate.Resources.Add($"{i}DevYadaYadaSoftwareCom", devStack);
             }
 
-
-
-
             return TemplateEngine.UploadTemplate(masterTemplate, "gtbb/templates");
         }
 
-        public static Uri GetPrimeTemplateUri(string gitSuffix,string activeDirectoryPassword,string tfsServicePassword)
+        public static Uri GetPrimeTemplateUri(string gitSuffix)
         {
-            return TemplateEngine.UploadTemplate(GetPrimeTemplate(gitSuffix, activeDirectoryPassword, tfsServicePassword), "gtbb/templates"); 
+            return TemplateEngine.UploadTemplate(GetPrimeTemplate(gitSuffix), "gtbb/templates"); 
         }
 
-        public static Template GetPrimeTemplate(string gitSuffix, string activeDirectoryAdminPassword, string tfsServicePassword)
+        public static Template GetPrimeTemplate(string gitSuffix)
         {
             Template primeTemplate = new Template(FullyQualifiedDomainName, KeyPairName, "VpcPrime", CidrPrimeVpc, $"Stack for prime Vpc (AD):{gitSuffix}");
 
@@ -118,17 +106,8 @@ namespace AWS.CloudFormation.Test
             Subnet subnetForActiveDirectory2 = new Subnet(vpc, CidrPrimeActiveDirectorySubnet2, AvailabilityZone.UsEast1E, routeTableForAdSubnets, null);
             primeTemplate.Resources.Add("SubnetAd2", subnetForActiveDirectory2);
 
-            //Subnet subnetForNatGateway = new Subnet(vpc, CidrPrimeNatGatewaySubnet, AvailabilityZone.UsEast1E,false);
-            //primeTemplate.Resources.Add("SubnetNatGateway", subnetForNatGateway);
-
-            //ElasticIp elasticIp4NatGateway = new ElasticIp();
-            //primeTemplate.Resources.Add(elasticIp4NatGateway.LogicalId, elasticIp4NatGateway);
-
-            //NatGateway natGateway = new NatGateway(elasticIp4NatGateway, subnetForNatGateway);
-            //primeTemplate.Resources.Add(natGateway.LogicalId, natGateway);
-
-            //SecurityGroup natSecurityGroup = AddNatSecurityGroup(vpc, primeTemplate);
-            //Instance nat1 = AddNat(primeTemplate, subnetForNatGateway, natSecurityGroup);
+            string activeDirectoryAdminPassword = SettingsHelper.GetSetting("admin@prime.yadayadasoftware.com");
+            string tfsServicePassword = SettingsHelper.GetSetting("tfsservice@prime.yadayadasoftware.com");
 
             var simpleAd = new SimpleActiveDirectory(FullyQualifiedDomainName,activeDirectoryAdminPassword,DirectorySize.MicrosoftAd, vpc,subnetForActiveDirectory1,subnetForActiveDirectory2);
             primeTemplate.Resources.Add(simpleAd.LogicalId, simpleAd);
@@ -182,8 +161,7 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void GetPrimeTemplateTest()
         {
-            var password = GetPassword();
-            var parentTemplate = GetPrimeTemplateUri(GetGitSuffix(), password, password);
+            var parentTemplate = GetPrimeTemplateUri(GetGitSuffix());
             Assert.IsNotNull(parentTemplate);
             Assert.IsFalse(string.IsNullOrEmpty(parentTemplate.AbsoluteUri));
         }
@@ -192,16 +170,13 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void GetMasterTemplateTest()
         {
-            var adminPassword = GetPassword();
-            var tfsService = GetPassword();
-            var templateUri = GetMasterTemplateUri(adminPassword, tfsService,Create.None, Greek.Alpha, Greek.Alpha);
+            var templateUri = GetMasterTemplateUri(Create.None, Greek.Alpha, Greek.Alpha);
         }
 
         [TestMethod]
         public void UpdatePrimeTest()
         {
-            var password = GetPassword();    
-            var primeUri = GetPrimeTemplateUri(GetGitSuffix(), password,password);
+            var primeUri = GetPrimeTemplateUri(GetGitSuffix());
             Stack.Stack.UpdateStack("StackYadaYadaSoftwareComMaster-template-StackPrime-ZEE4RL4MR8DQ",primeUri);
 
         }
@@ -214,18 +189,14 @@ namespace AWS.CloudFormation.Test
         [TestMethod]
         public void CreateMasterTemplate()
         {
-            var adminPassword = SettingsHelper.GetSetting("admin@prime.yadayadasoftware.com");
-            var tfsPassword = SettingsHelper.GetSetting("tfsservice@prime.yadayadasoftware.com");
-            var templateUri = GetMasterTemplateUri(adminPassword,tfsPassword,Create.None, Greek.Alpha, Greek.Alpha);
+            var templateUri = GetMasterTemplateUri(Create.None, Greek.Alpha, Greek.Alpha);
             var response = Stack.Stack.CreateStack(templateUri);
         }
 
         [TestMethod]
         public void UpdateMasterTemplate()
         {
-            var adminPassword = SettingsHelper.GetSetting("admin@prime.yadayadasoftware.com");
-            var tfsPassword = SettingsHelper.GetSetting("tfsservice@prime.yadayadasoftware.com");
-            var templateUri = GetMasterTemplateUri(adminPassword, tfsPassword, Create.FullStack, Greek.Alpha, Greek.Alpha) ;
+            var templateUri = GetMasterTemplateUri(Create.FullStack, Greek.Alpha, Greek.Alpha) ;
             Stack.Stack.UpdateStack("MasterStackYadaYadaSoftwareCom635945715836092476", templateUri);
         }
 
@@ -235,13 +206,16 @@ namespace AWS.CloudFormation.Test
             var template = new Template($"{version}.{appNameNetBiosName}.{topLevel}", KeyPairName, $"Vpc{version}", developmentVpcCidr, $"{GetGitBranch()}:{GetGitHash()}" );
 
             template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainAdminUsernameParameterName, "String", "admin", "Admin username"));
+            template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainAdminPasswordParameterName, "String", "invalid", "Admin password") { NoEcho = true });
             template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainVersionParameterName, "String", version.ToString().ToLowerInvariant(), "Fully qualified domain name for the stack (e.g. example.com)"));
             template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainNetBiosNameParameterName, "String", appNameNetBiosName, "NetBIOS name of the domain for the stack.  (e.g. Dev,Test,Production)"));
             template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainFqdnParameterName, "String", $"{appNameNetBiosName}.{topLevel}", "Fully qualified domain name"));
             template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.DomainTopLevelParameterName, "String", topLevel, "Fully qualified domain name"));
-            template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.CidrPrimeDmz1SubnetParameterName, "String", CidrPrimeDmz1Subnet, "Cidr for PrimeDmz1 (Rdp)") { NoEcho = true });
+            template.Parameters.Add(new ParameterBase(ActiveDirectoryBase.CidrPrimeDmz1SubnetParameterName, "String", CidrPrimeDmz1Subnet, "Cidr for PrimeDmz1 (Rdp)"));
 
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServiceAccountNameParameterName, "String", "tfsservice", "Account name for Tfs Application Server Service and Tfs SqlServer Service"));
+            string tfsServicePassword = SettingsHelper.GetSetting("tfsservice@prime.yadayadasoftware.com");
+            template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.TfsServicePasswordParameterName, "String", tfsServicePassword, "Passowrd for tfsservice account.") {NoEcho = true} );
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_username_parameter_name, "String", "sqlservermasteruser", "Master User For RDS SqlServer"));
             template.Parameters.Add(new ParameterBase(TeamFoundationServerBuildServerBase.sqlexpress4build_password_parameter_name, "String", "askjd871hdj11", "Password for Master User For RDS SqlServer") { NoEcho = true });
 
