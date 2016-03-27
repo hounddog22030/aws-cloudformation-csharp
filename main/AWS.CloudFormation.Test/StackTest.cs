@@ -13,15 +13,12 @@ using AWS.CloudFormation.Resource.AutoScaling;
 using AWS.CloudFormation.Resource.DirectoryService;
 using AWS.CloudFormation.Resource.EC2;
 using AWS.CloudFormation.Resource.EC2.Instancing;
-using AWS.CloudFormation.Resource.EC2.Instancing.Metadata;
-using AWS.CloudFormation.Resource.EC2.Instancing.Metadata.Config.Command;
 using AWS.CloudFormation.Resource.EC2.Networking;
 using AWS.CloudFormation.Resource.Networking;
 using AWS.CloudFormation.Resource.RDS;
 using AWS.CloudFormation.Resource.Wait;
 using AWS.CloudFormation.Stack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ThirdParty.BouncyCastle.Math;
 using OperatingSystem = AWS.CloudFormation.Resource.EC2.Instancing.OperatingSystem;
 
 namespace AWS.CloudFormation.Test
@@ -35,17 +32,11 @@ namespace AWS.CloudFormation.Test
         public const string CidrPrimeActiveDirectorySubnet2 = "10.0.2.0/24";
         public const string CidrPrimeDmz1Subnet = "10.0.3.0/24";
         public const string CidrPrimeNatGatewaySubnet = "10.0.5.0/24";
-
-
-        //private const string CidrSqlServer4TfsSubnet = "10.1.3.0/24";  //32-47
-        //private const string CidrTfsServerSubnet = "10.1.4.0/24";  //48..63
-        //private const string CidrBuildServerSubnet = "10.1.5.0/24";    //64-79
-        //private const string CidrDatabase4BuildSubnet2 = "10.1.6.0/24";    //80-95
-        //public const string CidrWorkstationSubnet = "10.1.7.0/24"; //96-127
         public const string KeyPairName = "corp.getthebuybox.com";
         public const string UsEastWindows2012R2Ami = "ami-3d787d57";
         private const string UsEastWindows2012R2SqlServerExpressAmi = "ami-ff0f0a95";
         private const string UsEastWindows2012R2SqlServerStandardAmi = "ami-3d939d57";
+        public const string UsEastWindows2012R2VisualStudioAmi = "ami-1d919f77";
         private const string BucketNameSoftware = "gtbb";
         private const string TopLevelDomainName = "yadayadasoftware.com";
         private const string FullyQualifiedDomainName = "prime." + TopLevelDomainName;
@@ -79,6 +70,7 @@ namespace AWS.CloudFormation.Test
                 devStack.Parameters.Add("PrimeRouteTable4SubnetDmz1", new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.RouteTable4SubnetDmz1"));
                 devStack.Parameters.Add("DhcpOptionsId", new FnGetAtt("PrimeYadaYadaSoftwareCom", "Outputs.DhcpOptionsId"));
                 devStack.Parameters.Add(ActiveDirectoryBase.DomainAdminUsernameParameterName, new FnGetAtt("PrimeYadaYadaSoftwareCom", $"Outputs.{ActiveDirectoryBase.DomainAdminUsernameParameterName}"));
+                devStack.Parameters.Add(ActiveDirectoryBase.DomainAdminPasswordParameterName, SettingsHelper.GetSetting("admin@prime.yadayadasoftware.com"));
                 devStack.Parameters.Add(ActiveDirectoryBase.DomainFqdnParameterName, new FnGetAtt("PrimeYadaYadaSoftwareCom", $"Outputs.{ActiveDirectoryBase.DomainFqdnParameterName}"));
                 masterTemplate.Resources.Add($"{i}DevYadaYadaSoftwareCom", devStack);
             }
@@ -315,19 +307,12 @@ namespace AWS.CloudFormation.Test
 
             if (instancesToCreate.HasFlag(Create.Sql4Tfs))
             {
-                instanceTfsSqlServer = AddSql(template, $"Sql4Tfs{version}", InstanceTypes.M4Large, subnetSqlServer4Tfs, sqlServer4TfsSecurityGroup);
+                instanceTfsSqlServer = AddSql(template, $"Sql4Tfs{version}", InstanceTypes.T2Small, subnetSqlServer4Tfs, sqlServer4TfsSecurityGroup);
                 instanceTfsSqlServer.DependsOn.Add(routeFromPrimeAdSubnetsToAlpha.LogicalId);
                 instanceTfsSqlServer.DependsOn.Add(routeFromAz1ToNat.LogicalId);
                 instanceTfsSqlServer.DependsOn.Add(routeFromAlphaToPrime.LogicalId);
                 instanceTfsSqlServer.DependsOn.Add(vpcPeeringAlphaToPrime.LogicalId);
                 instanceTfsSqlServer.DependsOn.Add(vpc.VpcGatewayAttachment.LogicalId);
-
-
-
-                //instanceTfsSqlServer.DependsOn.Add(createUsersPackage.WaitCondition.LogicalId);
-                var x = instanceTfsSqlServer.Packages.Last().WaitCondition;
-                //instanceTfsSqlServer.DependsOn.Add(simpleAd.LogicalId);
-                
             }
 
             LaunchConfiguration tfsServer = null;
@@ -435,12 +420,6 @@ namespace AWS.CloudFormation.Test
             //////////////elb.AddSecurityGroup(elbSecurityGroup);
             //////////////template.AddResource(elb);
 
-            ////////////the below is a remote desktop gateway server that can
-            //////////// be uncommented to debug domain setup problems
-            //AddRdp2(subnetDmz1, template, vpc, dcPackage);
-
-
-
             return template;
         }
 
@@ -477,26 +456,6 @@ namespace AWS.CloudFormation.Test
             Workstation = 32,
             FullStack = int.MaxValue
         }
-
-
-
-        //private static DomainControllerPackage AddDomainControllerPackage(Subnet subnetDomainController1,
-        //    Instance instanceDomainController, Subnet subnetDmz1, Subnet subnetDmz2, Subnet subnetSqlServer4Tfs,
-        //    Subnet subnetTfsServer, Subnet subnetBuildServer, Subnet subnetDatabase4BuildServer2, Subnet subnetWorkstation)
-        //{
-        //    DomainControllerPackage dcPackage = new DomainControllerPackage(subnetDomainController1);
-        //    instanceDomainController.Packages.Add(dcPackage);
-        //    instanceDomainController.Packages.Add(new Chrome());
-
-        //    dcPackage.AddReplicationSite(subnetDmz1,false);
-        //    dcPackage.AddReplicationSite(subnetDmz2, false);
-        //    dcPackage.AddReplicationSite(subnetSqlServer4Tfs, false);
-        //    dcPackage.AddReplicationSite(subnetTfsServer, false);
-        //    dcPackage.AddReplicationSite(subnetBuildServer, false);
-        //    dcPackage.AddReplicationSite(subnetDatabase4BuildServer2, false);
-        //    dcPackage.AddReplicationSite(subnetWorkstation, false);
-        //    return dcPackage;
-        //}
 
         public static Subnet AddSubnetWorkstation(Vpc vpc, RouteTable nat1, SecurityGroup natSecurityGroup, Template template,Greek version)
         {
@@ -610,31 +569,31 @@ namespace AWS.CloudFormation.Test
             return natSecurityGroup;
         }
 
-        internal static string GetPassword()
-        {
-            var random = new Random(((int) DateTime.Now.Ticks%int.MaxValue));
+        //internal static string GetPassword()
+        //{
+        //    var random = new Random(((int) DateTime.Now.Ticks%int.MaxValue));
 
-            string password = string.Empty;
+        //    string password = string.Empty;
 
-            for (int i = 0; i < 4; i++)
-            {
-                char charToAdd = ((char) random.Next((int) 'A', (int) 'Z'));
-                password += charToAdd;
-            }
+        //    for (int i = 0; i < 4; i++)
+        //    {
+        //        char charToAdd = ((char) random.Next((int) 'A', (int) 'Z'));
+        //        password += charToAdd;
+        //    }
 
-            for (int i = 0; i < 4; i++)
-            {
-                char charToAdd = ((char) random.Next((int) '0', (int) '9'));
-                password += charToAdd;
-            }
+        //    for (int i = 0; i < 4; i++)
+        //    {
+        //        char charToAdd = ((char) random.Next((int) '0', (int) '9'));
+        //        password += charToAdd;
+        //    }
 
-            for (int i = 0; i < 4; i++)
-            {
-                char charToAdd = ((char) random.Next((int) 'a', (int) 'z'));
-                password += charToAdd;
-            }
-            return password;
-        }
+        //    for (int i = 0; i < 4; i++)
+        //    {
+        //        char charToAdd = ((char) random.Next((int) 'a', (int) 'z'));
+        //        password += charToAdd;
+        //    }
+        //    return password;
+        //}
 
         private static string GetGitBranch()
         {
@@ -1340,7 +1299,7 @@ namespace AWS.CloudFormation.Test
             launchGroup.AddSubnetToVpcZoneIdentifier(subnet);
 
 
-            var buildServer = new LaunchConfiguration(null,instanceSize, UsEastWindows2012R2Ami, OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration,false);
+            var buildServer = new LaunchConfiguration(null,instanceSize, UsEastWindows2012R2VisualStudioAmi, OperatingSystem.Windows, ResourceType.AwsAutoScalingLaunchConfiguration,false);
             template.Resources.Add("LaunchConfigurationBuildServer",buildServer);
 
             launchGroup.LaunchConfiguration = buildServer;
@@ -1363,11 +1322,12 @@ namespace AWS.CloudFormation.Test
             return buildServer;
         }
 
+
         private static Instance AddWorkstation(Template template, Subnet subnet, SecurityGroup workstationSecurityGroup, Greek version)
         {
             if (subnet == null) throw new ArgumentNullException(nameof(subnet));
 
-            Instance workstation = new Instance(subnet, InstanceTypes.T2Large, UsEastWindows2012R2SqlServerExpressAmi, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 214);
+            Instance workstation = new Instance(subnet, InstanceTypes.T2Large, UsEastWindows2012R2VisualStudioAmi, OperatingSystem.Windows, Ebs.VolumeTypes.GeneralPurpose, 214);
             template.Resources.Add($"Work{version}",workstation);
 
             if (workstationSecurityGroup != null)
@@ -1415,13 +1375,6 @@ namespace AWS.CloudFormation.Test
 
             return tfsServer;
         }
-
-        //private static void AddInternetGatewayRouteTable(Template template, Vpc vpc, InternetGateway gateway, Subnet subnet)
-        //{
-        //    RouteTable routeTable = new RouteTable(template, $"{subnet.LogicalId}RouteTable", vpc);
-        //    Route route = new Route(template,$"{subnet.LogicalId}Route", gateway, "0.0.0.0/0", routeTable);
-        //    SubnetRouteTableAssociation routeTableAssociation = new SubnetRouteTableAssociation(template, subnet, routeTable);
-        //}
 
         public static Instance AddNat(Template template, Subnet subnet, SecurityGroup natSecurityGroup)
         {
