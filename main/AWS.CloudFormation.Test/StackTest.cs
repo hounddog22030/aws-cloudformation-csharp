@@ -186,6 +186,17 @@ namespace AWS.CloudFormation.Test
         }
 
         [TestMethod]
+        public void CreateStackWithCredentials()
+        {
+            var awsAccessKey = SettingsHelper.GetSetting("AWSAccessKey");
+            var awsSecretKey = SettingsHelper.GetSetting("AWSSecretKey");
+            var t = new Template("Test", "corp.getthebuybox.com", "VpcTest", CidrPrimeVpc);
+            Uri templateUri = TemplateEngine.UploadTemplate(t, "gtbb");
+            Stack.Stack.CreateStack(templateUri.AbsoluteUri, awsAccessKey,awsSecretKey);
+
+        }
+
+        [TestMethod]
         public void UpdateMasterTemplate()
         {
             var templateUri = GetMasterTemplateUri(Create.FullStack, Greek.Alpha, Greek.Alpha) ;

@@ -6,6 +6,7 @@ using System.Net;
 using Amazon;
 using Amazon.CloudFormation;
 using Amazon.CloudFormation.Model;
+using AWS.CloudFormation.Common;
 
 namespace AWS.CloudFormation.Stack
 {
@@ -100,13 +101,23 @@ namespace AWS.CloudFormation.Stack
 
         public static CreateStackResponse CreateStack(Uri templateUri)
         {
+            var awsAccessKey = SettingsHelper.GetSetting("AWSAccessKey");
+            var awsSecretKey = SettingsHelper.GetSetting("AWSSecretKey");
+            return CreateStack(templateUri.AbsoluteUri,awsAccessKey,awsSecretKey);
+        }
+        public static CreateStackResponse CreateStack(string templateUri, string awsCredentialsAccessKey, string awsCredentialsSecretKey)
+        {
+
             AmazonCloudFormationClient client = new AmazonCloudFormationClient(RegionEndpoint.USEast1);
+
 
             CreateStackRequest request = new CreateStackRequest
             {
                 DisableRollback = true,
-                StackName = templateUri.Segments[templateUri.Segments.Length-1].Replace(".template",string.Empty).Replace('.','-'),
-                TemplateURL = templateUri.AbsoluteUri
+                TemplateURL = templateUri,
+                StackName = new Uri(templateUri).Segments[new Uri(templateUri).Segments.Length - 1].Replace(".template", string.Empty).Replace('.', '-'),
+
+
             };
             request.Capabilities.Add("CAPABILITY_IAM");
 
